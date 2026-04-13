@@ -140,4 +140,20 @@ $lang = array(
 	/* Tasks */
 	'task__ImportFeeds'                        => "Import Distributor Feeds",
 	'task__AutoResolveConflicts'               => "Auto-Resolve Expired Feed Conflicts",
+
+	/* Feed config extras */
+	'gdcatalog_feeds_help'                     => "Configure each distributor's feed URL, authentication, field mapping, and import schedule. Feeds are processed by the ImportFeeds background task.",
+	'gdcatalog_feed_field_mapping_json'        => "Field Mapping JSON",
+	'gdcatalog_feed_category_mapping_json'     => "Category Mapping JSON",
+	'gdcatalog_conflict_restricted_states'     => "Conflict detect: restricted_states",
+	'gdcatalog_conflict_nfa_item'              => "Conflict detect: nfa_item",
+	'gdcatalog_conflict_requires_ffl'          => "Conflict detect: requires_ffl",
+	'gdcatalog_conflict_caliber'               => "Conflict detect: caliber",
+	'gdcatalog_conflict_rounds_per_box'        => "Conflict detect: rounds_per_box",
+	'gdcatalog_conflict_category'              => "Conflict detect: category",
+	'gdcatalog_conflict_manufacturer'          => "Conflict detect: manufacturer",
+	'gdcatalog_conflict_description'           => "Conflict detect: description",
+
+	/* ACP Permissions */
+	'gdcatalog_feeds_manage'                   => "Can manage feed configuration",
 );
