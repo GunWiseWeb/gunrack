@@ -1,0 +1,64 @@
+<?php
+/**
+ * @brief       GD Master Catalog — ACP Settings Controller
+ * @package     IPS Community Suite
+ * @subpackage  GD Master Catalog
+ * @since       12 Apr 2026
+ */
+
+namespace IPS\gdcatalog\modules\admin\catalog;
+
+class _settings extends \IPS\Dispatcher\Controller
+{
+	public static bool $csrfProtected = true;
+
+	public function execute(): void
+	{
+		\IPS\Dispatcher::i()->checkAcpPermission( 'gdcatalog_feeds_manage' );
+		parent::execute();
+	}
+
+	/**
+	 * Settings form.
+	 */
+	protected function manage(): void
+	{
+		$form = new \IPS\Helpers\Form;
+
+		$form->add( new \IPS\Helpers\Form\Text(
+			'gdcatalog_opensearch_host',
+			\IPS\Settings::i()->gdcatalog_opensearch_host ?: 'http://localhost:9200',
+			TRUE
+		));
+		$form->add( new \IPS\Helpers\Form\Text(
+			'gdcatalog_opensearch_index',
+			\IPS\Settings::i()->gdcatalog_opensearch_index ?: 'gunrack_products',
+			TRUE
+		));
+		$form->add( new \IPS\Helpers\Form\Number(
+			'gdcatalog_auto_resolve_hours',
+			\IPS\Settings::i()->gdcatalog_auto_resolve_hours ?: 48,
+			TRUE,
+			[ 'min' => 1, 'max' => 168 ]
+		));
+		$form->add( new \IPS\Helpers\Form\Number(
+			'gdcatalog_discontinue_threshold',
+			\IPS\Settings::i()->gdcatalog_discontinue_threshold ?: 3,
+			TRUE,
+			[ 'min' => 1, 'max' => 10 ]
+		));
+
+		if ( $values = $form->values() )
+		{
+			$form->saveAsSettings( $values );
+
+			\IPS\Output::i()->redirect(
+				\IPS\Http\Url::internal( 'app=gdcatalog&module=catalog&controller=settings' ),
+				'saved'
+			);
+		}
+
+		\IPS\Output::i()->title  = \IPS\Member::loggedIn()->language()->addToStack( 'gdcatalog_settings_title' );
+		\IPS\Output::i()->output = (string) $form;
+	}
+}
