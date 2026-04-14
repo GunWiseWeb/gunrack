@@ -21,7 +21,7 @@ class _AutoResolveConflicts extends \IPS\Task
 	 *
 	 * @return string|null
 	 */
-	public function execute(): ?string
+	public function execute()
 	{
 		$expired  = FeedConflict::loadExpired();
 		$resolved = 0;

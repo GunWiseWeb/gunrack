@@ -21,7 +21,7 @@ class _ImportFeeds extends \IPS\Task
 	 *
 	 * @return string|null  Message to log, or NULL
 	 */
-	public function execute(): ?string
+	public function execute()
 	{
 		$feeds   = Distributor::loadActive();
 		$ran     = 0;
