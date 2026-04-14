@@ -11,20 +11,23 @@
 
 namespace IPS\gdcatalog\modules\admin\catalog;
 
-if ( !\defined( '\IPS\SUITE_UNIQUE_KEY' ) )
-{
-	header( ( $_SERVER['SERVER_PROTOCOL'] ?? 'HTTP/1.0' ) . ' 403 Forbidden' );
-	exit;
-}
+/* To prevent PHP errors (extending class does not exist) revealing path */
 
 use IPS\gdcatalog\Compliance\Flag;
 use IPS\gdcatalog\Compliance\FlagProcessor;
 use IPS\gdcatalog\Conflict\FeedConflict;
 use IPS\gdcatalog\Conflict\FieldLock;
+use function defined;
+
+if ( !defined( '\IPS\SUITE_UNIQUE_KEY' ) )
+{
+	header( ( $_SERVER['SERVER_PROTOCOL'] ?? 'HTTP/1.0' ) . ' 403 Forbidden' );
+	exit;
+}
 
 class compliance extends \IPS\Dispatcher\Controller
 {
-	protected static $csrfProtected = true;
+	public static bool $csrfProtected = TRUE;
 
 	public function execute()
 	{

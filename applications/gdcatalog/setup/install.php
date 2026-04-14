@@ -52,6 +52,69 @@ foreach ( $distributors as $dist )
 	]);
 }
 
+/* ------------------------------------------------------------------
+ * Import templates from dev/html/ into core_theme_templates so they
+ * are available in IPS production mode (not just dev mode).
+ * ------------------------------------------------------------------ */
+$templateDir = \IPS\ROOT_PATH . '/applications/gdcatalog/dev/html';
+
+if ( is_dir( $templateDir ) )
+{
+	$iterator = new \RecursiveIteratorIterator(
+		new \RecursiveDirectoryIterator( $templateDir, \RecursiveDirectoryIterator::SKIP_DOTS )
+	);
+
+	foreach ( $iterator as $file )
+	{
+		if ( $file->getExtension() !== 'phtml' )
+		{
+			continue;
+		}
+
+		$content  = file_get_contents( $file->getPathname() );
+		$name     = $file->getBasename( '.phtml' );
+
+		/* Parse the directory structure: dev/html/{location}/{group}/{name}.phtml */
+		$relative = str_replace( $templateDir . '/', '', $file->getPathname() );
+		$parts    = explode( '/', $relative );
+
+		if ( \count( $parts ) < 3 )
+		{
+			continue;
+		}
+
+		$location = $parts[0];  // e.g. "admin"
+		$group    = $parts[1];  // e.g. "catalog"
+
+		/* Extract parameters from <ips:template parameters="..." /> tag */
+		$params = '';
+		if ( preg_match( '/<ips:template parameters="([^"]*)"/', $content, $m ) )
+		{
+			$params = $m[1];
+		}
+
+		/* Strip the <ips:template .../> line from content */
+		$templateContent = preg_replace( '/^<ips:template[^>]*\/?>\s*/m', '', $content, 1 );
+
+		/* Remove any existing template with same key before inserting */
+		\IPS\Db::i()->delete( 'core_theme_templates', [
+			'template_set_id=? AND template_app=? AND template_location=? AND template_group=? AND template_name=?',
+			0, 'gdcatalog', $location, $group, $name,
+		] );
+
+		\IPS\Db::i()->insert( 'core_theme_templates', [
+			'template_set_id'   => 0,
+			'template_app'      => 'gdcatalog',
+			'template_location' => $location,
+			'template_group'    => $group,
+			'template_name'     => $name,
+			'template_data'     => $params,
+			'template_content'  => $templateContent,
+			'template_added_to' => '1.0.0',
+		] );
+	}
+}
+
 /* Seed category taxonomy (Section 2.4) */
 $categories = [
 	'Handguns'               => ['Pistols', 'Revolvers', 'Derringers'],

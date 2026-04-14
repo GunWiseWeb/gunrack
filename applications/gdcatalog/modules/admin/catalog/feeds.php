@@ -12,11 +12,7 @@
 
 namespace IPS\gdcatalog\modules\admin\catalog;
 
-if ( !\defined( '\IPS\SUITE_UNIQUE_KEY' ) )
-{
-	header( ( $_SERVER['SERVER_PROTOCOL'] ?? 'HTTP/1.0' ) . ' 403 Forbidden' );
-	exit;
-}
+/* To prevent PHP errors (extending class does not exist) revealing path */
 
 use IPS\Dispatcher;
 use IPS\Output;
@@ -24,10 +20,17 @@ use IPS\Request;
 use IPS\Helpers\Form;
 use IPS\gdcatalog\Feed\Distributor;
 use IPS\gdcatalog\Feed\CategoryMapper;
+use function defined;
+
+if ( !defined( '\IPS\SUITE_UNIQUE_KEY' ) )
+{
+	header( ( $_SERVER['SERVER_PROTOCOL'] ?? 'HTTP/1.0' ) . ' 403 Forbidden' );
+	exit;
+}
 
 class feeds extends \IPS\Dispatcher\Controller
 {
-	protected static $csrfProtected = true;
+	public static bool $csrfProtected = TRUE;
 
 	public function execute()
 	{

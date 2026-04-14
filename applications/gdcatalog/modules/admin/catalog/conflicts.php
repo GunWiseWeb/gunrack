@@ -11,7 +11,11 @@
 
 namespace IPS\gdcatalog\modules\admin\catalog;
 
-if ( !\defined( '\IPS\SUITE_UNIQUE_KEY' ) )
+/* To prevent PHP errors (extending class does not exist) revealing path */
+
+use function defined;
+
+if ( !defined( '\IPS\SUITE_UNIQUE_KEY' ) )
 {
 	header( ( $_SERVER['SERVER_PROTOCOL'] ?? 'HTTP/1.0' ) . ' 403 Forbidden' );
 	exit;
@@ -19,7 +23,7 @@ if ( !\defined( '\IPS\SUITE_UNIQUE_KEY' ) )
 
 class conflicts extends \IPS\Dispatcher\Controller
 {
-	protected static $csrfProtected = true;
+	public static bool $csrfProtected = TRUE;
 
 	public function execute()
 	{

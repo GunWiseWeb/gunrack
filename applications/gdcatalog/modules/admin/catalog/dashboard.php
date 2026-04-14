@@ -11,21 +11,24 @@
 
 namespace IPS\gdcatalog\modules\admin\catalog;
 
-if ( !\defined( '\IPS\SUITE_UNIQUE_KEY' ) )
-{
-	header( ( $_SERVER['SERVER_PROTOCOL'] ?? 'HTTP/1.0' ) . ' 403 Forbidden' );
-	exit;
-}
+/* To prevent PHP errors (extending class does not exist) revealing path */
 
 use IPS\gdcatalog\Feed\Distributor;
 use IPS\gdcatalog\Feed\Importer;
 use IPS\gdcatalog\Catalog\Product;
 use IPS\gdcatalog\Catalog\Category;
 use IPS\gdcatalog\Search\OpenSearchIndexer;
+use function defined;
+
+if ( !defined( '\IPS\SUITE_UNIQUE_KEY' ) )
+{
+	header( ( $_SERVER['SERVER_PROTOCOL'] ?? 'HTTP/1.0' ) . ' 403 Forbidden' );
+	exit;
+}
 
 class dashboard extends \IPS\Dispatcher\Controller
 {
-	protected static $csrfProtected = true;
+	public static bool $csrfProtected = TRUE;
 
 	public function execute()
 	{
