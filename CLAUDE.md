@@ -67,6 +67,17 @@ Full 20-item pre-launch security checklist is in **Appendix C Section C.8** of t
 5. Chrome Web Store + Firefox AMO developer accounts (extension takes 1–7 days to review)
 6. 2–3 founding FFL dealers confirmed for free 90-day trial (needed to test Plugin 2)
 
+## IPS v5 third-party application requirements
+These were learned by comparing against a working IPS v5 plugin. They apply to every application in this project.
+
+1. **Application.php must use `class _Application`** — underscore prefix is required for the IPS autoloader to resolve the class.
+2. **Controller classes must use underscore prefix** — e.g. `class _dashboard extends \IPS\Dispatcher\Controller`. Every controller in `modules/` follows this convention.
+3. **`execute()` has no `: void` return type** — the parent `\IPS\Dispatcher\Controller::execute()` signature does not declare a return type; adding one causes a fatal error.
+4. **Templates go in `data/theme.xml` as XML, not `.phtml` files** — IPS installs templates into the database from this XML file. Format: `<theme>` root with `<template>` children containing CDATA-wrapped template content. The `dev/html/` directory is for IN_DEV mode only and is not read during installation.
+5. **Language strings go in `data/lang.xml`, not `dev/lang.php`** — IPS installs language strings from this XML file. Format: `<language><app key="appdir"><word key="...">` with CDATA values. The `dev/lang.php` file is for IN_DEV mode only.
+6. **Tar must use `addFromString()` with files inside an `appdir/` wrapper** — e.g. `gdcatalog/Application.php`. Using PharData `addFile()` produces 0-byte files. Every directory must contain a blank `index.html`.
+7. **ActiveRecord `$databaseTable` must be `?string` (nullable)** — declare as `public static ?string $databaseTable = 'table_name';`. The parent class uses a nullable type; omitting the `?` causes a type error.
+
 ## Full specification
 Read `GunRack_Spec_v2.9.16.md` for complete specs on all 12 plugins, database schemas, acceptance criteria, server setup (Appendix B), security requirements (Appendix C), and Phase 2 roadmap (Section 19).
 
