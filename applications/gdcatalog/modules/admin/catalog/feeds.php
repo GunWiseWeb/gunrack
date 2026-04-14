@@ -28,11 +28,11 @@ if ( !defined( '\IPS\SUITE_UNIQUE_KEY' ) )
 	exit;
 }
 
-class feeds extends \IPS\Dispatcher\Controller
+class _feeds extends \IPS\Dispatcher\Controller
 {
 	public static bool $csrfProtected = TRUE;
 
-	public function execute(): void
+	public function execute()
 	{
 		Dispatcher::i()->checkAcpPermission( 'catalog_manage' );
 		parent::execute();
@@ -45,57 +45,8 @@ class feeds extends \IPS\Dispatcher\Controller
 	{
 		$feeds = Distributor::loadAll();
 
-		Output::i()->title = \IPS\Member::loggedIn()->language()->addToStack( 'gdcatalog_feeds_title' );
-
-		$html = '<div class="ipsBox"><h2 class="ipsBox_title">Distributor Feeds</h2>';
-		$html .= '<div class="ipsTable ipsTable_zebra"><div class="ipsTable_header"><div class="ipsTable_row">';
-		$html .= '<div class="ipsTable_cell" style="width:5%">#</div>';
-		$html .= '<div class="ipsTable_cell" style="width:18%">Name</div>';
-		$html .= '<div class="ipsTable_cell" style="width:14%">Distributor</div>';
-		$html .= '<div class="ipsTable_cell" style="width:8%">Format</div>';
-		$html .= '<div class="ipsTable_cell" style="width:10%">Schedule</div>';
-		$html .= '<div class="ipsTable_cell" style="width:8%">Active</div>';
-		$html .= '<div class="ipsTable_cell" style="width:14%">Last Run</div>';
-		$html .= '<div class="ipsTable_cell" style="width:8%">Records</div>';
-		$html .= '<div class="ipsTable_cell" style="width:8%">Status</div>';
-		$html .= '<div class="ipsTable_cell" style="width:7%"></div>';
-		$html .= '</div></div>';
-		foreach ( $feeds as $feed )
-		{
-			$html .= '<div class="ipsTable_row">';
-			$html .= '<div class="ipsTable_cell">' . (int) $feed->priority . '</div>';
-			$html .= '<div class="ipsTable_cell"><strong>' . htmlspecialchars( $feed->feed_name ) . '</strong></div>';
-			$html .= '<div class="ipsTable_cell">' . htmlspecialchars( $feed->distributor ) . '</div>';
-			$html .= '<div class="ipsTable_cell">' . strtoupper( htmlspecialchars( $feed->feed_format ) ) . '</div>';
-			$html .= '<div class="ipsTable_cell">' . htmlspecialchars( $feed->import_schedule ) . '</div>';
-			$html .= '<div class="ipsTable_cell">' . ( $feed->active ? '<span class="ipsBadge ipsBadge--positive">Active</span>' : '<span class="ipsBadge ipsBadge--neutral">Inactive</span>' ) . '</div>';
-			$html .= '<div class="ipsTable_cell">' . ( $feed->last_run ? htmlspecialchars( $feed->last_run ) : '&mdash;' ) . '</div>';
-			$html .= '<div class="ipsTable_cell">' . number_format( (int) $feed->last_record_count ) . '</div>';
-			if ( $feed->last_run_status === 'completed' )
-			{
-				$html .= '<div class="ipsTable_cell"><span class="ipsBadge ipsBadge--positive">OK</span></div>';
-			}
-			elseif ( $feed->last_run_status === 'failed' )
-			{
-				$html .= '<div class="ipsTable_cell"><span class="ipsBadge ipsBadge--negative">Failed</span></div>';
-			}
-			elseif ( $feed->last_run_status === 'running' )
-			{
-				$html .= '<div class="ipsTable_cell"><span class="ipsBadge ipsBadge--warning">Running</span></div>';
-			}
-			else
-			{
-				$html .= '<div class="ipsTable_cell">&mdash;</div>';
-			}
-			$editUrl = \IPS\Http\Url::internal( 'app=gdcatalog&module=catalog&controller=feeds&do=edit&id=' . (int) $feed->id )->csrf();
-			$html .= '<div class="ipsTable_cell"><a href="' . $editUrl . '" class="ipsButton ipsButton--small ipsButton--primary">Edit</a></div>';
-			$html .= '</div>';
-		}
-		$html .= '</div>';
-		$html .= '<div class="ipsBox_content ipsPad"><p class="ipsType_light">Configure feed URLs, authentication, field mappings, and import schedules for each distributor.</p></div>';
-		$html .= '</div>';
-
-		Output::i()->output = $html;
+		Output::i()->title  = \IPS\Member::loggedIn()->language()->addToStack( 'gdcatalog_feeds_title' );
+		Output::i()->output = \IPS\Theme::i()->getTemplate( 'catalog', 'gdcatalog', 'admin' )->feedList( $feeds );
 	}
 
 	/**

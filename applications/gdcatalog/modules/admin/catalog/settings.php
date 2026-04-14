@@ -18,11 +18,11 @@ if ( !defined( '\IPS\SUITE_UNIQUE_KEY' ) )
 	exit;
 }
 
-class settings extends \IPS\Dispatcher\Controller
+class _settings extends \IPS\Dispatcher\Controller
 {
 	public static bool $csrfProtected = TRUE;
 
-	public function execute(): void
+	public function execute()
 	{
 		\IPS\Dispatcher::i()->checkAcpPermission( 'catalog_manage' );
 		parent::execute();

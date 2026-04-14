@@ -8,7 +8,7 @@
 
 namespace IPS\gdcatalog;
 
-class Application extends \IPS\Application
+class _Application extends \IPS\Application
 {
 	/**
 	 * Install 'other' items — runs after schema.json tables are created

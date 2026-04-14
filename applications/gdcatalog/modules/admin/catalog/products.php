@@ -26,11 +26,11 @@ if ( !defined( '\IPS\SUITE_UNIQUE_KEY' ) )
 	exit;
 }
 
-class products extends \IPS\Dispatcher\Controller
+class _products extends \IPS\Dispatcher\Controller
 {
 	public static bool $csrfProtected = TRUE;
 
-	public function execute(): void
+	public function execute()
 	{
 		\IPS\Dispatcher::i()->checkAcpPermission( 'catalog_manage' );
 		parent::execute();
@@ -79,82 +79,17 @@ class products extends \IPS\Dispatcher\Controller
 
 		$categories = Category::roots();
 
-		$totalPages = max( 1, (int) ceil( $total / $perPage ) );
-		$baseUrl    = \IPS\Http\Url::internal( 'app=gdcatalog&module=catalog&controller=products' );
-
-		/* Pagination */
-		$paginationHtml = '';
-		if ( $totalPages > 1 )
-		{
-			$paginationHtml .= '<ul class="ipsPagination">';
-			for ( $p = 1; $p <= $totalPages; $p++ )
-			{
-				$cls = ( $p === $page ) ? ' ipsPagination_active' : '';
-				$paginationHtml .= '<li class="ipsPagination_page' . $cls . '"><a href="' . $baseUrl . '&page=' . $p . '">' . $p . '</a></li>';
-			}
-			$paginationHtml .= '</ul>';
-		}
-
-		$html = '<div class="ipsBox"><h2 class="ipsBox_title">Products (' . number_format( $total ) . ')</h2>';
-
-		/* Filter bar */
-		$html .= '<form method="get" action="' . $baseUrl . '" class="ipsPad ipsGap_2">';
-		$html .= '<input type="text" name="q" value="' . htmlspecialchars( $search ) . '" placeholder="Search UPC, title, or brand..." class="ipsField_text" style="width:300px">';
-		$html .= '<select name="status" class="ipsField_select">';
-		$html .= '<option value="">All statuses</option>';
-		foreach ( [ 'active' => 'Active', 'discontinued' => 'Discontinued', 'admin_review' => 'Admin Review', 'pending' => 'Pending' ] as $sv => $sl )
-		{
-			$sel = ( $status === $sv ) ? ' selected' : '';
-			$html .= '<option value="' . $sv . '"' . $sel . '>' . $sl . '</option>';
-		}
-		$html .= '</select>';
-		$html .= '<select name="category" class="ipsField_select"><option value="0">All categories</option>';
-		foreach ( $categories as $cat )
-		{
-			$sel = ( $catId === (int) $cat->id ) ? ' selected' : '';
-			$html .= '<option value="' . (int) $cat->id . '"' . $sel . '>' . htmlspecialchars( $cat->name ) . '</option>';
-		}
-		$html .= '</select>';
-		$html .= '<button type="submit" class="ipsButton ipsButton--primary ipsButton--small">Filter</button></form>';
-
-		/* Product table */
-		$html .= '<div class="ipsTable ipsTable_zebra"><div class="ipsTable_header"><div class="ipsTable_row">';
-		$html .= '<div class="ipsTable_cell" style="width:12%">UPC</div>';
-		$html .= '<div class="ipsTable_cell" style="width:25%">Title</div>';
-		$html .= '<div class="ipsTable_cell" style="width:12%">Brand</div>';
-		$html .= '<div class="ipsTable_cell" style="width:10%">Caliber</div>';
-		$html .= '<div class="ipsTable_cell" style="width:8%">MSRP</div>';
-		$html .= '<div class="ipsTable_cell" style="width:10%">Status</div>';
-		$html .= '<div class="ipsTable_cell" style="width:12%">Primary Source</div>';
-		$html .= '<div class="ipsTable_cell" style="width:11%"></div>';
-		$html .= '</div></div>';
-		foreach ( $products as $product )
-		{
-			$html .= '<div class="ipsTable_row">';
-			$html .= '<div class="ipsTable_cell"><code>' . htmlspecialchars( $product->upc ) . '</code></div>';
-			$html .= '<div class="ipsTable_cell">' . htmlspecialchars( $product->title ) . '</div>';
-			$html .= '<div class="ipsTable_cell">' . htmlspecialchars( $product->brand ) . '</div>';
-			$html .= '<div class="ipsTable_cell">' . htmlspecialchars( $product->caliber ) . '</div>';
-			$html .= '<div class="ipsTable_cell">' . ( $product->msrp ? '$' . number_format( (float) $product->msrp, 2 ) : '&mdash;' ) . '</div>';
-			$badge = match( $product->record_status ) { 'active' => 'ipsBadge--positive', 'admin_review' => 'ipsBadge--warning', 'discontinued' => 'ipsBadge--negative', default => 'ipsBadge--neutral' };
-			$html .= '<div class="ipsTable_cell"><span class="ipsBadge ' . $badge . '">' . htmlspecialchars( $product->record_status ) . '</span></div>';
-			$html .= '<div class="ipsTable_cell">' . htmlspecialchars( $product->primary_source ) . '</div>';
-			$html .= '<div class="ipsTable_cell">';
-			$editUrl = \IPS\Http\Url::internal( 'app=gdcatalog&module=catalog&controller=products&do=edit&upc=' . urlencode( $product->upc ) );
-			$html .= '<a href="' . $editUrl . '" class="ipsButton ipsButton--small ipsButton--primary">Edit</a>';
-			if ( $product->record_status === 'admin_review' )
-			{
-				$resolveUrl = \IPS\Http\Url::internal( 'app=gdcatalog&module=catalog&controller=products&do=resolveReview&upc=' . urlencode( $product->upc ) )->csrf();
-				$html .= ' <a href="' . $resolveUrl . '" class="ipsButton ipsButton--small ipsButton--positive">Approve</a>';
-			}
-			$html .= '</div></div>';
-		}
-		$html .= '</div>';
-
-		$html .= '<div class="ipsPad">' . $paginationHtml . '</div></div>';
+		$pagination = \IPS\Theme::i()->getTemplate( 'global', 'core', 'global' )->pagination(
+			\IPS\Http\Url::internal( 'app=gdcatalog&module=catalog&controller=products' ),
+			ceil( $total / $perPage ),
+			$page,
+			$perPage
+		);
 
 		\IPS\Output::i()->title  = \IPS\Member::loggedIn()->language()->addToStack( 'gdcatalog_products_title' );
-		\IPS\Output::i()->output = $html;
+		\IPS\Output::i()->output = \IPS\Theme::i()->getTemplate( 'catalog', 'gdcatalog', 'admin' )->productList(
+			$products, $categories, $search, $status, $catId, $total, $pagination
+		);
 	}
 
 	/**
@@ -246,33 +181,10 @@ class products extends \IPS\Dispatcher\Controller
 			);
 		}
 
-		\IPS\Output::i()->title = $product->title . ' (' . $product->upc . ')';
-
-		$html = '<div class="ipsBox"><h2 class="ipsBox_title">' . htmlspecialchars( $product->title ) . ' <span class="ipsType_light">(' . htmlspecialchars( $product->upc ) . ')</span></h2>';
-		$html .= '<div class="ipsBox_content">';
-		$html .= '<div class="ipsPad ipsType_light">';
-		$html .= '<strong>Primary source:</strong> ' . htmlspecialchars( $product->primary_source ) . ' | ';
-		$html .= '<strong>Sources:</strong> ' . htmlspecialchars( $product->distributor_sources ) . ' | ';
-		$html .= '<strong>Last updated:</strong> ' . htmlspecialchars( $product->last_updated ) . ' | ';
-		$html .= '<strong>Status:</strong> ';
-		$badge = match( $product->record_status ) { 'active' => 'ipsBadge--positive', 'admin_review' => 'ipsBadge--warning', default => 'ipsBadge--neutral' };
-		$html .= '<span class="ipsBadge ' . $badge . '">' . htmlspecialchars( $product->record_status ) . '</span>';
-		$html .= '</div>';
-		if ( \count( $locks ) > 0 )
-		{
-			$html .= '<div class="ipsMessage ipsMessage--info ipsPad"><strong>Locked fields:</strong> ';
-			foreach ( $locks as $lock )
-			{
-				$lockBadge = $lock->isHardLock() ? 'ipsBadge--negative' : 'ipsBadge--warning';
-				$lockLabel = $lock->isHardLock() ? ' (hard)' : ' (dist)';
-				$html .= '<span class="ipsBadge ' . $lockBadge . '">' . htmlspecialchars( $lock->field_name ) . $lockLabel . '</span> ';
-			}
-			$html .= '</div>';
-		}
-		$html .= (string) $form;
-		$html .= '</div></div>';
-
-		\IPS\Output::i()->output = $html;
+		\IPS\Output::i()->title  = $product->title . ' (' . $product->upc . ')';
+		\IPS\Output::i()->output = \IPS\Theme::i()->getTemplate( 'catalog', 'gdcatalog', 'admin' )->productEdit(
+			$product, $locks, (string) $form
+		);
 	}
 
 	/**
