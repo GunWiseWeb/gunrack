@@ -30,7 +30,7 @@ class _dashboard extends \IPS\Dispatcher\Controller
 {
 	public static bool $csrfProtected = TRUE;
 
-	public function execute()
+	public function execute(): void
 	{
 		\IPS\Dispatcher::i()->checkAcpPermission( 'catalog_manage' );
 		parent::execute();
@@ -93,12 +93,55 @@ class _dashboard extends \IPS\Dispatcher\Controller
 		$reindexQueue      = \IPS\Db::i()->select( 'COUNT(*)', 'gd_reindex_queue' )->first();
 
 		\IPS\Output::i()->title  = \IPS\Member::loggedIn()->language()->addToStack( 'gdcatalog_dash_title' );
-		\IPS\Output::i()->output = \IPS\Theme::i()->getTemplate( 'catalog', 'gdcatalog', 'admin' )->dashboard(
-			$totalProducts, $activeProducts, $reviewProducts,
-			$categoryCounts, $distributorStats,
-			$osExists, $osStats,
-			$pendingConflicts, $pendingCompliance, $lockedFields, $reindexQueue
-		);
+
+		$html = '<h2>GD Master Catalog — Dashboard</h2>';
+
+		$html .= '<h3>Product Counts</h3><ul>';
+		$html .= '<li>Total: ' . (int) $totalProducts . '</li>';
+		$html .= '<li>Active: ' . (int) $activeProducts . '</li>';
+		$html .= '<li>Admin Review: ' . (int) $reviewProducts . '</li>';
+		$html .= '</ul>';
+
+		$html .= '<h3>Per-Category</h3><ul>';
+		foreach ( $categoryCounts as $row )
+		{
+			$html .= '<li>' . htmlspecialchars( $row['name'] ) . ': ' . (int) $row['count'] . '</li>';
+		}
+		$html .= '</ul>';
+
+		$html .= '<h3>Per-Distributor</h3><table><tr><th>Feed</th><th>Products</th><th>Last Run</th><th>Status</th><th>Action</th></tr>';
+		foreach ( $distributorStats as $row )
+		{
+			$feed   = $row['feed'];
+			$last   = $row['last_log'] ?? null;
+			$url    = (string) \IPS\Http\Url::internal( 'app=gdcatalog&module=catalog&controller=dashboard&do=runImport&id=' . $feed->id )->csrf();
+			$html  .= '<tr>';
+			$html  .= '<td>' . htmlspecialchars( $feed->feed_name ) . '</td>';
+			$html  .= '<td>' . (int) $row['product_count'] . '</td>';
+			$html  .= '<td>' . ( $last ? htmlspecialchars( $last['run_start'] ?? '' ) : '—' ) . '</td>';
+			$html  .= '<td>' . ( $last ? htmlspecialchars( $last['status'] ?? '' ) : '—' ) . '</td>';
+			$html  .= '<td><a href="' . htmlspecialchars( $url ) . '">Run Import</a></td>';
+			$html  .= '</tr>';
+		}
+		$html .= '</table>';
+
+		$html .= '<h3>OpenSearch</h3>';
+		$html .= '<p>Index exists: ' . ( $osExists ? 'yes' : 'no' ) . '</p>';
+		if ( is_array( $osStats ) )
+		{
+			$html .= '<pre>' . htmlspecialchars( print_r( $osStats, true ) ) . '</pre>';
+		}
+		$rebuildUrl = (string) \IPS\Http\Url::internal( 'app=gdcatalog&module=catalog&controller=dashboard&do=rebuildIndex' )->csrf();
+		$queueUrl   = (string) \IPS\Http\Url::internal( 'app=gdcatalog&module=catalog&controller=dashboard&do=processQueue' )->csrf();
+		$html .= '<p><a href="' . htmlspecialchars( $rebuildUrl ) . '">Rebuild Index</a> | <a href="' . htmlspecialchars( $queueUrl ) . '">Process Queue (' . (int) $reindexQueue . ')</a></p>';
+
+		$html .= '<h3>Pending</h3><ul>';
+		$html .= '<li>Feed conflicts: ' . (int) $pendingConflicts . '</li>';
+		$html .= '<li>Compliance flags: ' . (int) $pendingCompliance . '</li>';
+		$html .= '<li>Locked fields: ' . (int) $lockedFields . '</li>';
+		$html .= '</ul>';
+
+		\IPS\Output::i()->output = $html;
 	}
 
 	/**
@@ -153,3 +196,5 @@ class _dashboard extends \IPS\Dispatcher\Controller
 		);
 	}
 }
+
+class dashboard extends _dashboard {}

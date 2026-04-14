@@ -25,7 +25,7 @@ class _conflicts extends \IPS\Dispatcher\Controller
 {
 	public static bool $csrfProtected = TRUE;
 
-	public function execute()
+	public function execute(): void
 	{
 		\IPS\Dispatcher::i()->checkAcpPermission( 'catalog_manage' );
 		parent::execute();
@@ -73,16 +73,54 @@ class _conflicts extends \IPS\Dispatcher\Controller
 			$entries[] = $row;
 		}
 
-		$pagination = \IPS\Theme::i()->getTemplate( 'global', 'core', 'global' )->pagination(
-			\IPS\Http\Url::internal( 'app=gdcatalog&module=catalog&controller=conflicts' ),
-			ceil( $total / $perPage ),
-			$page,
-			$perPage
-		);
+		$totalPages = (int) ceil( $total / $perPage );
 
-		\IPS\Output::i()->title  = \IPS\Member::loggedIn()->language()->addToStack( 'gdcatalog_conflicts_title' );
-		\IPS\Output::i()->output = \IPS\Theme::i()->getTemplate( 'catalog', 'gdcatalog', 'admin' )->conflictLog(
-			$entries, $filterField, $filterSource, $filterRule, $filterUpc, $total, $pagination
-		);
+		\IPS\Output::i()->title = \IPS\Member::loggedIn()->language()->addToStack( 'gdcatalog_conflicts_title' );
+
+		$baseUrl = \IPS\Http\Url::internal( 'app=gdcatalog&module=catalog&controller=conflicts' );
+
+		$html  = '<h2>Conflict Log (' . (int) $total . ')</h2>';
+		$html .= '<form method="get" action="' . htmlspecialchars( (string) $baseUrl ) . '">';
+		$html .= '<input type="hidden" name="app" value="gdcatalog">';
+		$html .= '<input type="hidden" name="module" value="catalog">';
+		$html .= '<input type="hidden" name="controller" value="conflicts">';
+		$html .= 'Field: <input type="text" name="field" value="' . htmlspecialchars( $filterField ) . '"> ';
+		$html .= 'Source: <input type="text" name="source" value="' . htmlspecialchars( $filterSource ) . '"> ';
+		$html .= 'Rule: <input type="text" name="rule" value="' . htmlspecialchars( $filterRule ) . '"> ';
+		$html .= 'UPC: <input type="text" name="upc" value="' . htmlspecialchars( $filterUpc ) . '"> ';
+		$html .= '<button type="submit">Filter</button>';
+		$html .= '</form>';
+
+		$html .= '<table><tr><th>Resolved At</th><th>UPC</th><th>Field</th><th>Winner</th><th>Loser</th><th>Rule</th></tr>';
+		foreach ( $entries as $row )
+		{
+			$html .= '<tr>';
+			$html .= '<td>' . htmlspecialchars( $row['resolved_at'] ?? '' ) . '</td>';
+			$html .= '<td>' . htmlspecialchars( $row['upc'] ?? '' ) . '</td>';
+			$html .= '<td>' . htmlspecialchars( $row['field_name'] ?? '' ) . '</td>';
+			$html .= '<td>' . htmlspecialchars( $row['winning_source'] ?? '' ) . '</td>';
+			$html .= '<td>' . htmlspecialchars( $row['losing_source'] ?? '' ) . '</td>';
+			$html .= '<td>' . htmlspecialchars( $row['rule_applied'] ?? '' ) . '</td>';
+			$html .= '</tr>';
+		}
+		$html .= '</table>';
+
+		if ( $totalPages > 1 )
+		{
+			$html .= '<p>Page ' . $page . ' of ' . $totalPages . ' | ';
+			for ( $i = 1; $i <= $totalPages; $i++ )
+			{
+				$pUrl = $baseUrl->setQueryString( [
+					'field' => $filterField, 'source' => $filterSource,
+					'rule' => $filterRule, 'upc' => $filterUpc, 'page' => $i,
+				] );
+				$html .= '<a href="' . htmlspecialchars( (string) $pUrl ) . '">' . $i . '</a> ';
+			}
+			$html .= '</p>';
+		}
+
+		\IPS\Output::i()->output = $html;
 	}
 }
+
+class conflicts extends _conflicts {}

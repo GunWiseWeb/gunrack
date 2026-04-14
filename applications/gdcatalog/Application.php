@@ -18,3 +18,5 @@ class _Application extends \IPS\Application
 		require_once \IPS\ROOT_PATH . '/applications/gdcatalog/setup/install.php';
 	}
 }
+
+class Application extends _Application {}

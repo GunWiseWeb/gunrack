@@ -70,10 +70,10 @@ Full 20-item pre-launch security checklist is in **Appendix C Section C.8** of t
 ## IPS v5 third-party application requirements
 These were learned by comparing against a working IPS v5 plugin. They apply to every application in this project.
 
-1. **Application.php must use `class _Application`** — underscore prefix is required for the IPS autoloader to resolve the class.
-2. **Controller classes must use underscore prefix** — e.g. `class _dashboard extends \IPS\Dispatcher\Controller`. Every controller in `modules/` follows this convention.
-3. **`execute()` has no `: void` return type** — the parent `\IPS\Dispatcher\Controller::execute()` signature does not declare a return type; adding one causes a fatal error.
-4. **Templates go in `data/theme.xml` as XML, not `.phtml` files** — IPS installs templates into the database from this XML file. Format: `<theme>` root with `<template>` children containing CDATA-wrapped template content. The `dev/html/` directory is for IN_DEV mode only and is not read during installation.
+1. **Application.php needs BOTH classes** — `class _Application extends \IPS\Application` AND `class Application extends _Application {}` below it. Both are required: the underscore class is what IPS resolves via its autoloader; the non-underscore alias is required for PHP to locate the class when instantiated normally.
+2. **Controllers need BOTH classes** — e.g. `class _dashboard extends \IPS\Dispatcher\Controller` AND `class dashboard extends _dashboard {}` below it. Both are required for every controller in `modules/`.
+3. **`execute()` MUST have `: void` return type** — the parent `\IPS\Dispatcher\Controller::execute()` signature requires it. Omitting it causes a fatal error.
+4. **Do NOT use `\IPS\Theme::i()->getTemplate()` in controllers** — output HTML via `\IPS\Output::i()->output = '<html string>'` with inline HTML. `data/theme.xml` is for future use once templates are imported into the database; until then, inline HTML is the working pattern.
 5. **Language strings go in `data/lang.xml`, not `dev/lang.php`** — IPS installs language strings from this XML file. Format: `<language><app key="appdir"><word key="...">` with CDATA values. The `dev/lang.php` file is for IN_DEV mode only.
 6. **Tar must be packaged with files at root level — no parent folder** — `Application.php` must be the first entry at the tar root, not inside `gdcatalog/`. Paths are `Application.php`, `data/theme.xml`, `modules/admin/catalog/dashboard.php`, etc. Use PharData `addFromString()` (not `addFile()` which produces 0-byte files). Every directory must contain a blank `index.html`.
 7. **ActiveRecord `$databaseTable` must be `?string` (nullable)** — declare as `public static ?string $databaseTable = 'table_name';`. The parent class uses a nullable type; omitting the `?` causes a type error.
