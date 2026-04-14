@@ -1,0 +1,8 @@
+{
+	"admin": {
+		"catalog": {
+			"default_controller": "dashboard",
+			"protected": false
+		}
+	}
+}

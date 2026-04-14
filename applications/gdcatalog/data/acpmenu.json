@@ -1,10 +1,38 @@
-{
-	"catalog": {
-		"dashboard": {},
-		"products": {},
-		"feeds": {},
-		"conflicts": {},
-		"compliance": {},
-		"settings": {}
+[
+	{
+		"tab": "gdcatalog",
+		"module": "catalog",
+		"controller": "dashboard",
+		"do": ""
+	},
+	{
+		"tab": "gdcatalog",
+		"module": "catalog",
+		"controller": "products",
+		"do": ""
+	},
+	{
+		"tab": "gdcatalog",
+		"module": "catalog",
+		"controller": "feeds",
+		"do": ""
+	},
+	{
+		"tab": "gdcatalog",
+		"module": "catalog",
+		"controller": "conflicts",
+		"do": ""
+	},
+	{
+		"tab": "gdcatalog",
+		"module": "catalog",
+		"controller": "compliance",
+		"do": ""
+	},
+	{
+		"tab": "gdcatalog",
+		"module": "catalog",
+		"controller": "settings",
+		"do": ""
 	}
-}
+]

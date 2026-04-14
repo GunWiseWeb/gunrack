@@ -24,6 +24,31 @@ class _Application extends \IPS\Application
 	protected static string $applicationDirectory = 'gdcatalog';
 
 	/**
+	 * @brief Application version
+	 */
+	public static string $version = '1.0.0';
+
+	/**
+	 * @brief Application long version (numeric)
+	 */
+	public static int $long_version = 10001;
+
+	/**
+	 * @brief Application author
+	 */
+	public static string $author = 'GunRack';
+
+	/**
+	 * @brief Application website
+	 */
+	public static string $website = 'https://gunrack.deals';
+
+	/**
+	 * @brief Whether this application assigns badges
+	 */
+	public static bool $assignBadges = false;
+
+	/**
 	 * @brief Default module
 	 */
 	public string $defaultModule = 'catalog';
