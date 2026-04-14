@@ -99,8 +99,8 @@ foreach ( $categories as $parentName => $children )
 	}
 }
 
-/* Seed templates directly into core_theme_templates to bypass IPS XML import bug
- * that corrupts {{-- comments --}} during theme.xml installation. */
+/* Seed templates directly into core_theme_templates to bypass IPS XML import
+ * bug that corrupts template comments during theme.xml installation. */
 $gdcatalogTemplates = [
 	[
 		'template_name' => 'feedList',
@@ -182,7 +182,7 @@ TEMPLATE_EOT,
 <div class="ipsBox">
 	<h2 class="ipsBox_title">{lang="gdcatalog_conflicts_title"} ({expression="number_format( $total )"})</h2>
 
-	{{-- Filter bar --}}
+	
 	<form method="get" action="{url="app=gdcatalog&module=catalog&controller=conflicts"}" class="ipsPad ipsGap_2">
 		<input type="text" name="upc" value="{$filterUpc}" placeholder="UPC" class="ipsField_text" style="width:150px">
 		<input type="text" name="field" value="{$filterField}" placeholder="Field name" class="ipsField_text" style="width:150px">
@@ -200,7 +200,7 @@ TEMPLATE_EOT,
 		<button type="submit" class="ipsButton ipsButton--primary ipsButton--small">Filter</button>
 	</form>
 
-	{{-- Log table --}}
+	
 	<div class="ipsTable ipsTable_zebra">
 		<div class="ipsTable_header">
 			<div class="ipsTable_row">
@@ -246,7 +246,7 @@ TEMPLATE_EOT,
 
 	<div class="ipsBox_content">
 
-		{{-- Product meta --}}
+		
 		<div class="ipsPad ipsType_light">
 			<strong>Primary source:</strong> {$product->primary_source} |
 			<strong>Sources:</strong> {$product->distributor_sources} |
@@ -261,7 +261,7 @@ TEMPLATE_EOT,
 			{{endif}}
 		</div>
 
-		{{-- Locked fields summary --}}
+		
 		{{if count( $locks ) > 0}}
 		<div class="ipsMessage ipsMessage--info ipsPad">
 			<strong>{lang="gdcatalog_product_locked_fields"}:</strong>
@@ -274,7 +274,7 @@ TEMPLATE_EOT,
 		</div>
 		{{endif}}
 
-		{{-- Edit form --}}
+		
 		{$formHtml}
 
 	</div>
@@ -288,7 +288,7 @@ TEMPLATE_EOT,
 <div class="ipsBox">
 	<h2 class="ipsBox_title">{lang="gdcatalog_compliance_title"}</h2>
 
-	{{-- Tab navigation --}}
+	
 	<div class="ipsTabs" data-ipsTabBar>
 		<a href="{url="app=gdcatalog&module=catalog&controller=compliance&tab=new"}" class="ipsTabs_item {{if $tab === 'new'}}ipsTabs_activeItem{{endif}}">
 			{lang="gdcatalog_compliance_tab_new"} ({$counts['new']})
@@ -306,7 +306,7 @@ TEMPLATE_EOT,
 
 	<div class="ipsBox_content">
 
-		{{-- Tab: New Restrictions --}}
+		
 		{{if $tab === 'new'}}
 		<div class="ipsTable ipsTable_zebra">
 			<div class="ipsTable_header">
@@ -338,7 +338,7 @@ TEMPLATE_EOT,
 		</div>
 		{{endif}}
 
-		{{-- Tab: Feed Conflicts --}}
+		
 		{{if $tab === 'conflicts'}}
 		<div class="ipsTable ipsTable_zebra">
 			<div class="ipsTable_header">
@@ -371,7 +371,7 @@ TEMPLATE_EOT,
 		</div>
 		{{endif}}
 
-		{{-- Tab: Locked Fields --}}
+		
 		{{if $tab === 'locks'}}
 		<div class="ipsTable ipsTable_zebra">
 			<div class="ipsTable_header">
@@ -410,7 +410,7 @@ TEMPLATE_EOT,
 		</div>
 		{{endif}}
 
-		{{-- Tab: Admin Restrictions --}}
+		
 		{{if $tab === 'admin'}}
 		<div class="ipsPad">
 			<a href="{url="app=gdcatalog&module=catalog&controller=compliance&do=addRestriction" csrf="true"}" class="ipsButton ipsButton--primary ipsButton--small">Add State Restriction</a>
@@ -456,7 +456,7 @@ TEMPLATE_EOT,
 	<h2 class="ipsBox_title">{lang="gdcatalog_dash_title"}</h2>
 	<div class="ipsBox_content">
 
-		{{-- Summary cards --}}
+		
 		<div class="ipsGrid ipsGrid--3">
 			<div class="ipsBox ipsBox--alt ipsPad">
 				<h3 class="ipsType_sectionTitle">{lang="gdcatalog_dash_total_products"}</h3>
@@ -483,7 +483,7 @@ TEMPLATE_EOT,
 			</div>
 		</div>
 
-		{{-- Action buttons --}}
+		
 		<div class="ipsPad ipsGap_3">
 			<a href="{url="app=gdcatalog&module=catalog&controller=dashboard&do=rebuildIndex" csrf="true"}" class="ipsButton ipsButton--primary" data-confirm>
 				{lang="gdcatalog_dash_rebuild_index"}
@@ -495,7 +495,7 @@ TEMPLATE_EOT,
 			{{endif}}
 		</div>
 
-		{{-- Per-distributor stats --}}
+		
 		<h3 class="ipsType_sectionTitle ipsPad_top">{lang="gdcatalog_dash_by_distributor"}</h3>
 		<div class="ipsTable ipsTable_zebra">
 			<div class="ipsTable_header">
@@ -558,7 +558,7 @@ TEMPLATE_EOT,
 			{{endforeach}}
 		</div>
 
-		{{-- Per-category counts --}}
+		
 		<h3 class="ipsType_sectionTitle ipsPad_top">{lang="gdcatalog_dash_by_category"}</h3>
 		<div class="ipsTable ipsTable_zebra">
 			{{foreach $categoryCounts as $cc}}
@@ -580,7 +580,7 @@ TEMPLATE_EOT,
 <div class="ipsBox">
 	<h2 class="ipsBox_title">{lang="gdcatalog_products_title"} ({expression="number_format( $total )"})</h2>
 
-	{{-- Search/filter bar --}}
+	
 	<form method="get" action="{url="app=gdcatalog&module=catalog&controller=products"}" class="ipsPad ipsGap_2">
 		<input type="text" name="q" value="{$search}" placeholder="Search UPC, title, or brand..." class="ipsField_text" style="width:300px">
 		<select name="status" class="ipsField_select">
@@ -599,7 +599,7 @@ TEMPLATE_EOT,
 		<button type="submit" class="ipsButton ipsButton--primary ipsButton--small">Filter</button>
 	</form>
 
-	{{-- Product table --}}
+	
 	<div class="ipsTable ipsTable_zebra">
 		<div class="ipsTable_header">
 			<div class="ipsTable_row">
