@@ -22,7 +22,7 @@ class settings extends \IPS\Dispatcher\Controller
 {
 	public static bool $csrfProtected = TRUE;
 
-	public function execute()
+	public function execute(): void
 	{
 		\IPS\Dispatcher::i()->checkAcpPermission( 'catalog_manage' );
 		parent::execute();

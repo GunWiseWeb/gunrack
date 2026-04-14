@@ -25,7 +25,7 @@ class Category extends \IPS\Patterns\ActiveRecord
 	/**
 	 * @brief [ActiveRecord] Database table
 	 */
-	public static string $databaseTable = 'gd_categories';
+	public static ?string $databaseTable = 'gd_categories';
 
 	/**
 	 * @brief [ActiveRecord] ID column

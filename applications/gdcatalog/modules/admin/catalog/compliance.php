@@ -29,7 +29,7 @@ class compliance extends \IPS\Dispatcher\Controller
 {
 	public static bool $csrfProtected = TRUE;
 
-	public function execute()
+	public function execute(): void
 	{
 		\IPS\Dispatcher::i()->checkAcpPermission( 'catalog_manage' );
 		parent::execute();
@@ -54,10 +54,158 @@ class compliance extends \IPS\Dispatcher\Controller
 			'admin'     => \count( $adminFlags ),
 		];
 
-		\IPS\Output::i()->title  = \IPS\Member::loggedIn()->language()->addToStack( 'gdcatalog_compliance_title' );
-		\IPS\Output::i()->output = \IPS\Theme::i()->getTemplate( 'catalog', 'gdcatalog', 'admin' )->compliancePanel(
-			$tab, $counts, $pendingFlags, $pendingConflicts, $allLocks, $adminFlags
-		);
+		\IPS\Output::i()->title = \IPS\Member::loggedIn()->language()->addToStack( 'gdcatalog_compliance_title' );
+
+		$html = '<div class="ipsBox"><h2 class="ipsBox_title">Compliance Review</h2>';
+
+		/* Tab navigation */
+		$html .= '<div class="ipsTabs" data-ipsTabBar>';
+		foreach ( [ 'new' => 'New Restrictions', 'conflicts' => 'Feed Conflicts', 'locks' => 'Locked Fields', 'admin' => 'Admin Restrictions' ] as $tk => $tl )
+		{
+			$active = ( $tab === $tk ) ? ' ipsTabs_activeItem' : '';
+			$tabUrl = \IPS\Http\Url::internal( 'app=gdcatalog&module=catalog&controller=compliance&tab=' . $tk );
+			$html .= '<a href="' . $tabUrl . '" class="ipsTabs_item' . $active . '">' . $tl . ' (' . (int) $counts[$tk] . ')</a>';
+		}
+		$html .= '</div><div class="ipsBox_content">';
+
+		/* Tab: New Restrictions */
+		if ( $tab === 'new' )
+		{
+			$html .= '<div class="ipsTable ipsTable_zebra"><div class="ipsTable_header"><div class="ipsTable_row">';
+			$html .= '<div class="ipsTable_cell" style="width:12%">UPC</div>';
+			$html .= '<div class="ipsTable_cell" style="width:15%">Type</div>';
+			$html .= '<div class="ipsTable_cell" style="width:20%">Value</div>';
+			$html .= '<div class="ipsTable_cell" style="width:15%">Distributor</div>';
+			$html .= '<div class="ipsTable_cell" style="width:15%">First Seen</div>';
+			$html .= '<div class="ipsTable_cell" style="width:23%">Actions</div>';
+			$html .= '</div></div>';
+			foreach ( $pendingFlags as $flag )
+			{
+				$html .= '<div class="ipsTable_row">';
+				$html .= '<div class="ipsTable_cell"><code>' . htmlspecialchars( $flag->upc ) . '</code></div>';
+				$html .= '<div class="ipsTable_cell">' . htmlspecialchars( $flag->flag_type ) . '</div>';
+				$html .= '<div class="ipsTable_cell"><strong>' . htmlspecialchars( $flag->flag_value ) . '</strong></div>';
+				$html .= '<div class="ipsTable_cell">' . htmlspecialchars( $flag->distributor_id ) . '</div>';
+				$html .= '<div class="ipsTable_cell">' . htmlspecialchars( $flag->first_seen_at ) . '</div>';
+				$html .= '<div class="ipsTable_cell">';
+				$approveUrl = \IPS\Http\Url::internal( 'app=gdcatalog&module=catalog&controller=compliance&do=approve&id=' . (int) $flag->id )->csrf();
+				$rejectUrl  = \IPS\Http\Url::internal( 'app=gdcatalog&module=catalog&controller=compliance&do=reject&id=' . (int) $flag->id )->csrf();
+				$html .= '<a href="' . $approveUrl . '" class="ipsButton ipsButton--small ipsButton--positive">Approve</a> ';
+				$html .= '<a href="' . $rejectUrl . '" class="ipsButton ipsButton--small ipsButton--negative">Reject</a>';
+				$html .= '</div></div>';
+			}
+			if ( \count( $pendingFlags ) === 0 )
+			{
+				$html .= '<div class="ipsTable_row"><div class="ipsTable_cell" colspan="6">No pending restrictions.</div></div>';
+			}
+			$html .= '</div>';
+		}
+
+		/* Tab: Feed Conflicts */
+		if ( $tab === 'conflicts' )
+		{
+			$html .= '<div class="ipsTable ipsTable_zebra"><div class="ipsTable_header"><div class="ipsTable_row">';
+			$html .= '<div class="ipsTable_cell" style="width:10%">UPC</div>';
+			$html .= '<div class="ipsTable_cell" style="width:12%">Field</div>';
+			$html .= '<div class="ipsTable_cell" style="width:15%">Current</div>';
+			$html .= '<div class="ipsTable_cell" style="width:15%">Incoming</div>';
+			$html .= '<div class="ipsTable_cell" style="width:10%">Auto-resolve</div>';
+			$html .= '<div class="ipsTable_cell" style="width:38%">Actions</div>';
+			$html .= '</div></div>';
+			foreach ( $pendingConflicts as $conflict )
+			{
+				$html .= '<div class="ipsTable_row">';
+				$html .= '<div class="ipsTable_cell"><code>' . htmlspecialchars( $conflict->upc ) . '</code></div>';
+				$html .= '<div class="ipsTable_cell">' . htmlspecialchars( $conflict->field_name ) . '</div>';
+				$html .= '<div class="ipsTable_cell">' . htmlspecialchars( mb_substr( $conflict->current_value, 0, 60 ) ) . '</div>';
+				$html .= '<div class="ipsTable_cell">' . htmlspecialchars( mb_substr( $conflict->incoming_value, 0, 60 ) ) . '</div>';
+				$html .= '<div class="ipsTable_cell">' . htmlspecialchars( $conflict->auto_resolve_at ) . '</div>';
+				$html .= '<div class="ipsTable_cell">';
+				$acceptUrl = \IPS\Http\Url::internal( 'app=gdcatalog&module=catalog&controller=compliance&do=acceptConflict&id=' . (int) $conflict->id )->csrf();
+				$keepUrl   = \IPS\Http\Url::internal( 'app=gdcatalog&module=catalog&controller=compliance&do=keepConflict&id=' . (int) $conflict->id )->csrf();
+				$customUrl = \IPS\Http\Url::internal( 'app=gdcatalog&module=catalog&controller=compliance&do=customConflict&id=' . (int) $conflict->id )->csrf();
+				$html .= '<a href="' . $acceptUrl . '" class="ipsButton ipsButton--small ipsButton--positive">Accept Incoming</a> ';
+				$html .= '<a href="' . $keepUrl . '" class="ipsButton ipsButton--small ipsButton--warning">Keep Existing</a> ';
+				$html .= '<a href="' . $customUrl . '" class="ipsButton ipsButton--small ipsButton--normal">Set Custom</a>';
+				$html .= '</div></div>';
+			}
+			if ( \count( $pendingConflicts ) === 0 )
+			{
+				$html .= '<div class="ipsTable_row"><div class="ipsTable_cell" colspan="6">No pending feed conflicts.</div></div>';
+			}
+			$html .= '</div>';
+		}
+
+		/* Tab: Locked Fields */
+		if ( $tab === 'locks' )
+		{
+			$html .= '<div class="ipsTable ipsTable_zebra"><div class="ipsTable_header"><div class="ipsTable_row">';
+			$html .= '<div class="ipsTable_cell" style="width:10%">UPC</div>';
+			$html .= '<div class="ipsTable_cell" style="width:12%">Field</div>';
+			$html .= '<div class="ipsTable_cell" style="width:15%">Locked Value</div>';
+			$html .= '<div class="ipsTable_cell" style="width:10%">Type</div>';
+			$html .= '<div class="ipsTable_cell" style="width:20%">Reason</div>';
+			$html .= '<div class="ipsTable_cell" style="width:12%">Locked At</div>';
+			$html .= '<div class="ipsTable_cell" style="width:11%">Actions</div>';
+			$html .= '</div></div>';
+			foreach ( $allLocks as $lock )
+			{
+				$html .= '<div class="ipsTable_row">';
+				$html .= '<div class="ipsTable_cell"><code>' . htmlspecialchars( $lock->upc ) . '</code></div>';
+				$html .= '<div class="ipsTable_cell">' . htmlspecialchars( $lock->field_name ) . '</div>';
+				$html .= '<div class="ipsTable_cell">' . htmlspecialchars( mb_substr( $lock->locked_value, 0, 60 ) ) . '</div>';
+				$lockBadge = $lock->isHardLock() ? 'ipsBadge--negative' : 'ipsBadge--warning';
+				$lockType  = $lock->isHardLock() ? 'Hard Lock' : 'Distributor Lock';
+				$html .= '<div class="ipsTable_cell"><span class="ipsBadge ' . $lockBadge . '">' . $lockType . '</span></div>';
+				$html .= '<div class="ipsTable_cell">' . htmlspecialchars( mb_substr( $lock->lock_reason, 0, 80 ) ) . '</div>';
+				$html .= '<div class="ipsTable_cell">' . htmlspecialchars( $lock->locked_at ) . '</div>';
+				$unlockUrl = \IPS\Http\Url::internal( 'app=gdcatalog&module=catalog&controller=compliance&do=unlock&id=' . (int) $lock->id )->csrf();
+				$html .= '<div class="ipsTable_cell"><a href="' . $unlockUrl . '" class="ipsButton ipsButton--small ipsButton--negative" data-confirm>Unlock</a></div>';
+				$html .= '</div>';
+			}
+			if ( \count( $allLocks ) === 0 )
+			{
+				$html .= '<div class="ipsTable_row"><div class="ipsTable_cell" colspan="7">No locked fields.</div></div>';
+			}
+			$html .= '</div>';
+		}
+
+		/* Tab: Admin Restrictions */
+		if ( $tab === 'admin' )
+		{
+			$addUrl = \IPS\Http\Url::internal( 'app=gdcatalog&module=catalog&controller=compliance&do=addRestriction' )->csrf();
+			$html .= '<div class="ipsPad"><a href="' . $addUrl . '" class="ipsButton ipsButton--primary ipsButton--small">Add State Restriction</a></div>';
+			$html .= '<div class="ipsTable ipsTable_zebra"><div class="ipsTable_header"><div class="ipsTable_row">';
+			$html .= '<div class="ipsTable_cell" style="width:12%">UPC</div>';
+			$html .= '<div class="ipsTable_cell" style="width:12%">Scope</div>';
+			$html .= '<div class="ipsTable_cell" style="width:12%">Type</div>';
+			$html .= '<div class="ipsTable_cell" style="width:20%">Value</div>';
+			$html .= '<div class="ipsTable_cell" style="width:12%">Set By</div>';
+			$html .= '<div class="ipsTable_cell" style="width:15%">Date</div>';
+			$html .= '<div class="ipsTable_cell" style="width:17%">Source</div>';
+			$html .= '</div></div>';
+			foreach ( $adminFlags as $flag )
+			{
+				$html .= '<div class="ipsTable_row">';
+				$html .= '<div class="ipsTable_cell"><code>' . htmlspecialchars( $flag->upc ) . '</code></div>';
+				$html .= '<div class="ipsTable_cell">' . ( $flag->listing_id ? 'Listing' : 'Product' ) . '</div>';
+				$html .= '<div class="ipsTable_cell">' . htmlspecialchars( $flag->flag_type ) . '</div>';
+				$html .= '<div class="ipsTable_cell"><strong>' . htmlspecialchars( $flag->flag_value ) . '</strong></div>';
+				$html .= '<div class="ipsTable_cell">' . htmlspecialchars( $flag->admin_reviewed_by ) . '</div>';
+				$html .= '<div class="ipsTable_cell">' . htmlspecialchars( $flag->admin_reviewed_at ) . '</div>';
+				$html .= '<div class="ipsTable_cell">' . htmlspecialchars( $flag->source ) . '</div>';
+				$html .= '</div>';
+			}
+			if ( \count( $adminFlags ) === 0 )
+			{
+				$html .= '<div class="ipsTable_row"><div class="ipsTable_cell" colspan="7">No admin-set restrictions.</div></div>';
+			}
+			$html .= '</div>';
+		}
+
+		$html .= '</div></div>';
+
+		\IPS\Output::i()->output = $html;
 	}
 
 	/**

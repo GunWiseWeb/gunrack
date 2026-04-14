@@ -26,7 +26,7 @@ class Distributor extends \IPS\Patterns\ActiveRecord
 	/**
 	 * @brief [ActiveRecord] Database table
 	 */
-	public static string $databaseTable = 'gd_distributor_feeds';
+	public static ?string $databaseTable = 'gd_distributor_feeds';
 
 	/**
 	 * @brief [ActiveRecord] ID column

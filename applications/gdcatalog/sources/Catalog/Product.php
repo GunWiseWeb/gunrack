@@ -25,7 +25,7 @@ class Product extends \IPS\Patterns\ActiveRecord
 	/**
 	 * @brief [ActiveRecord] Database table
 	 */
-	public static string $databaseTable = 'gd_catalog';
+	public static ?string $databaseTable = 'gd_catalog';
 
 	/**
 	 * @brief [ActiveRecord] ID column — UPC is the primary key (VARCHAR, not auto-increment)

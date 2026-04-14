@@ -22,7 +22,7 @@ if ( !defined( '\IPS\SUITE_UNIQUE_KEY' ) )
 }
 class ConflictLog extends \IPS\Patterns\ActiveRecord
 {
-	public static string $databaseTable    = 'gd_conflict_log';
+	public static ?string $databaseTable    = 'gd_conflict_log';
 	public static string $databaseColumnId = 'id';
 	public static string $databasePrefix   = '';
 	protected static array $multitons      = [];

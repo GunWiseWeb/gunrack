@@ -21,7 +21,7 @@ if ( !defined( '\IPS\SUITE_UNIQUE_KEY' ) )
 }
 class Flag extends \IPS\Patterns\ActiveRecord
 {
-	public static string $databaseTable    = 'gd_compliance_flags';
+	public static ?string $databaseTable    = 'gd_compliance_flags';
 	public static string $databaseColumnId = 'id';
 	public static string $databasePrefix   = '';
 	protected static array $multitons      = [];

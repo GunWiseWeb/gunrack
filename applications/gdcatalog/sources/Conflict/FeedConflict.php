@@ -22,7 +22,7 @@ if ( !defined( '\IPS\SUITE_UNIQUE_KEY' ) )
 }
 class FeedConflict extends \IPS\Patterns\ActiveRecord
 {
-	public static string $databaseTable    = 'gd_feed_conflicts';
+	public static ?string $databaseTable    = 'gd_feed_conflicts';
 	public static string $databaseColumnId = 'id';
 	public static string $databasePrefix   = '';
 	protected static array $multitons      = [];
