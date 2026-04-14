@@ -25,7 +25,7 @@ use IPS\gdcatalog\Feed\Parser\CsvParser;
 use IPS\gdcatalog\Log\ImportLog;
 use IPS\gdcatalog\Compliance\FlagProcessor;
 
-class _Importer
+class Importer
 {
 	protected Distributor $feed;
 	protected FieldMapper $fieldMapper;

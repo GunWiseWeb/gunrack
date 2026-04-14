@@ -8,7 +8,7 @@
 
 namespace IPS\gdcatalog\modules\admin\catalog;
 
-class _settings extends \IPS\Dispatcher\Controller
+class settings extends \IPS\Dispatcher\Controller
 {
 	protected static $csrfProtected = true;
 

@@ -11,7 +11,7 @@
 
 namespace IPS\gdcatalog\Catalog;
 
-class _Product extends \IPS\Patterns\ActiveRecord
+class Product extends \IPS\Patterns\ActiveRecord
 {
 	/**
 	 * @brief [ActiveRecord] Database table

@@ -25,7 +25,7 @@ namespace IPS\gdcatalog\Feed;
 
 use IPS\gdcatalog\Catalog\Category;
 
-class _CategoryMapper
+class CategoryMapper
 {
 	/**
 	 * @brief Normalised mapping: lowercase distributor string => category slug

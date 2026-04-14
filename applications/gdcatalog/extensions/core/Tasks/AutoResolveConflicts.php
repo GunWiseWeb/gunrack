@@ -14,7 +14,7 @@ namespace IPS\gdcatalog\extensions\core\Tasks;
 
 use IPS\gdcatalog\Conflict\FeedConflict;
 
-class _AutoResolveConflicts extends \IPS\Task
+class AutoResolveConflicts extends \IPS\Task
 {
 	/**
 	 * Execute the task.

@@ -14,7 +14,7 @@ namespace IPS\gdcatalog\extensions\core\Tasks;
 use IPS\gdcatalog\Feed\Distributor;
 use IPS\gdcatalog\Feed\Importer;
 
-class _ImportFeeds extends \IPS\Task
+class ImportFeeds extends \IPS\Task
 {
 	/**
 	 * Execute the task.

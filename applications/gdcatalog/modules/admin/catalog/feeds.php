@@ -19,7 +19,7 @@ use IPS\Helpers\Form;
 use IPS\gdcatalog\Feed\Distributor;
 use IPS\gdcatalog\Feed\CategoryMapper;
 
-class _feeds extends \IPS\Dispatcher\Controller
+class feeds extends \IPS\Dispatcher\Controller
 {
 	protected static $csrfProtected = true;
 

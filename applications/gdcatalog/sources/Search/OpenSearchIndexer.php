@@ -17,7 +17,7 @@ namespace IPS\gdcatalog\Search;
 
 use IPS\gdcatalog\Catalog\Product;
 
-class _OpenSearchIndexer
+class OpenSearchIndexer
 {
 	/**
 	 * @brief OpenSearch host — read from settings, defaults to localhost

@@ -10,7 +10,7 @@
 
 namespace IPS\gdcatalog\Feed\Parser;
 
-class _JsonParser
+class JsonParser
 {
 	/**
 	 * Parse a JSON string into an array of associative records.

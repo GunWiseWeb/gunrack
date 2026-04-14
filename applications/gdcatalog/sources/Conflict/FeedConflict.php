@@ -11,7 +11,7 @@
 
 namespace IPS\gdcatalog\Conflict;
 
-class _FeedConflict extends \IPS\Patterns\ActiveRecord
+class FeedConflict extends \IPS\Patterns\ActiveRecord
 {
 	public static string $databaseTable    = 'gd_feed_conflicts';
 	public static string $databaseColumnId = 'id';

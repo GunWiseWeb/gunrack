@@ -21,7 +21,7 @@
 
 namespace IPS\gdcatalog\Feed;
 
-class _FieldMapper
+class FieldMapper
 {
 	/**
 	 * @brief Mapping: distributor field name => canonical column name

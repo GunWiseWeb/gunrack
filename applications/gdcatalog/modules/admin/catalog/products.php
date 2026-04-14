@@ -17,7 +17,7 @@ use IPS\gdcatalog\Catalog\Category;
 use IPS\gdcatalog\Conflict\FieldLock;
 use IPS\gdcatalog\Search\OpenSearchIndexer;
 
-class _products extends \IPS\Dispatcher\Controller
+class products extends \IPS\Dispatcher\Controller
 {
 	protected static $csrfProtected = true;
 

@@ -27,7 +27,7 @@ use IPS\gdcatalog\Feed\Distributor;
 use IPS\gdcatalog\Log\ConflictLog;
 use IPS\gdcatalog\Log\ImportLog;
 
-class _ConflictResolver
+class ConflictResolver
 {
 	protected Product $product;
 	protected Distributor $feed;

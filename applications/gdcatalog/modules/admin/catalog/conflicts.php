@@ -11,7 +11,7 @@
 
 namespace IPS\gdcatalog\modules\admin\catalog;
 
-class _conflicts extends \IPS\Dispatcher\Controller
+class conflicts extends \IPS\Dispatcher\Controller
 {
 	protected static $csrfProtected = true;
 

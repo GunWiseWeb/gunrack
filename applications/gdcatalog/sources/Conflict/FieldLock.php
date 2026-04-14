@@ -11,7 +11,7 @@
 
 namespace IPS\gdcatalog\Conflict;
 
-class _FieldLock extends \IPS\Patterns\ActiveRecord
+class FieldLock extends \IPS\Patterns\ActiveRecord
 {
 	public static string $databaseTable    = 'gd_field_locks';
 	public static string $databaseColumnId = 'id';

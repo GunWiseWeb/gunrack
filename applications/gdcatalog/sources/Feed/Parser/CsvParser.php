@@ -11,7 +11,7 @@
 
 namespace IPS\gdcatalog\Feed\Parser;
 
-class _CsvParser
+class CsvParser
 {
 	/**
 	 * Parse a CSV string into an array of associative records.

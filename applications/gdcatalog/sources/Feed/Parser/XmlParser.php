@@ -11,7 +11,7 @@
 
 namespace IPS\gdcatalog\Feed\Parser;
 
-class _XmlParser
+class XmlParser
 {
 	/**
 	 * Parse an XML string into an array of associative records.

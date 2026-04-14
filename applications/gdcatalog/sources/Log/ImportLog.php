@@ -10,7 +10,7 @@
 
 namespace IPS\gdcatalog\Log;
 
-class _ImportLog extends \IPS\Patterns\ActiveRecord
+class ImportLog extends \IPS\Patterns\ActiveRecord
 {
 	public static string $databaseTable    = 'gd_import_log';
 	public static string $databaseColumnId = 'id';

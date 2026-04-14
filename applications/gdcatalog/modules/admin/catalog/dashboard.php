@@ -17,7 +17,7 @@ use IPS\gdcatalog\Catalog\Product;
 use IPS\gdcatalog\Catalog\Category;
 use IPS\gdcatalog\Search\OpenSearchIndexer;
 
-class _dashboard extends \IPS\Dispatcher\Controller
+class dashboard extends \IPS\Dispatcher\Controller
 {
 	protected static $csrfProtected = true;
 

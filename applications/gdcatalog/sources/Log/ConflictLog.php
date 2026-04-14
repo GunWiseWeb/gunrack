@@ -11,7 +11,7 @@
 
 namespace IPS\gdcatalog\Log;
 
-class _ConflictLog extends \IPS\Patterns\ActiveRecord
+class ConflictLog extends \IPS\Patterns\ActiveRecord
 {
 	public static string $databaseTable    = 'gd_conflict_log';
 	public static string $databaseColumnId = 'id';

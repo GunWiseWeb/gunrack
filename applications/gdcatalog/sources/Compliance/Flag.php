@@ -10,7 +10,7 @@
 
 namespace IPS\gdcatalog\Compliance;
 
-class _Flag extends \IPS\Patterns\ActiveRecord
+class Flag extends \IPS\Patterns\ActiveRecord
 {
 	public static string $databaseTable    = 'gd_compliance_flags';
 	public static string $databaseColumnId = 'id';

@@ -13,7 +13,7 @@
 
 namespace IPS\gdcatalog\Compliance;
 
-class _FlagProcessor
+class FlagProcessor
 {
 	/**
 	 * Process compliance fields detected in a feed record.

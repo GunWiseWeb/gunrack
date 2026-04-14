@@ -16,7 +16,7 @@ use IPS\gdcatalog\Compliance\FlagProcessor;
 use IPS\gdcatalog\Conflict\FeedConflict;
 use IPS\gdcatalog\Conflict\FieldLock;
 
-class _compliance extends \IPS\Dispatcher\Controller
+class compliance extends \IPS\Dispatcher\Controller
 {
 	protected static $csrfProtected = true;
 

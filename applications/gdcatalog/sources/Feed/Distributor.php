@@ -12,7 +12,7 @@
 
 namespace IPS\gdcatalog\Feed;
 
-class _Distributor extends \IPS\Patterns\ActiveRecord
+class Distributor extends \IPS\Patterns\ActiveRecord
 {
 	/**
 	 * @brief [ActiveRecord] Database table
