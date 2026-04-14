@@ -21,44 +21,42 @@ class _Application extends \IPS\Application
 	/**
 	 * @brief Application directory
 	 */
-	protected static string $applicationDirectory = 'gdcatalog';
+	protected static $applicationDirectory = 'gdcatalog';
 
 	/**
 	 * @brief Application version
 	 */
-	public static string $version = '1.0.0';
+	public static $version = '1.0.0';
 
 	/**
 	 * @brief Application long version (numeric)
 	 */
-	public static int $long_version = 10001;
+	public static $long_version = 10001;
 
 	/**
 	 * @brief Application author
 	 */
-	public static string $author = 'GunRack';
+	public static $author = 'GunRack';
 
 	/**
 	 * @brief Application website
 	 */
-	public static string $website = 'https://gunrack.deals';
+	public static $website = 'https://gunrack.deals';
 
 	/**
 	 * @brief Whether this application assigns badges
 	 */
-	public static bool $assignBadges = false;
+	public static $assignBadges = false;
 
 	/**
 	 * @brief Default module
 	 */
-	public string $defaultModule = 'catalog';
+	public $defaultModule = 'catalog';
 
 	/**
 	 * Install 'other' items — runs after schema.json tables are created
-	 *
-	 * @return void
 	 */
-	public function installOther(): void
+	public function installOther()
 	{
 		/* Seed default distributor feed records and categories via setup/install.php */
 		require_once \IPS\ROOT_PATH . '/applications/gdcatalog/setup/install.php';
