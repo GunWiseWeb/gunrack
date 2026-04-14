@@ -19,18 +19,18 @@ use IPS\gdcatalog\Search\OpenSearchIndexer;
 
 class _dashboard extends \IPS\Dispatcher\Controller
 {
-	public static bool $csrfProtected = true;
+	protected static $csrfProtected = true;
 
-	public function execute(): void
+	public function execute()
 	{
-		\IPS\Dispatcher::i()->checkAcpPermission( 'gdcatalog_feeds_manage' );
+		\IPS\Dispatcher::i()->checkAcpPermission( 'catalog_manage' );
 		parent::execute();
 	}
 
 	/**
 	 * Dashboard overview.
 	 */
-	protected function manage(): void
+	protected function manage()
 	{
 		/* Total product counts */
 		$totalProducts = \IPS\Db::i()->select( 'COUNT(*)', 'gd_catalog' )->first();
@@ -95,7 +95,7 @@ class _dashboard extends \IPS\Dispatcher\Controller
 	/**
 	 * Manual import trigger — runs a single feed immediately.
 	 */
-	protected function runImport(): void
+	protected function runImport()
 	{
 		\IPS\Session::i()->csrfCheck();
 
@@ -115,7 +115,7 @@ class _dashboard extends \IPS\Dispatcher\Controller
 	/**
 	 * Rebuild OpenSearch index.
 	 */
-	protected function rebuildIndex(): void
+	protected function rebuildIndex()
 	{
 		\IPS\Session::i()->csrfCheck();
 
@@ -131,7 +131,7 @@ class _dashboard extends \IPS\Dispatcher\Controller
 	/**
 	 * Process the reindex queue now.
 	 */
-	protected function processQueue(): void
+	protected function processQueue()
 	{
 		\IPS\Session::i()->csrfCheck();
 

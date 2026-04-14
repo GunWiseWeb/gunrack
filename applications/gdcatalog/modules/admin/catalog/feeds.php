@@ -21,28 +21,18 @@ use IPS\gdcatalog\Feed\CategoryMapper;
 
 class _feeds extends \IPS\Dispatcher\Controller
 {
-	/**
-	 * @brief Has been CSRF-checked
-	 */
-	public static bool $csrfProtected = true;
+	protected static $csrfProtected = true;
 
-	/**
-	 * Execute — enforce ACP permissions.
-	 *
-	 * @return void
-	 */
-	public function execute(): void
+	public function execute()
 	{
-		Dispatcher::i()->checkAcpPermission( 'gdcatalog_feeds_manage' );
+		Dispatcher::i()->checkAcpPermission( 'catalog_manage' );
 		parent::execute();
 	}
 
 	/**
 	 * Feed list — default view.
-	 *
-	 * @return void
 	 */
-	protected function manage(): void
+	protected function manage()
 	{
 		$feeds = Distributor::loadAll();
 
@@ -52,10 +42,8 @@ class _feeds extends \IPS\Dispatcher\Controller
 
 	/**
 	 * Edit a single feed configuration.
-	 *
-	 * @return void
 	 */
-	protected function edit(): void
+	protected function edit()
 	{
 		\IPS\Session::i()->csrfCheck();
 

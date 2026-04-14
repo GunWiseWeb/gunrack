@@ -18,18 +18,18 @@ use IPS\gdcatalog\Conflict\FieldLock;
 
 class _compliance extends \IPS\Dispatcher\Controller
 {
-	public static bool $csrfProtected = true;
+	protected static $csrfProtected = true;
 
-	public function execute(): void
+	public function execute()
 	{
-		\IPS\Dispatcher::i()->checkAcpPermission( 'gdcatalog_feeds_manage' );
+		\IPS\Dispatcher::i()->checkAcpPermission( 'catalog_manage' );
 		parent::execute();
 	}
 
 	/**
 	 * Tabbed compliance review panel.
 	 */
-	protected function manage(): void
+	protected function manage()
 	{
 		$tab = \IPS\Request::i()->tab ?? 'new';
 
@@ -54,7 +54,7 @@ class _compliance extends \IPS\Dispatcher\Controller
 	/**
 	 * Approve a pending compliance flag.
 	 */
-	protected function approve(): void
+	protected function approve()
 	{
 		\IPS\Session::i()->csrfCheck();
 		$flagId = (int) \IPS\Request::i()->id;
@@ -69,7 +69,7 @@ class _compliance extends \IPS\Dispatcher\Controller
 	/**
 	 * Reject a pending compliance flag.
 	 */
-	protected function reject(): void
+	protected function reject()
 	{
 		\IPS\Session::i()->csrfCheck();
 		$flagId = (int) \IPS\Request::i()->id;
@@ -84,7 +84,7 @@ class _compliance extends \IPS\Dispatcher\Controller
 	/**
 	 * Accept incoming value on a feed conflict.
 	 */
-	protected function acceptConflict(): void
+	protected function acceptConflict()
 	{
 		\IPS\Session::i()->csrfCheck();
 		$conflict = FeedConflict::load( (int) \IPS\Request::i()->id );
@@ -99,7 +99,7 @@ class _compliance extends \IPS\Dispatcher\Controller
 	/**
 	 * Keep existing value on a feed conflict (creates distributor-specific lock).
 	 */
-	protected function keepConflict(): void
+	protected function keepConflict()
 	{
 		\IPS\Session::i()->csrfCheck();
 
@@ -139,7 +139,7 @@ class _compliance extends \IPS\Dispatcher\Controller
 	/**
 	 * Set a custom value on a feed conflict (creates hard lock).
 	 */
-	protected function customConflict(): void
+	protected function customConflict()
 	{
 		\IPS\Session::i()->csrfCheck();
 
@@ -171,7 +171,7 @@ class _compliance extends \IPS\Dispatcher\Controller
 	/**
 	 * Unlock a field lock.
 	 */
-	protected function unlock(): void
+	protected function unlock()
 	{
 		\IPS\Session::i()->csrfCheck();
 		$lock = FieldLock::load( (int) \IPS\Request::i()->id );
@@ -186,7 +186,7 @@ class _compliance extends \IPS\Dispatcher\Controller
 	/**
 	 * Create an admin-set state restriction.
 	 */
-	protected function addRestriction(): void
+	protected function addRestriction()
 	{
 		\IPS\Session::i()->csrfCheck();
 

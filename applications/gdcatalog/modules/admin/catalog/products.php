@@ -19,18 +19,18 @@ use IPS\gdcatalog\Search\OpenSearchIndexer;
 
 class _products extends \IPS\Dispatcher\Controller
 {
-	public static bool $csrfProtected = true;
+	protected static $csrfProtected = true;
 
-	public function execute(): void
+	public function execute()
 	{
-		\IPS\Dispatcher::i()->checkAcpPermission( 'gdcatalog_feeds_manage' );
+		\IPS\Dispatcher::i()->checkAcpPermission( 'catalog_manage' );
 		parent::execute();
 	}
 
 	/**
 	 * Product list with search/filter.
 	 */
-	protected function manage(): void
+	protected function manage()
 	{
 		$where   = [];
 		$search  = \IPS\Request::i()->q ?? '';
@@ -86,7 +86,7 @@ class _products extends \IPS\Dispatcher\Controller
 	/**
 	 * Edit a single product.
 	 */
-	protected function edit(): void
+	protected function edit()
 	{
 		$upc = \IPS\Request::i()->upc;
 
@@ -181,7 +181,7 @@ class _products extends \IPS\Dispatcher\Controller
 	/**
 	 * Lock a field on a product.
 	 */
-	protected function lockField(): void
+	protected function lockField()
 	{
 		\IPS\Session::i()->csrfCheck();
 
@@ -201,7 +201,7 @@ class _products extends \IPS\Dispatcher\Controller
 	/**
 	 * Unlock a field on a product.
 	 */
-	protected function unlockField(): void
+	protected function unlockField()
 	{
 		\IPS\Session::i()->csrfCheck();
 
@@ -221,7 +221,7 @@ class _products extends \IPS\Dispatcher\Controller
 	/**
 	 * Admin review queue — resolve a product out of admin_review status.
 	 */
-	protected function resolveReview(): void
+	protected function resolveReview()
 	{
 		\IPS\Session::i()->csrfCheck();
 

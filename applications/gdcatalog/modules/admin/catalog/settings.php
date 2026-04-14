@@ -10,18 +10,18 @@ namespace IPS\gdcatalog\modules\admin\catalog;
 
 class _settings extends \IPS\Dispatcher\Controller
 {
-	public static bool $csrfProtected = true;
+	protected static $csrfProtected = true;
 
-	public function execute(): void
+	public function execute()
 	{
-		\IPS\Dispatcher::i()->checkAcpPermission( 'gdcatalog_feeds_manage' );
+		\IPS\Dispatcher::i()->checkAcpPermission( 'catalog_manage' );
 		parent::execute();
 	}
 
 	/**
 	 * Settings form.
 	 */
-	protected function manage(): void
+	protected function manage()
 	{
 		$form = new \IPS\Helpers\Form;
 
