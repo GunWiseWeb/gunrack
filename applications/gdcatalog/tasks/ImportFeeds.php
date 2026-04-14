@@ -9,7 +9,7 @@
  * executes the import for any feeds that are due.
  */
 
-namespace IPS\gdcatalog\extensions\core\Tasks;
+namespace IPS\gdcatalog\tasks;
 
 use IPS\gdcatalog\Feed\Distributor;
 use IPS\gdcatalog\Feed\Importer;

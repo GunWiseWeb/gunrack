@@ -10,7 +10,7 @@
  * Sends admin digest email summarising auto-resolved conflicts.
  */
 
-namespace IPS\gdcatalog\extensions\core\Tasks;
+namespace IPS\gdcatalog\tasks;
 
 use IPS\gdcatalog\Conflict\FeedConflict;
 
