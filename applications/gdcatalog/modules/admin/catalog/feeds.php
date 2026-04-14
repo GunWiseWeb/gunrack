@@ -45,30 +45,8 @@ class _feeds extends \IPS\Dispatcher\Controller
 	{
 		$feeds = Distributor::loadAll();
 
-		Output::i()->title = \IPS\Member::loggedIn()->language()->addToStack( 'gdcatalog_feeds_title' );
-
-		$html = '<h2>Distributor Feeds</h2>';
-		$html .= '<table><tr><th>Priority</th><th>Name</th><th>Distributor</th><th>Schedule</th><th>Active</th><th>Last Run</th><th>Status</th><th>Records</th><th></th></tr>';
-		foreach ( $feeds as $feed )
-		{
-			$editUrl = (string) \IPS\Http\Url::internal(
-				'app=gdcatalog&module=catalog&controller=feeds&do=edit&id=' . (int) $feed->id
-			)->csrf();
-			$html .= '<tr>';
-			$html .= '<td>' . (int) $feed->priority . '</td>';
-			$html .= '<td>' . htmlspecialchars( $feed->feed_name ) . '</td>';
-			$html .= '<td>' . htmlspecialchars( $feed->distributor ) . '</td>';
-			$html .= '<td>' . htmlspecialchars( $feed->import_schedule ) . '</td>';
-			$html .= '<td>' . ( $feed->active ? 'yes' : 'no' ) . '</td>';
-			$html .= '<td>' . htmlspecialchars( $feed->last_run ?? '—' ) . '</td>';
-			$html .= '<td>' . htmlspecialchars( $feed->last_run_status ?? '—' ) . '</td>';
-			$html .= '<td>' . (int) $feed->last_record_count . '</td>';
-			$html .= '<td><a href="' . htmlspecialchars( $editUrl ) . '">Edit</a></td>';
-			$html .= '</tr>';
-		}
-		$html .= '</table>';
-
-		Output::i()->output = $html;
+		Output::i()->title  = \IPS\Member::loggedIn()->language()->addToStack( 'gdcatalog_feeds_title' );
+		Output::i()->output = \IPS\Theme::i()->getTemplate( 'catalog', 'gdcatalog', 'admin' )->feedList( $feeds );
 	}
 
 	/**

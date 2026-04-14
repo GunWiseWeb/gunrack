@@ -54,94 +54,10 @@ class _compliance extends \IPS\Dispatcher\Controller
 			'admin'     => \count( $adminFlags ),
 		];
 
-		\IPS\Output::i()->title = \IPS\Member::loggedIn()->language()->addToStack( 'gdcatalog_compliance_title' );
-
-		$baseUrl = \IPS\Http\Url::internal( 'app=gdcatalog&module=catalog&controller=compliance' );
-
-		$html  = '<h2>Compliance Review</h2>';
-		$html .= '<ul>';
-		foreach ( [ 'new' => 'New restrictions', 'conflicts' => 'Feed conflicts', 'locks' => 'Locked fields', 'admin' => 'Admin restrictions' ] as $key => $label )
-		{
-			$tabUrl = (string) $baseUrl->setQueryString( 'tab', $key );
-			$marker = $tab === $key ? ' <strong>(active)</strong>' : '';
-			$html  .= '<li><a href="' . htmlspecialchars( $tabUrl ) . '">' . $label . ' (' . (int) $counts[ $key ] . ')</a>' . $marker . '</li>';
-		}
-		$html .= '</ul>';
-
-		if ( $tab === 'new' )
-		{
-			$html .= '<h3>Pending Compliance Flags</h3>';
-			$html .= '<table><tr><th>UPC</th><th>Type</th><th>Value</th><th>Source</th><th></th></tr>';
-			foreach ( $pendingFlags as $flag )
-			{
-				$approve = (string) \IPS\Http\Url::internal( 'app=gdcatalog&module=catalog&controller=compliance&do=approve&id=' . (int) $flag->id )->csrf();
-				$reject  = (string) \IPS\Http\Url::internal( 'app=gdcatalog&module=catalog&controller=compliance&do=reject&id=' . (int) $flag->id )->csrf();
-				$html .= '<tr>';
-				$html .= '<td>' . htmlspecialchars( $flag->upc ?? '' ) . '</td>';
-				$html .= '<td>' . htmlspecialchars( $flag->flag_type ?? '' ) . '</td>';
-				$html .= '<td>' . htmlspecialchars( $flag->flag_value ?? '' ) . '</td>';
-				$html .= '<td>' . htmlspecialchars( $flag->source ?? '' ) . '</td>';
-				$html .= '<td><a href="' . htmlspecialchars( $approve ) . '">Approve</a> | <a href="' . htmlspecialchars( $reject ) . '">Reject</a></td>';
-				$html .= '</tr>';
-			}
-			$html .= '</table>';
-		}
-		elseif ( $tab === 'conflicts' )
-		{
-			$html .= '<h3>Pending Feed Conflicts</h3>';
-			$html .= '<table><tr><th>UPC</th><th>Field</th><th>Existing</th><th>Incoming</th><th>Source</th><th></th></tr>';
-			foreach ( $pendingConflicts as $c )
-			{
-				$accept = (string) \IPS\Http\Url::internal( 'app=gdcatalog&module=catalog&controller=compliance&do=acceptConflict&id=' . (int) $c->id )->csrf();
-				$keep   = (string) \IPS\Http\Url::internal( 'app=gdcatalog&module=catalog&controller=compliance&do=keepConflict&id=' . (int) $c->id )->csrf();
-				$custom = (string) \IPS\Http\Url::internal( 'app=gdcatalog&module=catalog&controller=compliance&do=customConflict&id=' . (int) $c->id )->csrf();
-				$html .= '<tr>';
-				$html .= '<td>' . htmlspecialchars( $c->upc ?? '' ) . '</td>';
-				$html .= '<td>' . htmlspecialchars( $c->field_name ?? '' ) . '</td>';
-				$html .= '<td>' . htmlspecialchars( $c->existing_value ?? '' ) . '</td>';
-				$html .= '<td>' . htmlspecialchars( $c->incoming_value ?? '' ) . '</td>';
-				$html .= '<td>' . htmlspecialchars( $c->incoming_source ?? '' ) . '</td>';
-				$html .= '<td><a href="' . htmlspecialchars( $accept ) . '">Accept</a> | <a href="' . htmlspecialchars( $keep ) . '">Keep</a> | <a href="' . htmlspecialchars( $custom ) . '">Custom</a></td>';
-				$html .= '</tr>';
-			}
-			$html .= '</table>';
-		}
-		elseif ( $tab === 'locks' )
-		{
-			$html .= '<h3>Field Locks</h3>';
-			$html .= '<table><tr><th>UPC</th><th>Field</th><th>Type</th><th>Distributor</th><th>Reason</th><th></th></tr>';
-			foreach ( $allLocks as $lock )
-			{
-				$unlock = (string) \IPS\Http\Url::internal( 'app=gdcatalog&module=catalog&controller=compliance&do=unlock&id=' . (int) $lock->id )->csrf();
-				$html .= '<tr>';
-				$html .= '<td>' . htmlspecialchars( $lock->upc ?? '' ) . '</td>';
-				$html .= '<td>' . htmlspecialchars( $lock->field_name ?? '' ) . '</td>';
-				$html .= '<td>' . htmlspecialchars( $lock->lock_type ?? '' ) . '</td>';
-				$html .= '<td>' . htmlspecialchars( $lock->distributor ?? '—' ) . '</td>';
-				$html .= '<td>' . htmlspecialchars( $lock->reason ?? '' ) . '</td>';
-				$html .= '<td><a href="' . htmlspecialchars( $unlock ) . '">Unlock</a></td>';
-				$html .= '</tr>';
-			}
-			$html .= '</table>';
-		}
-		else
-		{
-			$addUrl = (string) \IPS\Http\Url::internal( 'app=gdcatalog&module=catalog&controller=compliance&do=addRestriction' )->csrf();
-			$html .= '<h3>Admin-Set Restrictions</h3>';
-			$html .= '<p><a href="' . htmlspecialchars( $addUrl ) . '">+ Add State Restriction</a></p>';
-			$html .= '<table><tr><th>UPC</th><th>Type</th><th>Value</th></tr>';
-			foreach ( $adminFlags as $flag )
-			{
-				$html .= '<tr>';
-				$html .= '<td>' . htmlspecialchars( $flag->upc ?? '' ) . '</td>';
-				$html .= '<td>' . htmlspecialchars( $flag->flag_type ?? '' ) . '</td>';
-				$html .= '<td>' . htmlspecialchars( $flag->flag_value ?? '' ) . '</td>';
-				$html .= '</tr>';
-			}
-			$html .= '</table>';
-		}
-
-		\IPS\Output::i()->output = $html;
+		\IPS\Output::i()->title  = \IPS\Member::loggedIn()->language()->addToStack( 'gdcatalog_compliance_title' );
+		\IPS\Output::i()->output = \IPS\Theme::i()->getTemplate( 'catalog', 'gdcatalog', 'admin' )->compliancePanel(
+			$tab, $counts, $pendingFlags, $pendingConflicts, $allLocks, $adminFlags
+		);
 	}
 
 	/**
