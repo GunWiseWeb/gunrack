@@ -1,0 +1,244 @@
+<?php
+/**
+ * @brief       GD Master Catalog — Field Mapper
+ * @package     IPS Community Suite
+ * @subpackage  GD Master Catalog
+ * @since       12 Apr 2026
+ *
+ * Translates distributor feed field names to canonical gd_catalog column
+ * names using the per-distributor field_mapping JSON stored in
+ * gd_distributor_feeds.
+ *
+ * Field mapping JSON format (stored per feed):
+ * {
+ *     "PROD_NAME": "title",
+ *     "MFG_NAME":  "brand",
+ *     "UPC_CODE":  "upc",
+ *     "DESC":      "description",
+ *     ...
+ * }
+ */
+
+namespace IPS\gdcatalog\Feed;
+
+class FieldMapper
+{
+	/**
+	 * @brief Mapping: distributor field name => canonical column name
+	 */
+	protected array $map = [];
+
+	/**
+	 * @brief Reverse mapping: canonical column => distributor field name
+	 */
+	protected array $reverseMap = [];
+
+	/**
+	 * @brief Canonical fields that are valid gd_catalog columns
+	 */
+	public const VALID_FIELDS = [
+		'upc', 'title', 'brand', 'model', 'category', 'subcategory',
+		'caliber', 'action_type', 'barrel_length', 'capacity', 'finish',
+		'weight_oz', 'overall_length', 'msrp', 'description', 'image_url',
+		'additional_images', 'nfa_item', 'requires_ffl', 'is_ammo',
+		'rounds_per_box',
+	];
+
+	/**
+	 * @brief Compliance-related field names that auto-detect in feeds.
+	 *        Per Section 2.10.4 — standard names for state restriction detection.
+	 */
+	public const COMPLIANCE_AUTO_DETECT = [
+		'restricted_states',
+		'no_ship_to',
+		'blocked_states',
+		'ship_restriction',
+		'state_restrictions',
+	];
+
+	/**
+	 * Constructor.
+	 *
+	 * @param  string|null $mappingJson  JSON from gd_distributor_feeds.field_mapping
+	 */
+	public function __construct( ?string $mappingJson )
+	{
+		if ( $mappingJson === null || $mappingJson === '' )
+		{
+			return;
+		}
+
+		$decoded = json_decode( $mappingJson, true );
+		if ( !\is_array( $decoded ) )
+		{
+			return;
+		}
+
+		foreach ( $decoded as $distField => $canonical )
+		{
+			$canonical = trim( $canonical );
+			if ( $canonical !== '' )
+			{
+				$this->map[ $distField ]          = $canonical;
+				$this->reverseMap[ $canonical ]    = $distField;
+			}
+		}
+	}
+
+	/**
+	 * Map a single feed record to canonical field names.
+	 * Returns only fields that have a valid mapping.
+	 *
+	 * @param  array<string, mixed> $feedRecord  Raw key-value pairs from feed
+	 * @return array<string, mixed>  Canonical field => value
+	 */
+	public function mapRecord( array $feedRecord ): array
+	{
+		$mapped = [];
+
+		foreach ( $feedRecord as $distField => $value )
+		{
+			if ( isset( $this->map[ $distField ] ) )
+			{
+				$canonical = $this->map[ $distField ];
+				$mapped[ $canonical ] = $value;
+			}
+		}
+
+		return $mapped;
+	}
+
+	/**
+	 * Extract the UPC value from a feed record.
+	 *
+	 * @param  array<string, mixed> $feedRecord
+	 * @return string|null
+	 */
+	public function extractUpc( array $feedRecord ): ?string
+	{
+		$mapped = $this->mapRecord( $feedRecord );
+		$upc    = $mapped['upc'] ?? null;
+
+		if ( $upc === null || trim( (string) $upc ) === '' )
+		{
+			return null;
+		}
+
+		/* Normalise: strip leading zeros, remove non-numeric chars */
+		$upc = preg_replace( '/[^0-9]/', '', trim( (string) $upc ) );
+		return $upc !== '' ? $upc : null;
+	}
+
+	/**
+	 * Detect compliance field names present in a feed record.
+	 * Checks both mapped names and auto-detect standard names.
+	 *
+	 * @param  array<string, mixed> $feedRecord
+	 * @return array<string, string>  field_name => raw value
+	 */
+	public function detectComplianceFields( array $feedRecord ): array
+	{
+		$found = [];
+
+		/* Check auto-detect standard names directly in the raw record */
+		foreach ( self::COMPLIANCE_AUTO_DETECT as $stdName )
+		{
+			if ( isset( $feedRecord[ $stdName ] ) && trim( (string) $feedRecord[ $stdName ] ) !== '' )
+			{
+				$found[ $stdName ] = trim( (string) $feedRecord[ $stdName ] );
+			}
+		}
+
+		/* Also check mapped compliance fields */
+		foreach ( $this->map as $distField => $canonical )
+		{
+			if (
+				\in_array( $canonical, self::COMPLIANCE_AUTO_DETECT, true )
+				&& isset( $feedRecord[ $distField ] )
+				&& trim( (string) $feedRecord[ $distField ] ) !== ''
+			)
+			{
+				$found[ $canonical ] = trim( (string) $feedRecord[ $distField ] );
+			}
+		}
+
+		return $found;
+	}
+
+	/**
+	 * Cast mapped values to their expected PHP types.
+	 *
+	 * @param  array<string, mixed> $mapped  Output from mapRecord()
+	 * @return array<string, mixed>
+	 */
+	public static function castTypes( array $mapped ): array
+	{
+		$intFields   = [ 'capacity', 'rounds_per_box' ];
+		$floatFields = [ 'barrel_length', 'weight_oz', 'overall_length', 'msrp' ];
+		$boolFields  = [ 'nfa_item', 'requires_ffl', 'is_ammo' ];
+
+		foreach ( $intFields as $f )
+		{
+			if ( isset( $mapped[$f] ) )
+			{
+				$mapped[$f] = ( $mapped[$f] !== '' && $mapped[$f] !== null )
+					? (int) $mapped[$f]
+					: null;
+			}
+		}
+
+		foreach ( $floatFields as $f )
+		{
+			if ( isset( $mapped[$f] ) )
+			{
+				$mapped[$f] = ( $mapped[$f] !== '' && $mapped[$f] !== null )
+					? (float) $mapped[$f]
+					: null;
+			}
+		}
+
+		foreach ( $boolFields as $f )
+		{
+			if ( isset( $mapped[$f] ) )
+			{
+				$mapped[$f] = \in_array(
+					mb_strtolower( trim( (string) $mapped[$f] ) ),
+					[ '1', 'true', 'yes', 'y' ],
+					true
+				) ? 1 : 0;
+			}
+		}
+
+		/* Trim all string fields */
+		foreach ( $mapped as $k => $v )
+		{
+			if ( \is_string( $v ) )
+			{
+				$mapped[$k] = trim( $v );
+			}
+		}
+
+		return $mapped;
+	}
+
+	/**
+	 * Get the mapping array (for display in ACP).
+	 *
+	 * @return array<string, string>
+	 */
+	public function getMap(): array
+	{
+		return $this->map;
+	}
+
+	/**
+	 * Get the distributor field name for a canonical field.
+	 *
+	 * @param  string $canonical
+	 * @return string|null
+	 */
+	public function reverseMap( string $canonical ): ?string
+	{
+		return $this->reverseMap[ $canonical ] ?? null;
+	}
+}

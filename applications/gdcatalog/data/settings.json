@@ -1,0 +1,18 @@
+[
+	{
+		"key": "gdcatalog_opensearch_host",
+		"default": "http://localhost:9200"
+	},
+	{
+		"key": "gdcatalog_opensearch_index",
+		"default": "gunrack_products"
+	},
+	{
+		"key": "gdcatalog_auto_resolve_hours",
+		"default": "48"
+	},
+	{
+		"key": "gdcatalog_discontinue_threshold",
+		"default": "3"
+	}
+]
