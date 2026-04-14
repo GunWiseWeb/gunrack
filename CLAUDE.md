@@ -75,7 +75,7 @@ These were learned by comparing against a working IPS v5 plugin. They apply to e
 3. **`execute()` has no `: void` return type** — the parent `\IPS\Dispatcher\Controller::execute()` signature does not declare a return type; adding one causes a fatal error.
 4. **Templates go in `data/theme.xml` as XML, not `.phtml` files** — IPS installs templates into the database from this XML file. Format: `<theme>` root with `<template>` children containing CDATA-wrapped template content. The `dev/html/` directory is for IN_DEV mode only and is not read during installation.
 5. **Language strings go in `data/lang.xml`, not `dev/lang.php`** — IPS installs language strings from this XML file. Format: `<language><app key="appdir"><word key="...">` with CDATA values. The `dev/lang.php` file is for IN_DEV mode only.
-6. **Tar must use `addFromString()` with files inside an `appdir/` wrapper** — e.g. `gdcatalog/Application.php`. Using PharData `addFile()` produces 0-byte files. Every directory must contain a blank `index.html`.
+6. **Tar must be packaged with files at root level — no parent folder** — `Application.php` must be the first entry at the tar root, not inside `gdcatalog/`. Paths are `Application.php`, `data/theme.xml`, `modules/admin/catalog/dashboard.php`, etc. Use PharData `addFromString()` (not `addFile()` which produces 0-byte files). Every directory must contain a blank `index.html`.
 7. **ActiveRecord `$databaseTable` must be `?string` (nullable)** — declare as `public static ?string $databaseTable = 'table_name';`. The parent class uses a nullable type; omitting the `?` causes a type error.
 
 ## Full specification
