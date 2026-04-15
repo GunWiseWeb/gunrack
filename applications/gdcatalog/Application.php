@@ -11,6 +11,14 @@ namespace IPS\gdcatalog;
 class _Application extends \IPS\Application
 {
 	/**
+	 * ACP menu icon (Font Awesome name, no `fa-` prefix)
+	 */
+	protected function get__icon()
+	{
+		return 'database';
+	}
+
+	/**
 	 * Install 'other' items — runs after schema.json tables are created
 	 */
 	public function installOther()

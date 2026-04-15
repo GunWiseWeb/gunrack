@@ -453,123 +453,41 @@ TEMPLATE_EOT,
 		'template_data' => '$totalProducts, $activeProducts, $reviewProducts, $categoryCounts, $distributorStats, $osExists, $osStats, $pendingConflicts, $pendingCompliance, $lockedFields, $reindexQueue',
 		'template_content' => <<<'TEMPLATE_EOT'
 <div class="ipsBox">
-	<h2 class="ipsBox_title">{lang="gdcatalog_dash_title"}</h2>
-	<div class="ipsBox_content">
-
-		
-		<div class="ipsGrid ipsGrid--3">
-			<div class="ipsBox ipsBox--alt ipsPad">
-				<h3 class="ipsType_sectionTitle">{lang="gdcatalog_dash_total_products"}</h3>
-				<div class="ipsType_large">{expression="number_format( $totalProducts )"}</div>
-				<div class="ipsType_light">Active: {expression="number_format( $activeProducts )"} | Review: {expression="number_format( $reviewProducts )"}</div>
-			</div>
-			<div class="ipsBox ipsBox--alt ipsPad">
-				<h3 class="ipsType_sectionTitle">{lang="gdcatalog_dash_opensearch_status"}</h3>
-				{{if $osExists}}
-					<div class="ipsType_large">{expression="number_format( $osStats['doc_count'] )"}</div>
-					<div class="ipsType_light">{lang="gdcatalog_dash_opensearch_count"}</div>
-				{{else}}
-					<div class="ipsType_warning">Index not found</div>
-				{{endif}}
-			</div>
-			<div class="ipsBox ipsBox--alt ipsPad">
-				<h3 class="ipsType_sectionTitle">Pending Actions</h3>
-				<div class="ipsType_light">
-					Compliance flags: <strong>{$pendingCompliance}</strong><br>
-					Feed conflicts: <strong>{$pendingConflicts}</strong><br>
-					Locked fields: <strong>{$lockedFields}</strong><br>
-					Reindex queue: <strong>{$reindexQueue}</strong>
-				</div>
-			</div>
-		</div>
-
-		
-		<div class="ipsPad ipsGap_3">
-			<a href="{url="app=gdcatalog&module=catalog&controller=dashboard&do=rebuildIndex" csrf="true"}" class="ipsButton ipsButton--primary" data-confirm>
-				{lang="gdcatalog_dash_rebuild_index"}
-			</a>
-			{{if $reindexQueue > 0}}
-			<a href="{url="app=gdcatalog&module=catalog&controller=dashboard&do=processQueue" csrf="true"}" class="ipsButton ipsButton--normal">
-				Process Reindex Queue ({$reindexQueue})
-			</a>
-			{{endif}}
-		</div>
-
-		
-		<h3 class="ipsType_sectionTitle ipsPad_top">{lang="gdcatalog_dash_by_distributor"}</h3>
-		<div class="ipsTable ipsTable_zebra">
-			<div class="ipsTable_header">
-				<div class="ipsTable_row">
-					<div class="ipsTable_cell" style="width:5%">#</div>
-					<div class="ipsTable_cell" style="width:20%">{lang="gdcatalog_feed_distributor"}</div>
-					<div class="ipsTable_cell" style="width:10%">Products</div>
-					<div class="ipsTable_cell" style="width:10%">{lang="gdcatalog_feed_active"}</div>
-					<div class="ipsTable_cell" style="width:15%">{lang="gdcatalog_dash_last_run"}</div>
-					<div class="ipsTable_cell" style="width:8%">{lang="gdcatalog_dash_run_status"}</div>
-					<div class="ipsTable_cell" style="width:8%">{lang="gdcatalog_dash_records_created"}</div>
-					<div class="ipsTable_cell" style="width:8%">{lang="gdcatalog_dash_records_updated"}</div>
-					<div class="ipsTable_cell" style="width:8%">{lang="gdcatalog_dash_records_errored"}</div>
-					<div class="ipsTable_cell" style="width:8%"></div>
-				</div>
-			</div>
-			{{foreach $distributorStats as $ds}}
-			<div class="ipsTable_row">
-				<div class="ipsTable_cell">{$ds['feed']->priority}</div>
-				<div class="ipsTable_cell"><strong>{$ds['feed']->feed_name}</strong></div>
-				<div class="ipsTable_cell">{expression="number_format( $ds['product_count'] )"}</div>
-				<div class="ipsTable_cell">
-					{{if $ds['feed']->active}}
-						<span class="ipsBadge ipsBadge--positive">Active</span>
-					{{else}}
-						<span class="ipsBadge ipsBadge--neutral">Inactive</span>
-					{{endif}}
-				</div>
-				<div class="ipsTable_cell">
-					{{if $ds['last_log']}}
-						{$ds['last_log']['run_start']}
-					{{else}}
-						&mdash;
-					{{endif}}
-				</div>
-				<div class="ipsTable_cell">
-					{{if $ds['last_log']}}
-						{{if $ds['last_log']['status'] === 'completed'}}
-							<span class="ipsBadge ipsBadge--positive">OK</span>
-						{{elseif $ds['last_log']['status'] === 'failed'}}
-							<span class="ipsBadge ipsBadge--negative">Failed</span>
-						{{else}}
-							<span class="ipsBadge ipsBadge--warning">Running</span>
-						{{endif}}
-					{{else}}
-						&mdash;
-					{{endif}}
-				</div>
-				<div class="ipsTable_cell">{expression="$ds['last_log'] ? $ds['last_log']['records_created'] : '—'"}</div>
-				<div class="ipsTable_cell">{expression="$ds['last_log'] ? $ds['last_log']['records_updated'] : '—'"}</div>
-				<div class="ipsTable_cell">{expression="$ds['last_log'] ? $ds['last_log']['records_errored'] : '—'"}</div>
-				<div class="ipsTable_cell">
-					{{if $ds['feed']->active}}
-					<a href="{url="app=gdcatalog&module=catalog&controller=dashboard&do=runImport&id={$ds['feed']->id}" csrf="true"}" class="ipsButton ipsButton--small ipsButton--primary" data-confirm>
-						{lang="gdcatalog_dash_trigger_import"}
-					</a>
-					{{endif}}
-				</div>
-			</div>
-			{{endforeach}}
-		</div>
-
-		
-		<h3 class="ipsType_sectionTitle ipsPad_top">{lang="gdcatalog_dash_by_category"}</h3>
-		<div class="ipsTable ipsTable_zebra">
-			{{foreach $categoryCounts as $cc}}
-			<div class="ipsTable_row">
-				<div class="ipsTable_cell" style="width:70%">{$cc['name']}</div>
-				<div class="ipsTable_cell" style="width:30%">{expression="number_format( $cc['count'] )"}</div>
-			</div>
-			{{endforeach}}
-		</div>
-
-	</div>
+<h1 class="ipsBox_title">GD Master Catalog Dashboard</h1>
+<div class="ipsPad">
+<div style="display:flex;gap:16px;margin-bottom:24px">
+<div class="ipsBox" style="flex:1;padding:16px;text-align:center">
+<div style="font-size:2em;font-weight:bold">{expression="number_format($totalProducts)"}</div>
+<div>Total Products</div>
+<div style="color:#666">Active: {expression="number_format($activeProducts)"} | Review: {expression="number_format($reviewProducts)"}</div>
+</div>
+<div class="ipsBox" style="flex:1;padding:16px;text-align:center">
+<div style="font-size:2em;font-weight:bold">{$pendingConflicts}</div>
+<div>Pending Conflicts</div>
+</div>
+<div class="ipsBox" style="flex:1;padding:16px;text-align:center">
+<div style="font-size:2em;font-weight:bold">{$pendingCompliance}</div>
+<div>Pending Compliance Flags</div>
+</div>
+</div>
+<h2>Distributor Feeds</h2>
+<table class="ipsTable ipsTable_zebra" style="width:100%">
+<thead><tr><th>#</th><th>Feed</th><th>Products</th><th>Status</th><th>Last Run</th><th>Last Status</th><th>Action</th></tr></thead>
+<tbody>
+{{foreach $distributorStats as $ds}}
+<tr>
+<td>{$ds['feed']->priority}</td>
+<td><strong>{$ds['feed']->feed_name}</strong></td>
+<td>{expression="number_format($ds['product_count'])"}</td>
+<td>{{if $ds['feed']->active}}<span class="ipsBadge ipsBadge--positive">Active</span>{{else}}<span class="ipsBadge ipsBadge--neutral">Inactive</span>{{endif}}</td>
+<td>{{if isset($ds['last_log']) and $ds['last_log']}}{$ds['last_log']['run_start']}{{else}}&mdash;{{endif}}</td>
+<td>{{if isset($ds['last_log']) and $ds['last_log']}}{$ds['last_log']['status']}{{else}}&mdash;{{endif}}</td>
+<td>{{if $ds['feed']->active}}<a href="{url="app=gdcatalog&module=catalog&controller=dashboard&do=runImport&id={$ds['feed']->id}" csrf="true"}" class="ipsButton ipsButton--small ipsButton--primary">Run Import</a>{{endif}}</td>
+</tr>
+{{endforeach}}
+</tbody>
+</table>
+</div>
 </div>
 TEMPLATE_EOT,
 	],

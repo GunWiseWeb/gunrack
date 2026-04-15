@@ -2,6 +2,8 @@
 <language name="English (US)">
   <app key="gdcatalog">
     <word key="__app_gdcatalog"><![CDATA[GD Master Catalog]]></word>
+    <word key="menutab__gdcatalog"><![CDATA[GD Catalog]]></word>
+    <word key="menu__gdcatalog_catalog"><![CDATA[Master Catalog]]></word>
     <word key="module__gdcatalog_catalog"><![CDATA[Master Catalog]]></word>
     <word key="menu__gdcatalog_catalog_dashboard"><![CDATA[Dashboard]]></word>
     <word key="menu__gdcatalog_catalog_products"><![CDATA[Products]]></word>
