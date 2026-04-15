@@ -114,6 +114,7 @@
 		<word key="gdr_active_expired_ok"><![CDATA[Rebate set to expired.]]></word>
 		<word key="gdr_active_archived_ok"><![CDATA[Rebate archived.]]></word>
 
+		<word key="gdr_settings"><![CDATA[Settings]]></word>
 		<word key="gdr_settings_title"><![CDATA[GD Rebates — Settings]]></word>
 		<word key="gdr_settings_scraper_header"><![CDATA[Scraper]]></word>
 		<word key="gdr_settings_hub_header"><![CDATA[Rebates Hub]]></word>

@@ -791,7 +791,7 @@ foreach ( $templates as $t )
 			'template_location' => $t['location'],
 			'template_group'   => $t['group'],
 			'template_name'    => $t['name'],
-			'template_data'    => $t['params'],
+			'template_data'    => '$' . $t['params'],
 			'template_content' => $t['content'],
 		] );
 	}
