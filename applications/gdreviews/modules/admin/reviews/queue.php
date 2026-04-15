@@ -129,13 +129,12 @@ class _queue extends \IPS\Dispatcher\Controller
 			'approve_url'   => (string) \IPS\Http\Url::internal(
 				'app=gdreviews&module=reviews&controller=queue&do=approve&id=' . (int) $row['id']
 			)->csrf(),
-			'reject_action' => (string) \IPS\Http\Url::internal(
+			'reject_url'    => (string) \IPS\Http\Url::internal(
 				'app=gdreviews&module=reviews&controller=queue&do=reject&id=' . (int) $row['id']
 			),
 			'back_url'      => (string) \IPS\Http\Url::internal(
 				'app=gdreviews&module=reviews&controller=queue'
 			),
-			'csrf_key'      => \IPS\Session::i()->csrfKey,
 		];
 
 		\IPS\Output::i()->title  = \IPS\Member::loggedIn()->language()->addToStack( 'gdr_queue_view_title' );
@@ -144,16 +143,47 @@ class _queue extends \IPS\Dispatcher\Controller
 	}
 
 	/**
-	 * Reject with reason — posts from the view page.
+	 * Reject with reason — renders an IPS\Helpers\Form for the moderator to
+	 * supply a rejection reason. The form posts back to itself; IPS handles
+	 * CSRF, validation, and the Save button automatically.
 	 */
 	protected function reject(): void
 	{
-		\IPS\Session::i()->csrfCheck();
-		$id     = (int) ( \IPS\Request::i()->id ?? 0 );
-		$reason = trim( (string) \IPS\Request::i()->rejection_reason );
-
-		if ( $id > 0 )
+		$id = (int) ( \IPS\Request::i()->id ?? 0 );
+		if ( $id <= 0 )
 		{
+			\IPS\Output::i()->redirect(
+				\IPS\Http\Url::internal( 'app=gdreviews&module=reviews&controller=queue' ),
+				'gdr_queue_not_found'
+			);
+			return;
+		}
+
+		$exists = FALSE;
+		try
+		{
+			$exists = (int) \IPS\Db::i()->select( 'COUNT(*)', 'gd_reviews', [ 'id=?', $id ] )->first() > 0;
+		}
+		catch ( \Exception ) {}
+
+		if ( !$exists )
+		{
+			\IPS\Output::i()->redirect(
+				\IPS\Http\Url::internal( 'app=gdreviews&module=reviews&controller=queue' ),
+				'gdr_queue_not_found'
+			);
+			return;
+		}
+
+		$form = new \IPS\Helpers\Form( 'gdr_reject', 'gdr_queue_reject' );
+		$form->add( new \IPS\Helpers\Form\TextArea(
+			'gdr_queue_reject_reason', '', TRUE, [ 'rows' => 4 ]
+		) );
+
+		if ( $values = $form->values() )
+		{
+			$reason = trim( (string) $values['gdr_queue_reject_reason'] );
+
 			try
 			{
 				\IPS\Db::i()->update( 'gd_reviews', [
@@ -164,12 +194,16 @@ class _queue extends \IPS\Dispatcher\Controller
 				], [ 'id=?', $id ] );
 			}
 			catch ( \Exception ) {}
+
+			\IPS\Output::i()->redirect(
+				\IPS\Http\Url::internal( 'app=gdreviews&module=reviews&controller=queue' ),
+				'gdr_queue_rejected'
+			);
+			return;
 		}
 
-		\IPS\Output::i()->redirect(
-			\IPS\Http\Url::internal( 'app=gdreviews&module=reviews&controller=queue' ),
-			'gdr_queue_rejected'
-		);
+		\IPS\Output::i()->title  = \IPS\Member::loggedIn()->language()->addToStack( 'gdr_queue_reject' );
+		\IPS\Output::i()->output = (string) $form;
 	}
 
 	/**
