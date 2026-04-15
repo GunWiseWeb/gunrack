@@ -1,0 +1,18 @@
+[
+	{
+		"key": "gddealer_group_id",
+		"default": "0"
+	},
+	{
+		"key": "gddealer_default_import_schedule",
+		"default": "6hr"
+	},
+	{
+		"key": "gddealer_out_of_stock_grace_hours",
+		"default": "24"
+	},
+	{
+		"key": "gddealer_click_tracking_enabled",
+		"default": "1"
+	}
+]
