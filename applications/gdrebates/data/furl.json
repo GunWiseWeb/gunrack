@@ -1,0 +1,25 @@
+{
+    "topLevel": "rebates",
+    "pages": {
+        "rebates_hub": {
+            "friendly": "rebates",
+            "real":     "app=gdrebates&module=rebates&controller=hub"
+        },
+        "rebates_submit": {
+            "friendly": "rebates/submit",
+            "real":     "app=gdrebates&module=rebates&controller=submit"
+        },
+        "rebates_view": {
+            "friendly": "rebates/{#id}-{?slug}",
+            "real":     "app=gdrebates&module=rebates&controller=view&id={#id}"
+        },
+        "rebates_track": {
+            "friendly": "rebates/track",
+            "real":     "app=gdrebates&module=rebates&controller=track"
+        },
+        "rebates_flag": {
+            "friendly": "rebates/flag",
+            "real":     "app=gdrebates&module=rebates&controller=flag"
+        }
+    }
+}

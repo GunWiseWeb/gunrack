@@ -1,0 +1,12 @@
+[
+    { "key": "gdr_scraper_enabled",          "default": "0",  "type": "yn" },
+    { "key": "gdr_scraper_user_agent",       "default": "GunRackDealsBot/1.0 (+https://gunrack.deals/bot)", "type": "text" },
+    { "key": "gdr_scraper_timeout",          "default": "15", "type": "number" },
+    { "key": "gdr_scraper_default_rate_ms",  "default": "2000", "type": "number" },
+    { "key": "gdr_scraper_respect_robots",   "default": "1",  "type": "yn" },
+    { "key": "gdr_featured_rebate_id",       "default": "0",  "type": "number" },
+    { "key": "gdr_hub_expiring_days",        "default": "7",  "type": "number" },
+    { "key": "gdr_archive_after_days",       "default": "30", "type": "number" },
+    { "key": "gdr_flag_threshold",           "default": "3",  "type": "number" },
+    { "key": "gdr_submission_min_desc",      "default": "30", "type": "number" }
+]

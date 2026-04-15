@@ -162,6 +162,104 @@ These were learned by comparing against a working IPS v5 plugin. They apply to e
     - `data/lang.xml` — must define `r__{permission_key}` for every permission key (shown in the ACP permission editor).
 
     Audit command: `jq -r 'to_entries[].value | to_entries[].value | to_entries[].key' applications/*/data/acprestrictions.json | sort -u` lists every declared permission; every `checkAcpPermission(` string and every `"restriction"` value in `acpmenu.json` across the app must be present in that list.
+18. **Every plugin MUST ship `data/application.json` AND `data/versions.json`** — without both files, the IPS installer rejects the uploaded tar with a generic and misleading error: *"The application you uploaded cannot be installed because it is not a valid application, the archive is corrupt or the file and directory permissions in /applications do not allow it."* The error says nothing about missing metadata — it is the same message IPS emits for permission problems, bad tar layout, or truncated archives — so it is easy to chase the wrong cause. Working IPS core apps and every correctly-built third-party app ship both files; any new plugin that omits them will fail at upload time even when Application.php, schema.json, lang.xml, and the tar layout are all otherwise correct.
+
+    `data/application.json` — single JSON object describing the app:
+
+    ```json
+    {
+        "app_directory": "gdrebates",
+        "app_author": "GunRack",
+        "app_version": "1.0.0",
+        "app_long_version": 10000,
+        "app_protected": false,
+        "app_website": "https://gunrack.deals"
+    }
+    ```
+
+    - `app_directory` — must match the folder name under `applications/` exactly.
+    - `app_version` — human-readable semver (`"1.0.0"`).
+    - `app_long_version` — integer used for upgrade comparisons. Convention: `MMmmpp` (major=1, minor=00, patch=00 → `10000`; `1.0.1` → `10001`; `1.1.0` → `10100`; `2.0.0` → `20000`).
+    - `app_protected` — `false` for third-party apps; `true` blocks uninstall.
+    - `app_website` — shown on the ACP Applications list.
+
+    `data/versions.json` — maps every long-version integer to its semver label; IPS uses this to decide which `setup/upg_{long}/` upgrade steps to run:
+
+    ```json
+    {
+        "10000": "1.0.0"
+    }
+    ```
+
+    When bumping a plugin's version, add a new entry (e.g. `"10001": "1.0.1"`) AND update `app_version` + `app_long_version` in `application.json` to match. The two files must stay in sync.
+
+    Audit command: `for d in applications/*/; do [ -f "$d/data/application.json" ] && [ -f "$d/data/versions.json" ] || echo "MISSING: $d"; done` must print nothing.
+19. **`data/schema.json` index `length` array MUST have exactly `count(columns)` entries — count them explicitly before saving** — IPS's schema installer reads the `length` and `columns` arrays in lockstep: entry `length[i]` applies to column `columns[i]`. A mismatch in length count throws a schema installer error or silently produces a broken index definition. This applies to every index type: `primary`, `unique`, `key`, `fulltext`. The rule is absolute — there is no special case for PRIMARY keys or any other index type.
+
+    ```json
+    // One column → one length entry
+    "PRIMARY":  { "type": "primary", "length": [ null ],        "columns": [ "id" ] }
+    "idx_mfr":  { "type": "key",     "length": [ null ],        "columns": [ "manufacturer" ] }
+
+    // Two columns → two length entries
+    "uq_pair":  { "type": "unique",  "length": [ null, null ],  "columns": [ "rebate_id", "member_id" ] }
+
+    // Three columns with a prefix length on the VARCHAR → three entries
+    "idx_trio": { "type": "key",     "length": [ null, 32, null ], "columns": [ "rebate_id", "slug", "created_at" ] }
+    ```
+
+    Before saving `schema.json`, count the entries in every index's `columns` array and confirm the `length` array has the same count — PRIMARY with a single `id` column is `[ null ]`, never `[ null, null ]`. Use `null` when you want the default (full-column) index; use an integer when you want a prefix index on a VARCHAR/TEXT column.
+
+    Audit command — run after any schema edit; it prints every index whose `length` and `columns` arrays disagree:
+
+    ```sh
+    php -r '
+    foreach ( glob( "applications/*/data/schema.json" ) as $f ) {
+        $s = json_decode( file_get_contents( $f ), true );
+        foreach ( $s as $table => $def ) {
+            foreach ( $def["indexes"] ?? [] as $name => $idx ) {
+                if ( count( $idx["columns"] ) !== count( $idx["length"] ) ) {
+                    printf( "MISMATCH: %s %s.%s cols=%d length=%d\n",
+                        $f, $table, $name,
+                        count( $idx["columns"] ), count( $idx["length"] ) );
+                }
+            }
+        }
+    }'
+    ```
+
+    Output must be empty.
+20. **IPS v5 ACP button and page-wrapper classes use double-dash BEM syntax, not underscores** — the IPS v5 front-end CSS framework ships BEM-style modifier classes for buttons: `ipsButton--primary`, `ipsButton--normal`, `ipsButton--negative`, `ipsButton--small`. Underscore forms (`ipsButton_primary`, `ipsButton_medium`, `ipsButton_negative`, `ipsButton_small`) are legacy IPS v4 class names that no longer exist in the v5 stylesheet — using them renders buttons as bare unstyled anchor text, which is a frequent symptom of copy-pasting markup from older plugins or outdated docs. The base class `ipsButton` must always appear alongside the modifier (`class="ipsButton ipsButton--primary"` — never just `ipsButton--primary` on its own). The full mapping when porting from v4/underscore style:
+
+    ```
+    ipsButton_primary   → ipsButton ipsButton--primary
+    ipsButton_medium    → ipsButton ipsButton--normal
+    ipsButton_negative  → ipsButton ipsButton--negative
+    ipsButton_small     → ipsButton ipsButton--small    (combines with a type modifier)
+    ```
+
+    Example: a small approve + reject pair inside a table row:
+
+    ```html
+    <a href="..." class="ipsButton ipsButton--primary ipsButton--small">Approve</a>
+    <a href="..." class="ipsButton ipsButton--normal ipsButton--small">Reject</a>
+    ```
+
+    The ACP page wrapper must also use `<div class="ipsBox ipsPull">` (not bare `<div class="ipsBox">`) for every top-level panel in an admin template — `ipsPull` is the v5 layout helper that pulls the box to the full width of the content region and gives it the correct margin; omitting it renders panels as narrow floating cards rather than a proper admin page surface. This applies to every outer-wrapper `<div class="ipsBox">` in an admin template, including every sibling panel on a multi-section dashboard.
+
+    Every admin template in every plugin (`gdcatalog`, `gddealer`, `gdpricecompare`, `gdrebates`, and the eight still-to-be-built plugins) must follow these conventions. Audit command — should return empty across all admin templates:
+
+    ```sh
+    grep -rEn 'ipsButton_(primary|medium|negative|small)\b' applications/*/setup/install.php applications/*/modules/admin
+    ```
+
+    Verify BEM forms are in use:
+
+    ```sh
+    grep -rEn 'ipsButton--(primary|normal|negative|small)' applications/*/setup/install.php | wc -l
+    ```
+
+    Front-end (location=front) templates follow the same convention — IPS v5 uses the same BEM classes across ACP and front-end. When in doubt, inspect a rendered IPS core ACP page (e.g. the Applications list) with browser devtools; every button there uses the double-dash form.
 
 ## Full specification
 Read `GunRack_Spec_v2.9.16.md` for complete specs on all 12 plugins, database schemas, acceptance criteria, server setup (Appendix B), security requirements (Appendix C), and Phase 2 roadmap (Section 19).

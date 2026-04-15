@@ -1,0 +1,12 @@
+{
+	"rebates": {
+		"dashboard":    { "tab": "gdrebates", "controller": "dashboard",    "do": "", "restriction": "rebates_manage" },
+		"submissions":  { "tab": "gdrebates", "controller": "submissions",  "do": "", "restriction": "rebates_manage" },
+		"targets":      { "tab": "gdrebates", "controller": "targets",      "do": "", "restriction": "rebates_manage" },
+		"scraperqueue": { "tab": "gdrebates", "controller": "scraperqueue", "do": "", "restriction": "rebates_manage" },
+		"scrapelog":    { "tab": "gdrebates", "controller": "scrapelog",    "do": "", "restriction": "rebates_manage" },
+		"flags":        { "tab": "gdrebates", "controller": "flags",        "do": "", "restriction": "rebates_manage" },
+		"active":       { "tab": "gdrebates", "controller": "active",       "do": "", "restriction": "rebates_manage" },
+		"settings":     { "tab": "gdrebates", "controller": "settings",     "do": "", "restriction": "rebates_manage" }
+	}
+}

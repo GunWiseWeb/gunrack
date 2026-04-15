@@ -1,0 +1,5 @@
+{
+    "scrapeRebates":  "PT24H",
+    "expireRebates":  "PT24H",
+    "archiveRebates": "PT24H"
+}
