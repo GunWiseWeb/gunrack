@@ -1,12 +1,4 @@
-[
-	{
-		"key": "ImportFeeds",
-		"frequency": 900,
-		"app": "gdcatalog"
-	},
-	{
-		"key": "AutoResolveConflicts",
-		"frequency": 3600,
-		"app": "gdcatalog"
-	}
-]
+{
+	"ImportFeeds": "PT15M",
+	"AutoResolveConflicts": "PT1H"
+}

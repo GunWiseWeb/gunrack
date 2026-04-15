@@ -98,3 +98,584 @@ foreach ( $categories as $parentName => $children )
 		]);
 	}
 }
+
+/* Seed templates directly into core_theme_templates to bypass IPS XML import
+ * bug that corrupts template comments during theme.xml installation. */
+$gdcatalogTemplates = [
+	[
+		'template_name' => 'feedList',
+		'template_data' => '$feeds, $feedCounts',
+		'template_content' => <<<'TEMPLATE_EOT'
+<div class="ipsBox">
+	<h1 class="ipsBox_title">{lang="gdcatalog_feeds_title"}</h1>
+	<div class="ipsPad">
+
+		<div style="display:flex;gap:16px;margin-bottom:24px">
+			<div class="ipsBox" style="flex:1;padding:16px;text-align:center">
+				<div style="font-size:2em;font-weight:bold">{$feedCounts['total']}</div>
+				<div>Configured Feeds</div>
+			</div>
+			<div class="ipsBox" style="flex:1;padding:16px;text-align:center">
+				<div style="font-size:2em;font-weight:bold">{$feedCounts['active']}</div>
+				<div>Active Feeds</div>
+			</div>
+			<div class="ipsBox" style="flex:1;padding:16px;text-align:center">
+				<div style="font-size:2em;font-weight:bold">{$feedCounts['urls']}</div>
+				<div>URLs Configured</div>
+			</div>
+		</div>
+
+		<p class="ipsType_light" style="margin-bottom:16px">{lang="gdcatalog_feeds_help"}</p>
+
+		<table class="ipsTable ipsTable_zebra" style="width:100%">
+			<thead>
+				<tr>
+					<th style="width:5%">#</th>
+					<th>{lang="gdcatalog_feed_name"}</th>
+					<th>{lang="gdcatalog_feed_distributor"}</th>
+					<th>{lang="gdcatalog_feed_format"}</th>
+					<th>{lang="gdcatalog_feed_schedule"}</th>
+					<th>{lang="gdcatalog_feed_active"}</th>
+					<th>{lang="gdcatalog_feed_last_run"}</th>
+					<th>{lang="gdcatalog_feed_last_count"}</th>
+					<th>{lang="gdcatalog_feed_last_status"}</th>
+					<th></th>
+				</tr>
+			</thead>
+			<tbody>
+				{{foreach $feeds as $feed}}
+				<tr>
+					<td>{$feed['priority']}</td>
+					<td><strong>{$feed['feed_name']}</strong></td>
+					<td>{$feed['distributor_label']}</td>
+					<td>{$feed['feed_format']}</td>
+					<td>{$feed['import_schedule']}</td>
+					<td>
+						{{if $feed['active']}}
+							<span class="ipsBadge ipsBadge--positive">{lang="gdcatalog_feed_active"}</span>
+						{{else}}
+							<span class="ipsBadge ipsBadge--neutral">Inactive</span>
+						{{endif}}
+					</td>
+					<td>
+						{{if $feed['last_run']}}
+							{$feed['last_run']}
+						{{else}}
+							&mdash;
+						{{endif}}
+					</td>
+					<td>{expression="number_format( $feed['last_record_count'] )"}</td>
+					<td>
+						{{if $feed['last_run_status'] === 'completed'}}
+							<span class="ipsBadge ipsBadge--positive">OK</span>
+						{{elseif $feed['last_run_status'] === 'failed'}}
+							<span class="ipsBadge ipsBadge--negative">Failed</span>
+						{{elseif $feed['last_run_status'] === 'running'}}
+							<span class="ipsBadge ipsBadge--warning">Running</span>
+						{{else}}
+							&mdash;
+						{{endif}}
+					</td>
+					<td><a href="{$feed['edit_url']}" class="ipsButton ipsButton--small ipsButton--primary">Edit</a></td>
+				</tr>
+				{{endforeach}}
+			</tbody>
+		</table>
+
+	</div>
+</div>
+TEMPLATE_EOT,
+	],
+	[
+		'template_name' => 'conflictLog',
+		'template_data' => '$entries, $filterField, $filterSource, $filterRule, $filterUpc, $total, $pagination',
+		'template_content' => <<<'TEMPLATE_EOT'
+<div class="ipsBox">
+	<h1 class="ipsBox_title">{lang="gdcatalog_conflicts_title"}</h1>
+	<div class="ipsPad">
+
+		<div style="display:flex;gap:16px;margin-bottom:24px">
+			<div class="ipsBox" style="flex:1;padding:16px;text-align:center">
+				<div style="font-size:2em;font-weight:bold">{expression="number_format( $total )"}</div>
+				<div>Total Conflict Entries</div>
+			</div>
+			<div class="ipsBox" style="flex:1;padding:16px;text-align:center">
+				<div style="font-size:2em;font-weight:bold">{expression="count( $entries )"}</div>
+				<div>Showing On This Page</div>
+			</div>
+		</div>
+
+		<form method="get" action="{url="app=gdcatalog&module=catalog&controller=conflicts"}" style="margin-bottom:16px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+			<input type="text" name="upc" value="{$filterUpc}" placeholder="UPC" class="ipsField_text" style="width:150px">
+			<input type="text" name="field" value="{$filterField}" placeholder="Field name" class="ipsField_text" style="width:150px">
+			<input type="text" name="source" value="{$filterSource}" placeholder="Distributor" class="ipsField_text" style="width:150px">
+			<select name="rule" class="ipsField_select">
+				<option value="">All rules</option>
+				<option value="priority" {{if $filterRule === 'priority'}}selected{{endif}}>Priority</option>
+				<option value="longest" {{if $filterRule === 'longest'}}selected{{endif}}>Longest</option>
+				<option value="highest_res" {{if $filterRule === 'highest_res'}}selected{{endif}}>Highest Res</option>
+				<option value="highest_val" {{if $filterRule === 'highest_val'}}selected{{endif}}>Highest Val</option>
+				<option value="flagged_for_review" {{if $filterRule === 'flagged_for_review'}}selected{{endif}}>Flagged</option>
+				<option value="any_true" {{if $filterRule === 'any_true'}}selected{{endif}}>Any True</option>
+				<option value="admin_override" {{if $filterRule === 'admin_override'}}selected{{endif}}>Admin Override</option>
+			</select>
+			<button type="submit" class="ipsButton ipsButton--primary ipsButton--small">Filter</button>
+		</form>
+
+		<table class="ipsTable ipsTable_zebra" style="width:100%">
+			<thead>
+				<tr>
+					<th>{lang="gdcatalog_conflict_upc"}</th>
+					<th>{lang="gdcatalog_conflict_field"}</th>
+					<th>{lang="gdcatalog_conflict_winner"}</th>
+					<th>{lang="gdcatalog_conflict_winner_val"}</th>
+					<th>{lang="gdcatalog_conflict_loser"}</th>
+					<th>{lang="gdcatalog_conflict_loser_val"}</th>
+					<th>{lang="gdcatalog_conflict_rule"}</th>
+					<th>{lang="gdcatalog_conflict_date"}</th>
+				</tr>
+			</thead>
+			<tbody>
+				{{foreach $entries as $entry}}
+				<tr>
+					<td><code>{$entry['upc']}</code></td>
+					<td>{$entry['field_name']}</td>
+					<td>{$entry['winning_source']}</td>
+					<td>{expression="htmlspecialchars( mb_substr( $entry['winning_value'] ?? '', 0, 80 ) )"}</td>
+					<td>{$entry['losing_source']}</td>
+					<td>{expression="htmlspecialchars( mb_substr( $entry['losing_value'] ?? '', 0, 80 ) )"}</td>
+					<td><span class="ipsBadge ipsBadge--neutral">{$entry['rule_applied']}</span></td>
+					<td>{$entry['resolved_at']}</td>
+				</tr>
+				{{endforeach}}
+				{{if count( $entries ) === 0}}
+				<tr><td colspan="8" style="text-align:center;color:#999;padding:24px">No conflict log entries found.</td></tr>
+				{{endif}}
+			</tbody>
+		</table>
+
+		<div style="margin-top:16px">{$pagination}</div>
+
+	</div>
+</div>
+TEMPLATE_EOT,
+	],
+	[
+		'template_name' => 'productEdit',
+		'template_data' => '$product, $locks, $formHtml',
+		'template_content' => <<<'TEMPLATE_EOT'
+<div class="ipsBox">
+	<h1 class="ipsBox_title">{$product->title} <span class="ipsType_light">({$product->upc})</span></h1>
+	<div class="ipsPad">
+
+		<div style="display:flex;gap:16px;margin-bottom:24px;flex-wrap:wrap">
+			<div class="ipsBox" style="flex:1 1 200px;padding:16px">
+				<div style="color:#666;font-size:0.9em">Primary Source</div>
+				<div style="font-weight:bold;margin-top:4px">{$product->primary_source}</div>
+			</div>
+			<div class="ipsBox" style="flex:1 1 200px;padding:16px">
+				<div style="color:#666;font-size:0.9em">All Sources</div>
+				<div style="font-weight:bold;margin-top:4px">{$product->distributor_sources}</div>
+			</div>
+			<div class="ipsBox" style="flex:1 1 200px;padding:16px">
+				<div style="color:#666;font-size:0.9em">Last Updated</div>
+				<div style="font-weight:bold;margin-top:4px">{$product->last_updated}</div>
+			</div>
+			<div class="ipsBox" style="flex:1 1 200px;padding:16px">
+				<div style="color:#666;font-size:0.9em">Status</div>
+				<div style="margin-top:4px">
+					{{if $product->record_status === 'active'}}
+						<span class="ipsBadge ipsBadge--positive">Active</span>
+					{{elseif $product->record_status === 'admin_review'}}
+						<span class="ipsBadge ipsBadge--warning">Admin Review</span>
+					{{else}}
+						<span class="ipsBadge ipsBadge--neutral">{$product->record_status}</span>
+					{{endif}}
+				</div>
+			</div>
+		</div>
+
+		{{if count( $locks ) > 0}}
+		<div class="ipsMessage ipsMessage--info ipsPad" style="margin-bottom:16px">
+			<strong>{lang="gdcatalog_product_locked_fields"}:</strong>&nbsp;
+			{{foreach $locks as $lock}}
+				<span class="ipsBadge {{if $lock->isHardLock()}}ipsBadge--negative{{else}}ipsBadge--warning{{endif}}" style="margin-right:4px">
+					{$lock->field_name}{{if $lock->isHardLock()}} (hard){{else}} (dist){{endif}}
+				</span>
+			{{endforeach}}
+		</div>
+		{{endif}}
+
+		{$formHtml}
+
+	</div>
+</div>
+TEMPLATE_EOT,
+	],
+	[
+		'template_name' => 'compliancePanel',
+		'template_data' => '$tab, $counts, $tabUrls, $pendingFlags, $pendingConflicts, $allLocks, $adminFlags, $addRestrictionUrl',
+		'template_content' => <<<'TEMPLATE_EOT'
+<div class="ipsBox">
+	<h1 class="ipsBox_title">{lang="gdcatalog_compliance_title"}</h1>
+	<div class="ipsPad">
+
+		<div style="display:flex;gap:16px;margin-bottom:24px">
+			<div class="ipsBox" style="flex:1;padding:16px;text-align:center">
+				<div style="font-size:2em;font-weight:bold">{$counts['new']}</div>
+				<div>{lang="gdcatalog_compliance_tab_new"}</div>
+			</div>
+			<div class="ipsBox" style="flex:1;padding:16px;text-align:center">
+				<div style="font-size:2em;font-weight:bold">{$counts['conflicts']}</div>
+				<div>{lang="gdcatalog_compliance_tab_conflicts"}</div>
+			</div>
+			<div class="ipsBox" style="flex:1;padding:16px;text-align:center">
+				<div style="font-size:2em;font-weight:bold">{$counts['locks']}</div>
+				<div>{lang="gdcatalog_compliance_tab_locks"}</div>
+			</div>
+			<div class="ipsBox" style="flex:1;padding:16px;text-align:center">
+				<div style="font-size:2em;font-weight:bold">{$counts['admin']}</div>
+				<div>{lang="gdcatalog_compliance_tab_admin"}</div>
+			</div>
+		</div>
+
+		<div class="ipsTabs" data-ipsTabBar style="margin-bottom:16px">
+			<a href="{$tabUrls['new']}" class="ipsTabs_item {{if $tab === 'new'}}ipsTabs_activeItem{{endif}}">
+				{lang="gdcatalog_compliance_tab_new"} ({$counts['new']})
+			</a>
+			<a href="{$tabUrls['conflicts']}" class="ipsTabs_item {{if $tab === 'conflicts'}}ipsTabs_activeItem{{endif}}">
+				{lang="gdcatalog_compliance_tab_conflicts"} ({$counts['conflicts']})
+			</a>
+			<a href="{$tabUrls['locks']}" class="ipsTabs_item {{if $tab === 'locks'}}ipsTabs_activeItem{{endif}}">
+				{lang="gdcatalog_compliance_tab_locks"} ({$counts['locks']})
+			</a>
+			<a href="{$tabUrls['admin']}" class="ipsTabs_item {{if $tab === 'admin'}}ipsTabs_activeItem{{endif}}">
+				{lang="gdcatalog_compliance_tab_admin"} ({$counts['admin']})
+			</a>
+		</div>
+
+		{{if $tab === 'new'}}
+		<table class="ipsTable ipsTable_zebra" style="width:100%">
+			<thead>
+				<tr>
+					<th>UPC</th>
+					<th>Type</th>
+					<th>Value</th>
+					<th>Distributor</th>
+					<th>First Seen</th>
+					<th>Actions</th>
+				</tr>
+			</thead>
+			<tbody>
+				{{foreach $pendingFlags as $flag}}
+				<tr>
+					<td><code>{$flag['upc']}</code></td>
+					<td>{$flag['flag_type']}</td>
+					<td><strong>{$flag['flag_value']}</strong></td>
+					<td>{$flag['distributor_id']}</td>
+					<td>{$flag['first_seen_at']}</td>
+					<td>
+						<a href="{$flag['approve_url']}" class="ipsButton ipsButton--small ipsButton--positive">{lang="gdcatalog_compliance_approve"}</a>
+						<a href="{$flag['reject_url']}" class="ipsButton ipsButton--small ipsButton--negative">{lang="gdcatalog_compliance_reject"}</a>
+					</td>
+				</tr>
+				{{endforeach}}
+				{{if count( $pendingFlags ) === 0}}
+				<tr><td colspan="6" style="text-align:center;color:#999;padding:24px">No pending restrictions.</td></tr>
+				{{endif}}
+			</tbody>
+		</table>
+		{{endif}}
+
+		{{if $tab === 'conflicts'}}
+		<table class="ipsTable ipsTable_zebra" style="width:100%">
+			<thead>
+				<tr>
+					<th>UPC</th>
+					<th>Field</th>
+					<th>Current</th>
+					<th>Incoming</th>
+					<th>Auto-resolve</th>
+					<th>Actions</th>
+				</tr>
+			</thead>
+			<tbody>
+				{{foreach $pendingConflicts as $conflict}}
+				<tr>
+					<td><code>{$conflict['upc']}</code></td>
+					<td>{$conflict['field_name']}</td>
+					<td>{$conflict['current_value']}</td>
+					<td>{$conflict['incoming_value']}</td>
+					<td>{$conflict['auto_resolve_at']}</td>
+					<td>
+						<a href="{$conflict['accept_url']}" class="ipsButton ipsButton--small ipsButton--positive">{lang="gdcatalog_compliance_accept_incoming"}</a>
+						<a href="{$conflict['keep_url']}" class="ipsButton ipsButton--small ipsButton--warning">{lang="gdcatalog_compliance_keep_existing"}</a>
+						<a href="{$conflict['custom_url']}" class="ipsButton ipsButton--small ipsButton--normal">{lang="gdcatalog_compliance_set_custom"}</a>
+					</td>
+				</tr>
+				{{endforeach}}
+				{{if count( $pendingConflicts ) === 0}}
+				<tr><td colspan="6" style="text-align:center;color:#999;padding:24px">No pending feed conflicts.</td></tr>
+				{{endif}}
+			</tbody>
+		</table>
+		{{endif}}
+
+		{{if $tab === 'locks'}}
+		<table class="ipsTable ipsTable_zebra" style="width:100%">
+			<thead>
+				<tr>
+					<th>UPC</th>
+					<th>Field</th>
+					<th>Locked Value</th>
+					<th>Type</th>
+					<th>Reason</th>
+					<th>Locked At</th>
+					<th>Actions</th>
+				</tr>
+			</thead>
+			<tbody>
+				{{foreach $allLocks as $lock}}
+				<tr>
+					<td><code>{$lock['upc']}</code></td>
+					<td>{$lock['field_name']}</td>
+					<td>{$lock['locked_value']}</td>
+					<td>
+						{{if $lock['is_hard_lock']}}
+							<span class="ipsBadge ipsBadge--negative">{lang="gdcatalog_lock_type_hard"}</span>
+						{{else}}
+							<span class="ipsBadge ipsBadge--warning">{lang="gdcatalog_lock_type_distributor"}</span>
+						{{endif}}
+					</td>
+					<td>{$lock['lock_reason']}</td>
+					<td>{$lock['locked_at']}</td>
+					<td>
+						<a href="{$lock['unlock_url']}" class="ipsButton ipsButton--small ipsButton--negative" data-confirm>{lang="gdcatalog_lock_unlock"}</a>
+					</td>
+				</tr>
+				{{endforeach}}
+				{{if count( $allLocks ) === 0}}
+				<tr><td colspan="7" style="text-align:center;color:#999;padding:24px">No locked fields.</td></tr>
+				{{endif}}
+			</tbody>
+		</table>
+		{{endif}}
+
+		{{if $tab === 'admin'}}
+		<div style="margin-bottom:12px">
+			<a href="{$addRestrictionUrl}" class="ipsButton ipsButton--primary ipsButton--small">Add State Restriction</a>
+		</div>
+		<table class="ipsTable ipsTable_zebra" style="width:100%">
+			<thead>
+				<tr>
+					<th>UPC</th>
+					<th>Scope</th>
+					<th>Type</th>
+					<th>Value</th>
+					<th>Set By</th>
+					<th>Date</th>
+					<th>Source</th>
+				</tr>
+			</thead>
+			<tbody>
+				{{foreach $adminFlags as $flag}}
+				<tr>
+					<td><code>{$flag['upc']}</code></td>
+					<td>
+						{{if $flag['listing_id']}}
+							Listing
+						{{else}}
+							Product
+						{{endif}}
+					</td>
+					<td>{$flag['flag_type']}</td>
+					<td><strong>{$flag['flag_value']}</strong></td>
+					<td>{$flag['admin_reviewed_by']}</td>
+					<td>{$flag['admin_reviewed_at']}</td>
+					<td>{$flag['source']}</td>
+				</tr>
+				{{endforeach}}
+				{{if count( $adminFlags ) === 0}}
+				<tr><td colspan="7" style="text-align:center;color:#999;padding:24px">No admin-set restrictions.</td></tr>
+				{{endif}}
+			</tbody>
+		</table>
+		{{endif}}
+
+	</div>
+</div>
+TEMPLATE_EOT,
+	],
+	[
+		'template_name' => 'dashboard',
+		'template_data' => '$totalProducts, $activeProducts, $reviewProducts, $categoryCounts, $distributorStats, $osExists, $osStats, $pendingConflicts, $pendingCompliance, $lockedFields, $reindexQueue',
+		'template_content' => <<<'TEMPLATE_EOT'
+<div class="ipsBox">
+<h1 class="ipsBox_title">GD Master Catalog Dashboard</h1>
+<div class="ipsPad">
+<div style="display:flex;gap:16px;margin-bottom:24px">
+<div class="ipsBox" style="flex:1;padding:16px;text-align:center">
+<div style="font-size:2em;font-weight:bold">{expression="number_format($totalProducts)"}</div>
+<div>Total Products</div>
+<div style="color:#666">Active: {expression="number_format($activeProducts)"} | Review: {expression="number_format($reviewProducts)"}</div>
+</div>
+<div class="ipsBox" style="flex:1;padding:16px;text-align:center">
+<div style="font-size:2em;font-weight:bold">{$pendingConflicts}</div>
+<div>Pending Conflicts</div>
+</div>
+<div class="ipsBox" style="flex:1;padding:16px;text-align:center">
+<div style="font-size:2em;font-weight:bold">{$pendingCompliance}</div>
+<div>Pending Compliance Flags</div>
+</div>
+</div>
+<h2>Distributor Feeds</h2>
+<table class="ipsTable ipsTable_zebra" style="width:100%">
+<thead><tr><th>#</th><th>Feed</th><th>Products</th><th>Status</th><th>Last Run</th><th>Last Status</th><th>Action</th></tr></thead>
+<tbody>
+{{foreach $distributorStats as $ds}}
+<tr>
+<td>{$ds['priority']}</td>
+<td><strong>{$ds['feed_name']}</strong></td>
+<td>{expression="number_format($ds['product_count'])"}</td>
+<td>
+{{if $ds['active']}}
+<span class="ipsBadge ipsBadge--positive">Active</span>
+{{else}}
+<span class="ipsBadge ipsBadge--neutral">Inactive</span>
+{{endif}}
+</td>
+<td>
+{{if $ds['last_run_start']}}
+{$ds['last_run_start']}
+{{else}}
+&mdash;
+{{endif}}
+</td>
+<td>
+{{if $ds['last_status']}}
+{$ds['last_status']}
+{{else}}
+&mdash;
+{{endif}}
+</td>
+<td>
+{{if $ds['active']}}
+<a href="{$ds['run_import_url']}" class="ipsButton ipsButton--small ipsButton--primary">Run Import</a>
+{{endif}}
+</td>
+</tr>
+{{endforeach}}
+</tbody>
+</table>
+</div>
+</div>
+TEMPLATE_EOT,
+	],
+	[
+		'template_name' => 'productList',
+		'template_data' => '$products, $categories, $search, $status, $catId, $total, $pagination, $formActionUrl',
+		'template_content' => <<<'TEMPLATE_EOT'
+<div class="ipsBox">
+	<h1 class="ipsBox_title">{lang="gdcatalog_products_title"}</h1>
+	<div class="ipsPad">
+
+		<div style="display:flex;gap:16px;margin-bottom:24px">
+			<div class="ipsBox" style="flex:1;padding:16px;text-align:center">
+				<div style="font-size:2em;font-weight:bold">{expression="number_format( $total )"}</div>
+				<div>Total Matching Products</div>
+			</div>
+			<div class="ipsBox" style="flex:1;padding:16px;text-align:center">
+				<div style="font-size:2em;font-weight:bold">{expression="count( $products )"}</div>
+				<div>Showing On This Page</div>
+			</div>
+			<div class="ipsBox" style="flex:1;padding:16px;text-align:center">
+				<div style="font-size:2em;font-weight:bold">{expression="count( $categories )"}</div>
+				<div>Categories</div>
+			</div>
+		</div>
+
+		<form method="get" action="{$formActionUrl}" style="margin-bottom:16px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+			<input type="text" name="q" value="{$search}" placeholder="Search UPC, title, or brand..." class="ipsField_text" style="width:300px">
+			<select name="status" class="ipsField_select">
+				<option value="">All statuses</option>
+				<option value="active" {{if $status === 'active'}}selected{{endif}}>Active</option>
+				<option value="discontinued" {{if $status === 'discontinued'}}selected{{endif}}>Discontinued</option>
+				<option value="admin_review" {{if $status === 'admin_review'}}selected{{endif}}>Admin Review</option>
+				<option value="pending" {{if $status === 'pending'}}selected{{endif}}>Pending</option>
+			</select>
+			<select name="category" class="ipsField_select">
+				<option value="0">All categories</option>
+				{{foreach $categories as $cat}}
+					<option value="{$cat['id']}" {{if $catId === $cat['id']}}selected{{endif}}>{$cat['name']}</option>
+				{{endforeach}}
+			</select>
+			<button type="submit" class="ipsButton ipsButton--primary ipsButton--small">Filter</button>
+		</form>
+
+		<table class="ipsTable ipsTable_zebra" style="width:100%">
+			<thead>
+				<tr>
+					<th>{lang="gdcatalog_product_upc"}</th>
+					<th>{lang="gdcatalog_product_title"}</th>
+					<th>{lang="gdcatalog_product_brand"}</th>
+					<th>{lang="gdcatalog_product_caliber"}</th>
+					<th>{lang="gdcatalog_product_msrp"}</th>
+					<th>{lang="gdcatalog_product_status"}</th>
+					<th>{lang="gdcatalog_product_primary_source"}</th>
+					<th></th>
+				</tr>
+			</thead>
+			<tbody>
+				{{foreach $products as $product}}
+				<tr>
+					<td><code>{$product['upc']}</code></td>
+					<td>{$product['title']}</td>
+					<td>{$product['brand']}</td>
+					<td>{$product['caliber']}</td>
+					<td>{$product['msrp']}</td>
+					<td>
+						{{if $product['record_status'] === 'active'}}
+							<span class="ipsBadge ipsBadge--positive">{lang="gdcatalog_status_active"}</span>
+						{{elseif $product['record_status'] === 'admin_review'}}
+							<span class="ipsBadge ipsBadge--warning">{lang="gdcatalog_status_admin_review"}</span>
+						{{elseif $product['record_status'] === 'discontinued'}}
+							<span class="ipsBadge ipsBadge--negative">{lang="gdcatalog_status_discontinued"}</span>
+						{{else}}
+							<span class="ipsBadge ipsBadge--neutral">{lang="gdcatalog_status_pending"}</span>
+						{{endif}}
+					</td>
+					<td>{$product['primary_source']}</td>
+					<td>
+						<a href="{$product['edit_url']}" class="ipsButton ipsButton--small ipsButton--primary">Edit</a>
+						{{if $product['record_status'] === 'admin_review'}}
+							<a href="{$product['approve_url']}" class="ipsButton ipsButton--small ipsButton--positive">Approve</a>
+						{{endif}}
+					</td>
+				</tr>
+				{{endforeach}}
+				{{if count( $products ) === 0}}
+				<tr><td colspan="8" style="text-align:center;color:#999;padding:24px">No products found.</td></tr>
+				{{endif}}
+			</tbody>
+		</table>
+
+		<div style="margin-top:16px">{$pagination}</div>
+
+	</div>
+</div>
+TEMPLATE_EOT,
+	],
+];
+
+foreach ( $gdcatalogTemplates as $tpl )
+{
+	\IPS\Db::i()->insert( 'core_theme_templates', [
+		'template_set_id'   => 1,
+		'template_app'      => 'gdcatalog',
+		'template_location' => 'admin',
+		'template_group'    => 'catalog',
+		'template_name'     => $tpl['template_name'],
+		'template_data'     => $tpl['template_data'],
+		'template_content'  => $tpl['template_content'],
+	]);
+}

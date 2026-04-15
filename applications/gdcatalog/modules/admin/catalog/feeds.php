@@ -12,18 +12,27 @@
 
 namespace IPS\gdcatalog\modules\admin\catalog;
 
+/* To prevent PHP errors (extending class does not exist) revealing path */
+
 use IPS\Dispatcher;
 use IPS\Output;
 use IPS\Request;
 use IPS\Helpers\Form;
 use IPS\gdcatalog\Feed\Distributor;
 use IPS\gdcatalog\Feed\CategoryMapper;
+use function defined;
 
-class feeds extends \IPS\Dispatcher\Controller
+if ( !defined( '\IPS\SUITE_UNIQUE_KEY' ) )
 {
-	protected static $csrfProtected = true;
+	header( ( $_SERVER['SERVER_PROTOCOL'] ?? 'HTTP/1.0' ) . ' 403 Forbidden' );
+	exit;
+}
 
-	public function execute()
+class _feeds extends \IPS\Dispatcher\Controller
+{
+	public static bool $csrfProtected = TRUE;
+
+	public function execute(): void
 	{
 		Dispatcher::i()->checkAcpPermission( 'catalog_manage' );
 		parent::execute();
@@ -31,13 +40,56 @@ class feeds extends \IPS\Dispatcher\Controller
 
 	/**
 	 * Feed list — default view.
+	 *
+	 * Flattens feed data to scalar arrays so the template can use plain
+	 * `{$feed['key']}` access. URLs and language-keyed labels are resolved
+	 * in the controller to avoid nested tokens like `{lang="gdcatalog_dist_{$feed->distributor}"}`
+	 * or `{url="...&id={$feed->id}"}` which the IPS template compiler
+	 * rejects with UnexpectedValueException (Rule #12).
 	 */
 	protected function manage()
 	{
-		$feeds = Distributor::loadAll();
+		$rawFeeds = Distributor::loadAll();
+		$lang     = \IPS\Member::loggedIn()->language();
 
-		Output::i()->title  = \IPS\Member::loggedIn()->language()->addToStack( 'gdcatalog_feeds_title' );
-		Output::i()->output = \IPS\Theme::i()->getTemplate( 'catalog', 'gdcatalog', 'admin' )->feedList( $feeds );
+		$feeds = [];
+		$activeCount = 0;
+		$urlCount    = 0;
+		foreach ( $rawFeeds as $feed )
+		{
+			$editUrl = (string) \IPS\Http\Url::internal(
+				'app=gdcatalog&module=catalog&controller=feeds&do=edit&id=' . (int) $feed->id
+			)->csrf();
+
+			$isActive = (bool) $feed->active;
+			$feedUrl  = (string) ( $feed->feed_url ?? '' );
+
+			if ( $isActive )    { $activeCount++; }
+			if ( $feedUrl !== '' ) { $urlCount++; }
+
+			$feeds[] = [
+				'priority'          => (int) $feed->priority,
+				'feed_name'         => (string) $feed->feed_name,
+				'distributor_label' => $lang->addToStack( 'gdcatalog_dist_' . $feed->distributor ),
+				'feed_format'       => strtoupper( (string) $feed->feed_format ),
+				'import_schedule'   => (string) $feed->import_schedule,
+				'active'            => $isActive,
+				'last_run'          => $feed->last_run ?? null,
+				'last_record_count' => (int) ( $feed->last_record_count ?? 0 ),
+				'last_run_status'   => $feed->last_run_status ?? null,
+				'feed_url'          => $feedUrl,
+				'edit_url'          => $editUrl,
+			];
+		}
+
+		$feedCounts = [
+			'total'  => \count( $feeds ),
+			'active' => $activeCount,
+			'urls'   => $urlCount,
+		];
+
+		Output::i()->title  = $lang->addToStack( 'gdcatalog_feeds_title' );
+		Output::i()->output = \IPS\Theme::i()->getTemplate( 'catalog', 'gdcatalog', 'admin' )->feedList( $feeds, $feedCounts );
 	}
 
 	/**
@@ -150,3 +202,5 @@ class feeds extends \IPS\Dispatcher\Controller
 		Output::i()->output = (string) $form;
 	}
 }
+
+class feeds extends _feeds {}

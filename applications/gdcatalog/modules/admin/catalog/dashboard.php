@@ -11,17 +11,26 @@
 
 namespace IPS\gdcatalog\modules\admin\catalog;
 
+/* To prevent PHP errors (extending class does not exist) revealing path */
+
 use IPS\gdcatalog\Feed\Distributor;
 use IPS\gdcatalog\Feed\Importer;
 use IPS\gdcatalog\Catalog\Product;
 use IPS\gdcatalog\Catalog\Category;
 use IPS\gdcatalog\Search\OpenSearchIndexer;
+use function defined;
 
-class dashboard extends \IPS\Dispatcher\Controller
+if ( !defined( '\IPS\SUITE_UNIQUE_KEY' ) )
 {
-	protected static $csrfProtected = true;
+	header( ( $_SERVER['SERVER_PROTOCOL'] ?? 'HTTP/1.0' ) . ' 403 Forbidden' );
+	exit;
+}
 
-	public function execute()
+class _dashboard extends \IPS\Dispatcher\Controller
+{
+	public static bool $csrfProtected = TRUE;
+
+	public function execute(): void
 	{
 		\IPS\Dispatcher::i()->checkAcpPermission( 'catalog_manage' );
 		parent::execute();
@@ -29,59 +38,104 @@ class dashboard extends \IPS\Dispatcher\Controller
 
 	/**
 	 * Dashboard overview.
+	 *
+	 * Every query is wrapped in its own try/catch so a single missing table
+	 * or transient DB hiccup cannot hang the page. OpenSearch is NOT queried
+	 * here — live HTTP probes to the search cluster were causing the page
+	 * to hang indefinitely, so status is reported as unavailable and the
+	 * dedicated rebuild/processQueue actions perform the real work on demand.
 	 */
 	protected function manage()
 	{
 		/* Total product counts */
-		$totalProducts = \IPS\Db::i()->select( 'COUNT(*)', 'gd_catalog' )->first();
-		$activeProducts = \IPS\Db::i()->select( 'COUNT(*)', 'gd_catalog', [ 'record_status=?', 'active' ] )->first();
-		$reviewProducts = \IPS\Db::i()->select( 'COUNT(*)', 'gd_catalog', [ 'record_status=?', 'admin_review' ] )->first();
+		$totalProducts  = 0;
+		$activeProducts = 0;
+		$reviewProducts = 0;
+
+		try { $totalProducts  = (int) \IPS\Db::i()->select( 'COUNT(*)', 'gd_catalog' )->first(); } catch ( \Exception ) {}
+		try { $activeProducts = (int) \IPS\Db::i()->select( 'COUNT(*)', 'gd_catalog', [ 'record_status=?', 'active' ] )->first(); } catch ( \Exception ) {}
+		try { $reviewProducts = (int) \IPS\Db::i()->select( 'COUNT(*)', 'gd_catalog', [ 'record_status=?', 'admin_review' ] )->first(); } catch ( \Exception ) {}
 
 		/* Per-category counts */
 		$categoryCounts = [];
-		foreach ( Category::roots() as $cat )
+		try
 		{
-			$count = \IPS\Db::i()->select( 'COUNT(*)', 'gd_catalog', [ 'category_id=?', $cat->id ] )->first();
-			$categoryCounts[] = [ 'name' => $cat->name, 'count' => $count ];
-		}
-
-		/* Per-distributor stats from latest import logs */
-		$distributorStats = [];
-		foreach ( Distributor::loadAll() as $feed )
-		{
-			$lastLog = null;
-			try
+			foreach ( Category::roots() as $cat )
 			{
-				$lastLog = \IPS\Db::i()->select(
-					'*', 'gd_import_log',
-					[ 'feed_id=?', $feed->id ],
-					'run_start DESC', [ 0, 1 ]
-				)->first();
+				$count = 0;
+				try { $count = (int) \IPS\Db::i()->select( 'COUNT(*)', 'gd_catalog', [ 'category_id=?', $cat->id ] )->first(); } catch ( \Exception ) {}
+				$categoryCounts[] = [ 'name' => $cat->name, 'count' => $count ];
 			}
-			catch ( \UnderflowException ) {}
-
-			$productCount = \IPS\Db::i()->select(
-				'COUNT(*)', 'gd_catalog',
-				[ 'FIND_IN_SET(?, distributor_sources)', $feed->distributor ]
-			)->first();
-
-			$distributorStats[] = [
-				'feed'          => $feed,
-				'product_count' => $productCount,
-				'last_log'      => $lastLog,
-			];
 		}
+		catch ( \Exception ) {}
 
-		/* OpenSearch stats */
-		$osIndexer = OpenSearchIndexer::i();
-		$osStats   = $osIndexer->getStats();
-		$osExists  = $osIndexer->indexExists();
+		/* Per-distributor stats from latest import logs.
+		 *
+		 * Values are flattened to scalar keys so the dashboard template
+		 * can use plain `{$ds['key']}` access without mixing array and
+		 * object traversal, which the IPS template compiler rejects with
+		 * UnexpectedValueException. The Run Import URL is also built
+		 * here so the template does not need a nested `{url="..."}` tag
+		 * with embedded `{$...}` placeholders inside an `{{if}}` block.
+		 */
+		$distributorStats = [];
+		try
+		{
+			foreach ( Distributor::loadAll() as $feed )
+			{
+				$lastLog = null;
+				try
+				{
+					$lastLog = \IPS\Db::i()->select(
+						'*', 'gd_import_log',
+						[ 'feed_id=?', $feed->id ],
+						'run_start DESC', [ 0, 1 ]
+					)->first();
+				}
+				catch ( \Exception ) {}
+
+				$productCount = 0;
+				try
+				{
+					$productCount = (int) \IPS\Db::i()->select(
+						'COUNT(*)', 'gd_catalog',
+						[ 'FIND_IN_SET(?, distributor_sources)', $feed->distributor ]
+					)->first();
+				}
+				catch ( \Exception ) {}
+
+				$runImportUrl = (string) \IPS\Http\Url::internal(
+					'app=gdcatalog&module=catalog&controller=dashboard&do=runImport&id=' . (int) $feed->id
+				)->csrf();
+
+				$distributorStats[] = [
+					'priority'       => (int) $feed->priority,
+					'feed_name'      => (string) $feed->feed_name,
+					'feed_id'        => (int) $feed->id,
+					'active'         => (bool) $feed->active,
+					'product_count'  => $productCount,
+					'last_run_start' => $lastLog['run_start'] ?? null,
+					'last_status'    => $lastLog['status'] ?? null,
+					'run_import_url' => $runImportUrl,
+				];
+			}
+		}
+		catch ( \Exception ) {}
+
+		/* OpenSearch stats — hardcoded to avoid live HTTP probe that hangs the page */
+		$osExists = FALSE;
+		$osStats  = [];
 
 		/* Pending items */
-		$pendingConflicts  = \IPS\Db::i()->select( 'COUNT(*)', 'gd_feed_conflicts', [ 'status=?', 'pending' ] )->first();
-		$pendingCompliance = \IPS\Db::i()->select( 'COUNT(*)', 'gd_compliance_flags', [ 'status=?', 'pending_review' ] )->first();
-		$lockedFields      = \IPS\Db::i()->select( 'COUNT(*)', 'gd_field_locks' )->first();
-		$reindexQueue      = \IPS\Db::i()->select( 'COUNT(*)', 'gd_reindex_queue' )->first();
+		$pendingConflicts  = 0;
+		$pendingCompliance = 0;
+		$lockedFields      = 0;
+		$reindexQueue      = 0;
+
+		try { $pendingConflicts  = (int) \IPS\Db::i()->select( 'COUNT(*)', 'gd_feed_conflicts', [ 'status=?', 'pending' ] )->first(); } catch ( \Exception ) {}
+		try { $pendingCompliance = (int) \IPS\Db::i()->select( 'COUNT(*)', 'gd_compliance_flags', [ 'status=?', 'pending_review' ] )->first(); } catch ( \Exception ) {}
+		try { $lockedFields      = (int) \IPS\Db::i()->select( 'COUNT(*)', 'gd_field_locks' )->first(); } catch ( \Exception ) {}
+		try { $reindexQueue      = (int) \IPS\Db::i()->select( 'COUNT(*)', 'gd_reindex_queue' )->first(); } catch ( \Exception ) {}
 
 		\IPS\Output::i()->title  = \IPS\Member::loggedIn()->language()->addToStack( 'gdcatalog_dash_title' );
 		\IPS\Output::i()->output = \IPS\Theme::i()->getTemplate( 'catalog', 'gdcatalog', 'admin' )->dashboard(
@@ -144,3 +198,5 @@ class dashboard extends \IPS\Dispatcher\Controller
 		);
 	}
 }
+
+class dashboard extends _dashboard {}

@@ -12,16 +12,25 @@
 
 namespace IPS\gdcatalog\modules\admin\catalog;
 
+/* To prevent PHP errors (extending class does not exist) revealing path */
+
 use IPS\gdcatalog\Catalog\Product;
 use IPS\gdcatalog\Catalog\Category;
 use IPS\gdcatalog\Conflict\FieldLock;
 use IPS\gdcatalog\Search\OpenSearchIndexer;
+use function defined;
 
-class products extends \IPS\Dispatcher\Controller
+if ( !defined( '\IPS\SUITE_UNIQUE_KEY' ) )
 {
-	protected static $csrfProtected = true;
+	header( ( $_SERVER['SERVER_PROTOCOL'] ?? 'HTTP/1.0' ) . ' 403 Forbidden' );
+	exit;
+}
 
-	public function execute()
+class _products extends \IPS\Dispatcher\Controller
+{
+	public static bool $csrfProtected = TRUE;
+
+	public function execute(): void
 	{
 		\IPS\Dispatcher::i()->checkAcpPermission( 'catalog_manage' );
 		parent::execute();
@@ -29,6 +38,11 @@ class products extends \IPS\Dispatcher\Controller
 
 	/**
 	 * Product list with search/filter.
+	 *
+	 * Products and categories are flattened into scalar arrays and
+	 * all dynamic URLs (edit, approve, form action) are pre-built in
+	 * the controller. The template then only uses plain `{$row['key']}`
+	 * access per Rule #12 — no nested `{url="...{$x->upc}"}` tokens.
 	 */
 	protected function manage()
 	{
@@ -58,28 +72,58 @@ class products extends \IPS\Dispatcher\Controller
 		$page    = max( 1, (int) ( \IPS\Request::i()->page ?? 1 ) );
 		$perPage = 50;
 
-		$total = \IPS\Db::i()->select( 'COUNT(*)', 'gd_catalog', $where )->first();
+		$total = (int) \IPS\Db::i()->select( 'COUNT(*)', 'gd_catalog', $where )->first();
 
 		$products = [];
 		foreach (
 			\IPS\Db::i()->select( '*', 'gd_catalog', $where, 'last_updated DESC', [ ( $page - 1 ) * $perPage, $perPage ] ) as $row
 		)
 		{
-			$products[] = Product::constructFromData( $row );
+			$product = Product::constructFromData( $row );
+
+			$editUrl = (string) \IPS\Http\Url::internal(
+				'app=gdcatalog&module=catalog&controller=products&do=edit&upc=' . urlencode( (string) $product->upc )
+			);
+			$approveUrl = (string) \IPS\Http\Url::internal(
+				'app=gdcatalog&module=catalog&controller=products&do=resolveReview&upc=' . urlencode( (string) $product->upc )
+			)->csrf();
+
+			$products[] = [
+				'upc'            => (string) $product->upc,
+				'title'          => (string) ( $product->title ?? '' ),
+				'brand'          => (string) ( $product->brand ?? '' ),
+				'caliber'        => (string) ( $product->caliber ?? '' ),
+				'msrp'           => $product->msrp !== null ? '$' . number_format( (float) $product->msrp, 2 ) : '—',
+				'record_status'  => (string) ( $product->record_status ?? '' ),
+				'primary_source' => (string) ( $product->primary_source ?? '' ),
+				'edit_url'       => $editUrl,
+				'approve_url'    => $approveUrl,
+			];
 		}
 
-		$categories = Category::roots();
+		$categories = [];
+		foreach ( Category::roots() as $cat )
+		{
+			$categories[] = [
+				'id'   => (int) $cat->id,
+				'name' => (string) $cat->name,
+			];
+		}
+
+		$formActionUrl = (string) \IPS\Http\Url::internal(
+			'app=gdcatalog&module=catalog&controller=products'
+		);
 
 		$pagination = \IPS\Theme::i()->getTemplate( 'global', 'core', 'global' )->pagination(
 			\IPS\Http\Url::internal( 'app=gdcatalog&module=catalog&controller=products' ),
-			ceil( $total / $perPage ),
+			(int) ceil( $total / $perPage ),
 			$page,
 			$perPage
 		);
 
 		\IPS\Output::i()->title  = \IPS\Member::loggedIn()->language()->addToStack( 'gdcatalog_products_title' );
 		\IPS\Output::i()->output = \IPS\Theme::i()->getTemplate( 'catalog', 'gdcatalog', 'admin' )->productList(
-			$products, $categories, $search, $status, $catId, $total, $pagination
+			$products, $categories, $search, $status, $catId, $total, $pagination, $formActionUrl
 		);
 	}
 
@@ -172,10 +216,28 @@ class products extends \IPS\Dispatcher\Controller
 			);
 		}
 
-		\IPS\Output::i()->title  = $product->title . ' (' . $product->upc . ')';
-		\IPS\Output::i()->output = \IPS\Theme::i()->getTemplate( 'catalog', 'gdcatalog', 'admin' )->productEdit(
-			$product, $locks, (string) $form
-		);
+		\IPS\Output::i()->title = $product->title . ' (' . $product->upc . ')';
+
+		$html  = '<h2>' . htmlspecialchars( $product->title ?? '' ) . ' <small>(' . htmlspecialchars( $product->upc ) . ')</small></h2>';
+
+		if ( \count( $locks ) )
+		{
+			$html .= '<h3>Locked Fields</h3><ul>';
+			foreach ( $locks as $lock )
+			{
+				$unlockUrl = (string) \IPS\Http\Url::internal(
+					'app=gdcatalog&module=catalog&controller=compliance&do=unlock&id=' . (int) $lock->id
+				)->csrf();
+				$html .= '<li>' . htmlspecialchars( $lock->field_name ?? '' )
+					. ' (' . htmlspecialchars( $lock->lock_type ?? '' ) . ')'
+					. ' <a href="' . htmlspecialchars( $unlockUrl ) . '">unlock</a></li>';
+			}
+			$html .= '</ul>';
+		}
+
+		$html .= (string) $form;
+
+		\IPS\Output::i()->output = $html;
 	}
 
 	/**
@@ -240,3 +302,5 @@ class products extends \IPS\Dispatcher\Controller
 		);
 	}
 }
+
+class products extends _products {}

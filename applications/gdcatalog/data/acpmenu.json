@@ -1,0 +1,40 @@
+{
+	"catalog": {
+		"dashboard": {
+			"tab": "gdcatalog",
+			"controller": "dashboard",
+			"do": "",
+			"restriction": "catalog_manage"
+		},
+		"products": {
+			"tab": "gdcatalog",
+			"controller": "products",
+			"do": "",
+			"restriction": "catalog_manage"
+		},
+		"feeds": {
+			"tab": "gdcatalog",
+			"controller": "feeds",
+			"do": "",
+			"restriction": "catalog_manage"
+		},
+		"conflicts": {
+			"tab": "gdcatalog",
+			"controller": "conflicts",
+			"do": "",
+			"restriction": "catalog_manage"
+		},
+		"compliance": {
+			"tab": "gdcatalog",
+			"controller": "compliance",
+			"do": "",
+			"restriction": "catalog_manage"
+		},
+		"settings": {
+			"tab": "gdcatalog",
+			"controller": "settings",
+			"do": "",
+			"restriction": "catalog_manage"
+		}
+	}
+}

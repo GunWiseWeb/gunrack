@@ -8,11 +8,21 @@
 
 namespace IPS\gdcatalog\modules\admin\catalog;
 
-class settings extends \IPS\Dispatcher\Controller
-{
-	protected static $csrfProtected = true;
+/* To prevent PHP errors (extending class does not exist) revealing path */
 
-	public function execute()
+use function defined;
+
+if ( !defined( '\IPS\SUITE_UNIQUE_KEY' ) )
+{
+	header( ( $_SERVER['SERVER_PROTOCOL'] ?? 'HTTP/1.0' ) . ' 403 Forbidden' );
+	exit;
+}
+
+class _settings extends \IPS\Dispatcher\Controller
+{
+	public static bool $csrfProtected = TRUE;
+
+	public function execute(): void
 	{
 		\IPS\Dispatcher::i()->checkAcpPermission( 'catalog_manage' );
 		parent::execute();
@@ -62,3 +72,5 @@ class settings extends \IPS\Dispatcher\Controller
 		\IPS\Output::i()->output = (string) $form;
 	}
 }
+
+class settings extends _settings {}

@@ -11,9 +11,18 @@
 
 namespace IPS\gdcatalog\Conflict;
 
+/* To prevent PHP errors (extending class does not exist) revealing path */
+
+use function defined;
+
+if ( !defined( '\IPS\SUITE_UNIQUE_KEY' ) )
+{
+	header( ( $_SERVER['SERVER_PROTOCOL'] ?? 'HTTP/1.0' ) . ' 403 Forbidden' );
+	exit;
+}
 class FieldLock extends \IPS\Patterns\ActiveRecord
 {
-	public static string $databaseTable    = 'gd_field_locks';
+	public static ?string $databaseTable    = 'gd_field_locks';
 	public static string $databaseColumnId = 'id';
 	public static string $databasePrefix   = '';
 	protected static array $multitons      = [];
