@@ -1,0 +1,16 @@
+{
+    "admin": {
+        "rebates": {
+            "default_controller": "dashboard",
+            "default": 1,
+            "protected": 0
+        }
+    },
+    "front": {
+        "rebates": {
+            "default_controller": "hub",
+            "default": 1,
+            "protected": 0
+        }
+    }
+}

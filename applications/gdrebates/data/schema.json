@@ -1,0 +1,122 @@
+{
+    "gd_rebates": {
+        "name": "gd_rebates",
+        "columns": {
+            "id":                   { "name": "id",                   "type": "INT",          "length": 11,  "allow_null": false, "auto_increment": true, "unsigned": false, "comment": "" },
+            "manufacturer":         { "name": "manufacturer",         "type": "VARCHAR",      "length": 150, "allow_null": false, "default": "", "comment": "" },
+            "brand":                { "name": "brand",                "type": "VARCHAR",      "length": 150, "allow_null": false, "default": "", "comment": "" },
+            "title":                { "name": "title",                "type": "VARCHAR",      "length": 255, "allow_null": false, "default": "", "comment": "" },
+            "description":         { "name": "description",          "type": "TEXT",          "allow_null": true,  "default": null, "comment": "" },
+            "rebate_amount":        { "name": "rebate_amount",        "type": "DECIMAL",      "length": "10,2", "allow_null": true,  "default": null, "comment": "" },
+            "rebate_type":          { "name": "rebate_type",          "type": "VARCHAR",      "length": 20,  "allow_null": false, "default": "mail_in", "comment": "mail_in|instant|online|combo" },
+            "product_type":         { "name": "product_type",         "type": "VARCHAR",      "length": 20,  "allow_null": false, "default": "any", "comment": "firearm|ammo|optic|accessory|suppressor|any" },
+            "eligible_upcs":        { "name": "eligible_upcs",        "type": "TEXT",          "allow_null": true, "default": null, "comment": "" },
+            "eligible_models":      { "name": "eligible_models",      "type": "TEXT",          "allow_null": true, "default": null, "comment": "" },
+            "start_date":           { "name": "start_date",           "type": "DATE",          "allow_null": true,  "default": null, "comment": "" },
+            "end_date":             { "name": "end_date",             "type": "DATE",          "allow_null": true,  "default": null, "comment": "" },
+            "submission_deadline":  { "name": "submission_deadline",  "type": "DATE",          "allow_null": true,  "default": null, "comment": "" },
+            "rebate_form_url":      { "name": "rebate_form_url",      "type": "VARCHAR",       "length": 500, "allow_null": true, "default": null, "comment": "" },
+            "rebate_pdf_url":       { "name": "rebate_pdf_url",       "type": "VARCHAR",       "length": 500, "allow_null": true, "default": null, "comment": "" },
+            "manufacturer_url":     { "name": "manufacturer_url",     "type": "VARCHAR",       "length": 500, "allow_null": true, "default": null, "comment": "" },
+            "submission_steps":     { "name": "submission_steps",     "type": "TEXT",          "allow_null": true, "default": null, "comment": "" },
+            "status":               { "name": "status",               "type": "VARCHAR",       "length": 20,  "allow_null": false, "default": "pending", "comment": "active|expired|archived|pending|rejected" },
+            "source":               { "name": "source",               "type": "VARCHAR",       "length": 32,  "allow_null": false, "default": "community", "comment": "scraped|community|scraped_community" },
+            "dedup_hash":           { "name": "dedup_hash",           "type": "VARCHAR",       "length": 64,  "allow_null": true, "default": null, "comment": "SHA256(manufacturer+title+end_date+rebate_amount)" },
+            "submitted_by":         { "name": "submitted_by",         "type": "INT",           "length": 11, "allow_null": false, "default": 0, "comment": "0 = system/scraped" },
+            "verified_by":          { "name": "verified_by",          "type": "INT",           "length": 11, "allow_null": true, "default": null, "comment": "admin who approved" },
+            "created_at":           { "name": "created_at",           "type": "DATETIME",      "allow_null": true, "default": null, "comment": "" },
+            "expires_archived_at":  { "name": "expires_archived_at",  "type": "DATETIME",      "allow_null": true, "default": null, "comment": "" },
+            "flag_count":           { "name": "flag_count",           "type": "INT",           "length": 11, "allow_null": false, "default": 0, "comment": "" }
+        },
+        "indexes": {
+            "PRIMARY":            { "type": "primary", "name": "PRIMARY",            "length": [ null ], "columns": [ "id" ] },
+            "idx_manufacturer":   { "type": "key",     "name": "idx_manufacturer",   "length": [ null ], "columns": [ "manufacturer" ] },
+            "idx_brand":          { "type": "key",     "name": "idx_brand",          "length": [ null ], "columns": [ "brand" ] },
+            "idx_type":           { "type": "key",     "name": "idx_type",           "length": [ null ], "columns": [ "product_type" ] },
+            "idx_status":         { "type": "key",     "name": "idx_status",         "length": [ null ], "columns": [ "status" ] },
+            "idx_end_date":       { "type": "key",     "name": "idx_end_date",       "length": [ null ], "columns": [ "end_date" ] },
+            "idx_dedup":          { "type": "key",     "name": "idx_dedup",          "length": [ null ], "columns": [ "dedup_hash" ] }
+        }
+    },
+    "gd_rebate_tracking": {
+        "name": "gd_rebate_tracking",
+        "columns": {
+            "id":             { "name": "id",             "type": "INT",      "length": 11,  "allow_null": false, "auto_increment": true, "unsigned": false, "comment": "" },
+            "rebate_id":      { "name": "rebate_id",      "type": "INT",      "length": 11,  "allow_null": false, "default": 0, "comment": "" },
+            "member_id":      { "name": "member_id",      "type": "INT",      "length": 11,  "allow_null": false, "default": 0, "comment": "" },
+            "status":         { "name": "status",         "type": "VARCHAR",  "length": 20,  "allow_null": false, "default": "saved", "comment": "saved|submitted|received|rejected|expired" },
+            "submitted_date": { "name": "submitted_date", "type": "DATE",      "allow_null": true, "default": null, "comment": "" },
+            "received_date":  { "name": "received_date",  "type": "DATE",      "allow_null": true, "default": null, "comment": "" },
+            "notes":          { "name": "notes",          "type": "TEXT",      "allow_null": true, "default": null, "comment": "" },
+            "created_at":     { "name": "created_at",     "type": "DATETIME",  "allow_null": true, "default": null, "comment": "" },
+            "updated_at":     { "name": "updated_at",     "type": "DATETIME",  "allow_null": true, "default": null, "comment": "" }
+        },
+        "indexes": {
+            "PRIMARY":          { "type": "primary", "name": "PRIMARY",          "length": [ null, null ], "columns": [ "id" ] },
+            "uq_rebate_member": { "type": "unique",  "name": "uq_rebate_member", "length": [ null, null ], "columns": [ "rebate_id", "member_id" ] },
+            "idx_rebate":       { "type": "key",     "name": "idx_rebate",       "length": [ null ], "columns": [ "rebate_id" ] },
+            "idx_member":       { "type": "key",     "name": "idx_member",       "length": [ null ], "columns": [ "member_id" ] }
+        }
+    },
+    "gd_rebate_flags": {
+        "name": "gd_rebate_flags",
+        "columns": {
+            "id":         { "name": "id",         "type": "INT",      "length": 11,  "allow_null": false, "auto_increment": true, "unsigned": false, "comment": "" },
+            "rebate_id":  { "name": "rebate_id",  "type": "INT",      "length": 11,  "allow_null": false, "default": 0, "comment": "" },
+            "member_id":  { "name": "member_id",  "type": "INT",      "length": 11,  "allow_null": false, "default": 0, "comment": "" },
+            "reason":     { "name": "reason",     "type": "VARCHAR",  "length": 32,  "allow_null": false, "default": "other", "comment": "expired|incorrect_amount|broken_link|duplicate|other" },
+            "notes":      { "name": "notes",      "type": "TEXT",      "allow_null": true, "default": null, "comment": "" },
+            "flagged_at": { "name": "flagged_at", "type": "DATETIME",  "allow_null": true, "default": null, "comment": "" },
+            "reviewed":   { "name": "reviewed",   "type": "TINYINT",   "length": 1,   "allow_null": false, "default": 0, "comment": "" }
+        },
+        "indexes": {
+            "PRIMARY":          { "type": "primary", "name": "PRIMARY",          "length": [ null, null ], "columns": [ "id" ] },
+            "uq_rebate_member": { "type": "unique",  "name": "uq_rebate_member", "length": [ null, null ], "columns": [ "rebate_id", "member_id" ] },
+            "idx_rebate":       { "type": "key",     "name": "idx_rebate",       "length": [ null ], "columns": [ "rebate_id" ] }
+        }
+    },
+    "gd_scrape_targets": {
+        "name": "gd_scrape_targets",
+        "columns": {
+            "id":                 { "name": "id",                 "type": "INT",      "length": 11,  "allow_null": false, "auto_increment": true, "unsigned": false, "comment": "" },
+            "manufacturer":       { "name": "manufacturer",       "type": "VARCHAR",  "length": 150, "allow_null": false, "default": "", "comment": "" },
+            "brand":              { "name": "brand",              "type": "VARCHAR",  "length": 150, "allow_null": true,  "default": null, "comment": "" },
+            "scrape_url":         { "name": "scrape_url",         "type": "VARCHAR",  "length": 500, "allow_null": false, "default": "", "comment": "" },
+            "extraction_config":  { "name": "extraction_config",  "type": "TEXT",      "allow_null": true, "default": null, "comment": "JSON - selector map per Section 8.2.2" },
+            "rate_limit_ms":      { "name": "rate_limit_ms",      "type": "INT",      "length": 11,  "allow_null": false, "default": 2000, "comment": "" },
+            "is_known":           { "name": "is_known",           "type": "TINYINT",  "length": 1,   "allow_null": false, "default": 0, "comment": "1 = scraped rebates auto-approve" },
+            "enabled":            { "name": "enabled",            "type": "TINYINT",  "length": 1,   "allow_null": false, "default": 1, "comment": "" },
+            "last_run":           { "name": "last_run",           "type": "DATETIME",  "allow_null": true, "default": null, "comment": "" },
+            "last_status":        { "name": "last_status",        "type": "VARCHAR",  "length": 20,  "allow_null": true,  "default": null, "comment": "success|partial|failed|robots_blocked" },
+            "created_at":         { "name": "created_at",         "type": "DATETIME",  "allow_null": true, "default": null, "comment": "" }
+        },
+        "indexes": {
+            "PRIMARY":        { "type": "primary", "name": "PRIMARY",        "length": [ null ], "columns": [ "id" ] },
+            "idx_enabled":    { "type": "key",     "name": "idx_enabled",    "length": [ null ], "columns": [ "enabled" ] },
+            "idx_mfr":        { "type": "key",     "name": "idx_mfr",        "length": [ null ], "columns": [ "manufacturer" ] }
+        }
+    },
+    "gd_scrape_log": {
+        "name": "gd_scrape_log",
+        "columns": {
+            "id":                 { "name": "id",                 "type": "INT",      "length": 11,  "allow_null": false, "auto_increment": true, "unsigned": false, "comment": "" },
+            "target_id":          { "name": "target_id",          "type": "INT",      "length": 11,  "allow_null": false, "default": 0, "comment": "" },
+            "manufacturer":       { "name": "manufacturer",       "type": "VARCHAR",  "length": 150, "allow_null": false, "default": "", "comment": "" },
+            "scrape_url":         { "name": "scrape_url",         "type": "VARCHAR",  "length": 500, "allow_null": false, "default": "", "comment": "" },
+            "run_at":             { "name": "run_at",             "type": "DATETIME",  "allow_null": true, "default": null, "comment": "" },
+            "rebates_found":      { "name": "rebates_found",      "type": "INT",      "length": 11,  "allow_null": false, "default": 0, "comment": "" },
+            "rebates_created":    { "name": "rebates_created",    "type": "INT",      "length": 11,  "allow_null": false, "default": 0, "comment": "" },
+            "rebates_updated":    { "name": "rebates_updated",    "type": "INT",      "length": 11,  "allow_null": false, "default": 0, "comment": "" },
+            "rebates_unchanged":  { "name": "rebates_unchanged",  "type": "INT",      "length": 11,  "allow_null": false, "default": 0, "comment": "" },
+            "parse_failures":     { "name": "parse_failures",     "type": "INT",      "length": 11,  "allow_null": false, "default": 0, "comment": "" },
+            "status":             { "name": "status",             "type": "VARCHAR",  "length": 20,  "allow_null": false, "default": "success", "comment": "success|partial|failed|robots_blocked" },
+            "error_log":          { "name": "error_log",          "type": "TEXT",      "allow_null": true, "default": null, "comment": "" }
+        },
+        "indexes": {
+            "PRIMARY":     { "type": "primary", "name": "PRIMARY",     "length": [ null ], "columns": [ "id" ] },
+            "idx_mfr":     { "type": "key",     "name": "idx_mfr",     "length": [ null ], "columns": [ "manufacturer" ] },
+            "idx_run":     { "type": "key",     "name": "idx_run",     "length": [ null ], "columns": [ "run_at" ] },
+            "idx_target":  { "type": "key",     "name": "idx_target",  "length": [ null ], "columns": [ "target_id" ] }
+        }
+    }
+}
