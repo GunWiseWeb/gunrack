@@ -36,23 +36,31 @@ $templates[] = [
 	'params'   => 'data',
 	'content'  => <<<'TEMPLATE_EOT'
 <div class="ipsBox">
-	<div class="ipsBox_title"><h1>{lang="gdr_dash_title"}</h1></div>
-	<div class="ipsBox_body ipsPad">
-		<div class="ipsGrid ipsGrid_collapsePhone" data-ipsGrid data-ipsGrid-minWidth="240" data-ipsGrid-maxCols="4">
-			<div class="ipsBox ipsPad"><h3>{lang="gdr_dash_active"}</h3><p style="font-size:2em;margin:0">{$data['counts']['active']}</p></div>
-			<div class="ipsBox ipsPad"><h3>{lang="gdr_dash_pending"}</h3><p style="font-size:2em;margin:0">{$data['counts']['pending']}</p></div>
-			<div class="ipsBox ipsPad"><h3>{lang="gdr_dash_expiring"}</h3><p style="font-size:2em;margin:0">{$data['expiring_soon']}</p></div>
-			<div class="ipsBox ipsPad"><h3>{lang="gdr_dash_flagged"}</h3><p style="font-size:2em;margin:0">{$data['flagged']}</p></div>
+	<div class="ipsBox_title">
+		<h1 class="ipsType_sectionHead">{lang="gdr_dash_title"}</h1>
+	</div>
+	<div class="ipsBox_body">
+		<div class="ipsPad">
+			<div class="ipsGrid ipsGrid_collapsePhone" data-ipsGrid data-ipsGrid-minWidth="240" data-ipsGrid-maxCols="4">
+				<div class="ipsBox ipsPad"><h3>{lang="gdr_dash_active"}</h3><p style="font-size:2em;margin:0">{$data['counts']['active']}</p></div>
+				<div class="ipsBox ipsPad"><h3>{lang="gdr_dash_pending"}</h3><p style="font-size:2em;margin:0">{$data['counts']['pending']}</p></div>
+				<div class="ipsBox ipsPad"><h3>{lang="gdr_dash_expiring"}</h3><p style="font-size:2em;margin:0">{$data['expiring_soon']}</p></div>
+				<div class="ipsBox ipsPad"><h3>{lang="gdr_dash_flagged"}</h3><p style="font-size:2em;margin:0">{$data['flagged']}</p></div>
+			</div>
+			<p class="ipsSpacer_top"><strong>{lang="gdr_dash_total_savings"}:</strong> &#36;{expression="number_format($data['total_savings'], 2)"}</p>
 		</div>
-		<p class="ipsSpacer_top"><strong>{lang="gdr_dash_total_savings"}:</strong> &#36;{expression="number_format($data['total_savings'], 2)"}</p>
 	</div>
 </div>
 <br>
 <div class="ipsBox">
-	<div class="ipsBox_title"><h2>{lang="gdr_dash_by_type"}</h2></div>
-	<div class="ipsBox_body ipsPad">
-		{{if count($data['by_type']) > 0}}
-			<table class="ipsTable">
+	<div class="ipsBox_title">
+		<h2 class="ipsType_sectionHead">{lang="gdr_dash_by_type"}</h2>
+	</div>
+	<div class="ipsBox_body">
+		{{if count($data['by_type']) === 0}}
+			<div class="ipsEmptyMessage"><p>{lang="gdr_dash_no_rebates"}</p></div>
+		{{else}}
+			<table class="ipsTable ipsTable_zebra">
 				<thead><tr><th>{lang="gdr_front_submit_product_type"}</th><th>{lang="gdr_front_hub_active_count"}</th></tr></thead>
 				<tbody>
 				{{foreach $data['by_type'] as $row}}
@@ -60,17 +68,19 @@ $templates[] = [
 				{{endforeach}}
 				</tbody>
 			</table>
-		{{else}}
-			<p class="ipsType_light">{lang="gdr_dash_no_rebates"}</p>
 		{{endif}}
 	</div>
 </div>
 <br>
 <div class="ipsBox">
-	<div class="ipsBox_title"><h2>{lang="gdr_dash_top_mfrs"}</h2></div>
-	<div class="ipsBox_body ipsPad">
-		{{if count($data['top_mfrs']) > 0}}
-			<table class="ipsTable">
+	<div class="ipsBox_title">
+		<h2 class="ipsType_sectionHead">{lang="gdr_dash_top_mfrs"}</h2>
+	</div>
+	<div class="ipsBox_body">
+		{{if count($data['top_mfrs']) === 0}}
+			<div class="ipsEmptyMessage"><p>{lang="gdr_dash_no_rebates"}</p></div>
+		{{else}}
+			<table class="ipsTable ipsTable_zebra">
 				<thead><tr><th>{lang="gdr_submissions_manufacturer"}</th><th>{lang="gdr_front_hub_active_count"}</th></tr></thead>
 				<tbody>
 				{{foreach $data['top_mfrs'] as $row}}
@@ -78,17 +88,19 @@ $templates[] = [
 				{{endforeach}}
 				</tbody>
 			</table>
-		{{else}}
-			<p class="ipsType_light">{lang="gdr_dash_no_rebates"}</p>
 		{{endif}}
 	</div>
 </div>
 <br>
 <div class="ipsBox">
-	<div class="ipsBox_title"><h2>{lang="gdr_dash_recent_scrapes"}</h2></div>
-	<div class="ipsBox_body ipsPad">
-		{{if count($data['recent_scrapes']) > 0}}
-			<table class="ipsTable">
+	<div class="ipsBox_title">
+		<h2 class="ipsType_sectionHead">{lang="gdr_dash_recent_scrapes"}</h2>
+	</div>
+	<div class="ipsBox_body">
+		{{if count($data['recent_scrapes']) === 0}}
+			<div class="ipsEmptyMessage"><p>{lang="gdr_dash_no_scrapes"}</p></div>
+		{{else}}
+			<table class="ipsTable ipsTable_zebra">
 				<thead><tr>
 					<th>{lang="gdr_scrapelog_run_at"}</th>
 					<th>{lang="gdr_submissions_manufacturer"}</th>
@@ -112,8 +124,6 @@ $templates[] = [
 				{{endforeach}}
 				</tbody>
 			</table>
-		{{else}}
-			<p class="ipsType_light">{lang="gdr_dash_no_scrapes"}</p>
 		{{endif}}
 	</div>
 </div>
@@ -127,10 +137,14 @@ $templates[] = [
 	'params'   => 'data',
 	'content'  => <<<'TEMPLATE_EOT'
 <div class="ipsBox">
-	<div class="ipsBox_title"><h1>{lang="gdr_submissions_title"}</h1></div>
-	<div class="ipsBox_body ipsPad">
-		{{if count($data['rows']) > 0}}
-			<table class="ipsTable">
+	<div class="ipsBox_title">
+		<h1 class="ipsType_sectionHead">{lang="gdr_submissions_title"}</h1>
+	</div>
+	<div class="ipsBox_body">
+		{{if count($data['rows']) === 0}}
+			<div class="ipsEmptyMessage"><p>{lang="gdr_submissions_empty"}</p></div>
+		{{else}}
+			<table class="ipsTable ipsTable_zebra">
 				<thead><tr>
 					<th>{lang="gdr_submissions_manufacturer"}</th>
 					<th>{lang="gdr_submissions_title_col"}</th>
@@ -157,8 +171,6 @@ $templates[] = [
 				{{endforeach}}
 				</tbody>
 			</table>
-		{{else}}
-			<p class="ipsType_light">{lang="gdr_submissions_empty"}</p>
 		{{endif}}
 	</div>
 </div>
@@ -172,13 +184,15 @@ $templates[] = [
 	'params'   => 'data',
 	'content'  => <<<'TEMPLATE_EOT'
 <div class="ipsBox">
-	<div class="ipsBox_title" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
-		<h1 style="margin:0">{lang="gdr_targets_title"}</h1>
-		<a href="{$data['add_url']}" class="ipsButton ipsButton_primary">{lang="gdr_targets_add"}</a>
+	<div class="ipsBox_title ipsBox_title--withButtons">
+		<h1 class="ipsType_sectionHead">{lang="gdr_targets_title"}</h1>
+		<a href="{$data['add_url']}" class="ipsButton ipsButton_primary ipsButton_small">{lang="gdr_targets_add"}</a>
 	</div>
-	<div class="ipsBox_body ipsPad">
-		{{if count($data['rows']) > 0}}
-			<table class="ipsTable">
+	<div class="ipsBox_body">
+		{{if count($data['rows']) === 0}}
+			<div class="ipsEmptyMessage"><p>{lang="gdr_targets_empty"}</p></div>
+		{{else}}
+			<table class="ipsTable ipsTable_zebra">
 				<thead><tr>
 					<th>{lang="gdr_targets_manufacturer"}</th>
 					<th>{lang="gdr_targets_brand"}</th>
@@ -210,8 +224,6 @@ $templates[] = [
 				{{endforeach}}
 				</tbody>
 			</table>
-		{{else}}
-			<p class="ipsType_light">{lang="gdr_targets_empty"}</p>
 		{{endif}}
 	</div>
 </div>
@@ -291,11 +303,15 @@ $templates[] = [
 	'params'   => 'data',
 	'content'  => <<<'TEMPLATE_EOT'
 <div class="ipsBox">
-	<div class="ipsBox_title"><h1>{lang="gdr_scraperq_title"}</h1></div>
-	<div class="ipsBox_body ipsPad">
-		<p class="ipsType_light">{lang="gdr_scraperq_help"}</p>
-		{{if count($data['rows']) > 0}}
-			<table class="ipsTable">
+	<div class="ipsBox_title">
+		<h1 class="ipsType_sectionHead">{lang="gdr_scraperq_title"}</h1>
+	</div>
+	<div class="ipsBox_body">
+		<div class="ipsPad"><p class="ipsType_light">{lang="gdr_scraperq_help"}</p></div>
+		{{if count($data['rows']) === 0}}
+			<div class="ipsEmptyMessage"><p>{lang="gdr_scraperq_empty"}</p></div>
+		{{else}}
+			<table class="ipsTable ipsTable_zebra">
 				<thead><tr>
 					<th>{lang="gdr_submissions_manufacturer"}</th>
 					<th>{lang="gdr_submissions_title_col"}</th>
@@ -320,8 +336,6 @@ $templates[] = [
 				{{endforeach}}
 				</tbody>
 			</table>
-		{{else}}
-			<p class="ipsType_light">{lang="gdr_scraperq_empty"}</p>
 		{{endif}}
 	</div>
 </div>
@@ -335,10 +349,14 @@ $templates[] = [
 	'params'   => 'data',
 	'content'  => <<<'TEMPLATE_EOT'
 <div class="ipsBox">
-	<div class="ipsBox_title"><h1>{lang="gdr_scrapelog_title"}</h1></div>
-	<div class="ipsBox_body ipsPad">
-		{{if count($data['rows']) > 0}}
-			<table class="ipsTable">
+	<div class="ipsBox_title">
+		<h1 class="ipsType_sectionHead">{lang="gdr_scrapelog_title"}</h1>
+	</div>
+	<div class="ipsBox_body">
+		{{if count($data['rows']) === 0}}
+			<div class="ipsEmptyMessage"><p>{lang="gdr_scrapelog_empty"}</p></div>
+		{{else}}
+			<table class="ipsTable ipsTable_zebra">
 				<thead><tr>
 					<th>{lang="gdr_scrapelog_run_at"}</th>
 					<th>{lang="gdr_submissions_manufacturer"}</th>
@@ -366,8 +384,6 @@ $templates[] = [
 				{{endforeach}}
 				</tbody>
 			</table>
-		{{else}}
-			<p class="ipsType_light">{lang="gdr_scrapelog_empty"}</p>
 		{{endif}}
 	</div>
 </div>
@@ -381,10 +397,14 @@ $templates[] = [
 	'params'   => 'data',
 	'content'  => <<<'TEMPLATE_EOT'
 <div class="ipsBox">
-	<div class="ipsBox_title"><h1>{lang="gdr_flags_title"}</h1></div>
-	<div class="ipsBox_body ipsPad">
-		{{if count($data['rows']) > 0}}
-			<table class="ipsTable">
+	<div class="ipsBox_title">
+		<h1 class="ipsType_sectionHead">{lang="gdr_flags_title"}</h1>
+	</div>
+	<div class="ipsBox_body">
+		{{if count($data['rows']) === 0}}
+			<div class="ipsEmptyMessage"><p>{lang="gdr_flags_empty"}</p></div>
+		{{else}}
+			<table class="ipsTable ipsTable_zebra">
 				<thead><tr>
 					<th>{lang="gdr_submissions_manufacturer"}</th>
 					<th>{lang="gdr_submissions_title_col"}</th>
@@ -404,8 +424,6 @@ $templates[] = [
 				{{endforeach}}
 				</tbody>
 			</table>
-		{{else}}
-			<p class="ipsType_light">{lang="gdr_flags_empty"}</p>
 		{{endif}}
 	</div>
 </div>
@@ -419,10 +437,14 @@ $templates[] = [
 	'params'   => 'data',
 	'content'  => <<<'TEMPLATE_EOT'
 <div class="ipsBox">
-	<div class="ipsBox_title"><h1>{lang="gdr_active_title"}</h1></div>
-	<div class="ipsBox_body ipsPad">
-		{{if count($data['rows']) > 0}}
-			<table class="ipsTable">
+	<div class="ipsBox_title">
+		<h1 class="ipsType_sectionHead">{lang="gdr_active_title"}</h1>
+	</div>
+	<div class="ipsBox_body">
+		{{if count($data['rows']) === 0}}
+			<div class="ipsEmptyMessage"><p>{lang="gdr_active_empty"}</p></div>
+		{{else}}
+			<table class="ipsTable ipsTable_zebra">
 				<thead><tr>
 					<th>{lang="gdr_submissions_manufacturer"}</th>
 					<th>{lang="gdr_submissions_title_col"}</th>
@@ -447,8 +469,6 @@ $templates[] = [
 				{{endforeach}}
 				</tbody>
 			</table>
-		{{else}}
-			<p class="ipsType_light">{lang="gdr_active_empty"}</p>
 		{{endif}}
 	</div>
 </div>
