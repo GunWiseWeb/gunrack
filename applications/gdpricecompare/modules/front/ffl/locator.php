@@ -46,12 +46,25 @@ class _locator extends \IPS\Dispatcher\Controller
 			}
 		}
 
+		$countLabel = '';
+		if ( $zip !== '' && count( $results ) > 0 )
+		{
+			$countLabel = sprintf(
+				'%d FFL dealer%s within %d miles of %s',
+				count( $results ),
+				count( $results ) === 1 ? '' : 's',
+				$radius,
+				$zip
+			);
+		}
+
 		$data = [
-			'zip'       => $zip,
-			'radius'    => $radius,
-			'center'    => $center,
-			'results'   => $results,
-			'gmaps_key' => (string) ( \IPS\Settings::i()->gdpc_google_maps_api_key ?? '' ),
+			'zip'         => $zip,
+			'radius'      => $radius,
+			'center'      => $center,
+			'results'     => $results,
+			'count_label' => $countLabel,
+			'gmaps_key'   => (string) ( \IPS\Settings::i()->gdpc_google_maps_api_key ?? '' ),
 		];
 
 		\IPS\Output::i()->title  = \IPS\Member::loggedIn()->language()->addToStack( 'gdpc_front_ffl_title' );

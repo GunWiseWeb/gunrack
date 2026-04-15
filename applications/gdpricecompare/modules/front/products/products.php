@@ -87,14 +87,38 @@ class _products extends \IPS\Dispatcher\Controller
 			}
 		}
 
+		$specPills = [];
+		foreach ( [
+			'caliber'       => 'Caliber',
+			'action_type'   => 'Action',
+			'barrel_length' => 'Barrel',
+			'capacity'      => 'Capacity',
+			'finish'        => 'Finish',
+		] as $col => $label )
+		{
+			$v = (string) ( $product[ $col ] ?? '' );
+			if ( $v !== '' )
+			{
+				$specPills[] = [ 'label' => $label, 'value' => $v ];
+			}
+		}
+
+		$bestTotalFmt = null;
+		if ( $comparison['best_total'] !== null )
+		{
+			$bestTotalFmt = '$' . number_format( (float) $comparison['best_total'], 2 );
+		}
+
 		$data = [
 			'product'       => $product,
 			'is_nfa'        => $isNfa,
 			'is_ffl'        => $isFfl,
 			'is_ammo'       => $isAmmo,
+			'spec_pills'    => $specPills,
 			'in_stock'      => $comparison['in_stock'],
 			'out_of_stock'  => $comparison['out_of_stock'],
 			'best_total'    => $comparison['best_total'],
+			'best_total_fmt'=> $bestTotalFmt,
 			'user_state'    => $userState,
 			'cpr_ship'      => $cprShip,
 			'state_restriction' => $stateRestriction,
@@ -150,6 +174,7 @@ class _products extends \IPS\Dispatcher\Controller
 
 		$data = [
 			'category' => $category,
+			'q'        => (string) \IPS\Request::i()->q,
 			'rows'     => $rows,
 			'count'    => count( $rows ),
 		];
