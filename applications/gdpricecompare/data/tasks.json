@@ -1,0 +1,5 @@
+{
+	"aggregateClicks": "0 2 * * *",
+	"dispatchWatchlistAlerts": "*/15 * * * *",
+	"refreshFflData": "0 3 1 * *"
+}

@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<language>
+	<app key="gdpricecompare" version="1.0.0">
+		<word key="__app_gdpricecompare"><![CDATA[GD Price Compare]]></word>
+		<word key="menutab__gdpricecompare"><![CDATA[GD Price Compare]]></word>
+		<word key="menutab__gdpricecompare_icon"><![CDATA[tags]]></word>
+		<word key="menu__gdpricecompare_pricecompare"><![CDATA[Price Comparison]]></word>
+		<word key="menu__gdpricecompare_pricecompare_dashboard"><![CDATA[Dashboard]]></word>
+		<word key="menu__gdpricecompare_pricecompare_settings"><![CDATA[Settings]]></word>
+		<word key="menu__gdpricecompare_pricecompare_ffldata"><![CDATA[FFL Data]]></word>
+		<word key="menu__gdpricecompare_pricecompare_searchlog"><![CDATA[Search Log]]></word>
+		<word key="menu__gdpricecompare_pricecompare_compliance"><![CDATA[State Compliance]]></word>
+
+		<word key="gdpc_dash_title"><![CDATA[Price Comparison Dashboard]]></word>
+		<word key="gdpc_dash_products_indexed"><![CDATA[Products Indexed]]></word>
+		<word key="gdpc_dash_listings_total"><![CDATA[Active Dealer Listings]]></word>
+		<word key="gdpc_dash_watchlists"><![CDATA[Active Watchlists]]></word>
+		<word key="gdpc_dash_ffl_dealers"><![CDATA[FFL Dealers in Database]]></word>
+		<word key="gdpc_dash_clicks_today"><![CDATA[Outbound Clicks Today]]></word>
+		<word key="gdpc_dash_top_searches"><![CDATA[Top Searches (7d)]]></word>
+		<word key="gdpc_dash_zero_results"><![CDATA[Zero-Result Searches (7d)]]></word>
+
+		<word key="gdpc_settings_title"><![CDATA[Price Comparison Settings]]></word>
+		<word key="gdpc_settings_default_sort"><![CDATA[Default sort order]]></word>
+		<word key="gdpc_settings_free_ship_threshold"><![CDATA[Free-shipping threshold (USD)]]></word>
+		<word key="gdpc_settings_cpr_shipping_default"><![CDATA[Include shipping in CPR by default]]></word>
+		<word key="gdpc_settings_ffl_radius"><![CDATA[FFL locator default radius (miles)]]></word>
+		<word key="gdpc_settings_history_basic"><![CDATA[Price history days — Basic tier]]></word>
+		<word key="gdpc_settings_history_pro"><![CDATA[Price history days — Pro tier]]></word>
+		<word key="gdpc_settings_history_enterprise"><![CDATA[Price history days — Enterprise tier]]></word>
+		<word key="gdpc_settings_gmaps_key"><![CDATA[Google Maps API key]]></word>
+		<word key="gdpc_settings_alert_dedupe"><![CDATA[Watchlist alert dedupe window (hours)]]></word>
+		<word key="gdpc_settings_report_threshold"><![CDATA[Report threshold for elevated priority]]></word>
+		<word key="gdpc_settings_save"><![CDATA[Save Settings]]></word>
+		<word key="gdpc_settings_saved"><![CDATA[Settings saved.]]></word>
+
+		<word key="gdpc_ffldata_title"><![CDATA[FFL Data Management]]></word>
+		<word key="gdpc_ffldata_count"><![CDATA[FFL records loaded]]></word>
+		<word key="gdpc_ffldata_last_updated"><![CDATA[Last data refresh]]></word>
+		<word key="gdpc_ffldata_refresh_now"><![CDATA[Refresh Now]]></word>
+		<word key="gdpc_ffldata_refresh_queued"><![CDATA[FFL refresh queued — results visible after task runs.]]></word>
+
+		<word key="gdpc_searchlog_title"><![CDATA[Search Log]]></word>
+		<word key="gdpc_searchlog_top_title"><![CDATA[Top searches (last 7 days)]]></word>
+		<word key="gdpc_searchlog_zero_title"><![CDATA[Zero-result searches (last 7 days)]]></word>
+		<word key="gdpc_searchlog_query"><![CDATA[Query]]></word>
+		<word key="gdpc_searchlog_count"><![CDATA[Count]]></word>
+
+		<word key="gdpc_compliance_title"><![CDATA[State Compliance Rules]]></word>
+		<word key="gdpc_compliance_state"><![CDATA[State]]></word>
+		<word key="gdpc_compliance_type"><![CDATA[Restriction type]]></word>
+		<word key="gdpc_compliance_active"><![CDATA[Active]]></word>
+		<word key="gdpc_compliance_count"><![CDATA[Restrictions loaded]]></word>
+
+		<word key="gdpc_front_product_title"><![CDATA[Product]]></word>
+		<word key="gdpc_front_browse_title"><![CDATA[Category]]></word>
+		<word key="gdpc_front_watch_product"><![CDATA[Watch This Product]]></word>
+		<word key="gdpc_front_watchlist_title"><![CDATA[My Watchlist]]></word>
+		<word key="gdpc_front_watchlist_empty"><![CDATA[You are not watching any products yet.]]></word>
+		<word key="gdpc_front_ffl_title"><![CDATA[FFL Locator]]></word>
+		<word key="gdpc_front_ffl_prompt"><![CDATA[Enter your ZIP code to find nearby FFL dealers.]]></word>
+		<word key="gdpc_front_ffl_none"><![CDATA[No FFL dealers found within radius.]]></word>
+
+		<word key="gdpc_front_best_price"><![CDATA[Best Price]]></word>
+		<word key="gdpc_front_out_of_stock"><![CDATA[Out of Stock]]></word>
+		<word key="gdpc_front_free_ship"><![CDATA[FREE SHIP]]></word>
+		<word key="gdpc_front_restricted"><![CDATA[RESTRICTED]]></word>
+		<word key="gdpc_front_state_restricted"><![CDATA[STATE RESTRICTED]]></word>
+		<word key="gdpc_front_nfa_item"><![CDATA[NFA ITEM]]></word>
+		<word key="gdpc_front_ffl_required"><![CDATA[FFL REQUIRED]]></word>
+
+		<word key="gdpc_err_no_product"><![CDATA[Product not found.]]></word>
+		<word key="gdpc_err_no_listing"><![CDATA[Listing not found.]]></word>
+		<word key="gdpc_err_guest_watchlist"><![CDATA[Sign in to save products to your watchlist.]]></word>
+		<word key="gdpc_err_guest_rating"><![CDATA[Sign in to rate this dealer.]]></word>
+
+		<word key="task__aggregateClicks"><![CDATA[Aggregate outbound clicks to daily totals]]></word>
+		<word key="task__dispatchWatchlistAlerts"><![CDATA[Dispatch watchlist price alerts]]></word>
+		<word key="task__refreshFflData"><![CDATA[Refresh FFL dealer data from ATF]]></word>
+
+		<word key="r__gdpricecompare"><![CDATA[Price Compare]]></word>
+		<word key="r__can_view_dashboard"><![CDATA[Can view Price Compare dashboard?]]></word>
+		<word key="r__can_manage_settings"><![CDATA[Can manage Price Compare settings?]]></word>
+		<word key="r__can_manage_ffl"><![CDATA[Can manage FFL data?]]></word>
+		<word key="r__can_view_searchlog"><![CDATA[Can view search log?]]></word>
+		<word key="r__can_manage_compliance"><![CDATA[Can manage state compliance rules?]]></word>
+	</app>
+</language>
