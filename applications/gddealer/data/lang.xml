@@ -86,6 +86,11 @@
     <word key="gddealer_listing_condition"><![CDATA[Condition]]></word>
     <word key="gddealer_listing_last_updated"><![CDATA[Last Updated]]></word>
     <word key="gddealer_dealer_manage"><![CDATA[Can manage dealers]]></word>
+    <word key="gddealer_dealers_empty"><![CDATA[No dealers yet. Dealers are created automatically when a member purchases an IPS Commerce subscription in one of the dealer product groups.]]></word>
+    <word key="gddealer_detail_logs_empty"><![CDATA[No imports have run for this dealer yet.]]></word>
+    <word key="gddealer_detail_listings_empty"><![CDATA[This dealer has no listings yet.]]></word>
+    <word key="gddealer_mrr_tiers_empty"><![CDATA[No active subscription tiers.]]></word>
+    <word key="gddealer_unmatched_empty"><![CDATA[No unmatched UPCs. Every UPC in every dealer feed matched a product in the master catalog.]]></word>
     <word key="task__DealerImportFeeds"><![CDATA[Import Dealer Feeds]]></word>
   </app>
 </language>
