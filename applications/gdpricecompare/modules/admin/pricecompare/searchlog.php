@@ -18,6 +18,8 @@ if ( !defined( '\IPS\SUITE_UNIQUE_KEY' ) )
 
 class _searchlog extends \IPS\Dispatcher\Controller
 {
+	public static bool $csrfProtected = TRUE;
+
 	public function execute(): void
 	{
 		\IPS\Dispatcher::i()->checkAcpPermission( 'can_view_searchlog' );

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<language>
-	<app key="gdpricecompare" version="1.0.0">
+<language name="English (US)">
+	<app key="gdpricecompare">
 		<word key="__app_gdpricecompare"><![CDATA[GD Price Compare]]></word>
 		<word key="menutab__gdpricecompare"><![CDATA[GD Price Compare]]></word>
 		<word key="menutab__gdpricecompare_icon"><![CDATA[tags]]></word>

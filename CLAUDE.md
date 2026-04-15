@@ -125,6 +125,18 @@ These were learned by comparing against a working IPS v5 plugin. They apply to e
     ```
 
     IPS does not support cron expressions at any level of the task configuration — not in `tasks.json`, not in the ACP task editor. Scheduling specific times-of-day (e.g. "run at 2am daily") is not expressible in this format; either accept the first-run time as the daily anchor or compute time-of-day logic inside the task's `execute()` method and skip runs that fall outside the window.
+16. **Every ACP controller must declare `public static bool $csrfProtected = TRUE;`** — IPS v5 requires this static property on `\IPS\Dispatcher\Controller` subclasses that run in the admin dispatcher. Omitting it causes `CSRF check failed` errors on every ACP page load (not just state-changing actions) because the dispatcher's pre-execute hook refuses to dispatch controllers that haven't opted into CSRF handling. The property declaration is the opt-in; it does NOT skip CSRF checks. Declared CSRF token verification still happens inside action methods via `\IPS\Session::i()->csrfCheck()` for POST bodies and via `->csrf()` on link URLs for GET actions. Place the property immediately after the `class _controllerName extends \IPS\Dispatcher\Controller {` line:
+
+    ```php
+    class _dashboard extends \IPS\Dispatcher\Controller
+    {
+        public static bool $csrfProtected = TRUE;
+
+        public function execute(): void { ... }
+    }
+    ```
+
+    This applies to every admin controller in every plugin — `gdcatalog`, `gddealer`, `gdpricecompare`, and the nine still-to-be-built plugins. Front-end controllers (`location=front`) do not need it because the front dispatcher handles CSRF differently. Audit command: `grep -L 'csrfProtected' applications/*/modules/admin/**/*.php` must return empty.
 
 ## Full specification
 Read `GunRack_Spec_v2.9.16.md` for complete specs on all 12 plugins, database schemas, acceptance criteria, server setup (Appendix B), security requirements (Appendix C), and Phase 2 roadmap (Section 19).

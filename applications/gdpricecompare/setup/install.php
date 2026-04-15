@@ -24,61 +24,64 @@ $gdpricecompareTemplates = [
 		'template_name' => 'dashboard',
 		'template_data' => '$data',
 		'template_content' => <<<'TEMPLATE_EOT'
-<h1 class="ipsType_pageTitle">{lang="gdpc_dash_title"}</h1>
-<div class="ipsPad">
-	<div class="ipsGrid ipsGrid_collapsePhone">
-		<div class="ipsGrid_span3"><div class="ipsBox ipsPad">
-			<div class="ipsType_reset ipsType_bold ipsType_large">{$data['product_count']}</div>
-			<div class="ipsType_light">{lang="gdpc_dash_products_indexed"}</div>
-		</div></div>
-		<div class="ipsGrid_span3"><div class="ipsBox ipsPad">
-			<div class="ipsType_reset ipsType_bold ipsType_large">{$data['listing_count']}</div>
-			<div class="ipsType_light">{lang="gdpc_dash_listings_total"}</div>
-		</div></div>
-		<div class="ipsGrid_span3"><div class="ipsBox ipsPad">
-			<div class="ipsType_reset ipsType_bold ipsType_large">{$data['watchlist_count']}</div>
-			<div class="ipsType_light">{lang="gdpc_dash_watchlists"}</div>
-		</div></div>
-		<div class="ipsGrid_span3"><div class="ipsBox ipsPad">
-			<div class="ipsType_reset ipsType_bold ipsType_large">{$data['ffl_count']}</div>
-			<div class="ipsType_light">{lang="gdpc_dash_ffl_dealers"}</div>
-		</div></div>
-	</div>
+<div class="ipsBox">
+	<h1 class="ipsBox_title">{lang="gdpc_dash_title"}</h1>
+	<div class="ipsPad">
 
-	<div class="ipsSpacer_top">
-		<div class="ipsBox ipsPad">
-			<div class="ipsType_reset ipsType_bold">{$data['clicks_today']}</div>
-			<div class="ipsType_light">{lang="gdpc_dash_clicks_today"}</div>
+		<div style="display:flex;gap:16px;margin-bottom:24px;flex-wrap:wrap">
+			<div class="ipsBox" style="flex:1 1 150px;padding:16px;text-align:center">
+				<div style="font-size:2em;font-weight:bold">{expression="number_format( $data['product_count'] )"}</div>
+				<div>{lang="gdpc_dash_products_indexed"}</div>
+			</div>
+			<div class="ipsBox" style="flex:1 1 150px;padding:16px;text-align:center">
+				<div style="font-size:2em;font-weight:bold">{expression="number_format( $data['listing_count'] )"}</div>
+				<div>{lang="gdpc_dash_listings_total"}</div>
+			</div>
+			<div class="ipsBox" style="flex:1 1 150px;padding:16px;text-align:center">
+				<div style="font-size:2em;font-weight:bold">{expression="number_format( $data['watchlist_count'] )"}</div>
+				<div>{lang="gdpc_dash_watchlists"}</div>
+			</div>
+			<div class="ipsBox" style="flex:1 1 150px;padding:16px;text-align:center">
+				<div style="font-size:2em;font-weight:bold">{expression="number_format( $data['ffl_count'] )"}</div>
+				<div>{lang="gdpc_dash_ffl_dealers"}</div>
+			</div>
+			<div class="ipsBox" style="flex:1 1 150px;padding:16px;text-align:center">
+				<div style="font-size:2em;font-weight:bold">{expression="number_format( $data['clicks_today'] )"}</div>
+				<div>{lang="gdpc_dash_clicks_today"}</div>
+			</div>
 		</div>
-	</div>
 
-	<div class="ipsGrid ipsGrid_collapsePhone ipsSpacer_top">
-		<div class="ipsGrid_span6"><div class="ipsBox ipsPad">
-			<h3 class="ipsType_sectionHead">{lang="gdpc_dash_top_searches"}</h3>
-			{{if count($data['top_searches']) > 0}}
-			<table class="ipsTable">
-				<thead><tr><th>{lang="gdpc_searchlog_query"}</th><th>{lang="gdpc_searchlog_count"}</th></tr></thead>
-				<tbody>
-				{{foreach $data['top_searches'] as $row}}
-				<tr><td>{$row['query']}</td><td>{$row['count']}</td></tr>
-				{{endforeach}}
-				</tbody>
-			</table>
-			{{endif}}
-		</div></div>
-		<div class="ipsGrid_span6"><div class="ipsBox ipsPad">
-			<h3 class="ipsType_sectionHead">{lang="gdpc_dash_zero_results"}</h3>
-			{{if count($data['zero_searches']) > 0}}
-			<table class="ipsTable">
-				<thead><tr><th>{lang="gdpc_searchlog_query"}</th><th>{lang="gdpc_searchlog_count"}</th></tr></thead>
-				<tbody>
-				{{foreach $data['zero_searches'] as $row}}
-				<tr><td>{$row['query']}</td><td>{$row['count']}</td></tr>
-				{{endforeach}}
-				</tbody>
-			</table>
-			{{endif}}
-		</div></div>
+		<div style="display:flex;gap:16px;flex-wrap:wrap">
+			<div class="ipsBox" style="flex:1 1 320px;padding:16px">
+				<h3 class="ipsType_sectionHead" style="margin-top:0">{lang="gdpc_dash_top_searches"}</h3>
+				<table class="ipsTable ipsTable_zebra" style="width:100%">
+					<thead><tr><th>{lang="gdpc_searchlog_query"}</th><th style="width:80px">{lang="gdpc_searchlog_count"}</th></tr></thead>
+					<tbody>
+					{{foreach $data['top_searches'] as $row}}
+					<tr><td>{$row['query']}</td><td>{expression="number_format( $row['count'] )"}</td></tr>
+					{{endforeach}}
+					{{if count( $data['top_searches'] ) === 0}}
+					<tr><td colspan="2" style="text-align:center;color:#999;padding:24px">No searches recorded in the last 7 days.</td></tr>
+					{{endif}}
+					</tbody>
+				</table>
+			</div>
+			<div class="ipsBox" style="flex:1 1 320px;padding:16px">
+				<h3 class="ipsType_sectionHead" style="margin-top:0">{lang="gdpc_dash_zero_results"}</h3>
+				<table class="ipsTable ipsTable_zebra" style="width:100%">
+					<thead><tr><th>{lang="gdpc_searchlog_query"}</th><th style="width:80px">{lang="gdpc_searchlog_count"}</th></tr></thead>
+					<tbody>
+					{{foreach $data['zero_searches'] as $row}}
+					<tr><td>{$row['query']}</td><td>{expression="number_format( $row['count'] )"}</td></tr>
+					{{endforeach}}
+					{{if count( $data['zero_searches'] ) === 0}}
+					<tr><td colspan="2" style="text-align:center;color:#999;padding:24px">No zero-result searches in the last 7 days.</td></tr>
+					{{endif}}
+					</tbody>
+				</table>
+			</div>
+		</div>
+
 	</div>
 </div>
 TEMPLATE_EOT,
@@ -93,55 +96,59 @@ TEMPLATE_EOT,
 		'template_name' => 'settings',
 		'template_data' => '$data',
 		'template_content' => <<<'TEMPLATE_EOT'
-<h1 class="ipsType_pageTitle">{lang="gdpc_settings_title"}</h1>
-<form method="post" action="" class="ipsForm ipsForm_vertical ipsPad">
-	<input type="hidden" name="csrfKey" value="{$data['csrf_key']}" />
-
-	<div class="ipsFieldRow">
-		<label class="ipsFieldRow_label">{lang="gdpc_settings_default_sort"}</label>
-		<input type="text" name="gdpc_default_sort" value="{$data['default_sort']}" class="ipsField_fullWidth" />
-	</div>
-	<div class="ipsFieldRow">
-		<label class="ipsFieldRow_label">{lang="gdpc_settings_free_ship_threshold"}</label>
-		<input type="text" name="gdpc_free_ship_threshold" value="{$data['free_ship_threshold']}" class="ipsField_fullWidth" />
-	</div>
-	<div class="ipsFieldRow">
-		<label class="ipsFieldRow_label">{lang="gdpc_settings_cpr_shipping_default"}</label>
-		<input type="checkbox" name="gdpc_cpr_include_shipping_default" value="1" {{if $data['cpr_include_shipping']}}checked{{endif}} />
-	</div>
-	<div class="ipsFieldRow">
-		<label class="ipsFieldRow_label">{lang="gdpc_settings_ffl_radius"}</label>
-		<input type="number" min="1" name="gdpc_ffl_radius_default" value="{$data['ffl_radius']}" />
-	</div>
-	<div class="ipsFieldRow">
-		<label class="ipsFieldRow_label">{lang="gdpc_settings_history_basic"}</label>
-		<input type="number" min="1" name="gdpc_price_history_days_basic" value="{$data['history_basic']}" />
-	</div>
-	<div class="ipsFieldRow">
-		<label class="ipsFieldRow_label">{lang="gdpc_settings_history_pro"}</label>
-		<input type="number" min="1" name="gdpc_price_history_days_pro" value="{$data['history_pro']}" />
-	</div>
-	<div class="ipsFieldRow">
-		<label class="ipsFieldRow_label">{lang="gdpc_settings_history_enterprise"}</label>
-		<input type="number" min="1" name="gdpc_price_history_days_enterprise" value="{$data['history_enterprise']}" />
-	</div>
-	<div class="ipsFieldRow">
-		<label class="ipsFieldRow_label">{lang="gdpc_settings_gmaps_key"}</label>
-		<input type="text" name="gdpc_google_maps_api_key" value="{$data['google_maps_key']}" class="ipsField_fullWidth" />
-	</div>
-	<div class="ipsFieldRow">
-		<label class="ipsFieldRow_label">{lang="gdpc_settings_alert_dedupe"}</label>
-		<input type="number" min="1" name="gdpc_alert_dedupe_hours" value="{$data['alert_dedupe_hours']}" />
-	</div>
-	<div class="ipsFieldRow">
-		<label class="ipsFieldRow_label">{lang="gdpc_settings_report_threshold"}</label>
-		<input type="number" min="1" name="gdpc_report_priority_threshold" value="{$data['report_threshold']}" />
-	</div>
-
+<div class="ipsBox">
+	<h1 class="ipsBox_title">{lang="gdpc_settings_title"}</h1>
 	<div class="ipsPad">
-		<button type="submit" class="ipsButton ipsButton_primary">{lang="gdpc_settings_save"}</button>
+		<form method="post" action="" class="ipsForm ipsForm_vertical">
+			<input type="hidden" name="csrfKey" value="{$data['csrf_key']}" />
+
+			<div class="ipsFieldRow">
+				<label class="ipsFieldRow_label">{lang="gdpc_settings_default_sort"}</label>
+				<input type="text" name="gdpc_default_sort" value="{$data['default_sort']}" class="ipsField_fullWidth" />
+			</div>
+			<div class="ipsFieldRow">
+				<label class="ipsFieldRow_label">{lang="gdpc_settings_free_ship_threshold"}</label>
+				<input type="text" name="gdpc_free_ship_threshold" value="{$data['free_ship_threshold']}" class="ipsField_fullWidth" />
+			</div>
+			<div class="ipsFieldRow">
+				<label class="ipsFieldRow_label">{lang="gdpc_settings_cpr_shipping_default"}</label>
+				<input type="checkbox" name="gdpc_cpr_include_shipping_default" value="1" {{if $data['cpr_include_shipping']}}checked{{endif}} />
+			</div>
+			<div class="ipsFieldRow">
+				<label class="ipsFieldRow_label">{lang="gdpc_settings_ffl_radius"}</label>
+				<input type="number" min="1" name="gdpc_ffl_radius_default" value="{$data['ffl_radius']}" />
+			</div>
+			<div class="ipsFieldRow">
+				<label class="ipsFieldRow_label">{lang="gdpc_settings_history_basic"}</label>
+				<input type="number" min="1" name="gdpc_price_history_days_basic" value="{$data['history_basic']}" />
+			</div>
+			<div class="ipsFieldRow">
+				<label class="ipsFieldRow_label">{lang="gdpc_settings_history_pro"}</label>
+				<input type="number" min="1" name="gdpc_price_history_days_pro" value="{$data['history_pro']}" />
+			</div>
+			<div class="ipsFieldRow">
+				<label class="ipsFieldRow_label">{lang="gdpc_settings_history_enterprise"}</label>
+				<input type="number" min="1" name="gdpc_price_history_days_enterprise" value="{$data['history_enterprise']}" />
+			</div>
+			<div class="ipsFieldRow">
+				<label class="ipsFieldRow_label">{lang="gdpc_settings_gmaps_key"}</label>
+				<input type="text" name="gdpc_google_maps_api_key" value="{$data['google_maps_key']}" class="ipsField_fullWidth" />
+			</div>
+			<div class="ipsFieldRow">
+				<label class="ipsFieldRow_label">{lang="gdpc_settings_alert_dedupe"}</label>
+				<input type="number" min="1" name="gdpc_alert_dedupe_hours" value="{$data['alert_dedupe_hours']}" />
+			</div>
+			<div class="ipsFieldRow">
+				<label class="ipsFieldRow_label">{lang="gdpc_settings_report_threshold"}</label>
+				<input type="number" min="1" name="gdpc_report_priority_threshold" value="{$data['report_threshold']}" />
+			</div>
+
+			<div style="margin-top:16px">
+				<button type="submit" class="ipsButton ipsButton--primary">{lang="gdpc_settings_save"}</button>
+			</div>
+		</form>
 	</div>
-</form>
+</div>
 TEMPLATE_EOT,
 	],
 
@@ -154,14 +161,25 @@ TEMPLATE_EOT,
 		'template_name' => 'ffldata',
 		'template_data' => '$data',
 		'template_content' => <<<'TEMPLATE_EOT'
-<h1 class="ipsType_pageTitle">{lang="gdpc_ffldata_title"}</h1>
-<div class="ipsPad">
-	<div class="ipsBox ipsPad">
-		<div>{lang="gdpc_ffldata_count"}: <strong>{$data['count']}</strong></div>
-		<div>{lang="gdpc_ffldata_last_updated"}: <strong>{{if $data['last']}}{$data['last']}{{else}}—{{endif}}</strong></div>
-	</div>
-	<div class="ipsSpacer_top">
-		<a href="{$data['refresh_url']}" class="ipsButton ipsButton_primary">{lang="gdpc_ffldata_refresh_now"}</a>
+<div class="ipsBox">
+	<h1 class="ipsBox_title">{lang="gdpc_ffldata_title"}</h1>
+	<div class="ipsPad">
+
+		<div style="display:flex;gap:16px;margin-bottom:24px;flex-wrap:wrap">
+			<div class="ipsBox" style="flex:1 1 200px;padding:16px;text-align:center">
+				<div style="font-size:2em;font-weight:bold">{expression="number_format( $data['count'] )"}</div>
+				<div>{lang="gdpc_ffldata_count"}</div>
+			</div>
+			<div class="ipsBox" style="flex:1 1 200px;padding:16px;text-align:center">
+				<div style="font-size:1.3em;font-weight:bold">{{if $data['last']}}{$data['last']}{{else}}&mdash;{{endif}}</div>
+				<div>{lang="gdpc_ffldata_last_updated"}</div>
+			</div>
+		</div>
+
+		<div>
+			<a href="{$data['refresh_url']}" class="ipsButton ipsButton--primary">{lang="gdpc_ffldata_refresh_now"}</a>
+		</div>
+
 	</div>
 </div>
 TEMPLATE_EOT,
@@ -176,35 +194,52 @@ TEMPLATE_EOT,
 		'template_name' => 'searchlog',
 		'template_data' => '$data',
 		'template_content' => <<<'TEMPLATE_EOT'
-<h1 class="ipsType_pageTitle">{lang="gdpc_searchlog_title"}</h1>
-<div class="ipsPad">
-	<div class="ipsGrid ipsGrid_collapsePhone">
-		<div class="ipsGrid_span6"><div class="ipsBox ipsPad">
-			<h3 class="ipsType_sectionHead">{lang="gdpc_searchlog_top_title"}</h3>
-			{{if count($data['top']) > 0}}
-			<table class="ipsTable">
-				<thead><tr><th>{lang="gdpc_searchlog_query"}</th><th>{lang="gdpc_searchlog_count"}</th></tr></thead>
-				<tbody>
-				{{foreach $data['top'] as $row}}
-				<tr><td>{$row['query']}</td><td>{$row['count']}</td></tr>
-				{{endforeach}}
-				</tbody>
-			</table>
-			{{endif}}
-		</div></div>
-		<div class="ipsGrid_span6"><div class="ipsBox ipsPad">
-			<h3 class="ipsType_sectionHead">{lang="gdpc_searchlog_zero_title"}</h3>
-			{{if count($data['zero']) > 0}}
-			<table class="ipsTable">
-				<thead><tr><th>{lang="gdpc_searchlog_query"}</th><th>{lang="gdpc_searchlog_count"}</th></tr></thead>
-				<tbody>
-				{{foreach $data['zero'] as $row}}
-				<tr><td>{$row['query']}</td><td>{$row['count']}</td></tr>
-				{{endforeach}}
-				</tbody>
-			</table>
-			{{endif}}
-		</div></div>
+<div class="ipsBox">
+	<h1 class="ipsBox_title">{lang="gdpc_searchlog_title"}</h1>
+	<div class="ipsPad">
+
+		<div style="display:flex;gap:16px;margin-bottom:24px;flex-wrap:wrap">
+			<div class="ipsBox" style="flex:1 1 200px;padding:16px;text-align:center">
+				<div style="font-size:2em;font-weight:bold">{expression="count( $data['top'] )"}</div>
+				<div>{lang="gdpc_searchlog_top_title"}</div>
+			</div>
+			<div class="ipsBox" style="flex:1 1 200px;padding:16px;text-align:center">
+				<div style="font-size:2em;font-weight:bold">{expression="count( $data['zero'] )"}</div>
+				<div>{lang="gdpc_searchlog_zero_title"}</div>
+			</div>
+		</div>
+
+		<div style="display:flex;gap:16px;flex-wrap:wrap">
+			<div class="ipsBox" style="flex:1 1 320px;padding:16px">
+				<h3 class="ipsType_sectionHead" style="margin-top:0">{lang="gdpc_searchlog_top_title"}</h3>
+				<table class="ipsTable ipsTable_zebra" style="width:100%">
+					<thead><tr><th>{lang="gdpc_searchlog_query"}</th><th style="width:80px">{lang="gdpc_searchlog_count"}</th></tr></thead>
+					<tbody>
+					{{foreach $data['top'] as $row}}
+					<tr><td>{$row['query']}</td><td>{expression="number_format( $row['count'] )"}</td></tr>
+					{{endforeach}}
+					{{if count( $data['top'] ) === 0}}
+					<tr><td colspan="2" style="text-align:center;color:#999;padding:24px">No searches recorded in the last 7 days.</td></tr>
+					{{endif}}
+					</tbody>
+				</table>
+			</div>
+			<div class="ipsBox" style="flex:1 1 320px;padding:16px">
+				<h3 class="ipsType_sectionHead" style="margin-top:0">{lang="gdpc_searchlog_zero_title"}</h3>
+				<table class="ipsTable ipsTable_zebra" style="width:100%">
+					<thead><tr><th>{lang="gdpc_searchlog_query"}</th><th style="width:80px">{lang="gdpc_searchlog_count"}</th></tr></thead>
+					<tbody>
+					{{foreach $data['zero'] as $row}}
+					<tr><td>{$row['query']}</td><td>{expression="number_format( $row['count'] )"}</td></tr>
+					{{endforeach}}
+					{{if count( $data['zero'] ) === 0}}
+					<tr><td colspan="2" style="text-align:center;color:#999;padding:24px">No zero-result searches in the last 7 days.</td></tr>
+					{{endif}}
+					</tbody>
+				</table>
+			</div>
+		</div>
+
 	</div>
 </div>
 TEMPLATE_EOT,
@@ -219,27 +254,46 @@ TEMPLATE_EOT,
 		'template_name' => 'compliance',
 		'template_data' => '$data',
 		'template_content' => <<<'TEMPLATE_EOT'
-<h1 class="ipsType_pageTitle">{lang="gdpc_compliance_title"}</h1>
-<div class="ipsPad">
-	<div>{lang="gdpc_compliance_count"}: <strong>{$data['count']}</strong></div>
-	<table class="ipsTable ipsSpacer_top">
-		<thead>
-			<tr>
-				<th>{lang="gdpc_compliance_state"}</th>
-				<th>{lang="gdpc_compliance_type"}</th>
-				<th>{lang="gdpc_compliance_active"}</th>
-			</tr>
-		</thead>
-		<tbody>
-		{{foreach $data['rows'] as $row}}
-			<tr>
-				<td>{$row['state']}</td>
-				<td>{$row['type']}</td>
-				<td>{{if $row['active']}}✓{{else}}—{{endif}}</td>
-			</tr>
-		{{endforeach}}
-		</tbody>
-	</table>
+<div class="ipsBox">
+	<h1 class="ipsBox_title">{lang="gdpc_compliance_title"}</h1>
+	<div class="ipsPad">
+
+		<div style="display:flex;gap:16px;margin-bottom:24px;flex-wrap:wrap">
+			<div class="ipsBox" style="flex:1 1 200px;padding:16px;text-align:center">
+				<div style="font-size:2em;font-weight:bold">{expression="number_format( $data['count'] )"}</div>
+				<div>{lang="gdpc_compliance_count"}</div>
+			</div>
+		</div>
+
+		<table class="ipsTable ipsTable_zebra" style="width:100%">
+			<thead>
+				<tr>
+					<th>{lang="gdpc_compliance_state"}</th>
+					<th>{lang="gdpc_compliance_type"}</th>
+					<th>{lang="gdpc_compliance_active"}</th>
+				</tr>
+			</thead>
+			<tbody>
+			{{foreach $data['rows'] as $row}}
+				<tr>
+					<td><strong>{$row['state']}</strong></td>
+					<td>{$row['type']}</td>
+					<td>
+						{{if $row['active']}}
+							<span class="ipsBadge ipsBadge--positive">Active</span>
+						{{else}}
+							<span class="ipsBadge ipsBadge--neutral">Inactive</span>
+						{{endif}}
+					</td>
+				</tr>
+			{{endforeach}}
+			{{if count( $data['rows'] ) === 0}}
+				<tr><td colspan="3" style="text-align:center;color:#999;padding:24px">No state restrictions configured.</td></tr>
+			{{endif}}
+			</tbody>
+		</table>
+
+	</div>
 </div>
 TEMPLATE_EOT,
 	],
