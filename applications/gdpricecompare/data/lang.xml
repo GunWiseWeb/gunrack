@@ -4,6 +4,11 @@
 		<word key="__app_gdpricecompare"><![CDATA[GD Price Compare]]></word>
 		<word key="menutab__gdpricecompare"><![CDATA[GD Price Compare]]></word>
 		<word key="menutab__gdpricecompare_icon"><![CDATA[tags]]></word>
+		<word key="module__gdpricecompare_pricecompare"><![CDATA[Price Comparison]]></word>
+		<word key="module__gdpricecompare_products"><![CDATA[Products]]></word>
+		<word key="module__gdpricecompare_account"><![CDATA[Account]]></word>
+		<word key="module__gdpricecompare_ffl"><![CDATA[FFL Locator]]></word>
+		<word key="module__gdpricecompare_go"><![CDATA[Outbound Click]]></word>
 		<word key="menu__gdpricecompare_pricecompare"><![CDATA[Price Comparison]]></word>
 		<word key="menu__gdpricecompare_pricecompare_dashboard"><![CDATA[Dashboard]]></word>
 		<word key="menu__gdpricecompare_pricecompare_settings"><![CDATA[Settings]]></word>
@@ -167,6 +172,35 @@
 		<word key="gdpc_front_state_restricted"><![CDATA[STATE RESTRICTED]]></word>
 		<word key="gdpc_front_nfa_item"><![CDATA[NFA ITEM]]></word>
 		<word key="gdpc_front_ffl_required"><![CDATA[FFL REQUIRED]]></word>
+
+		<word key="gdpc_front_price_comparison"><![CDATA[Price Comparison]]></word>
+		<word key="gdpc_front_best_deal_label"><![CDATA[Best delivered price:]]></word>
+		<word key="gdpc_front_col_dealer"><![CDATA[Dealer]]></word>
+		<word key="gdpc_front_col_price"><![CDATA[Item]]></word>
+		<word key="gdpc_front_col_shipping"><![CDATA[Shipping]]></word>
+		<word key="gdpc_front_col_total"><![CDATA[Total]]></word>
+		<word key="gdpc_front_col_cpr"><![CDATA[CPR]]></word>
+		<word key="gdpc_front_buy"><![CDATA[Buy]]></word>
+		<word key="gdpc_front_no_listings"><![CDATA[No active dealer listings for this product yet. Check back soon — dealers update feeds throughout the day.]]></word>
+		<word key="gdpc_front_oos_badge"><![CDATA[Out of Stock]]></word>
+		<word key="gdpc_front_find_ffl"><![CDATA[Find an FFL]]></word>
+		<word key="gdpc_front_products_suffix"><![CDATA[products]]></word>
+		<word key="gdpc_front_search_placeholder"><![CDATA[Search within category…]]></word>
+		<word key="gdpc_front_search"><![CDATA[Search]]></word>
+		<word key="gdpc_front_browse_empty"><![CDATA[No products match this view yet. Try a different category or check back once distributors have run their next feed import.]]></word>
+		<word key="gdpc_front_from_label"><![CDATA[inc. shipping]]></word>
+		<word key="gdpc_front_dealers_suffix"><![CDATA[dealers]]></word>
+		<word key="gdpc_front_watchlist_subtitle"><![CDATA[Get notified the moment any dealer drops the price on products you are tracking.]]></word>
+		<word key="gdpc_front_col_product"><![CDATA[Product]]></word>
+		<word key="gdpc_front_col_current_lowest"><![CDATA[Current Lowest]]></word>
+		<word key="gdpc_front_col_target"><![CDATA[Target Price]]></word>
+		<word key="gdpc_front_any_decrease"><![CDATA[any decrease]]></word>
+		<word key="gdpc_front_remove"><![CDATA[Remove]]></word>
+		<word key="gdpc_front_ffl_hero_body"><![CDATA[Federal law requires firearms to ship to a licensed dealer (FFL) for in-person transfer. Enter your ZIP code to find the nearest FFLs in our database of every licensed dealer in the United States.]]></word>
+		<word key="gdpc_front_ffl_zip_placeholder"><![CDATA[Enter ZIP code]]></word>
+		<word key="gdpc_front_ffl_search"><![CDATA[Find FFLs]]></word>
+		<word key="gdpc_front_ffl_lic"><![CDATA[Type]]></word>
+		<word key="gdpc_front_ffl_maps_hint"><![CDATA[A map view is available in Phase 2.]]></word>
 
 		<word key="gdpc_err_no_product"><![CDATA[Product not found.]]></word>
 		<word key="gdpc_err_no_listing"><![CDATA[Listing not found.]]></word>
