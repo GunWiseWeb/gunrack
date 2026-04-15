@@ -26,24 +26,34 @@ $templates[] = [
 	'params'   => 'data',
 	'content'  => <<<'TEMPLATE_EOT'
 <div class="ipsBox">
-	<h1 class="ipsBox_title">{lang="gdr_dash_title"}</h1>
-	<div class="ipsPad">
-		<div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:16px">
-			<div class="ipsBox" style="flex:1 1 200px;padding:16px;text-align:center">
-				<div style="font-size:2em;font-weight:bold">{$data['counts']['active']}</div>
-				<div>{lang="gdr_dash_active"}</div>
+	<div class="ipsBox_title">
+		<h1 class="ipsType_sectionHead">{lang="gdr_dash_title"}</h1>
+	</div>
+	<div class="ipsBox_body ipsPad">
+		<div class="ipsGrid ipsGrid_collapsePhone" style="margin-bottom:16px">
+			<div class="ipsGrid_span3">
+				<div class="ipsBox ipsPad" style="text-align:center">
+					<p style="font-size:2.5em;font-weight:700;margin:0;color:#2d8c2d">{$data['counts']['active']}</p>
+					<p style="margin:4px 0 0;color:#666">{lang="gdr_dash_active"}</p>
+				</div>
 			</div>
-			<div class="ipsBox" style="flex:1 1 200px;padding:16px;text-align:center">
-				<div style="font-size:2em;font-weight:bold">{$data['counts']['pending']}</div>
-				<div>{lang="gdr_dash_pending"}</div>
+			<div class="ipsGrid_span3">
+				<div class="ipsBox ipsPad" style="text-align:center">
+					<p style="font-size:2.5em;font-weight:700;margin:0;color:#d07e1a">{$data['counts']['pending']}</p>
+					<p style="margin:4px 0 0;color:#666">{lang="gdr_dash_pending"}</p>
+				</div>
 			</div>
-			<div class="ipsBox" style="flex:1 1 200px;padding:16px;text-align:center">
-				<div style="font-size:2em;font-weight:bold">{$data['expiring_soon']}</div>
-				<div>{lang="gdr_dash_expiring"}</div>
+			<div class="ipsGrid_span3">
+				<div class="ipsBox ipsPad" style="text-align:center">
+					<p style="font-size:2.5em;font-weight:700;margin:0;color:#c0392b">{$data['expiring_soon']}</p>
+					<p style="margin:4px 0 0;color:#666">{lang="gdr_dash_expiring"}</p>
+				</div>
 			</div>
-			<div class="ipsBox" style="flex:1 1 200px;padding:16px;text-align:center">
-				<div style="font-size:2em;font-weight:bold">{$data['flagged']}</div>
-				<div>{lang="gdr_dash_flagged"}</div>
+			<div class="ipsGrid_span3">
+				<div class="ipsBox ipsPad" style="text-align:center">
+					<p style="font-size:2.5em;font-weight:700;margin:0;color:#7d3c98">{$data['flagged']}</p>
+					<p style="margin:4px 0 0;color:#666">{lang="gdr_dash_flagged"}</p>
+				</div>
 			</div>
 		</div>
 		<p><strong>{lang="gdr_dash_total_savings"}:</strong> &#36;{expression="number_format($data['total_savings'], 2)"}</p>
@@ -51,8 +61,10 @@ $templates[] = [
 </div>
 <br>
 <div class="ipsBox">
-	<h1 class="ipsBox_title">{lang="gdr_dash_by_type"}</h1>
-	<div class="ipsPad">
+	<div class="ipsBox_title">
+		<h1 class="ipsType_sectionHead">{lang="gdr_dash_by_type"}</h1>
+	</div>
+	<div class="ipsBox_body ipsPad">
 		{{if count($data['by_type']) === 0}}
 			<div class="ipsEmptyMessage"><p>{lang="gdr_dash_no_rebates"}</p></div>
 		{{else}}
@@ -69,8 +81,10 @@ $templates[] = [
 </div>
 <br>
 <div class="ipsBox">
-	<h1 class="ipsBox_title">{lang="gdr_dash_top_mfrs"}</h1>
-	<div class="ipsPad">
+	<div class="ipsBox_title">
+		<h1 class="ipsType_sectionHead">{lang="gdr_dash_top_mfrs"}</h1>
+	</div>
+	<div class="ipsBox_body ipsPad">
 		{{if count($data['top_mfrs']) === 0}}
 			<div class="ipsEmptyMessage"><p>{lang="gdr_dash_no_rebates"}</p></div>
 		{{else}}
@@ -87,8 +101,10 @@ $templates[] = [
 </div>
 <br>
 <div class="ipsBox">
-	<h1 class="ipsBox_title">{lang="gdr_dash_recent_scrapes"}</h1>
-	<div class="ipsPad">
+	<div class="ipsBox_title">
+		<h1 class="ipsType_sectionHead">{lang="gdr_dash_recent_scrapes"}</h1>
+	</div>
+	<div class="ipsBox_body ipsPad">
 		{{if count($data['recent_scrapes']) === 0}}
 			<div class="ipsEmptyMessage"><p>{lang="gdr_dash_no_scrapes"}</p></div>
 		{{else}}
@@ -129,8 +145,10 @@ $templates[] = [
 	'params'   => 'data',
 	'content'  => <<<'TEMPLATE_EOT'
 <div class="ipsBox">
-	<h1 class="ipsBox_title">{lang="gdr_submissions_title"}</h1>
-	<div class="ipsPad">
+	<div class="ipsBox_title">
+		<h1 class="ipsType_sectionHead">{lang="gdr_submissions_title"}</h1>
+	</div>
+	<div class="ipsBox_body ipsPad">
 		{{if count($data['rows']) === 0}}
 			<div class="ipsEmptyMessage"><p>{lang="gdr_submissions_empty"}</p></div>
 		{{else}}
@@ -154,8 +172,8 @@ $templates[] = [
 						<td>{$r['submitted_by']}</td>
 						<td>{$r['created_at']}</td>
 						<td>
-							<a href="{$r['approve_url']}" class="ipsButton ipsButton--primary ipsButton--small">{lang="gdr_submissions_approve"}</a>
-							<a href="{$r['reject_url']}" class="ipsButton ipsButton--normal ipsButton--small">{lang="gdr_submissions_reject"}</a>
+							<a href="{$r['approve_url']}" class="ipsButton ipsButton_primary ipsButton_small">{lang="gdr_submissions_approve"}</a>
+							<a href="{$r['reject_url']}" class="ipsButton ipsButton_medium ipsButton_small">{lang="gdr_submissions_reject"}</a>
 						</td>
 					</tr>
 				{{endforeach}}
@@ -174,11 +192,11 @@ $templates[] = [
 	'params'   => 'data',
 	'content'  => <<<'TEMPLATE_EOT'
 <div class="ipsBox">
-	<h1 class="ipsBox_title">{lang="gdr_targets_title"}</h1>
-	<div class="ipsPad">
-		<div style="margin-bottom:12px">
-			<a href="{$data['add_url']}" class="ipsButton ipsButton--primary ipsButton--small">{lang="gdr_targets_add"}</a>
-		</div>
+	<div class="ipsBox_title" style="display:flex;align-items:center;justify-content:space-between">
+		<h1 class="ipsType_sectionHead" style="margin:0">{lang="gdr_targets_title"}</h1>
+		<a href="{$data['add_url']}" class="ipsButton ipsButton_primary ipsButton_small">{lang="gdr_targets_add"}</a>
+	</div>
+	<div class="ipsBox_body ipsPad">
 		{{if count($data['rows']) === 0}}
 			<div class="ipsEmptyMessage"><p>{lang="gdr_targets_empty"}</p></div>
 		{{else}}
@@ -206,9 +224,9 @@ $templates[] = [
 						<td>{$r['last_run']}</td>
 						<td>{$r['last_status']}</td>
 						<td>
-							<a href="{$r['edit_url']}" class="ipsButton ipsButton--normal ipsButton--small">{lang="gdr_targets_edit"}</a>
-							<a href="{$r['toggle_url']}" class="ipsButton ipsButton--normal ipsButton--small">{lang="gdr_targets_toggle"}</a>
-							<a href="{$r['delete_url']}" class="ipsButton ipsButton--negative ipsButton--small" data-confirm>{lang="gdr_targets_delete"}</a>
+							<a href="{$r['edit_url']}" class="ipsButton ipsButton_medium ipsButton_small">{lang="gdr_targets_edit"}</a>
+							<a href="{$r['toggle_url']}" class="ipsButton ipsButton_medium ipsButton_small">{lang="gdr_targets_toggle"}</a>
+							<a href="{$r['delete_url']}" class="ipsButton ipsButton_negative ipsButton_small" data-confirm>{lang="gdr_targets_delete"}</a>
 						</td>
 					</tr>
 				{{endforeach}}
@@ -277,8 +295,8 @@ $templates[] = [
 				</li>
 			</ul>
 			<p class="ipsSpacer_top">
-				<button type="submit" class="ipsButton ipsButton--primary">{lang="gdr_targets_save"}</button>
-				<a href="{$data['cancel_url']}" class="ipsButton ipsButton--normal">{lang="gdr_targets_cancel"}</a>
+				<button type="submit" class="ipsButton ipsButton_primary">{lang="gdr_targets_save"}</button>
+				<a href="{$data['cancel_url']}" class="ipsButton ipsButton_medium">{lang="gdr_targets_cancel"}</a>
 			</p>
 		</form>
 	</div>
@@ -293,8 +311,10 @@ $templates[] = [
 	'params'   => 'data',
 	'content'  => <<<'TEMPLATE_EOT'
 <div class="ipsBox">
-	<h1 class="ipsBox_title">{lang="gdr_scraperq_title"}</h1>
-	<div class="ipsPad">
+	<div class="ipsBox_title">
+		<h1 class="ipsType_sectionHead">{lang="gdr_scraperq_title"}</h1>
+	</div>
+	<div class="ipsBox_body ipsPad">
 		<p class="ipsType_light" style="margin-bottom:16px">{lang="gdr_scraperq_help"}</p>
 		{{if count($data['rows']) === 0}}
 			<div class="ipsEmptyMessage"><p>{lang="gdr_scraperq_empty"}</p></div>
@@ -317,8 +337,8 @@ $templates[] = [
 						<td>{$r['end_date']}</td>
 						<td>{$r['created_at']}</td>
 						<td>
-							<a href="{$r['approve_url']}" class="ipsButton ipsButton--primary ipsButton--small">{lang="gdr_submissions_approve"}</a>
-							<a href="{$r['reject_url']}" class="ipsButton ipsButton--normal ipsButton--small">{lang="gdr_submissions_reject"}</a>
+							<a href="{$r['approve_url']}" class="ipsButton ipsButton_primary ipsButton_small">{lang="gdr_submissions_approve"}</a>
+							<a href="{$r['reject_url']}" class="ipsButton ipsButton_medium ipsButton_small">{lang="gdr_submissions_reject"}</a>
 						</td>
 					</tr>
 				{{endforeach}}
@@ -337,8 +357,10 @@ $templates[] = [
 	'params'   => 'data',
 	'content'  => <<<'TEMPLATE_EOT'
 <div class="ipsBox">
-	<h1 class="ipsBox_title">{lang="gdr_scrapelog_title"}</h1>
-	<div class="ipsPad">
+	<div class="ipsBox_title">
+		<h1 class="ipsType_sectionHead">{lang="gdr_scrapelog_title"}</h1>
+	</div>
+	<div class="ipsBox_body ipsPad">
 		{{if count($data['rows']) === 0}}
 			<div class="ipsEmptyMessage"><p>{lang="gdr_scrapelog_empty"}</p></div>
 		{{else}}
@@ -383,8 +405,10 @@ $templates[] = [
 	'params'   => 'data',
 	'content'  => <<<'TEMPLATE_EOT'
 <div class="ipsBox">
-	<h1 class="ipsBox_title">{lang="gdr_flags_title"}</h1>
-	<div class="ipsPad">
+	<div class="ipsBox_title">
+		<h1 class="ipsType_sectionHead">{lang="gdr_flags_title"}</h1>
+	</div>
+	<div class="ipsBox_body ipsPad">
 		{{if count($data['rows']) === 0}}
 			<div class="ipsEmptyMessage"><p>{lang="gdr_flags_empty"}</p></div>
 		{{else}}
@@ -403,7 +427,7 @@ $templates[] = [
 						<td>{$r['title']}</td>
 						<td>{$r['flag_count']}</td>
 						<td>{$r['last_flag']}</td>
-						<td><a href="{$r['clear_url']}" class="ipsButton ipsButton--normal ipsButton--small">{lang="gdr_flags_clear"}</a></td>
+						<td><a href="{$r['clear_url']}" class="ipsButton ipsButton_medium ipsButton_small">{lang="gdr_flags_clear"}</a></td>
 					</tr>
 				{{endforeach}}
 				</tbody>
@@ -421,8 +445,10 @@ $templates[] = [
 	'params'   => 'data',
 	'content'  => <<<'TEMPLATE_EOT'
 <div class="ipsBox">
-	<h1 class="ipsBox_title">{lang="gdr_active_title"}</h1>
-	<div class="ipsPad">
+	<div class="ipsBox_title">
+		<h1 class="ipsType_sectionHead">{lang="gdr_active_title"}</h1>
+	</div>
+	<div class="ipsBox_body ipsPad">
 		{{if count($data['rows']) === 0}}
 			<div class="ipsEmptyMessage"><p>{lang="gdr_active_empty"}</p></div>
 		{{else}}
@@ -444,8 +470,8 @@ $templates[] = [
 						<td>{$r['end_date']}</td>
 						<td>{$r['source']}</td>
 						<td>
-							<a href="{$r['expire_url']}" class="ipsButton ipsButton--normal ipsButton--small">{lang="gdr_active_expire"}</a>
-							<a href="{$r['archive_url']}" class="ipsButton ipsButton--normal ipsButton--small">{lang="gdr_active_archive"}</a>
+							<a href="{$r['expire_url']}" class="ipsButton ipsButton_medium ipsButton_small">{lang="gdr_active_expire"}</a>
+							<a href="{$r['archive_url']}" class="ipsButton ipsButton_medium ipsButton_small">{lang="gdr_active_archive"}</a>
 						</td>
 					</tr>
 				{{endforeach}}
@@ -472,7 +498,7 @@ $templates[] = [
 			&nbsp;&middot;&nbsp;
 			<strong>&#36;{expression="number_format($data['total_savings'], 0)"}</strong> {lang="gdr_front_hub_savings"}
 		</p>
-		<p><a href="{$data['submit_url']}" class="ipsButton ipsButton--primary">{lang="gdr_front_hub_submit_cta"}</a></p>
+		<p><a href="{$data['submit_url']}" class="ipsButton ipsButton_primary">{lang="gdr_front_hub_submit_cta"}</a></p>
 	</div>
 </div>
 <br>
@@ -571,9 +597,9 @@ $templates[] = [
 			</ol>
 		{{endif}}
 		<p>
-			{{if $data['rebate']['rebate_form_url']}}<a href="{$data['rebate']['rebate_form_url']}" class="ipsButton ipsButton--primary" target="_blank" rel="noopener">{lang="gdr_front_view_form"}</a>{{endif}}
-			{{if $data['rebate']['rebate_pdf_url']}}<a href="{$data['rebate']['rebate_pdf_url']}" class="ipsButton ipsButton--normal" target="_blank" rel="noopener">{lang="gdr_front_view_pdf"}</a>{{endif}}
-			{{if $data['rebate']['manufacturer_url']}}<a href="{$data['rebate']['manufacturer_url']}" class="ipsButton ipsButton--normal" target="_blank" rel="noopener">{lang="gdr_front_view_mfr_page"}</a>{{endif}}
+			{{if $data['rebate']['rebate_form_url']}}<a href="{$data['rebate']['rebate_form_url']}" class="ipsButton ipsButton_primary" target="_blank" rel="noopener">{lang="gdr_front_view_form"}</a>{{endif}}
+			{{if $data['rebate']['rebate_pdf_url']}}<a href="{$data['rebate']['rebate_pdf_url']}" class="ipsButton ipsButton_medium" target="_blank" rel="noopener">{lang="gdr_front_view_pdf"}</a>{{endif}}
+			{{if $data['rebate']['manufacturer_url']}}<a href="{$data['rebate']['manufacturer_url']}" class="ipsButton ipsButton_medium" target="_blank" rel="noopener">{lang="gdr_front_view_mfr_page"}</a>{{endif}}
 		</p>
 	</div>
 </div>
@@ -609,7 +635,7 @@ $templates[] = [
 						<div class="ipsFieldRow_content"><textarea name="notes" rows="3">{$data['tracking']['notes']}</textarea></div>
 					</li>
 				</ul>
-				<p><button type="submit" class="ipsButton ipsButton--primary">{lang="gdr_front_view_track_save"}</button></p>
+				<p><button type="submit" class="ipsButton ipsButton_primary">{lang="gdr_front_view_track_save"}</button></p>
 			</form>
 		{{else}}
 			<p class="ipsType_light">{lang="gdr_front_view_track_login"}</p>
@@ -631,7 +657,7 @@ $templates[] = [
 <div class="ipsBox">
 	<div class="ipsBox_title"><h2>{lang="gdr_front_view_flag_header"}</h2></div>
 	<div class="ipsBox_body ipsPad">
-		<p><a href="{$data['flag_url']}" class="ipsButton ipsButton--normal">{lang="gdr_front_view_flag_link"}</a></p>
+		<p><a href="{$data['flag_url']}" class="ipsButton ipsButton_medium">{lang="gdr_front_view_flag_link"}</a></p>
 	</div>
 </div>
 TEMPLATE_EOT
@@ -733,8 +759,8 @@ $templates[] = [
 				</li>
 			</ul>
 			<p class="ipsSpacer_top">
-				<button type="submit" class="ipsButton ipsButton--primary">{lang="gdr_front_submit_save"}</button>
-				<a href="{$data['cancel_url']}" class="ipsButton ipsButton--normal">{lang="gdr_front_submit_cancel"}</a>
+				<button type="submit" class="ipsButton ipsButton_primary">{lang="gdr_front_submit_save"}</button>
+				<a href="{$data['cancel_url']}" class="ipsButton ipsButton_medium">{lang="gdr_front_submit_cancel"}</a>
 			</p>
 		</form>
 	</div>
@@ -770,8 +796,8 @@ $templates[] = [
 				</li>
 			</ul>
 			<p class="ipsSpacer_top">
-				<button type="submit" class="ipsButton ipsButton--primary">{lang="gdr_front_flag_submit"}</button>
-				<a href="{$data['cancel_url']}" class="ipsButton ipsButton--normal">{lang="gdr_front_submit_cancel"}</a>
+				<button type="submit" class="ipsButton ipsButton_primary">{lang="gdr_front_flag_submit"}</button>
+				<a href="{$data['cancel_url']}" class="ipsButton ipsButton_medium">{lang="gdr_front_submit_cancel"}</a>
 			</p>
 		</form>
 	</div>
