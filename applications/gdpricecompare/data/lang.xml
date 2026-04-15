@@ -71,6 +71,7 @@
 		<word key="gdpc_ffldata_active_count"><![CDATA[Active dealers shown in locator]]></word>
 		<word key="gdpc_ffldata_last_updated"><![CDATA[Last data refresh]]></word>
 		<word key="gdpc_ffldata_refresh_now"><![CDATA[Refresh Now]]></word>
+		<word key="gdpc_ffldata_refresh"><![CDATA[Refresh from ATF]]></word>
 		<word key="gdpc_ffldata_refresh_queued"><![CDATA[FFL refresh queued — results visible after task runs.]]></word>
 		<word key="gdpc_ffldata_add"><![CDATA[Add FFL]]></word>
 		<word key="gdpc_ffldata_add_title"><![CDATA[Add FFL Dealer]]></word>

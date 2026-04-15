@@ -99,7 +99,13 @@ TEMPLATE_EOT,
 		'template_data' => '$data',
 		'template_content' => <<<'TEMPLATE_EOT'
 <div class="ipsBox">
-	<h1 class="ipsBox_title">{lang="gdpc_ffldata_title"}</h1>
+	<div class="ipsBox_title" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+		<h1 style="margin:0">{lang="gdpc_ffldata_title"}</h1>
+		<div style="display:flex;gap:8px;flex-wrap:wrap">
+			<a href="{$data['add_url']}" class="ipsButton ipsButton_primary">{lang="gdpc_ffldata_add"}</a>
+			<a href="{$data['refresh_url']}" class="ipsButton ipsButton_medium">{lang="gdpc_ffldata_refresh"}</a>
+		</div>
+	</div>
 	<div class="ipsPad">
 
 		<div style="display:flex;gap:16px;margin-bottom:24px;flex-wrap:wrap">
@@ -115,11 +121,6 @@ TEMPLATE_EOT,
 				<div style="font-size:1.3em;font-weight:bold">{{if $data['last']}}{$data['last']}{{else}}&mdash;{{endif}}</div>
 				<div>{lang="gdpc_ffldata_last_updated"}</div>
 			</div>
-		</div>
-
-		<div style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap">
-			<a href="{$data['add_url']}" class="ipsButton ipsButton--primary ipsButton--small">{lang="gdpc_ffldata_add"}</a>
-			<a href="{$data['refresh_url']}" class="ipsButton ipsButton--normal ipsButton--small">{lang="gdpc_ffldata_refresh_now"}</a>
 		</div>
 
 		<form method="get" action="{$data['form_action']}" style="margin-bottom:16px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
