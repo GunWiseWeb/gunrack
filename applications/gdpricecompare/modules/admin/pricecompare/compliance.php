@@ -22,7 +22,7 @@ class _compliance extends \IPS\Dispatcher\Controller
 
 	public function execute(): void
 	{
-		\IPS\Dispatcher::i()->checkAcpPermission( 'can_manage_compliance' );
+		\IPS\Dispatcher::i()->checkAcpPermission( 'pricecompare_manage' );
 		parent::execute();
 	}
 

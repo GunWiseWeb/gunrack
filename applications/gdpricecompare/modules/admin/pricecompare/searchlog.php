@@ -22,7 +22,7 @@ class _searchlog extends \IPS\Dispatcher\Controller
 
 	public function execute(): void
 	{
-		\IPS\Dispatcher::i()->checkAcpPermission( 'can_view_searchlog' );
+		\IPS\Dispatcher::i()->checkAcpPermission( 'pricecompare_manage' );
 		parent::execute();
 	}
 

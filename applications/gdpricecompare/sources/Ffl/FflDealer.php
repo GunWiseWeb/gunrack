@@ -64,7 +64,8 @@ class _FflDealer extends \IPS\Patterns\ActiveRecord
 
 		$rows = [];
 		foreach ( \IPS\Db::i()->select( '*', 'gd_ffl_dealers', [
-			'lat BETWEEN ? AND ? AND lng BETWEEN ? AND ?',
+			'active=? AND lat BETWEEN ? AND ? AND lng BETWEEN ? AND ?',
+			1,
 			$lat - $latDelta, $lat + $latDelta,
 			$lng - $lngDelta, $lng + $lngDelta,
 		]) as $r )

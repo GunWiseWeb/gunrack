@@ -137,6 +137,31 @@ These were learned by comparing against a working IPS v5 plugin. They apply to e
     ```
 
     This applies to every admin controller in every plugin — `gdcatalog`, `gddealer`, `gdpricecompare`, and the nine still-to-be-built plugins. Front-end controllers (`location=front`) do not need it because the front dispatcher handles CSRF differently. Audit command: `grep -L 'csrfProtected' applications/*/modules/admin/**/*.php` must return empty.
+17. **Every plugin must ship `data/acprestrictions.json` declaring every ACP permission key referenced elsewhere** — IPS v5 resolves the `restriction` value from `data/acpmenu.json` and the argument to `\IPS\Dispatcher::i()->checkAcpPermission()` against the app's registered restrictions. If the key is not declared in `acprestrictions.json`, the dispatcher rejects the request with a generic "CSRF check failed" error on every ACP page load — even though the real problem is unknown-permission, not CSRF. The file must exist even when using a single unified permission across all admin controllers.
+
+    Format — `{ module: { controller: { permission_key: permission_lang_key } } }`:
+
+    ```json
+    {
+        "pricecompare": {
+            "dashboard":   { "pricecompare_manage": "pricecompare_manage" },
+            "settings":    { "pricecompare_manage": "pricecompare_manage" },
+            "searchlog":   { "pricecompare_manage": "pricecompare_manage" },
+            "ffldata":     { "pricecompare_manage": "pricecompare_manage" },
+            "compliance":  { "pricecompare_manage": "pricecompare_manage" }
+        }
+    }
+    ```
+
+    The outer keys are module directory names (matching `modules/admin/{module}/`). Each inner key is a controller file name (without `.php`). Each innermost entry maps a permission key (used in `checkAcpPermission()` and the `restriction` value in `acpmenu.json`) to a language string key (which the ACP permission-editor shows as the human-readable label — typically `r__{permission_key}` in `lang.xml`).
+
+    Consistency requirements across three files:
+    - `data/acprestrictions.json` — declares the permission keys.
+    - `data/acpmenu.json` — every entry's `"restriction"` value must appear as a permission key in `acprestrictions.json`.
+    - Every admin controller's `checkAcpPermission( '...' )` argument must appear as a permission key in `acprestrictions.json`.
+    - `data/lang.xml` — must define `r__{permission_key}` for every permission key (shown in the ACP permission editor).
+
+    Audit command: `jq -r 'to_entries[].value | to_entries[].value | to_entries[].key' applications/*/data/acprestrictions.json | sort -u` lists every declared permission; every `checkAcpPermission(` string and every `"restriction"` value in `acpmenu.json` across the app must be present in that list.
 
 ## Full specification
 Read `GunRack_Spec_v2.9.16.md` for complete specs on all 12 plugins, database schemas, acceptance criteria, server setup (Appendix B), security requirements (Appendix C), and Phase 2 roadmap (Section 19).

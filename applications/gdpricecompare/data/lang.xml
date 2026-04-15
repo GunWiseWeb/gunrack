@@ -48,11 +48,71 @@
 		<word key="gdpc_settings_alert_dedupe_desc"><![CDATA[Minimum hours between identical watchlist alerts sent to the same member.]]></word>
 		<word key="gdpc_settings_report_threshold_desc"><![CDATA[Number of user reports against a listing before it is flagged for admin review.]]></word>
 
+		<word key="gdpc_default_sort"><![CDATA[Default sort order]]></word>
+		<word key="gdpc_default_sort_desc"><![CDATA[Applied to the comparison table when no explicit sort is chosen.]]></word>
+		<word key="gdpc_free_ship_threshold"><![CDATA[Free-shipping threshold (USD)]]></word>
+		<word key="gdpc_free_ship_threshold_desc"><![CDATA[Orders at or above this dollar amount display the free-shipping badge when the dealer supports it.]]></word>
+		<word key="gdpc_cpr_include_shipping_default"><![CDATA[Include shipping in CPR by default]]></word>
+		<word key="gdpc_cpr_include_shipping_default_desc"><![CDATA[When enabled, cost-per-round for ammunition includes estimated shipping by default.]]></word>
+		<word key="gdpc_ffl_radius_default"><![CDATA[FFL locator default radius (miles)]]></word>
+		<word key="gdpc_ffl_radius_default_desc"><![CDATA[Default radius used on the FFL locator when a visitor does not pick one.]]></word>
+		<word key="gdpc_google_maps_api_key"><![CDATA[Google Maps API key]]></word>
+		<word key="gdpc_google_maps_api_key_desc"><![CDATA[Required for the FFL locator map. Leave blank to disable the map and fall back to a list-only view.]]></word>
+		<word key="gdpc_price_history_days_basic"><![CDATA[Price history days — Basic tier]]></word>
+		<word key="gdpc_price_history_days_pro"><![CDATA[Price history days — Pro tier]]></word>
+		<word key="gdpc_price_history_days_enterprise"><![CDATA[Price history days — Enterprise tier]]></word>
+		<word key="gdpc_alert_dedupe_hours"><![CDATA[Watchlist alert dedupe window (hours)]]></word>
+		<word key="gdpc_alert_dedupe_hours_desc"><![CDATA[Minimum hours between identical watchlist alerts sent to the same member.]]></word>
+		<word key="gdpc_report_priority_threshold"><![CDATA[Report priority threshold]]></word>
+		<word key="gdpc_report_priority_threshold_desc"><![CDATA[Number of user reports against a listing before it is flagged for admin review.]]></word>
+
 		<word key="gdpc_ffldata_title"><![CDATA[FFL Data Management]]></word>
 		<word key="gdpc_ffldata_count"><![CDATA[FFL records loaded]]></word>
+		<word key="gdpc_ffldata_active_count"><![CDATA[Active dealers shown in locator]]></word>
 		<word key="gdpc_ffldata_last_updated"><![CDATA[Last data refresh]]></word>
 		<word key="gdpc_ffldata_refresh_now"><![CDATA[Refresh Now]]></word>
 		<word key="gdpc_ffldata_refresh_queued"><![CDATA[FFL refresh queued — results visible after task runs.]]></word>
+		<word key="gdpc_ffldata_add"><![CDATA[Add FFL]]></word>
+		<word key="gdpc_ffldata_add_title"><![CDATA[Add FFL Dealer]]></word>
+		<word key="gdpc_ffldata_edit_title"><![CDATA[Edit FFL Dealer]]></word>
+		<word key="gdpc_ffldata_edit"><![CDATA[Edit]]></word>
+		<word key="gdpc_ffldata_delete"><![CDATA[Delete]]></word>
+		<word key="gdpc_ffldata_save"><![CDATA[Save Changes]]></word>
+		<word key="gdpc_ffldata_create"><![CDATA[Create Dealer]]></word>
+		<word key="gdpc_ffldata_cancel"><![CDATA[Cancel]]></word>
+		<word key="gdpc_ffldata_search"><![CDATA[Search]]></word>
+		<word key="gdpc_ffldata_search_placeholder"><![CDATA[Business, licensee, city, ZIP, or license #…]]></word>
+		<word key="gdpc_ffldata_empty"><![CDATA[No FFL dealers found. Use "Refresh Now" to pull the ATF feed, or "Add FFL" to enter one manually.]]></word>
+		<word key="gdpc_ffldata_form_errors"><![CDATA[Please correct the following before saving:]]></word>
+		<word key="gdpc_ffldata_section_license"><![CDATA[License Information]]></word>
+		<word key="gdpc_ffldata_section_business"><![CDATA[Business Details]]></word>
+		<word key="gdpc_ffldata_section_address"><![CDATA[Premise Address]]></word>
+		<word key="gdpc_ffldata_section_status"><![CDATA[Listing Status]]></word>
+		<word key="gdpc_ffldata_license"><![CDATA[License number]]></word>
+		<word key="gdpc_ffldata_licensee"><![CDATA[Licensee name]]></word>
+		<word key="gdpc_ffldata_business"><![CDATA[Business name]]></word>
+		<word key="gdpc_ffldata_street"><![CDATA[Street]]></word>
+		<word key="gdpc_ffldata_city"><![CDATA[City]]></word>
+		<word key="gdpc_ffldata_city_state"><![CDATA[City / State / ZIP]]></word>
+		<word key="gdpc_ffldata_state"><![CDATA[State]]></word>
+		<word key="gdpc_ffldata_state_select"><![CDATA[— Select a state —]]></word>
+		<word key="gdpc_ffldata_zip"><![CDATA[ZIP]]></word>
+		<word key="gdpc_ffldata_phone"><![CDATA[Phone]]></word>
+		<word key="gdpc_ffldata_type"><![CDATA[License type]]></word>
+		<word key="gdpc_ffldata_type_desc"><![CDATA[ATF license type code (01 = dealer, 07 = manufacturer, etc.).]]></word>
+		<word key="gdpc_ffldata_expiry"><![CDATA[Expiration date]]></word>
+		<word key="gdpc_ffldata_active"><![CDATA[Active]]></word>
+		<word key="gdpc_ffldata_active_desc"><![CDATA[Uncheck to hide this dealer from the public locator without deleting the record.]]></word>
+		<word key="gdpc_ffldata_status_active"><![CDATA[Active]]></word>
+		<word key="gdpc_ffldata_status_inactive"><![CDATA[Hidden]]></word>
+		<word key="gdpc_ffldata_actions"><![CDATA[Actions]]></word>
+		<word key="gdpc_ffldata_added"><![CDATA[FFL dealer added.]]></word>
+		<word key="gdpc_ffldata_updated"><![CDATA[FFL dealer updated.]]></word>
+		<word key="gdpc_ffldata_deleted"><![CDATA[FFL dealer deleted.]]></word>
+		<word key="gdpc_ffldata_err_name"><![CDATA[Either a business name or licensee name is required.]]></word>
+		<word key="gdpc_ffldata_err_state"><![CDATA[State must be a two-letter code (e.g. TX).]]></word>
+		<word key="gdpc_ffldata_err_zip"><![CDATA[ZIP must be five digits, optionally followed by a dash and four digits.]]></word>
+		<word key="gdpc_ffldata_err_expiry"><![CDATA[Expiration date must be in YYYY-MM-DD format.]]></word>
 
 		<word key="gdpc_searchlog_title"><![CDATA[Search Log]]></word>
 		<word key="gdpc_searchlog_top_title"><![CDATA[Top searches (last 7 days)]]></word>
@@ -117,10 +177,6 @@
 		<word key="task__refreshFflData"><![CDATA[Refresh FFL dealer data from ATF]]></word>
 
 		<word key="r__gdpricecompare"><![CDATA[Price Compare]]></word>
-		<word key="r__can_view_dashboard"><![CDATA[Can view Price Compare dashboard?]]></word>
-		<word key="r__can_manage_settings"><![CDATA[Can manage Price Compare settings?]]></word>
-		<word key="r__can_manage_ffl"><![CDATA[Can manage FFL data?]]></word>
-		<word key="r__can_view_searchlog"><![CDATA[Can view search log?]]></word>
-		<word key="r__can_manage_compliance"><![CDATA[Can manage state compliance rules?]]></word>
+		<word key="r__pricecompare_manage"><![CDATA[Can manage Price Comparison (dashboard, settings, FFL data, search log, compliance rules)?]]></word>
 	</app>
 </language>

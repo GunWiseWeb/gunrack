@@ -87,117 +87,7 @@ $gdpricecompareTemplates = [
 TEMPLATE_EOT,
 	],
 
-	/* ===== ADMIN: settings ===== */
-	[
-		'set_id'        => 1,
-		'app'           => 'gdpricecompare',
-		'location'      => 'admin',
-		'group'         => 'pricecompare',
-		'template_name' => 'settings',
-		'template_data' => '$data',
-		'template_content' => <<<'TEMPLATE_EOT'
-<div class="ipsBox">
-	<h1 class="ipsBox_title">{lang="gdpc_settings_title"}</h1>
-	<div class="ipsPad">
-
-		<p class="ipsType_light" style="margin-bottom:16px">{lang="gdpc_settings_intro"}</p>
-
-		<form method="post" action="" class="ipsForm ipsForm_vertical">
-			<input type="hidden" name="csrfKey" value="{$data['csrf_key']}" />
-
-			<div class="ipsBox" style="margin-bottom:16px">
-				<h2 class="ipsBox_title">{lang="gdpc_settings_section_display"}</h2>
-				<div class="ipsPad">
-					<div class="ipsFieldRow">
-						<label class="ipsFieldRow_label" for="gdpc_default_sort">{lang="gdpc_settings_default_sort"}</label>
-						<select id="gdpc_default_sort" name="gdpc_default_sort" class="ipsField_select">
-							<option value="total_price_asc" {{if $data['default_sort'] === 'total_price_asc'}}selected{{endif}}>Total price, lowest first</option>
-							<option value="total_price_desc" {{if $data['default_sort'] === 'total_price_desc'}}selected{{endif}}>Total price, highest first</option>
-							<option value="price_asc" {{if $data['default_sort'] === 'price_asc'}}selected{{endif}}>Dealer price, lowest first</option>
-							<option value="cpr_asc" {{if $data['default_sort'] === 'cpr_asc'}}selected{{endif}}>Cost per round, lowest first</option>
-						</select>
-						<p class="ipsType_light ipsType_small">{lang="gdpc_settings_default_sort_desc"}</p>
-					</div>
-				</div>
-			</div>
-
-			<div class="ipsBox" style="margin-bottom:16px">
-				<h2 class="ipsBox_title">{lang="gdpc_settings_section_shipping"}</h2>
-				<div class="ipsPad">
-					<div class="ipsFieldRow">
-						<label class="ipsFieldRow_label" for="gdpc_free_ship_threshold">{lang="gdpc_settings_free_ship_threshold"}</label>
-						<input type="number" step="0.01" min="0" id="gdpc_free_ship_threshold" name="gdpc_free_ship_threshold" value="{$data['free_ship_threshold']}" />
-						<p class="ipsType_light ipsType_small">{lang="gdpc_settings_free_ship_threshold_desc"}</p>
-					</div>
-					<div class="ipsFieldRow">
-						<label class="ipsFieldRow_label">
-							<input type="checkbox" name="gdpc_cpr_include_shipping_default" value="1" {{if $data['cpr_include_shipping']}}checked{{endif}} />
-							{lang="gdpc_settings_cpr_shipping_default"}
-						</label>
-						<p class="ipsType_light ipsType_small">{lang="gdpc_settings_cpr_shipping_default_desc"}</p>
-					</div>
-				</div>
-			</div>
-
-			<div class="ipsBox" style="margin-bottom:16px">
-				<h2 class="ipsBox_title">{lang="gdpc_settings_section_ffl"}</h2>
-				<div class="ipsPad">
-					<div class="ipsFieldRow">
-						<label class="ipsFieldRow_label" for="gdpc_ffl_radius_default">{lang="gdpc_settings_ffl_radius"}</label>
-						<input type="number" min="1" max="200" id="gdpc_ffl_radius_default" name="gdpc_ffl_radius_default" value="{$data['ffl_radius']}" />
-						<p class="ipsType_light ipsType_small">{lang="gdpc_settings_ffl_radius_desc"}</p>
-					</div>
-					<div class="ipsFieldRow">
-						<label class="ipsFieldRow_label" for="gdpc_google_maps_api_key">{lang="gdpc_settings_gmaps_key"}</label>
-						<input type="text" id="gdpc_google_maps_api_key" name="gdpc_google_maps_api_key" value="{$data['google_maps_key']}" class="ipsField_fullWidth" />
-						<p class="ipsType_light ipsType_small">{lang="gdpc_settings_gmaps_key_desc"}</p>
-					</div>
-				</div>
-			</div>
-
-			<div class="ipsBox" style="margin-bottom:16px">
-				<h2 class="ipsBox_title">{lang="gdpc_settings_section_history"}</h2>
-				<div class="ipsPad">
-					<p class="ipsType_light ipsType_small" style="margin-bottom:12px">{lang="gdpc_settings_history_desc"}</p>
-					<div class="ipsFieldRow">
-						<label class="ipsFieldRow_label" for="gdpc_price_history_days_basic">{lang="gdpc_settings_history_basic"}</label>
-						<input type="number" min="1" id="gdpc_price_history_days_basic" name="gdpc_price_history_days_basic" value="{$data['history_basic']}" />
-					</div>
-					<div class="ipsFieldRow">
-						<label class="ipsFieldRow_label" for="gdpc_price_history_days_pro">{lang="gdpc_settings_history_pro"}</label>
-						<input type="number" min="1" id="gdpc_price_history_days_pro" name="gdpc_price_history_days_pro" value="{$data['history_pro']}" />
-					</div>
-					<div class="ipsFieldRow">
-						<label class="ipsFieldRow_label" for="gdpc_price_history_days_enterprise">{lang="gdpc_settings_history_enterprise"}</label>
-						<input type="number" min="1" id="gdpc_price_history_days_enterprise" name="gdpc_price_history_days_enterprise" value="{$data['history_enterprise']}" />
-					</div>
-				</div>
-			</div>
-
-			<div class="ipsBox" style="margin-bottom:16px">
-				<h2 class="ipsBox_title">{lang="gdpc_settings_section_alerts"}</h2>
-				<div class="ipsPad">
-					<div class="ipsFieldRow">
-						<label class="ipsFieldRow_label" for="gdpc_alert_dedupe_hours">{lang="gdpc_settings_alert_dedupe"}</label>
-						<input type="number" min="1" id="gdpc_alert_dedupe_hours" name="gdpc_alert_dedupe_hours" value="{$data['alert_dedupe_hours']}" />
-						<p class="ipsType_light ipsType_small">{lang="gdpc_settings_alert_dedupe_desc"}</p>
-					</div>
-					<div class="ipsFieldRow">
-						<label class="ipsFieldRow_label" for="gdpc_report_priority_threshold">{lang="gdpc_settings_report_threshold"}</label>
-						<input type="number" min="1" id="gdpc_report_priority_threshold" name="gdpc_report_priority_threshold" value="{$data['report_threshold']}" />
-						<p class="ipsType_light ipsType_small">{lang="gdpc_settings_report_threshold_desc"}</p>
-					</div>
-				</div>
-			</div>
-
-			<div style="margin-top:16px;text-align:right">
-				<button type="submit" class="ipsButton ipsButton--primary">{lang="gdpc_settings_save"}</button>
-			</div>
-		</form>
-	</div>
-</div>
-TEMPLATE_EOT,
-	],
+	/* settings page is rendered by \IPS\Helpers\Form (see settings.php) — no template needed. */
 
 	/* ===== ADMIN: ffldata ===== */
 	[
@@ -218,14 +108,187 @@ TEMPLATE_EOT,
 				<div>{lang="gdpc_ffldata_count"}</div>
 			</div>
 			<div class="ipsBox" style="flex:1 1 200px;padding:16px;text-align:center">
+				<div style="font-size:2em;font-weight:bold">{expression="number_format( $data['active_cnt'] )"}</div>
+				<div>{lang="gdpc_ffldata_active_count"}</div>
+			</div>
+			<div class="ipsBox" style="flex:1 1 200px;padding:16px;text-align:center">
 				<div style="font-size:1.3em;font-weight:bold">{{if $data['last']}}{$data['last']}{{else}}&mdash;{{endif}}</div>
 				<div>{lang="gdpc_ffldata_last_updated"}</div>
 			</div>
 		</div>
 
-		<div>
-			<a href="{$data['refresh_url']}" class="ipsButton ipsButton--primary">{lang="gdpc_ffldata_refresh_now"}</a>
+		<div style="margin-bottom:12px;display:flex;gap:8px;flex-wrap:wrap">
+			<a href="{$data['add_url']}" class="ipsButton ipsButton--primary ipsButton--small">{lang="gdpc_ffldata_add"}</a>
+			<a href="{$data['refresh_url']}" class="ipsButton ipsButton--normal ipsButton--small">{lang="gdpc_ffldata_refresh_now"}</a>
 		</div>
+
+		<form method="get" action="{$data['form_action']}" style="margin-bottom:16px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+			<input type="hidden" name="app" value="gdpricecompare" />
+			<input type="hidden" name="module" value="pricecompare" />
+			<input type="hidden" name="controller" value="ffldata" />
+			<input type="text" name="q" value="{$data['search']}" placeholder="{lang="gdpc_ffldata_search_placeholder"}" class="ipsField_text" style="width:320px" />
+			<button type="submit" class="ipsButton ipsButton--primary ipsButton--small">{lang="gdpc_ffldata_search"}</button>
+		</form>
+
+		<table class="ipsTable ipsTable_zebra" style="width:100%">
+			<thead>
+				<tr>
+					<th>{lang="gdpc_ffldata_business"}</th>
+					<th>{lang="gdpc_ffldata_license"}</th>
+					<th>{lang="gdpc_ffldata_type"}</th>
+					<th>{lang="gdpc_ffldata_city_state"}</th>
+					<th>{lang="gdpc_ffldata_phone"}</th>
+					<th>{lang="gdpc_ffldata_expiry"}</th>
+					<th style="width:80px">{lang="gdpc_ffldata_active"}</th>
+					<th style="width:160px">{lang="gdpc_ffldata_actions"}</th>
+				</tr>
+			</thead>
+			<tbody>
+			{{foreach $data['rows'] as $row}}
+				<tr>
+					<td><strong>{$row['business']}</strong></td>
+					<td><code>{$row['license']}</code></td>
+					<td>{$row['lic_type']}</td>
+					<td>{$row['city']}, {$row['state']} {$row['zip']}</td>
+					<td>{$row['phone']}</td>
+					<td>{$row['lic_xprdte']}</td>
+					<td>
+						{{if $row['active']}}
+							<span class="ipsBadge ipsBadge--positive">{lang="gdpc_ffldata_status_active"}</span>
+						{{else}}
+							<span class="ipsBadge ipsBadge--neutral">{lang="gdpc_ffldata_status_inactive"}</span>
+						{{endif}}
+					</td>
+					<td>
+						<a href="{$row['edit_url']}" class="ipsButton ipsButton--small ipsButton--primary">{lang="gdpc_ffldata_edit"}</a>
+						<a href="{$row['delete_url']}" class="ipsButton ipsButton--small ipsButton--negative" data-confirm>{lang="gdpc_ffldata_delete"}</a>
+					</td>
+				</tr>
+			{{endforeach}}
+			{{if count( $data['rows'] ) === 0}}
+				<tr><td colspan="8" style="text-align:center;color:#999;padding:24px">{lang="gdpc_ffldata_empty"}</td></tr>
+			{{endif}}
+			</tbody>
+		</table>
+
+	</div>
+</div>
+TEMPLATE_EOT,
+	],
+
+	/* ===== ADMIN: ffldata add/edit form ===== */
+	[
+		'set_id'        => 1,
+		'app'           => 'gdpricecompare',
+		'location'      => 'admin',
+		'group'         => 'pricecompare',
+		'template_name' => 'ffldataForm',
+		'template_data' => '$data',
+		'template_content' => <<<'TEMPLATE_EOT'
+<div class="ipsBox">
+	<h1 class="ipsBox_title">
+		{{if $data['is_edit']}}{lang="gdpc_ffldata_edit_title"}{{else}}{lang="gdpc_ffldata_add_title"}{{endif}}
+	</h1>
+	<div class="ipsPad">
+
+		{{if count( $data['errors'] ) > 0}}
+		<div class="ipsMessage ipsMessage--error ipsPad" style="margin-bottom:16px">
+			<strong>{lang="gdpc_ffldata_form_errors"}</strong>
+			<ul style="margin:8px 0 0 20px">
+			{{foreach $data['errors'] as $err}}
+				<li>{$err}</li>
+			{{endforeach}}
+			</ul>
+		</div>
+		{{endif}}
+
+		<form method="post" action="{$data['submit_url']}" class="ipsForm ipsForm_vertical">
+			<input type="hidden" name="csrfKey" value="{$data['csrf_key']}" />
+
+			<div class="ipsBox" style="margin-bottom:16px">
+				<h2 class="ipsBox_title">{lang="gdpc_ffldata_section_license"}</h2>
+				<div class="ipsPad">
+					<div class="ipsFieldRow">
+						<label class="ipsFieldRow_label" for="lic_seqn">{lang="gdpc_ffldata_license"}</label>
+						<input type="text" id="lic_seqn" name="lic_seqn" value="{$data['lic_seqn']}" maxlength="32" class="ipsField_fullWidth" placeholder="1-23-456-78-9X-12345" />
+					</div>
+					<div class="ipsFieldRow">
+						<label class="ipsFieldRow_label" for="lic_type">{lang="gdpc_ffldata_type"}</label>
+						<input type="text" id="lic_type" name="lic_type" value="{$data['lic_type']}" maxlength="5" placeholder="01, 07, 09" />
+						<p class="ipsType_light ipsType_small">{lang="gdpc_ffldata_type_desc"}</p>
+					</div>
+					<div class="ipsFieldRow">
+						<label class="ipsFieldRow_label" for="lic_xprdte">{lang="gdpc_ffldata_expiry"}</label>
+						<input type="date" id="lic_xprdte" name="lic_xprdte" value="{$data['lic_xprdte']}" />
+					</div>
+				</div>
+			</div>
+
+			<div class="ipsBox" style="margin-bottom:16px">
+				<h2 class="ipsBox_title">{lang="gdpc_ffldata_section_business"}</h2>
+				<div class="ipsPad">
+					<div class="ipsFieldRow">
+						<label class="ipsFieldRow_label" for="business_name">{lang="gdpc_ffldata_business"}</label>
+						<input type="text" id="business_name" name="business_name" value="{$data['business_name']}" maxlength="200" class="ipsField_fullWidth" />
+					</div>
+					<div class="ipsFieldRow">
+						<label class="ipsFieldRow_label" for="licensee_name">{lang="gdpc_ffldata_licensee"}</label>
+						<input type="text" id="licensee_name" name="licensee_name" value="{$data['licensee_name']}" maxlength="200" class="ipsField_fullWidth" />
+					</div>
+					<div class="ipsFieldRow">
+						<label class="ipsFieldRow_label" for="voice_phone">{lang="gdpc_ffldata_phone"}</label>
+						<input type="text" id="voice_phone" name="voice_phone" value="{$data['voice_phone']}" maxlength="20" />
+					</div>
+				</div>
+			</div>
+
+			<div class="ipsBox" style="margin-bottom:16px">
+				<h2 class="ipsBox_title">{lang="gdpc_ffldata_section_address"}</h2>
+				<div class="ipsPad">
+					<div class="ipsFieldRow">
+						<label class="ipsFieldRow_label" for="premise_street">{lang="gdpc_ffldata_street"}</label>
+						<input type="text" id="premise_street" name="premise_street" value="{$data['premise_street']}" maxlength="200" class="ipsField_fullWidth" />
+					</div>
+					<div class="ipsFieldRow">
+						<label class="ipsFieldRow_label" for="premise_city">{lang="gdpc_ffldata_city"}</label>
+						<input type="text" id="premise_city" name="premise_city" value="{$data['premise_city']}" maxlength="100" class="ipsField_fullWidth" />
+					</div>
+					<div class="ipsFieldRow">
+						<label class="ipsFieldRow_label" for="premise_state">{lang="gdpc_ffldata_state"}</label>
+						<select id="premise_state" name="premise_state" class="ipsField_select">
+							<option value="">{lang="gdpc_ffldata_state_select"}</option>
+							{{foreach $data['states'] as $st}}
+								<option value="{$st['code']}" {{if $data['premise_state'] === $st['code']}}selected{{endif}}>{$st['code']} &mdash; {$st['name']}</option>
+							{{endforeach}}
+						</select>
+					</div>
+					<div class="ipsFieldRow">
+						<label class="ipsFieldRow_label" for="premise_zip">{lang="gdpc_ffldata_zip"}</label>
+						<input type="text" id="premise_zip" name="premise_zip" value="{$data['premise_zip']}" maxlength="10" placeholder="12345 or 12345-6789" />
+					</div>
+				</div>
+			</div>
+
+			<div class="ipsBox" style="margin-bottom:16px">
+				<h2 class="ipsBox_title">{lang="gdpc_ffldata_section_status"}</h2>
+				<div class="ipsPad">
+					<div class="ipsFieldRow">
+						<label class="ipsFieldRow_label">
+							<input type="checkbox" name="active" value="1" {{if $data['active']}}checked{{endif}} />
+							{lang="gdpc_ffldata_active"}
+						</label>
+						<p class="ipsType_light ipsType_small">{lang="gdpc_ffldata_active_desc"}</p>
+					</div>
+				</div>
+			</div>
+
+			<div style="margin-top:16px;display:flex;gap:8px">
+				<button type="submit" class="ipsButton ipsButton--primary">
+					{{if $data['is_edit']}}{lang="gdpc_ffldata_save"}{{else}}{lang="gdpc_ffldata_create"}{{endif}}
+				</button>
+				<a href="{$data['cancel_url']}" class="ipsButton ipsButton--normal">{lang="gdpc_ffldata_cancel"}</a>
+			</div>
+		</form>
 
 	</div>
 </div>
