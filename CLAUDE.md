@@ -106,6 +106,25 @@ These were learned by comparing against a working IPS v5 plugin. They apply to e
     9. If you reach for any syntax not in this list, stop and push the logic back into the controller instead.
 13. **Never use anonymous functions, closures, or `array_filter`/`array_map`/`array_walk`/`usort` with callables inside `{expression="..."}` template tags** — the IPS template compiler cannot tokenize PHP closures (`function( $f ) { ... }` or `fn( $f ) => ...`) inside expression tag arguments and throws `UnexpectedValueException` or silently emits broken PHP. Safe expressions are flat calls only: `number_format($x)`, `htmlspecialchars($x)`, `count($array)`, `strtoupper($x)`, `$x ? 'a' : 'b'`. Anything requiring a callback — counting filtered items, transforming a list, sorting — must be computed in the controller and passed as a pre-built scalar (e.g. `$activeFeedCount`, `$configuredUrlCount`) that the template prints directly via `{$activeFeedCount}`.
 14. **ACP sidebar tab icons are set via a language key in `lang.xml`, NOT via `get__icon()`** — in IPS v5 the left-sidebar tab glyph is driven by the language string `menutab__{app_directory}_icon`; `Application::get__icon()` does not control it. The value is a FontAwesome icon name with no `fa-` prefix (e.g. `database`, `shield`, `tag`, `users`, `chart-bar`). Example for gdcatalog: `<word key="menutab__gdcatalog_icon"><![CDATA[database]]></word>`. Every future plugin must include this key in `lang.xml` or the tab will render with no icon. `get__icon()` must still exist on the Application class with the `: string` return type (see Rule #11) — other parts of IPS read it — but it does not determine the ACP sidebar icon.
+15. **`data/tasks.json` uses ISO 8601 duration strings only — never cron syntax** — IPS v5's task scheduler parses task intervals as ISO 8601 durations (`PT15M`, `PT1H`, `PT24H`, `P7D`, `P30D`). A cron-style value like `"0 2 * * *"` or `"*/15 * * * *"` will not register — the task is silently dropped at install time and never fires. The keys of `tasks.json` are the task identifiers (matching the class name in `tasks/{name}.php`); the values are the interval strings. Reference values:
+    - `PT5M` — every 5 minutes
+    - `PT15M` — every 15 minutes
+    - `PT1H` — hourly
+    - `PT6H` — every 6 hours
+    - `PT24H` — daily (use `PT24H`, not `P1D`, for consistency with IPS core)
+    - `P7D` — weekly
+    - `P30D` — monthly
+    Example for a daily click aggregation plus a 15-minute alert dispatcher plus a monthly FFL refresh:
+
+    ```json
+    {
+        "aggregateClicks": "PT24H",
+        "dispatchWatchlistAlerts": "PT15M",
+        "refreshFflData": "P30D"
+    }
+    ```
+
+    IPS does not support cron expressions at any level of the task configuration — not in `tasks.json`, not in the ACP task editor. Scheduling specific times-of-day (e.g. "run at 2am daily") is not expressible in this format; either accept the first-run time as the daily anchor or compute time-of-day logic inside the task's `execute()` method and skip runs that fall outside the window.
 
 ## Full specification
 Read `GunRack_Spec_v2.9.16.md` for complete specs on all 12 plugins, database schemas, acceptance criteria, server setup (Appendix B), security requirements (Appendix C), and Phase 2 roadmap (Section 19).

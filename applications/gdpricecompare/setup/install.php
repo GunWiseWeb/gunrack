@@ -1,27 +1,29 @@
 <?php
 /**
- * @brief       GD Price Comparison — installer
+ * @brief       GD Price Comparison — Install routine
  * @package     IPS Community Suite
  * @subpackage  GD Price Comparison
  * @since       15 Apr 2026
  *
- * Runs from Application::installOther() once schema.json tables are in place.
- * Seeds core_theme_templates rows directly so the IPS XML theme importer
- * cannot strip template comments or corrupt whitespace (CLAUDE.md Rule #4).
+ * Runs after schema.json tables are created. Seeds templates directly into
+ * core_theme_templates using nowdoc heredocs so real newlines/tabs are
+ * preserved. No comments inside template bodies (CLAUDE.md Rule #9) — the IPS
+ * template compiler does not parse comment syntax.
+ *
  * Also installs a small seed set of state compliance rules for launch.
  */
 
-namespace IPS\gdpricecompare\setup;
+$gdpricecompareTemplates = [
 
-use function defined;
-
-if ( !defined( '\IPS\SUITE_UNIQUE_KEY' ) )
-{
-	header( ( $_SERVER['SERVER_PROTOCOL'] ?? 'HTTP/1.0' ) . ' 403 Forbidden' );
-	exit;
-}
-
-$gdpcAdminDashboard = <<<'TEMPLATE_EOT'
+	/* ===== ADMIN: dashboard ===== */
+	[
+		'set_id'        => 1,
+		'app'           => 'gdpricecompare',
+		'location'      => 'admin',
+		'group'         => 'pricecompare',
+		'template_name' => 'dashboard',
+		'template_data' => '$data',
+		'template_content' => <<<'TEMPLATE_EOT'
 <h1 class="ipsType_pageTitle">{lang="gdpc_dash_title"}</h1>
 <div class="ipsPad">
 	<div class="ipsGrid ipsGrid_collapsePhone">
@@ -79,9 +81,18 @@ $gdpcAdminDashboard = <<<'TEMPLATE_EOT'
 		</div></div>
 	</div>
 </div>
-TEMPLATE_EOT;
+TEMPLATE_EOT,
+	],
 
-$gdpcAdminSettings = <<<'TEMPLATE_EOT'
+	/* ===== ADMIN: settings ===== */
+	[
+		'set_id'        => 1,
+		'app'           => 'gdpricecompare',
+		'location'      => 'admin',
+		'group'         => 'pricecompare',
+		'template_name' => 'settings',
+		'template_data' => '$data',
+		'template_content' => <<<'TEMPLATE_EOT'
 <h1 class="ipsType_pageTitle">{lang="gdpc_settings_title"}</h1>
 <form method="post" action="" class="ipsForm ipsForm_vertical ipsPad">
 	<input type="hidden" name="csrfKey" value="{$data['csrf_key']}" />
@@ -131,9 +142,18 @@ $gdpcAdminSettings = <<<'TEMPLATE_EOT'
 		<button type="submit" class="ipsButton ipsButton_primary">{lang="gdpc_settings_save"}</button>
 	</div>
 </form>
-TEMPLATE_EOT;
+TEMPLATE_EOT,
+	],
 
-$gdpcAdminFflData = <<<'TEMPLATE_EOT'
+	/* ===== ADMIN: ffldata ===== */
+	[
+		'set_id'        => 1,
+		'app'           => 'gdpricecompare',
+		'location'      => 'admin',
+		'group'         => 'pricecompare',
+		'template_name' => 'ffldata',
+		'template_data' => '$data',
+		'template_content' => <<<'TEMPLATE_EOT'
 <h1 class="ipsType_pageTitle">{lang="gdpc_ffldata_title"}</h1>
 <div class="ipsPad">
 	<div class="ipsBox ipsPad">
@@ -144,9 +164,18 @@ $gdpcAdminFflData = <<<'TEMPLATE_EOT'
 		<a href="{$data['refresh_url']}" class="ipsButton ipsButton_primary">{lang="gdpc_ffldata_refresh_now"}</a>
 	</div>
 </div>
-TEMPLATE_EOT;
+TEMPLATE_EOT,
+	],
 
-$gdpcAdminSearchLog = <<<'TEMPLATE_EOT'
+	/* ===== ADMIN: searchlog ===== */
+	[
+		'set_id'        => 1,
+		'app'           => 'gdpricecompare',
+		'location'      => 'admin',
+		'group'         => 'pricecompare',
+		'template_name' => 'searchlog',
+		'template_data' => '$data',
+		'template_content' => <<<'TEMPLATE_EOT'
 <h1 class="ipsType_pageTitle">{lang="gdpc_searchlog_title"}</h1>
 <div class="ipsPad">
 	<div class="ipsGrid ipsGrid_collapsePhone">
@@ -178,9 +207,18 @@ $gdpcAdminSearchLog = <<<'TEMPLATE_EOT'
 		</div></div>
 	</div>
 </div>
-TEMPLATE_EOT;
+TEMPLATE_EOT,
+	],
 
-$gdpcAdminCompliance = <<<'TEMPLATE_EOT'
+	/* ===== ADMIN: compliance ===== */
+	[
+		'set_id'        => 1,
+		'app'           => 'gdpricecompare',
+		'location'      => 'admin',
+		'group'         => 'pricecompare',
+		'template_name' => 'compliance',
+		'template_data' => '$data',
+		'template_content' => <<<'TEMPLATE_EOT'
 <h1 class="ipsType_pageTitle">{lang="gdpc_compliance_title"}</h1>
 <div class="ipsPad">
 	<div>{lang="gdpc_compliance_count"}: <strong>{$data['count']}</strong></div>
@@ -203,9 +241,18 @@ $gdpcAdminCompliance = <<<'TEMPLATE_EOT'
 		</tbody>
 	</table>
 </div>
-TEMPLATE_EOT;
+TEMPLATE_EOT,
+	],
 
-$gdpcFrontProduct = <<<'TEMPLATE_EOT'
+	/* ===== FRONT: product ===== */
+	[
+		'set_id'        => 1,
+		'app'           => 'gdpricecompare',
+		'location'      => 'front',
+		'group'         => 'pricecompare',
+		'template_name' => 'product',
+		'template_data' => '$data',
+		'template_content' => <<<'TEMPLATE_EOT'
 <div class="ipsPad">
 	<div class="ipsType_breadcrumb">
 		<a href="/products/{$data['product']['category_slug']}">{$data['product']['category_slug']}</a>
@@ -297,9 +344,18 @@ $gdpcFrontProduct = <<<'TEMPLATE_EOT'
 	</table>
 	{{endif}}
 </div>
-TEMPLATE_EOT;
+TEMPLATE_EOT,
+	],
 
-$gdpcFrontBrowse = <<<'TEMPLATE_EOT'
+	/* ===== FRONT: browse ===== */
+	[
+		'set_id'        => 1,
+		'app'           => 'gdpricecompare',
+		'location'      => 'front',
+		'group'         => 'pricecompare',
+		'template_name' => 'browse',
+		'template_data' => '$data',
+		'template_content' => <<<'TEMPLATE_EOT'
 <h1 class="ipsType_pageTitle">{{if $data['category']}}{$data['category']}{{else}}{lang="gdpc_front_browse_title"}{{endif}}</h1>
 <div class="ipsPad">
 	<div class="ipsType_light">{$data['count']} products</div>
@@ -326,9 +382,18 @@ $gdpcFrontBrowse = <<<'TEMPLATE_EOT'
 	{{endforeach}}
 	</div>
 </div>
-TEMPLATE_EOT;
+TEMPLATE_EOT,
+	],
 
-$gdpcFrontWatchlist = <<<'TEMPLATE_EOT'
+	/* ===== FRONT: watchlist ===== */
+	[
+		'set_id'        => 1,
+		'app'           => 'gdpricecompare',
+		'location'      => 'front',
+		'group'         => 'pricecompare',
+		'template_name' => 'watchlist',
+		'template_data' => '$data',
+		'template_content' => <<<'TEMPLATE_EOT'
 <h1 class="ipsType_pageTitle">{lang="gdpc_front_watchlist_title"}</h1>
 <div class="ipsPad">
 	{{if $data['count'] === 0}}
@@ -356,9 +421,18 @@ $gdpcFrontWatchlist = <<<'TEMPLATE_EOT'
 	</table>
 	{{endif}}
 </div>
-TEMPLATE_EOT;
+TEMPLATE_EOT,
+	],
 
-$gdpcFrontFfl = <<<'TEMPLATE_EOT'
+	/* ===== FRONT: ffl ===== */
+	[
+		'set_id'        => 1,
+		'app'           => 'gdpricecompare',
+		'location'      => 'front',
+		'group'         => 'pricecompare',
+		'template_name' => 'ffl',
+		'template_data' => '$data',
+		'template_content' => <<<'TEMPLATE_EOT'
 <h1 class="ipsType_pageTitle">{lang="gdpc_front_ffl_title"}</h1>
 <div class="ipsPad">
 	<form method="get" action="" class="ipsForm ipsForm_horizontal">
@@ -400,43 +474,25 @@ $gdpcFrontFfl = <<<'TEMPLATE_EOT'
 	</table>
 	{{endif}}
 </div>
-TEMPLATE_EOT;
+TEMPLATE_EOT,
+	],
 
-$gdpricecompareTemplates = [
-	[ 'location' => 'admin', 'group' => 'pricecompare', 'name' => 'dashboard',  'data' => '$data',           'content' => $gdpcAdminDashboard ],
-	[ 'location' => 'admin', 'group' => 'pricecompare', 'name' => 'settings',   'data' => '$data',           'content' => $gdpcAdminSettings ],
-	[ 'location' => 'admin', 'group' => 'pricecompare', 'name' => 'ffldata',    'data' => '$data',           'content' => $gdpcAdminFflData ],
-	[ 'location' => 'admin', 'group' => 'pricecompare', 'name' => 'searchlog',  'data' => '$data',           'content' => $gdpcAdminSearchLog ],
-	[ 'location' => 'admin', 'group' => 'pricecompare', 'name' => 'compliance', 'data' => '$data',           'content' => $gdpcAdminCompliance ],
-	[ 'location' => 'front', 'group' => 'pricecompare', 'name' => 'product',    'data' => '$data',           'content' => $gdpcFrontProduct ],
-	[ 'location' => 'front', 'group' => 'pricecompare', 'name' => 'browse',     'data' => '$data',           'content' => $gdpcFrontBrowse ],
-	[ 'location' => 'front', 'group' => 'pricecompare', 'name' => 'watchlist',  'data' => '$data',           'content' => $gdpcFrontWatchlist ],
-	[ 'location' => 'front', 'group' => 'pricecompare', 'name' => 'ffl',        'data' => '$data',           'content' => $gdpcFrontFfl ],
 ];
 
 foreach ( $gdpricecompareTemplates as $tpl )
 {
-	try
-	{
-		\IPS\Db::i()->delete( 'core_theme_templates', [
-			'template_set_id=? AND template_app=? AND template_location=? AND template_group=? AND template_name=?',
-			1, 'gdpricecompare', $tpl['location'], $tpl['group'], $tpl['name']
-		]);
-	}
-	catch ( \Exception ) {}
-
 	\IPS\Db::i()->insert( 'core_theme_templates', [
-		'template_set_id'  => 1,
-		'template_app'     => 'gdpricecompare',
-		'template_location'=> $tpl['location'],
-		'template_group'   => $tpl['group'],
-		'template_name'    => $tpl['name'],
-		'template_data'    => $tpl['data'],
-		'template_content' => $tpl['content'],
+		'template_set_id'   => $tpl['set_id'],
+		'template_app'      => $tpl['app'],
+		'template_location' => $tpl['location'],
+		'template_group'    => $tpl['group'],
+		'template_name'     => $tpl['template_name'],
+		'template_data'     => $tpl['template_data'],
+		'template_content'  => $tpl['template_content'],
 	]);
 }
 
-$stateSeeds = [
+$gdpricecompareStateSeeds = [
 	[ 'CA', 'magazine_capacity', '{"magazine_capacity":[">",10]}', 'California — magazines over 10 rounds restricted.' ],
 	[ 'NY', 'magazine_capacity', '{"magazine_capacity":[">",10]}', 'New York — magazines over 10 rounds restricted.' ],
 	[ 'NJ', 'magazine_capacity', '{"magazine_capacity":[">",10]}', 'New Jersey — magazines over 10 rounds restricted.' ],
@@ -449,7 +505,7 @@ $stateSeeds = [
 	[ 'HI', 'nfa',               '{"nfa_item":true}',              'Hawaii — suppressors and SBRs restricted.' ],
 ];
 
-foreach ( $stateSeeds as $seed )
+foreach ( $gdpricecompareStateSeeds as $seed )
 {
 	try
 	{

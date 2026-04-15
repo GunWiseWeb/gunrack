@@ -1,5 +1,5 @@
 {
-	"aggregateClicks": "0 2 * * *",
-	"dispatchWatchlistAlerts": "*/15 * * * *",
-	"refreshFflData": "0 3 1 * *"
+	"aggregateClicks": "PT24H",
+	"dispatchWatchlistAlerts": "PT15M",
+	"refreshFflData": "P30D"
 }
