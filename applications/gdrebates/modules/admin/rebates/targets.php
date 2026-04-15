@@ -82,7 +82,7 @@ class _targets extends \IPS\Dispatcher\Controller
 			catch ( \Exception ) {}
 		}
 
-		$values = $existing ?: [
+		$defaults = [
 			'manufacturer'       => '',
 			'brand'              => '',
 			'scrape_url'         => '',
@@ -91,85 +91,67 @@ class _targets extends \IPS\Dispatcher\Controller
 			'enabled'            => 1,
 			'extraction_config'  => '',
 		];
-		$errors = [];
+		$cur = $existing ?: $defaults;
 
-		if ( \IPS\Request::i()->requestMethod() === 'POST' )
-		{
-			\IPS\Session::i()->csrfCheck();
+		$form = new \IPS\Helpers\Form( 'gdr_target', 'gdr_targets_save' );
 
-			$values['manufacturer']      = trim( (string) \IPS\Request::i()->manufacturer );
-			$values['brand']             = trim( (string) \IPS\Request::i()->brand );
-			$values['scrape_url']        = trim( (string) \IPS\Request::i()->scrape_url );
-			$values['rate_limit_ms']     = max( 0, (int) \IPS\Request::i()->rate_limit_ms );
-			$values['is_known']          = (int) \IPS\Request::i()->is_known === 1 ? 1 : 0;
-			$values['enabled']           = (int) \IPS\Request::i()->enabled === 1 ? 1 : 0;
-			$values['extraction_config'] = (string) \IPS\Request::i()->extraction_config;
-
-			if ( $values['manufacturer'] === '' )
+		$form->add( new \IPS\Helpers\Form\Text(   'target_manufacturer',      (string) $cur['manufacturer'],        TRUE,  [ 'maxLength' => 150 ] ) );
+		$form->add( new \IPS\Helpers\Form\Text(   'target_brand',             (string) $cur['brand'],               FALSE, [ 'maxLength' => 150 ] ) );
+		$form->add( new \IPS\Helpers\Form\Url(    'target_scrape_url',        (string) $cur['scrape_url'],          TRUE,  [ 'allowedProtocols' => [ 'http', 'https' ] ] ) );
+		$form->add( new \IPS\Helpers\Form\Number( 'target_rate_limit_ms',     max( 0, (int) $cur['rate_limit_ms'] ), TRUE,  [ 'min' => 0 ] ) );
+		$form->add( new \IPS\Helpers\Form\YesNo(  'target_is_known',          (int) $cur['is_known'] === 1 ) );
+		$form->add( new \IPS\Helpers\Form\YesNo(  'target_enabled',           (int) $cur['enabled'] === 1 ) );
+		$form->add( new \IPS\Helpers\Form\TextArea(
+			'target_extraction_config',
+			(string) $cur['extraction_config'],
+			FALSE,
+			[ 'rows' => 14 ],
+			function ( $val )
 			{
-				$errors[] = 'gdr_targets_err_manufacturer';
-			}
-			if ( !filter_var( $values['scrape_url'], FILTER_VALIDATE_URL )
-				|| !preg_match( '#^https?://#i', $values['scrape_url'] ) )
-			{
-				$errors[] = 'gdr_targets_err_url';
-			}
-			if ( \IPS\gdrebates\Rebate\Target::decodeExtractionConfig( $values['extraction_config'] ) === null )
-			{
-				$errors[] = 'gdr_targets_err_config';
-			}
-
-			if ( count( $errors ) === 0 )
-			{
-				$payload = [
-					'manufacturer'      => mb_substr( $values['manufacturer'], 0, 150 ),
-					'brand'             => $values['brand'] !== '' ? mb_substr( $values['brand'], 0, 150 ) : $values['manufacturer'],
-					'scrape_url'        => mb_substr( $values['scrape_url'], 0, 500 ),
-					'rate_limit_ms'     => $values['rate_limit_ms'],
-					'is_known'          => $values['is_known'],
-					'enabled'           => $values['enabled'],
-					'extraction_config' => $values['extraction_config'],
-				];
-
-				try
+				if ( $val !== '' && \IPS\gdrebates\Rebate\Target::decodeExtractionConfig( (string) $val ) === null )
 				{
-					if ( $existing )
-					{
-						\IPS\Db::i()->update( 'gd_scrape_targets', $payload, [ 'id=?', (int) $existing['id'] ] );
-					}
-					else
-					{
-						$payload['created_at'] = date( 'Y-m-d H:i:s' );
-						\IPS\Db::i()->insert( 'gd_scrape_targets', $payload );
-					}
+					throw new \InvalidArgumentException( 'gdr_targets_err_config' );
 				}
-				catch ( \Exception ) {}
-
-				\IPS\Output::i()->redirect(
-					\IPS\Http\Url::internal( 'app=gdrebates&module=rebates&controller=targets' ),
-					'gdr_targets_saved'
-				);
-				return;
 			}
-		}
+		) );
 
-		$errorsResolved = [];
-		foreach ( $errors as $k )
+		if ( $values = $form->values() )
 		{
-			$errorsResolved[] = (string) $lang->addToStack( $k );
+			$manufacturer = trim( (string) $values['target_manufacturer'] );
+			$brand        = trim( (string) $values['target_brand'] );
+			$payload = [
+				'manufacturer'      => mb_substr( $manufacturer, 0, 150 ),
+				'brand'             => $brand !== '' ? mb_substr( $brand, 0, 150 ) : $manufacturer,
+				'scrape_url'        => mb_substr( (string) $values['target_scrape_url'], 0, 500 ),
+				'rate_limit_ms'     => max( 0, (int) $values['target_rate_limit_ms'] ),
+				'is_known'          => (int) $values['target_is_known'] === 1 ? 1 : 0,
+				'enabled'           => (int) $values['target_enabled'] === 1 ? 1 : 0,
+				'extraction_config' => (string) $values['target_extraction_config'],
+			];
+
+			try
+			{
+				if ( $existing )
+				{
+					\IPS\Db::i()->update( 'gd_scrape_targets', $payload, [ 'id=?', (int) $existing['id'] ] );
+				}
+				else
+				{
+					$payload['created_at'] = date( 'Y-m-d H:i:s' );
+					\IPS\Db::i()->insert( 'gd_scrape_targets', $payload );
+				}
+			}
+			catch ( \Exception ) {}
+
+			\IPS\Output::i()->redirect(
+				\IPS\Http\Url::internal( 'app=gdrebates&module=rebates&controller=targets' ),
+				'gdr_targets_saved'
+			);
+			return;
 		}
 
 		\IPS\Output::i()->title  = $lang->addToStack( $existing ? 'gdr_targets_form_title_edit' : 'gdr_targets_form_title_add' );
-		\IPS\Output::i()->output = \IPS\Theme::i()->getTemplate( 'rebates', 'gdrebates', 'admin' )->targetForm( [
-			'values'     => $values,
-			'errors'     => $errorsResolved,
-			'is_edit'    => $existing !== null,
-			'submit_url' => (string) \IPS\Http\Url::internal(
-				'app=gdrebates&module=rebates&controller=targets&do=form' . ( $existing ? '&id=' . (int) $existing['id'] : '' )
-			),
-			'cancel_url' => (string) \IPS\Http\Url::internal( 'app=gdrebates&module=rebates&controller=targets' ),
-			'csrf_key'   => \IPS\Session::i()->csrfKey,
-		] );
+		\IPS\Output::i()->output = (string) $form;
 	}
 
 	protected function delete(): void

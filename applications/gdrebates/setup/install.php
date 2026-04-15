@@ -26,9 +26,6 @@ $templates[] = [
 	'params'   => 'data',
 	'content'  => <<<'TEMPLATE_EOT'
 <div class="ipsBox ipsPull">
-	<div class="ipsBox_title">
-		<h1 class="ipsType_sectionHead">{lang="gdr_dash_title"}</h1>
-	</div>
 	<div class="ipsBox_body ipsPad">
 		<div class="ipsGrid ipsGrid_collapsePhone" style="margin-bottom:16px">
 			<div class="ipsGrid_span3">
@@ -61,10 +58,8 @@ $templates[] = [
 </div>
 <br>
 <div class="ipsBox ipsPull">
-	<div class="ipsBox_title">
-		<h1 class="ipsType_sectionHead">{lang="gdr_dash_by_type"}</h1>
-	</div>
 	<div class="ipsBox_body ipsPad">
+		<h2 class="ipsType_sectionHead" style="margin:0 0 12px">{lang="gdr_dash_by_type"}</h2>
 		{{if count($data['by_type']) === 0}}
 			<div class="ipsEmptyMessage"><p>{lang="gdr_dash_no_rebates"}</p></div>
 		{{else}}
@@ -81,10 +76,8 @@ $templates[] = [
 </div>
 <br>
 <div class="ipsBox ipsPull">
-	<div class="ipsBox_title">
-		<h1 class="ipsType_sectionHead">{lang="gdr_dash_top_mfrs"}</h1>
-	</div>
 	<div class="ipsBox_body ipsPad">
+		<h2 class="ipsType_sectionHead" style="margin:0 0 12px">{lang="gdr_dash_top_mfrs"}</h2>
 		{{if count($data['top_mfrs']) === 0}}
 			<div class="ipsEmptyMessage"><p>{lang="gdr_dash_no_rebates"}</p></div>
 		{{else}}
@@ -101,10 +94,8 @@ $templates[] = [
 </div>
 <br>
 <div class="ipsBox ipsPull">
-	<div class="ipsBox_title">
-		<h1 class="ipsType_sectionHead">{lang="gdr_dash_recent_scrapes"}</h1>
-	</div>
 	<div class="ipsBox_body ipsPad">
+		<h2 class="ipsType_sectionHead" style="margin:0 0 12px">{lang="gdr_dash_recent_scrapes"}</h2>
 		{{if count($data['recent_scrapes']) === 0}}
 			<div class="ipsEmptyMessage"><p>{lang="gdr_dash_no_scrapes"}</p></div>
 		{{else}}
@@ -145,9 +136,6 @@ $templates[] = [
 	'params'   => 'data',
 	'content'  => <<<'TEMPLATE_EOT'
 <div class="ipsBox ipsPull">
-	<div class="ipsBox_title">
-		<h1 class="ipsType_sectionHead">{lang="gdr_submissions_title"}</h1>
-	</div>
 	<div class="ipsBox_body ipsPad">
 		{{if count($data['rows']) === 0}}
 			<div class="ipsEmptyMessage"><p>{lang="gdr_submissions_empty"}</p></div>
@@ -192,8 +180,7 @@ $templates[] = [
 	'params'   => 'data',
 	'content'  => <<<'TEMPLATE_EOT'
 <div class="ipsBox ipsPull">
-	<div class="ipsBox_title" style="display:flex;align-items:center;justify-content:space-between">
-		<h1 class="ipsType_sectionHead" style="margin:0">{lang="gdr_targets_title"}</h1>
+	<div style="display:flex;justify-content:flex-end;padding:10px 16px;border-bottom:1px solid var(--i-border-color, #e0e0e0)">
 		<a href="{$data['add_url']}" class="ipsButton ipsButton--primary ipsButton--small">{lang="gdr_targets_add"}</a>
 	</div>
 	<div class="ipsBox_body ipsPad">
@@ -241,79 +228,10 @@ TEMPLATE_EOT
 $templates[] = [
 	'location' => 'admin',
 	'group'    => 'rebates',
-	'name'     => 'targetForm',
-	'params'   => 'data',
-	'content'  => <<<'TEMPLATE_EOT'
-<div class="ipsBox ipsPull">
-	<div class="ipsBox_title"><h1>{{if $data['is_edit']}}{lang="gdr_targets_form_title_edit"}{{else}}{lang="gdr_targets_form_title_add"}{{endif}}</h1></div>
-	<div class="ipsBox_body ipsPad">
-		{{if count($data['errors']) > 0}}
-			<div class="ipsMessage ipsMessage_error">
-				<ul>
-				{{foreach $data['errors'] as $err}}
-					<li>{$err}</li>
-				{{endforeach}}
-				</ul>
-			</div>
-		{{endif}}
-		<form method="post" action="{$data['submit_url']}">
-			<input type="hidden" name="csrfKey" value="{$data['csrf_key']}">
-			<ul class="ipsForm ipsForm_vertical">
-				<li class="ipsFieldRow">
-					<label class="ipsFieldRow_label">{lang="gdr_targets_field_manufacturer"}</label>
-					<div class="ipsFieldRow_content"><input type="text" name="manufacturer" class="ipsInput_text" value="{$data['values']['manufacturer']}" required></div>
-				</li>
-				<li class="ipsFieldRow">
-					<label class="ipsFieldRow_label">{lang="gdr_targets_field_brand"}</label>
-					<div class="ipsFieldRow_content"><input type="text" name="brand" class="ipsInput_text" value="{$data['values']['brand']}"></div>
-				</li>
-				<li class="ipsFieldRow">
-					<label class="ipsFieldRow_label">{lang="gdr_targets_field_url"}</label>
-					<div class="ipsFieldRow_content"><input type="url" name="scrape_url" class="ipsInput_text" value="{$data['values']['scrape_url']}" required></div>
-				</li>
-				<li class="ipsFieldRow">
-					<label class="ipsFieldRow_label">{lang="gdr_targets_field_rate"}</label>
-					<div class="ipsFieldRow_content"><input type="number" name="rate_limit_ms" class="ipsInput_text" value="{$data['values']['rate_limit_ms']}" min="0"></div>
-				</li>
-				<li class="ipsFieldRow">
-					<label class="ipsFieldRow_label">{lang="gdr_targets_field_known"}</label>
-					<div class="ipsFieldRow_content">
-						<label><input type="radio" name="is_known" value="1"{expression="(int) $data['values']['is_known'] === 1 ? ' checked' : ''"}> Yes</label>
-						<label><input type="radio" name="is_known" value="0"{expression="(int) $data['values']['is_known'] === 0 ? ' checked' : ''"}> No</label>
-					</div>
-				</li>
-				<li class="ipsFieldRow">
-					<label class="ipsFieldRow_label">{lang="gdr_targets_field_enabled"}</label>
-					<div class="ipsFieldRow_content">
-						<label><input type="radio" name="enabled" value="1"{expression="(int) $data['values']['enabled'] === 1 ? ' checked' : ''"}> Yes</label>
-						<label><input type="radio" name="enabled" value="0"{expression="(int) $data['values']['enabled'] === 0 ? ' checked' : ''"}> No</label>
-					</div>
-				</li>
-				<li class="ipsFieldRow">
-					<label class="ipsFieldRow_label">{lang="gdr_targets_field_config"}</label>
-					<div class="ipsFieldRow_content"><textarea name="extraction_config" rows="14" class="ipsInput_text" style="font-family:monospace">{$data['values']['extraction_config']}</textarea></div>
-				</li>
-			</ul>
-			<p class="ipsSpacer_top">
-				<button type="submit" class="ipsButton ipsButton--primary">{lang="gdr_targets_save"}</button>
-				<a href="{$data['cancel_url']}" class="ipsButton ipsButton--normal">{lang="gdr_targets_cancel"}</a>
-			</p>
-		</form>
-	</div>
-</div>
-TEMPLATE_EOT
-];
-
-$templates[] = [
-	'location' => 'admin',
-	'group'    => 'rebates',
 	'name'     => 'scraperqueue',
 	'params'   => 'data',
 	'content'  => <<<'TEMPLATE_EOT'
 <div class="ipsBox ipsPull">
-	<div class="ipsBox_title">
-		<h1 class="ipsType_sectionHead">{lang="gdr_scraperq_title"}</h1>
-	</div>
 	<div class="ipsBox_body ipsPad">
 		<p class="ipsType_light" style="margin-bottom:16px">{lang="gdr_scraperq_help"}</p>
 		{{if count($data['rows']) === 0}}
@@ -357,9 +275,6 @@ $templates[] = [
 	'params'   => 'data',
 	'content'  => <<<'TEMPLATE_EOT'
 <div class="ipsBox ipsPull">
-	<div class="ipsBox_title">
-		<h1 class="ipsType_sectionHead">{lang="gdr_scrapelog_title"}</h1>
-	</div>
 	<div class="ipsBox_body ipsPad">
 		{{if count($data['rows']) === 0}}
 			<div class="ipsEmptyMessage"><p>{lang="gdr_scrapelog_empty"}</p></div>
@@ -405,9 +320,6 @@ $templates[] = [
 	'params'   => 'data',
 	'content'  => <<<'TEMPLATE_EOT'
 <div class="ipsBox ipsPull">
-	<div class="ipsBox_title">
-		<h1 class="ipsType_sectionHead">{lang="gdr_flags_title"}</h1>
-	</div>
 	<div class="ipsBox_body ipsPad">
 		{{if count($data['rows']) === 0}}
 			<div class="ipsEmptyMessage"><p>{lang="gdr_flags_empty"}</p></div>
@@ -445,9 +357,6 @@ $templates[] = [
 	'params'   => 'data',
 	'content'  => <<<'TEMPLATE_EOT'
 <div class="ipsBox ipsPull">
-	<div class="ipsBox_title">
-		<h1 class="ipsType_sectionHead">{lang="gdr_active_title"}</h1>
-	</div>
 	<div class="ipsBox_body ipsPad">
 		{{if count($data['rows']) === 0}}
 			<div class="ipsEmptyMessage"><p>{lang="gdr_active_empty"}</p></div>
