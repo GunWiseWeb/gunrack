@@ -522,13 +522,35 @@ TEMPLATE_EOT,
 <tbody>
 {{foreach $distributorStats as $ds}}
 <tr>
-<td>{$ds['feed']->priority}</td>
-<td><strong>{$ds['feed']->feed_name}</strong></td>
+<td>{$ds['priority']}</td>
+<td><strong>{$ds['feed_name']}</strong></td>
 <td>{expression="number_format($ds['product_count'])"}</td>
-<td>{{if $ds['feed']->active}}<span class="ipsBadge ipsBadge--positive">Active</span>{{else}}<span class="ipsBadge ipsBadge--neutral">Inactive</span>{{endif}}</td>
-<td>{{if isset($ds['last_log']) and $ds['last_log']}}{$ds['last_log']['run_start']}{{else}}&mdash;{{endif}}</td>
-<td>{{if isset($ds['last_log']) and $ds['last_log']}}{$ds['last_log']['status']}{{else}}&mdash;{{endif}}</td>
-<td>{{if $ds['feed']->active}}<a href="{url="app=gdcatalog&module=catalog&controller=dashboard&do=runImport&id={$ds['feed']->id}" csrf="true"}" class="ipsButton ipsButton--small ipsButton--primary">Run Import</a>{{endif}}</td>
+<td>
+{{if $ds['active']}}
+<span class="ipsBadge ipsBadge--positive">Active</span>
+{{else}}
+<span class="ipsBadge ipsBadge--neutral">Inactive</span>
+{{endif}}
+</td>
+<td>
+{{if $ds['last_run_start']}}
+{$ds['last_run_start']}
+{{else}}
+&mdash;
+{{endif}}
+</td>
+<td>
+{{if $ds['last_status']}}
+{$ds['last_status']}
+{{else}}
+&mdash;
+{{endif}}
+</td>
+<td>
+{{if $ds['active']}}
+<a href="{$ds['run_import_url']}" class="ipsButton ipsButton--small ipsButton--primary">Run Import</a>
+{{endif}}
+</td>
 </tr>
 {{endforeach}}
 </tbody>

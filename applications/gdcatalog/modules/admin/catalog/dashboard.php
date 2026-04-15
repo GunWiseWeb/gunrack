@@ -69,7 +69,15 @@ class _dashboard extends \IPS\Dispatcher\Controller
 		}
 		catch ( \Exception ) {}
 
-		/* Per-distributor stats from latest import logs */
+		/* Per-distributor stats from latest import logs.
+		 *
+		 * Values are flattened to scalar keys so the dashboard template
+		 * can use plain `{$ds['key']}` access without mixing array and
+		 * object traversal, which the IPS template compiler rejects with
+		 * UnexpectedValueException. The Run Import URL is also built
+		 * here so the template does not need a nested `{url="..."}` tag
+		 * with embedded `{$...}` placeholders inside an `{{if}}` block.
+		 */
 		$distributorStats = [];
 		try
 		{
@@ -96,10 +104,19 @@ class _dashboard extends \IPS\Dispatcher\Controller
 				}
 				catch ( \Exception ) {}
 
+				$runImportUrl = (string) \IPS\Http\Url::internal(
+					'app=gdcatalog&module=catalog&controller=dashboard&do=runImport&id=' . (int) $feed->id
+				)->csrf();
+
 				$distributorStats[] = [
-					'feed'          => $feed,
-					'product_count' => $productCount,
-					'last_log'      => $lastLog,
+					'priority'       => (int) $feed->priority,
+					'feed_name'      => (string) $feed->feed_name,
+					'feed_id'        => (int) $feed->id,
+					'active'         => (bool) $feed->active,
+					'product_count'  => $productCount,
+					'last_run_start' => $lastLog['run_start'] ?? null,
+					'last_status'    => $lastLog['status'] ?? null,
+					'run_import_url' => $runImportUrl,
 				];
 			}
 		}
