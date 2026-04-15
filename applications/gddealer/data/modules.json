@@ -4,11 +4,5 @@
 			"default_controller": "dashboard",
 			"protected": false
 		}
-	},
-	"front": {
-		"dashboard": {
-			"default_controller": "dashboard",
-			"protected": false
-		}
 	}
 }

@@ -13,13 +13,11 @@ class _Application extends \IPS\Application
 	/**
 	 * ACP menu icon (Font Awesome name, no `fa-` prefix).
 	 *
-	 * Matches \IPS\Application::get__icon() signature — public visibility
-	 * and `: string` return type. Anything else is silently ignored by the
-	 * menu renderer and the tab shows with no glyph. The ACP sidebar also
-	 * reads menutab__gddealer_icon from lang.xml (Rule #14); both pathways
-	 * are present to be safe.
+	 * The ACP sidebar tab glyph is actually driven by the language key
+	 * menutab__gddealer_icon in lang.xml (Rule #14); this method exists
+	 * for other parts of IPS that query it.
 	 */
-	public function get__icon(): string
+	protected function get__icon(): string
 	{
 		return 'store';
 	}
