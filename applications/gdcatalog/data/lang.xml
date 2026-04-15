@@ -124,5 +124,17 @@
     <word key="gdcatalog_conflict_manufacturer"><![CDATA[Conflict detect: manufacturer]]></word>
     <word key="gdcatalog_conflict_description"><![CDATA[Conflict detect: description]]></word>
     <word key="gdcatalog_feeds_manage"><![CDATA[Can manage feed configuration]]></word>
+    <word key="gdcatalog_opensearch_host"><![CDATA[OpenSearch Host]]></word>
+    <word key="gdcatalog_opensearch_index"><![CDATA[OpenSearch Index Name]]></word>
+    <word key="gdcatalog_auto_resolve_hours"><![CDATA[Auto-Resolve Conflicts After (Hours)]]></word>
+    <word key="gdcatalog_discontinue_threshold"><![CDATA[Discontinue Threshold (Missing Feeds)]]></word>
+    <word key="gdcatalog_restriction_states"><![CDATA[Restricted States (comma-separated)]]></word>
+    <word key="gdcatalog_custom_value"><![CDATA[Custom Value]]></word>
+    <word key="gdcatalog_product_action_type"><![CDATA[Action Type]]></word>
+    <word key="gdcatalog_product_finish"><![CDATA[Finish]]></word>
+    <word key="gdcatalog_product_description"><![CDATA[Description]]></word>
+    <word key="gdcatalog_product_nfa_item"><![CDATA[NFA Item]]></word>
+    <word key="gdcatalog_product_requires_ffl"><![CDATA[Requires FFL]]></word>
+    <word key="gdcatalog_product_is_ammo"><![CDATA[Is Ammunition]]></word>
   </app>
 </language>
