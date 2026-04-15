@@ -1,0 +1,14 @@
+{
+	"admin": {
+		"reviews": {
+			"default_controller": "dashboard",
+			"protected": false
+		}
+	},
+	"front": {
+		"reviews": {
+			"default_controller": "hub",
+			"protected": false
+		}
+	}
+}

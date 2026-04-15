@@ -1,0 +1,17 @@
+{
+	"topLevel": "reviews",
+	"pages": {
+		"reviews_hub": {
+			"friendly": "reviews",
+			"real": "app=gdreviews&module=reviews&controller=hub"
+		},
+		"reviews_submit": {
+			"friendly": "reviews/submit/{#upc}",
+			"real": "app=gdreviews&module=reviews&controller=submit&upc={#upc}"
+		},
+		"reviews_product": {
+			"friendly": "reviews/product/{#upc}",
+			"real": "app=gdreviews&module=reviews&controller=hub&do=product&upc={#upc}"
+		}
+	}
+}
