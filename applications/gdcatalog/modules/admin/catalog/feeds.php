@@ -53,11 +53,19 @@ class _feeds extends \IPS\Dispatcher\Controller
 		$lang     = \IPS\Member::loggedIn()->language();
 
 		$feeds = [];
+		$activeCount = 0;
+		$urlCount    = 0;
 		foreach ( $rawFeeds as $feed )
 		{
 			$editUrl = (string) \IPS\Http\Url::internal(
 				'app=gdcatalog&module=catalog&controller=feeds&do=edit&id=' . (int) $feed->id
 			)->csrf();
+
+			$isActive = (bool) $feed->active;
+			$feedUrl  = (string) ( $feed->feed_url ?? '' );
+
+			if ( $isActive )    { $activeCount++; }
+			if ( $feedUrl !== '' ) { $urlCount++; }
 
 			$feeds[] = [
 				'priority'          => (int) $feed->priority,
@@ -65,17 +73,23 @@ class _feeds extends \IPS\Dispatcher\Controller
 				'distributor_label' => $lang->addToStack( 'gdcatalog_dist_' . $feed->distributor ),
 				'feed_format'       => strtoupper( (string) $feed->feed_format ),
 				'import_schedule'   => (string) $feed->import_schedule,
-				'active'            => (bool) $feed->active,
+				'active'            => $isActive,
 				'last_run'          => $feed->last_run ?? null,
 				'last_record_count' => (int) ( $feed->last_record_count ?? 0 ),
 				'last_run_status'   => $feed->last_run_status ?? null,
-				'feed_url'          => (string) ( $feed->feed_url ?? '' ),
+				'feed_url'          => $feedUrl,
 				'edit_url'          => $editUrl,
 			];
 		}
 
+		$feedCounts = [
+			'total'  => \count( $feeds ),
+			'active' => $activeCount,
+			'urls'   => $urlCount,
+		];
+
 		Output::i()->title  = $lang->addToStack( 'gdcatalog_feeds_title' );
-		Output::i()->output = \IPS\Theme::i()->getTemplate( 'catalog', 'gdcatalog', 'admin' )->feedList( $feeds );
+		Output::i()->output = \IPS\Theme::i()->getTemplate( 'catalog', 'gdcatalog', 'admin' )->feedList( $feeds, $feedCounts );
 	}
 
 	/**

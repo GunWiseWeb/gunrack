@@ -104,7 +104,7 @@ foreach ( $categories as $parentName => $children )
 $gdcatalogTemplates = [
 	[
 		'template_name' => 'feedList',
-		'template_data' => '$feeds',
+		'template_data' => '$feeds, $feedCounts',
 		'template_content' => <<<'TEMPLATE_EOT'
 <div class="ipsBox">
 	<h1 class="ipsBox_title">{lang="gdcatalog_feeds_title"}</h1>
@@ -112,15 +112,15 @@ $gdcatalogTemplates = [
 
 		<div style="display:flex;gap:16px;margin-bottom:24px">
 			<div class="ipsBox" style="flex:1;padding:16px;text-align:center">
-				<div style="font-size:2em;font-weight:bold">{expression="count( $feeds )"}</div>
+				<div style="font-size:2em;font-weight:bold">{$feedCounts['total']}</div>
 				<div>Configured Feeds</div>
 			</div>
 			<div class="ipsBox" style="flex:1;padding:16px;text-align:center">
-				<div style="font-size:2em;font-weight:bold">{expression="count( array_filter( $feeds, function( \$f ) { return !empty( \$f['active'] ); } ) )"}</div>
+				<div style="font-size:2em;font-weight:bold">{$feedCounts['active']}</div>
 				<div>Active Feeds</div>
 			</div>
 			<div class="ipsBox" style="flex:1;padding:16px;text-align:center">
-				<div style="font-size:2em;font-weight:bold">{expression="count( array_filter( $feeds, function( \$f ) { return !empty( \$f['feed_url'] ); } ) )"}</div>
+				<div style="font-size:2em;font-weight:bold">{$feedCounts['urls']}</div>
 				<div>URLs Configured</div>
 			</div>
 		</div>
