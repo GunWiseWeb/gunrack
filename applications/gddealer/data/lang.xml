@@ -92,5 +92,36 @@
     <word key="gddealer_mrr_tiers_empty"><![CDATA[No active subscription tiers.]]></word>
     <word key="gddealer_unmatched_empty"><![CDATA[No unmatched UPCs. Every UPC in every dealer feed matched a product in the master catalog.]]></word>
     <word key="task__DealerImportFeeds"><![CDATA[Import Dealer Feeds]]></word>
+    <word key="gddealer_front_dash_title"><![CDATA[Dealer Dashboard]]></word>
+    <word key="gddealer_front_dash_subtitle"><![CDATA[Your storefront performance on GunRack.deals]]></word>
+    <word key="gddealer_front_plan"><![CDATA[Plan]]></word>
+    <word key="gddealer_front_active"><![CDATA[Active]]></word>
+    <word key="gddealer_front_inactive"><![CDATA[Inactive]]></word>
+    <word key="gddealer_front_suspended"><![CDATA[Suspended]]></word>
+    <word key="gddealer_front_total_listings"><![CDATA[Total Listings]]></word>
+    <word key="gddealer_front_in_stock"><![CDATA[in stock]]></word>
+    <word key="gddealer_front_oos"><![CDATA[out of stock]]></word>
+    <word key="gddealer_front_clicks_7d"><![CDATA[Clicks — last 7 days]]></word>
+    <word key="gddealer_front_clicks_30d_suffix"><![CDATA[in the last 30 days]]></word>
+    <word key="gddealer_front_unmatched"><![CDATA[Unmatched UPCs]]></word>
+    <word key="gddealer_front_unmatched_hint"><![CDATA[Products not yet in catalog]]></word>
+    <word key="gddealer_front_last_import"><![CDATA[Last Feed Import]]></word>
+    <word key="gddealer_front_records"><![CDATA[records]]></word>
+    <word key="gddealer_front_no_imports"><![CDATA[No imports have run yet]]></word>
+    <word key="gddealer_front_import_history"><![CDATA[Recent Import History]]></word>
+    <word key="gddealer_front_no_imports_body"><![CDATA[No feed imports have run yet. Once your feed is configured, history will appear here.]]></word>
+    <word key="gddealer_front_col_run"><![CDATA[Run Time]]></word>
+    <word key="gddealer_front_col_status"><![CDATA[Status]]></word>
+    <word key="gddealer_front_col_total"><![CDATA[Total]]></word>
+    <word key="gddealer_front_col_created"><![CDATA[Created]]></word>
+    <word key="gddealer_front_col_updated"><![CDATA[Updated]]></word>
+    <word key="gddealer_front_col_unmatched"><![CDATA[Unmatched]]></word>
+    <word key="gddealer_front_analytics"><![CDATA[Analytics]]></word>
+    <word key="gddealer_front_analytics_body"><![CDATA[Detailed analytics — click-through rate per listing, price competitiveness, top-performing products, and revenue opportunities — are available from the analytics panel.]]></word>
+    <word key="gddealer_front_upgrade_title"><![CDATA[Upgrade to Pro for Analytics]]></word>
+    <word key="gddealer_front_upgrade_body"><![CDATA[Pro and Enterprise plans unlock per-listing click analytics, price-competitiveness insights, and revenue opportunity reports.]]></word>
+    <word key="gddealer_front_noaccess_title"><![CDATA[Dealer Access Required]]></word>
+    <word key="gddealer_front_noaccess_body"><![CDATA[This page is only available to registered dealers with an active GunRack subscription. If you believe you should have access, contact support.]]></word>
+    <word key="gddealer_front_noaccess_home"><![CDATA[Return to Home]]></word>
   </app>
 </language>

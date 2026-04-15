@@ -1,4 +1,9 @@
 {
 	"topLevel": "dealers",
-	"pages": {}
+	"pages": {
+		"dealer_dashboard": {
+			"friendly": "dealers/dashboard",
+			"real":     "app=gddealer&module=dealers&controller=dashboard"
+		}
+	}
 }
