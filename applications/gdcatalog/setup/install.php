@@ -219,11 +219,11 @@ TEMPLATE_EOT,
 			</div>
 		</div>
 
-		<form method="get" action="{$formActionUrl}" style="margin-bottom:16px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-			<input type="text" name="upc" value="{$filterUpc}" placeholder="UPC" class="ipsInput ipsInput--text" style="border:1px solid var(--i-border-color, #ccc);border-radius:4px;padding:6px 10px;min-width:150px">
-			<input type="text" name="field" value="{$filterField}" placeholder="Field name" class="ipsInput ipsInput--text" style="border:1px solid var(--i-border-color, #ccc);border-radius:4px;padding:6px 10px;min-width:150px">
-			<input type="text" name="source" value="{$filterSource}" placeholder="Distributor" class="ipsInput ipsInput--text" style="border:1px solid var(--i-border-color, #ccc);border-radius:4px;padding:6px 10px;min-width:150px">
-			<select name="rule" class="ipsInput ipsInput--select" style="border:1px solid var(--i-border-color, #ccc);border-radius:4px;padding:6px 10px">
+		<form method="get" action="{$formActionUrl}" style="display:flex;gap:8px;padding:12px 16px;border-bottom:1px solid var(--i-border-color, #e0e0e0);align-items:center;flex-wrap:wrap">
+			<input type="text" name="upc" value="{$filterUpc}" placeholder="UPC" class="ipsInput ipsInput--text" style="flex:1;min-width:140px">
+			<input type="text" name="field" value="{$filterField}" placeholder="Field name" class="ipsInput ipsInput--text" style="flex:1;min-width:140px">
+			<input type="text" name="source" value="{$filterSource}" placeholder="Distributor" class="ipsInput ipsInput--text" style="flex:1;min-width:140px">
+			<select name="rule" class="ipsInput ipsInput--select" style="min-width:160px">
 				<option value="">All rules</option>
 				<option value="priority" {{if $filterRule === 'priority'}}selected{{endif}}>Priority</option>
 				<option value="longest" {{if $filterRule === 'longest'}}selected{{endif}}>Longest</option>
@@ -304,7 +304,7 @@ TEMPLATE_EOT,
 			</div>
 		</div>
 
-		<div style="display:flex;gap:8px;padding:12px 0;margin-bottom:16px;border-bottom:1px solid var(--i-border-color, #e0e0e0);flex-wrap:wrap">
+		<div style="display:flex;gap:8px;padding:12px 16px;border-bottom:1px solid var(--i-border-color, #e0e0e0);justify-content:center">
 			<a href="{$tabUrls['new']}" class="ipsButton {{if $tab === 'new'}}ipsButton--primary{{else}}ipsButton--soft{{endif}} ipsButton--small">{lang="gdcatalog_compliance_tab_new"} <span class="ipsBadge ipsBadge--neutral" style="margin-left:6px">{$counts['new']}</span></a>
 			<a href="{$tabUrls['conflicts']}" class="ipsButton {{if $tab === 'conflicts'}}ipsButton--primary{{else}}ipsButton--soft{{endif}} ipsButton--small">{lang="gdcatalog_compliance_tab_conflicts"} <span class="ipsBadge ipsBadge--neutral" style="margin-left:6px">{$counts['conflicts']}</span></a>
 			<a href="{$tabUrls['locks']}" class="ipsButton {{if $tab === 'locks'}}ipsButton--primary{{else}}ipsButton--soft{{endif}} ipsButton--small">{lang="gdcatalog_compliance_tab_locks"} <span class="ipsBadge ipsBadge--neutral" style="margin-left:6px">{$counts['locks']}</span></a>
@@ -556,16 +556,16 @@ TEMPLATE_EOT,
 			</div>
 		</div>
 
-		<form method="get" action="{$formActionUrl}" style="margin-bottom:16px;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
-			<input type="text" name="q" value="{$search}" placeholder="Search UPC, title, or brand..." class="ipsInput ipsInput--text" style="border:1px solid var(--i-border-color, #ccc);border-radius:4px;padding:6px 10px;min-width:300px">
-			<select name="status" class="ipsInput ipsInput--select" style="border:1px solid var(--i-border-color, #ccc);border-radius:4px;padding:6px 10px">
+		<form method="get" action="{$formActionUrl}" style="display:flex;gap:8px;padding:12px 16px;border-bottom:1px solid var(--i-border-color, #e0e0e0);align-items:center;flex-wrap:wrap">
+			<input type="text" name="q" value="{$search}" placeholder="Search UPC, title, or brand..." class="ipsInput ipsInput--text" style="flex:1;min-width:200px">
+			<select name="status" class="ipsInput ipsInput--select" style="min-width:140px">
 				<option value="">All statuses</option>
 				<option value="active" {{if $status === 'active'}}selected{{endif}}>Active</option>
 				<option value="discontinued" {{if $status === 'discontinued'}}selected{{endif}}>Discontinued</option>
 				<option value="admin_review" {{if $status === 'admin_review'}}selected{{endif}}>Admin Review</option>
 				<option value="pending" {{if $status === 'pending'}}selected{{endif}}>Pending</option>
 			</select>
-			<select name="category" class="ipsInput ipsInput--select" style="border:1px solid var(--i-border-color, #ccc);border-radius:4px;padding:6px 10px">
+			<select name="category" class="ipsInput ipsInput--select" style="min-width:160px">
 				<option value="0">All categories</option>
 				{{foreach $categories as $cat}}
 					<option value="{$cat['id']}" {{if $catId === $cat['id']}}selected{{endif}}>{$cat['name']}</option>
