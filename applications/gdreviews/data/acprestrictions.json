@@ -1,0 +1,13 @@
+{
+	"reviews": {
+		"dashboard": {
+			"reviews_manage": "reviews_manage"
+		},
+		"queue": {
+			"reviews_manage": "reviews_manage"
+		},
+		"settings": {
+			"reviews_manage": "reviews_manage"
+		}
+	}
+}

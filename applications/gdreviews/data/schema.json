@@ -1,0 +1,54 @@
+{
+	"gd_reviews": {
+		"name": "gd_reviews",
+		"columns": {
+			"id": { "name": "id", "type": "INT", "length": 10, "unsigned": true, "allow_null": false, "auto_increment": true, "comment": "Primary key" },
+			"upc": { "name": "upc", "type": "VARCHAR", "length": 20, "allow_null": false, "comment": "Product UPC (ties to gd_catalog.upc)" },
+			"member_id": { "name": "member_id", "type": "INT", "length": 10, "unsigned": true, "allow_null": false, "comment": "IPS member id of reviewer" },
+			"verified_purchase": { "name": "verified_purchase", "type": "TINYINT", "length": 1, "unsigned": true, "allow_null": false, "default": 0, "comment": "1 if member has a gd_click_log row for this UPC" },
+			"status": { "name": "status", "type": "VARCHAR", "length": 20, "allow_null": false, "default": "pending", "comment": "pending|approved|rejected|flagged" },
+			"overall_rating": { "name": "overall_rating", "type": "TINYINT", "length": 1, "unsigned": true, "allow_null": false, "comment": "1-5 stars overall rating" },
+			"product_type": { "name": "product_type", "type": "VARCHAR", "length": 50, "allow_null": false, "comment": "Copied from gd_catalog.product_type at submission time" },
+			"title": { "name": "title", "type": "VARCHAR", "length": 150, "allow_null": false, "comment": "Review title" },
+			"body": { "name": "body", "type": "TEXT", "allow_null": false, "comment": "Review body text (minimum 50 characters)" },
+			"pros": { "name": "pros", "type": "VARCHAR", "length": 500, "allow_null": true, "comment": "Short pros list (optional)" },
+			"cons": { "name": "cons", "type": "VARCHAR", "length": 500, "allow_null": true, "comment": "Short cons list (optional)" },
+			"would_recommend": { "name": "would_recommend", "type": "TINYINT", "length": 1, "unsigned": true, "allow_null": true, "comment": "1 = yes, 0 = no, null = no response" },
+			"usage_context": { "name": "usage_context", "type": "VARCHAR", "length": 50, "allow_null": true, "comment": "Free-text usage context (optional)" },
+			"time_owned": { "name": "time_owned", "type": "VARCHAR", "length": 50, "allow_null": true, "comment": "How long the reviewer has owned the product" },
+			"images": { "name": "images", "type": "TEXT", "allow_null": true, "comment": "JSON array of uploaded image paths (max 5)" },
+			"helpful_yes": { "name": "helpful_yes", "type": "INT", "length": 10, "unsigned": true, "allow_null": false, "default": 0, "comment": "Denormalised helpful=1 count" },
+			"helpful_no": { "name": "helpful_no", "type": "INT", "length": 10, "unsigned": true, "allow_null": false, "default": 0, "comment": "Denormalised helpful=0 count" },
+			"dispute_status": { "name": "dispute_status", "type": "VARCHAR", "length": 20, "allow_null": false, "default": "none", "comment": "none|contested|resolved (Plugin 6)" },
+			"created_at": { "name": "created_at", "type": "DATETIME", "allow_null": false, "comment": "Submitted at" },
+			"updated_at": { "name": "updated_at", "type": "DATETIME", "allow_null": true, "comment": "Last edited" },
+			"moderated_at": { "name": "moderated_at", "type": "DATETIME", "allow_null": true, "comment": "When admin moderated" },
+			"moderated_by": { "name": "moderated_by", "type": "INT", "length": 10, "unsigned": true, "allow_null": true, "comment": "Moderator member id" },
+			"rejection_reason": { "name": "rejection_reason", "type": "TEXT", "allow_null": true, "comment": "Reason sent to reviewer on rejection" }
+		},
+		"indexes": {
+			"PRIMARY": { "type": "primary", "name": "PRIMARY", "length": [null], "columns": ["id"] },
+			"uq_upc_member": { "type": "unique", "name": "uq_upc_member", "length": [null, null], "columns": ["upc", "member_id"] },
+			"idx_upc": { "type": "key", "name": "idx_upc", "length": [null], "columns": ["upc"] },
+			"idx_member": { "type": "key", "name": "idx_member", "length": [null], "columns": ["member_id"] },
+			"idx_status": { "type": "key", "name": "idx_status", "length": [null], "columns": ["status"] },
+			"idx_overall": { "type": "key", "name": "idx_overall", "length": [null], "columns": ["overall_rating"] },
+			"idx_type": { "type": "key", "name": "idx_type", "length": [null], "columns": ["product_type"] }
+		}
+	},
+	"gd_review_helpfulness": {
+		"name": "gd_review_helpfulness",
+		"columns": {
+			"id": { "name": "id", "type": "INT", "length": 10, "unsigned": true, "allow_null": false, "auto_increment": true, "comment": "Primary key" },
+			"review_id": { "name": "review_id", "type": "INT", "length": 10, "unsigned": true, "allow_null": false, "comment": "gd_reviews.id" },
+			"member_id": { "name": "member_id", "type": "INT", "length": 10, "unsigned": true, "allow_null": false, "comment": "IPS member id who voted" },
+			"helpful": { "name": "helpful", "type": "TINYINT", "length": 1, "unsigned": true, "allow_null": false, "comment": "1 = helpful, 0 = not helpful" },
+			"voted_at": { "name": "voted_at", "type": "DATETIME", "allow_null": false, "comment": "Vote timestamp" }
+		},
+		"indexes": {
+			"PRIMARY": { "type": "primary", "name": "PRIMARY", "length": [null], "columns": ["id"] },
+			"uq_review_member": { "type": "unique", "name": "uq_review_member", "length": [null, null], "columns": ["review_id", "member_id"] },
+			"idx_review": { "type": "key", "name": "idx_review", "length": [null], "columns": ["review_id"] }
+		}
+	}
+}

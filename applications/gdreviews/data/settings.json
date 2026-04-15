@@ -1,0 +1,9 @@
+[
+	{ "key": "gdr_min_body_chars", "default": "50", "type": "text" },
+	{ "key": "gdr_max_images_per_review", "default": "5", "type": "text" },
+	{ "key": "gdr_max_image_size_mb", "default": "5", "type": "text" },
+	{ "key": "gdr_auto_approve_verified", "default": "0", "type": "yn" },
+	{ "key": "gdr_hub_latest_limit", "default": "20", "type": "text" },
+	{ "key": "gdr_top_rated_min_reviews", "default": "5", "type": "text" },
+	{ "key": "gdr_featured_review_id", "default": "0", "type": "text" }
+]

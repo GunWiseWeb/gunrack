@@ -1,0 +1,22 @@
+{
+	"reviews": {
+		"dashboard": {
+			"tab": "gdreviews",
+			"controller": "dashboard",
+			"do": "manage",
+			"restriction": "reviews_manage"
+		},
+		"queue": {
+			"tab": "gdreviews",
+			"controller": "queue",
+			"do": "manage",
+			"restriction": "reviews_manage"
+		},
+		"settings": {
+			"tab": "gdreviews",
+			"controller": "settings",
+			"do": "manage",
+			"restriction": "reviews_manage"
+		}
+	}
+}
