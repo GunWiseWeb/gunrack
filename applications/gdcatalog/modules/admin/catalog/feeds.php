@@ -40,12 +40,41 @@ class _feeds extends \IPS\Dispatcher\Controller
 
 	/**
 	 * Feed list — default view.
+	 *
+	 * Flattens feed data to scalar arrays so the template can use plain
+	 * `{$feed['key']}` access. URLs and language-keyed labels are resolved
+	 * in the controller to avoid nested tokens like `{lang="gdcatalog_dist_{$feed->distributor}"}`
+	 * or `{url="...&id={$feed->id}"}` which the IPS template compiler
+	 * rejects with UnexpectedValueException (Rule #12).
 	 */
 	protected function manage()
 	{
-		$feeds = Distributor::loadAll();
+		$rawFeeds = Distributor::loadAll();
+		$lang     = \IPS\Member::loggedIn()->language();
 
-		Output::i()->title  = \IPS\Member::loggedIn()->language()->addToStack( 'gdcatalog_feeds_title' );
+		$feeds = [];
+		foreach ( $rawFeeds as $feed )
+		{
+			$editUrl = (string) \IPS\Http\Url::internal(
+				'app=gdcatalog&module=catalog&controller=feeds&do=edit&id=' . (int) $feed->id
+			)->csrf();
+
+			$feeds[] = [
+				'priority'          => (int) $feed->priority,
+				'feed_name'         => (string) $feed->feed_name,
+				'distributor_label' => $lang->addToStack( 'gdcatalog_dist_' . $feed->distributor ),
+				'feed_format'       => strtoupper( (string) $feed->feed_format ),
+				'import_schedule'   => (string) $feed->import_schedule,
+				'active'            => (bool) $feed->active,
+				'last_run'          => $feed->last_run ?? null,
+				'last_record_count' => (int) ( $feed->last_record_count ?? 0 ),
+				'last_run_status'   => $feed->last_run_status ?? null,
+				'feed_url'          => (string) ( $feed->feed_url ?? '' ),
+				'edit_url'          => $editUrl,
+			];
+		}
+
+		Output::i()->title  = $lang->addToStack( 'gdcatalog_feeds_title' );
 		Output::i()->output = \IPS\Theme::i()->getTemplate( 'catalog', 'gdcatalog', 'admin' )->feedList( $feeds );
 	}
 

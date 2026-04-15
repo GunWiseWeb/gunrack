@@ -38,6 +38,11 @@ class _products extends \IPS\Dispatcher\Controller
 
 	/**
 	 * Product list with search/filter.
+	 *
+	 * Products and categories are flattened into scalar arrays and
+	 * all dynamic URLs (edit, approve, form action) are pre-built in
+	 * the controller. The template then only uses plain `{$row['key']}`
+	 * access per Rule #12 — no nested `{url="...{$x->upc}"}` tokens.
 	 */
 	protected function manage()
 	{
@@ -67,28 +72,58 @@ class _products extends \IPS\Dispatcher\Controller
 		$page    = max( 1, (int) ( \IPS\Request::i()->page ?? 1 ) );
 		$perPage = 50;
 
-		$total = \IPS\Db::i()->select( 'COUNT(*)', 'gd_catalog', $where )->first();
+		$total = (int) \IPS\Db::i()->select( 'COUNT(*)', 'gd_catalog', $where )->first();
 
 		$products = [];
 		foreach (
 			\IPS\Db::i()->select( '*', 'gd_catalog', $where, 'last_updated DESC', [ ( $page - 1 ) * $perPage, $perPage ] ) as $row
 		)
 		{
-			$products[] = Product::constructFromData( $row );
+			$product = Product::constructFromData( $row );
+
+			$editUrl = (string) \IPS\Http\Url::internal(
+				'app=gdcatalog&module=catalog&controller=products&do=edit&upc=' . urlencode( (string) $product->upc )
+			);
+			$approveUrl = (string) \IPS\Http\Url::internal(
+				'app=gdcatalog&module=catalog&controller=products&do=resolveReview&upc=' . urlencode( (string) $product->upc )
+			)->csrf();
+
+			$products[] = [
+				'upc'            => (string) $product->upc,
+				'title'          => (string) ( $product->title ?? '' ),
+				'brand'          => (string) ( $product->brand ?? '' ),
+				'caliber'        => (string) ( $product->caliber ?? '' ),
+				'msrp'           => $product->msrp !== null ? '$' . number_format( (float) $product->msrp, 2 ) : '—',
+				'record_status'  => (string) ( $product->record_status ?? '' ),
+				'primary_source' => (string) ( $product->primary_source ?? '' ),
+				'edit_url'       => $editUrl,
+				'approve_url'    => $approveUrl,
+			];
 		}
 
-		$categories = Category::roots();
+		$categories = [];
+		foreach ( Category::roots() as $cat )
+		{
+			$categories[] = [
+				'id'   => (int) $cat->id,
+				'name' => (string) $cat->name,
+			];
+		}
+
+		$formActionUrl = (string) \IPS\Http\Url::internal(
+			'app=gdcatalog&module=catalog&controller=products'
+		);
 
 		$pagination = \IPS\Theme::i()->getTemplate( 'global', 'core', 'global' )->pagination(
 			\IPS\Http\Url::internal( 'app=gdcatalog&module=catalog&controller=products' ),
-			ceil( $total / $perPage ),
+			(int) ceil( $total / $perPage ),
 			$page,
 			$perPage
 		);
 
 		\IPS\Output::i()->title  = \IPS\Member::loggedIn()->language()->addToStack( 'gdcatalog_products_title' );
 		\IPS\Output::i()->output = \IPS\Theme::i()->getTemplate( 'catalog', 'gdcatalog', 'admin' )->productList(
-			$products, $categories, $search, $status, $catId, $total, $pagination
+			$products, $categories, $search, $status, $catId, $total, $pagination, $formActionUrl
 		);
 	}
 

@@ -37,26 +37,105 @@ class _compliance extends \IPS\Dispatcher\Controller
 
 	/**
 	 * Tabbed compliance review panel.
+	 *
+	 * All row-level data is flattened into scalar arrays and all dynamic
+	 * URLs are pre-built in the controller so the template can render with
+	 * plain `{$row['key']}` / `<a href="{$row['url']}">` patterns. See Rule
+	 * #12 — the IPS template compiler rejects nested `{url="...{$x->id}"}`
+	 * tokens with UnexpectedValueException.
 	 */
 	protected function manage()
 	{
 		$tab = \IPS\Request::i()->tab ?? 'new';
 
-		$pendingFlags     = Flag::loadPending();
-		$pendingConflicts = FeedConflict::loadPending();
-		$allLocks         = FieldLock::loadAllLocks();
-		$adminFlags       = Flag::loadAdminSet();
+		$rawPendingFlags     = Flag::loadPending();
+		$rawPendingConflicts = FeedConflict::loadPending();
+		$rawAllLocks         = FieldLock::loadAllLocks();
+		$rawAdminFlags       = Flag::loadAdminSet();
 
 		$counts = [
-			'new'       => \count( $pendingFlags ),
-			'conflicts' => \count( $pendingConflicts ),
-			'locks'     => \count( $allLocks ),
-			'admin'     => \count( $adminFlags ),
+			'new'       => \count( $rawPendingFlags ),
+			'conflicts' => \count( $rawPendingConflicts ),
+			'locks'     => \count( $rawAllLocks ),
+			'admin'     => \count( $rawAdminFlags ),
 		];
+
+		/* Pre-built tab URLs */
+		$tabUrls = [
+			'new'       => (string) \IPS\Http\Url::internal( 'app=gdcatalog&module=catalog&controller=compliance&tab=new' ),
+			'conflicts' => (string) \IPS\Http\Url::internal( 'app=gdcatalog&module=catalog&controller=compliance&tab=conflicts' ),
+			'locks'     => (string) \IPS\Http\Url::internal( 'app=gdcatalog&module=catalog&controller=compliance&tab=locks' ),
+			'admin'     => (string) \IPS\Http\Url::internal( 'app=gdcatalog&module=catalog&controller=compliance&tab=admin' ),
+		];
+
+		/* Pending flags */
+		$pendingFlags = [];
+		foreach ( $rawPendingFlags as $flag )
+		{
+			$pendingFlags[] = [
+				'upc'             => (string) ( $flag->upc ?? '' ),
+				'flag_type'       => (string) ( $flag->flag_type ?? '' ),
+				'flag_value'      => (string) ( $flag->flag_value ?? '' ),
+				'distributor_id'  => (string) ( $flag->distributor_id ?? '' ),
+				'first_seen_at'   => $flag->first_seen_at ?? null,
+				'approve_url'     => (string) \IPS\Http\Url::internal( 'app=gdcatalog&module=catalog&controller=compliance&do=approve&id=' . (int) $flag->id )->csrf(),
+				'reject_url'      => (string) \IPS\Http\Url::internal( 'app=gdcatalog&module=catalog&controller=compliance&do=reject&id=' . (int) $flag->id )->csrf(),
+			];
+		}
+
+		/* Pending feed conflicts */
+		$pendingConflicts = [];
+		foreach ( $rawPendingConflicts as $conflict )
+		{
+			$pendingConflicts[] = [
+				'upc'             => (string) ( $conflict->upc ?? '' ),
+				'field_name'      => (string) ( $conflict->field_name ?? '' ),
+				'current_value'   => htmlspecialchars( mb_substr( (string) ( $conflict->current_value ?? '' ), 0, 60 ) ),
+				'incoming_value'  => htmlspecialchars( mb_substr( (string) ( $conflict->incoming_value ?? '' ), 0, 60 ) ),
+				'auto_resolve_at' => $conflict->auto_resolve_at ?? null,
+				'accept_url'      => (string) \IPS\Http\Url::internal( 'app=gdcatalog&module=catalog&controller=compliance&do=acceptConflict&id=' . (int) $conflict->id )->csrf(),
+				'keep_url'        => (string) \IPS\Http\Url::internal( 'app=gdcatalog&module=catalog&controller=compliance&do=keepConflict&id=' . (int) $conflict->id )->csrf(),
+				'custom_url'      => (string) \IPS\Http\Url::internal( 'app=gdcatalog&module=catalog&controller=compliance&do=customConflict&id=' . (int) $conflict->id )->csrf(),
+			];
+		}
+
+		/* All locks */
+		$allLocks = [];
+		foreach ( $rawAllLocks as $lock )
+		{
+			$allLocks[] = [
+				'upc'          => (string) ( $lock->upc ?? '' ),
+				'field_name'   => (string) ( $lock->field_name ?? '' ),
+				'locked_value' => htmlspecialchars( mb_substr( (string) ( $lock->locked_value ?? '' ), 0, 60 ) ),
+				'is_hard_lock' => (bool) $lock->isHardLock(),
+				'lock_reason'  => htmlspecialchars( mb_substr( (string) ( $lock->lock_reason ?? '' ), 0, 80 ) ),
+				'locked_at'    => $lock->locked_at ?? null,
+				'unlock_url'   => (string) \IPS\Http\Url::internal( 'app=gdcatalog&module=catalog&controller=compliance&do=unlock&id=' . (int) $lock->id )->csrf(),
+			];
+		}
+
+		/* Admin-set flags */
+		$adminFlags = [];
+		foreach ( $rawAdminFlags as $flag )
+		{
+			$adminFlags[] = [
+				'upc'                => (string) ( $flag->upc ?? '' ),
+				'listing_id'         => (int) ( $flag->listing_id ?? 0 ),
+				'flag_type'          => (string) ( $flag->flag_type ?? '' ),
+				'flag_value'         => (string) ( $flag->flag_value ?? '' ),
+				'admin_reviewed_by'  => (string) ( $flag->admin_reviewed_by ?? '' ),
+				'admin_reviewed_at'  => $flag->admin_reviewed_at ?? null,
+				'source'             => (string) ( $flag->source ?? '' ),
+			];
+		}
+
+		$addRestrictionUrl = (string) \IPS\Http\Url::internal(
+			'app=gdcatalog&module=catalog&controller=compliance&do=addRestriction'
+		)->csrf();
 
 		\IPS\Output::i()->title  = \IPS\Member::loggedIn()->language()->addToStack( 'gdcatalog_compliance_title' );
 		\IPS\Output::i()->output = \IPS\Theme::i()->getTemplate( 'catalog', 'gdcatalog', 'admin' )->compliancePanel(
-			$tab, $counts, $pendingFlags, $pendingConflicts, $allLocks, $adminFlags
+			$tab, $counts, $tabUrls, $pendingFlags, $pendingConflicts, $allLocks, $adminFlags, $addRestrictionUrl
 		);
 	}
 
