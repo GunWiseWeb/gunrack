@@ -194,6 +194,41 @@ These were learned by comparing against a working IPS v5 plugin. They apply to e
     When bumping a plugin's version, add a new entry (e.g. `"10001": "1.0.1"`) AND update `app_version` + `app_long_version` in `application.json` to match. The two files must stay in sync.
 
     Audit command: `for d in applications/*/; do [ -f "$d/data/application.json" ] && [ -f "$d/data/versions.json" ] || echo "MISSING: $d"; done` must print nothing.
+19. **`data/schema.json` index `length` array MUST have exactly `count(columns)` entries — count them explicitly before saving** — IPS's schema installer reads the `length` and `columns` arrays in lockstep: entry `length[i]` applies to column `columns[i]`. A mismatch in length count throws a schema installer error or silently produces a broken index definition. This applies to every index type: `primary`, `unique`, `key`, `fulltext`. The rule is absolute — there is no special case for PRIMARY keys or any other index type.
+
+    ```json
+    // One column → one length entry
+    "PRIMARY":  { "type": "primary", "length": [ null ],        "columns": [ "id" ] }
+    "idx_mfr":  { "type": "key",     "length": [ null ],        "columns": [ "manufacturer" ] }
+
+    // Two columns → two length entries
+    "uq_pair":  { "type": "unique",  "length": [ null, null ],  "columns": [ "rebate_id", "member_id" ] }
+
+    // Three columns with a prefix length on the VARCHAR → three entries
+    "idx_trio": { "type": "key",     "length": [ null, 32, null ], "columns": [ "rebate_id", "slug", "created_at" ] }
+    ```
+
+    Before saving `schema.json`, count the entries in every index's `columns` array and confirm the `length` array has the same count — PRIMARY with a single `id` column is `[ null ]`, never `[ null, null ]`. Use `null` when you want the default (full-column) index; use an integer when you want a prefix index on a VARCHAR/TEXT column.
+
+    Audit command — run after any schema edit; it prints every index whose `length` and `columns` arrays disagree:
+
+    ```sh
+    php -r '
+    foreach ( glob( "applications/*/data/schema.json" ) as $f ) {
+        $s = json_decode( file_get_contents( $f ), true );
+        foreach ( $s as $table => $def ) {
+            foreach ( $def["indexes"] ?? [] as $name => $idx ) {
+                if ( count( $idx["columns"] ) !== count( $idx["length"] ) ) {
+                    printf( "MISMATCH: %s %s.%s cols=%d length=%d\n",
+                        $f, $table, $name,
+                        count( $idx["columns"] ), count( $idx["length"] ) );
+                }
+            }
+        }
+    }'
+    ```
+
+    Output must be empty.
 
 ## Full specification
 Read `GunRack_Spec_v2.9.16.md` for complete specs on all 12 plugins, database schemas, acceptance criteria, server setup (Appendix B), security requirements (Appendix C), and Phase 2 roadmap (Section 19).
