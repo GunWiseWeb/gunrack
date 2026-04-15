@@ -229,6 +229,37 @@ These were learned by comparing against a working IPS v5 plugin. They apply to e
     ```
 
     Output must be empty.
+20. **IPS v5 ACP button and page-wrapper classes use double-dash BEM syntax, not underscores** — the IPS v5 front-end CSS framework ships BEM-style modifier classes for buttons: `ipsButton--primary`, `ipsButton--normal`, `ipsButton--negative`, `ipsButton--small`. Underscore forms (`ipsButton_primary`, `ipsButton_medium`, `ipsButton_negative`, `ipsButton_small`) are legacy IPS v4 class names that no longer exist in the v5 stylesheet — using them renders buttons as bare unstyled anchor text, which is a frequent symptom of copy-pasting markup from older plugins or outdated docs. The base class `ipsButton` must always appear alongside the modifier (`class="ipsButton ipsButton--primary"` — never just `ipsButton--primary` on its own). The full mapping when porting from v4/underscore style:
+
+    ```
+    ipsButton_primary   → ipsButton ipsButton--primary
+    ipsButton_medium    → ipsButton ipsButton--normal
+    ipsButton_negative  → ipsButton ipsButton--negative
+    ipsButton_small     → ipsButton ipsButton--small    (combines with a type modifier)
+    ```
+
+    Example: a small approve + reject pair inside a table row:
+
+    ```html
+    <a href="..." class="ipsButton ipsButton--primary ipsButton--small">Approve</a>
+    <a href="..." class="ipsButton ipsButton--normal ipsButton--small">Reject</a>
+    ```
+
+    The ACP page wrapper must also use `<div class="ipsBox ipsPull">` (not bare `<div class="ipsBox">`) for every top-level panel in an admin template — `ipsPull` is the v5 layout helper that pulls the box to the full width of the content region and gives it the correct margin; omitting it renders panels as narrow floating cards rather than a proper admin page surface. This applies to every outer-wrapper `<div class="ipsBox">` in an admin template, including every sibling panel on a multi-section dashboard.
+
+    Every admin template in every plugin (`gdcatalog`, `gddealer`, `gdpricecompare`, `gdrebates`, and the eight still-to-be-built plugins) must follow these conventions. Audit command — should return empty across all admin templates:
+
+    ```sh
+    grep -rEn 'ipsButton_(primary|medium|negative|small)\b' applications/*/setup/install.php applications/*/modules/admin
+    ```
+
+    Verify BEM forms are in use:
+
+    ```sh
+    grep -rEn 'ipsButton--(primary|normal|negative|small)' applications/*/setup/install.php | wc -l
+    ```
+
+    Front-end (location=front) templates follow the same convention — IPS v5 uses the same BEM classes across ACP and front-end. When in doubt, inspect a rendered IPS core ACP page (e.g. the Applications list) with browser devtools; every button there uses the double-dash form.
 
 ## Full specification
 Read `GunRack_Spec_v2.9.16.md` for complete specs on all 12 plugins, database schemas, acceptance criteria, server setup (Appendix B), security requirements (Appendix C), and Phase 2 roadmap (Section 19).
