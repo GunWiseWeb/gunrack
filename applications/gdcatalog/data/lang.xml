@@ -132,6 +132,12 @@
     <word key="gdcatalog_opensearch_index"><![CDATA[OpenSearch Index Name]]></word>
     <word key="gdcatalog_auto_resolve_hours"><![CDATA[Auto-Resolve Conflicts After (Hours)]]></word>
     <word key="gdcatalog_discontinue_threshold"><![CDATA[Discontinue Threshold (Missing Feeds)]]></word>
+    <word key="gdcatalog_digest_email_enabled"><![CDATA[Daily Compliance Digest Email]]></word>
+    <word key="gdcatalog_digest_email_enabled_desc"><![CDATA[When enabled, a daily email summarising new flags, feed conflicts, and lock changes is sent to the recipient below (Spec 2.10.5).]]></word>
+    <word key="gdcatalog_digest_email_recipient"><![CDATA[Digest Email Recipient]]></word>
+    <word key="gdcatalog_digest_email_recipient_desc"><![CDATA[Email address that receives the daily compliance digest. Leave empty to disable delivery even if the toggle above is on.]]></word>
+    <word key="r__gdcatalog"><![CDATA[GD Master Catalog]]></word>
+    <word key="r__catalog_manage"><![CDATA[Can manage Master Catalog (dashboard, products, feeds, conflicts, compliance, settings)?]]></word>
     <word key="gdcatalog_restriction_states"><![CDATA[Restricted States (comma-separated)]]></word>
     <word key="gdcatalog_custom_value"><![CDATA[Custom Value]]></word>
     <word key="gdcatalog_product_action_type"><![CDATA[Action Type]]></word>
