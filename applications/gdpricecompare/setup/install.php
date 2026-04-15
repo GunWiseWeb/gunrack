@@ -24,9 +24,8 @@ $gdpricecompareTemplates = [
 		'template_name' => 'dashboard',
 		'template_data' => '$data',
 		'template_content' => <<<'TEMPLATE_EOT'
-<div class="ipsBox">
-	<h1 class="ipsBox_title">{lang="gdpc_dash_title"}</h1>
-	<div class="ipsPad">
+<div class="ipsBox ipsPull">
+	<div class="ipsBox_body ipsPad">
 
 		<div style="display:flex;gap:16px;margin-bottom:24px;flex-wrap:wrap">
 			<div class="ipsBox" style="flex:1 1 150px;padding:16px;text-align:center">
@@ -53,32 +52,34 @@ $gdpricecompareTemplates = [
 
 		<div style="display:flex;gap:16px;flex-wrap:wrap">
 			<div class="ipsBox" style="flex:1 1 320px;padding:16px">
-				<h3 class="ipsType_sectionHead" style="margin-top:0">{lang="gdpc_dash_top_searches"}</h3>
+				<h2 class="ipsType_sectionHead" style="margin:0 0 12px">{lang="gdpc_dash_top_searches"}</h2>
+				{{if count( $data['top_searches'] ) === 0}}
+					<div class="ipsEmptyMessage"><p>No searches recorded in the last 7 days.</p></div>
+				{{else}}
 				<table class="ipsTable ipsTable_zebra" style="width:100%">
 					<thead><tr><th>{lang="gdpc_searchlog_query"}</th><th style="width:80px">{lang="gdpc_searchlog_count"}</th></tr></thead>
 					<tbody>
 					{{foreach $data['top_searches'] as $row}}
 					<tr><td>{$row['query']}</td><td>{expression="number_format( $row['count'] )"}</td></tr>
 					{{endforeach}}
-					{{if count( $data['top_searches'] ) === 0}}
-					<tr><td colspan="2" style="text-align:center;color:#999;padding:24px">No searches recorded in the last 7 days.</td></tr>
-					{{endif}}
 					</tbody>
 				</table>
+				{{endif}}
 			</div>
 			<div class="ipsBox" style="flex:1 1 320px;padding:16px">
-				<h3 class="ipsType_sectionHead" style="margin-top:0">{lang="gdpc_dash_zero_results"}</h3>
+				<h2 class="ipsType_sectionHead" style="margin:0 0 12px">{lang="gdpc_dash_zero_results"}</h2>
+				{{if count( $data['zero_searches'] ) === 0}}
+					<div class="ipsEmptyMessage"><p>No zero-result searches in the last 7 days.</p></div>
+				{{else}}
 				<table class="ipsTable ipsTable_zebra" style="width:100%">
 					<thead><tr><th>{lang="gdpc_searchlog_query"}</th><th style="width:80px">{lang="gdpc_searchlog_count"}</th></tr></thead>
 					<tbody>
 					{{foreach $data['zero_searches'] as $row}}
 					<tr><td>{$row['query']}</td><td>{expression="number_format( $row['count'] )"}</td></tr>
 					{{endforeach}}
-					{{if count( $data['zero_searches'] ) === 0}}
-					<tr><td colspan="2" style="text-align:center;color:#999;padding:24px">No zero-result searches in the last 7 days.</td></tr>
-					{{endif}}
 					</tbody>
 				</table>
+				{{endif}}
 			</div>
 		</div>
 
@@ -98,15 +99,12 @@ TEMPLATE_EOT,
 		'template_name' => 'ffldata',
 		'template_data' => '$data',
 		'template_content' => <<<'TEMPLATE_EOT'
-<div class="ipsBox">
-	<div class="ipsBox_title" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
-		<h1 style="margin:0">{lang="gdpc_ffldata_title"}</h1>
-		<div style="display:flex;gap:8px;flex-wrap:wrap">
-			<a href="{$data['add_url']}" class="ipsButton ipsButton_primary">{lang="gdpc_ffldata_add"}</a>
-			<a href="{$data['refresh_url']}" class="ipsButton ipsButton_medium">{lang="gdpc_ffldata_refresh"}</a>
-		</div>
+<div class="ipsBox ipsPull">
+	<div style="display:flex;justify-content:flex-end;gap:8px;padding:10px 16px;border-bottom:1px solid var(--i-border-color, #e0e0e0);flex-wrap:wrap">
+		<a href="{$data['add_url']}" class="ipsButton ipsButton--primary ipsButton--small">{lang="gdpc_ffldata_add"}</a>
+		<a href="{$data['refresh_url']}" class="ipsButton ipsButton--normal ipsButton--small">{lang="gdpc_ffldata_refresh"}</a>
 	</div>
-	<div class="ipsPad">
+	<div class="ipsBox_body ipsPad">
 
 		<div style="display:flex;gap:16px;margin-bottom:24px;flex-wrap:wrap">
 			<div class="ipsBox" style="flex:1 1 200px;padding:16px;text-align:center">
@@ -131,6 +129,9 @@ TEMPLATE_EOT,
 			<button type="submit" class="ipsButton ipsButton--primary ipsButton--small">{lang="gdpc_ffldata_search"}</button>
 		</form>
 
+		{{if count( $data['rows'] ) === 0}}
+			<div class="ipsEmptyMessage"><p>{lang="gdpc_ffldata_empty"}</p></div>
+		{{else}}
 		<table class="ipsTable ipsTable_zebra" style="width:100%">
 			<thead>
 				<tr>
@@ -141,7 +142,7 @@ TEMPLATE_EOT,
 					<th>{lang="gdpc_ffldata_phone"}</th>
 					<th>{lang="gdpc_ffldata_expiry"}</th>
 					<th style="width:80px">{lang="gdpc_ffldata_active"}</th>
-					<th style="width:160px">{lang="gdpc_ffldata_actions"}</th>
+					<th style="width:180px">{lang="gdpc_ffldata_actions"}</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -161,135 +162,14 @@ TEMPLATE_EOT,
 						{{endif}}
 					</td>
 					<td>
-						<a href="{$row['edit_url']}" class="ipsButton ipsButton--small ipsButton--primary">{lang="gdpc_ffldata_edit"}</a>
-						<a href="{$row['delete_url']}" class="ipsButton ipsButton--small ipsButton--negative" data-confirm>{lang="gdpc_ffldata_delete"}</a>
+						<a href="{$row['edit_url']}" class="ipsButton ipsButton--normal ipsButton--small">{lang="gdpc_ffldata_edit"}</a>
+						<a href="{$row['delete_url']}" class="ipsButton ipsButton--negative ipsButton--small" data-confirm>{lang="gdpc_ffldata_delete"}</a>
 					</td>
 				</tr>
 			{{endforeach}}
-			{{if count( $data['rows'] ) === 0}}
-				<tr><td colspan="8" style="text-align:center;color:#999;padding:24px">{lang="gdpc_ffldata_empty"}</td></tr>
-			{{endif}}
 			</tbody>
 		</table>
-
-	</div>
-</div>
-TEMPLATE_EOT,
-	],
-
-	/* ===== ADMIN: ffldata add/edit form ===== */
-	[
-		'set_id'        => 1,
-		'app'           => 'gdpricecompare',
-		'location'      => 'admin',
-		'group'         => 'pricecompare',
-		'template_name' => 'ffldataForm',
-		'template_data' => '$data',
-		'template_content' => <<<'TEMPLATE_EOT'
-<div class="ipsBox">
-	<h1 class="ipsBox_title">
-		{{if $data['is_edit']}}{lang="gdpc_ffldata_edit_title"}{{else}}{lang="gdpc_ffldata_add_title"}{{endif}}
-	</h1>
-	<div class="ipsPad">
-
-		{{if count( $data['errors'] ) > 0}}
-		<div class="ipsMessage ipsMessage--error ipsPad" style="margin-bottom:16px">
-			<strong>{lang="gdpc_ffldata_form_errors"}</strong>
-			<ul style="margin:8px 0 0 20px">
-			{{foreach $data['errors'] as $err}}
-				<li>{$err}</li>
-			{{endforeach}}
-			</ul>
-		</div>
 		{{endif}}
-
-		<form method="post" action="{$data['submit_url']}" class="ipsForm ipsForm_vertical">
-			<input type="hidden" name="csrfKey" value="{$data['csrf_key']}" />
-
-			<div class="ipsBox" style="margin-bottom:16px">
-				<h2 class="ipsBox_title">{lang="gdpc_ffldata_section_license"}</h2>
-				<div class="ipsPad">
-					<div class="ipsFieldRow">
-						<label class="ipsFieldRow_label" for="lic_seqn">{lang="gdpc_ffldata_license"}</label>
-						<input type="text" id="lic_seqn" name="lic_seqn" value="{$data['lic_seqn']}" maxlength="32" class="ipsField_fullWidth" placeholder="1-23-456-78-9X-12345" />
-					</div>
-					<div class="ipsFieldRow">
-						<label class="ipsFieldRow_label" for="lic_type">{lang="gdpc_ffldata_type"}</label>
-						<input type="text" id="lic_type" name="lic_type" value="{$data['lic_type']}" maxlength="5" placeholder="01, 07, 09" />
-						<p class="ipsType_light ipsType_small">{lang="gdpc_ffldata_type_desc"}</p>
-					</div>
-					<div class="ipsFieldRow">
-						<label class="ipsFieldRow_label" for="lic_xprdte">{lang="gdpc_ffldata_expiry"}</label>
-						<input type="date" id="lic_xprdte" name="lic_xprdte" value="{$data['lic_xprdte']}" />
-					</div>
-				</div>
-			</div>
-
-			<div class="ipsBox" style="margin-bottom:16px">
-				<h2 class="ipsBox_title">{lang="gdpc_ffldata_section_business"}</h2>
-				<div class="ipsPad">
-					<div class="ipsFieldRow">
-						<label class="ipsFieldRow_label" for="business_name">{lang="gdpc_ffldata_business"}</label>
-						<input type="text" id="business_name" name="business_name" value="{$data['business_name']}" maxlength="200" class="ipsField_fullWidth" />
-					</div>
-					<div class="ipsFieldRow">
-						<label class="ipsFieldRow_label" for="licensee_name">{lang="gdpc_ffldata_licensee"}</label>
-						<input type="text" id="licensee_name" name="licensee_name" value="{$data['licensee_name']}" maxlength="200" class="ipsField_fullWidth" />
-					</div>
-					<div class="ipsFieldRow">
-						<label class="ipsFieldRow_label" for="voice_phone">{lang="gdpc_ffldata_phone"}</label>
-						<input type="text" id="voice_phone" name="voice_phone" value="{$data['voice_phone']}" maxlength="20" />
-					</div>
-				</div>
-			</div>
-
-			<div class="ipsBox" style="margin-bottom:16px">
-				<h2 class="ipsBox_title">{lang="gdpc_ffldata_section_address"}</h2>
-				<div class="ipsPad">
-					<div class="ipsFieldRow">
-						<label class="ipsFieldRow_label" for="premise_street">{lang="gdpc_ffldata_street"}</label>
-						<input type="text" id="premise_street" name="premise_street" value="{$data['premise_street']}" maxlength="200" class="ipsField_fullWidth" />
-					</div>
-					<div class="ipsFieldRow">
-						<label class="ipsFieldRow_label" for="premise_city">{lang="gdpc_ffldata_city"}</label>
-						<input type="text" id="premise_city" name="premise_city" value="{$data['premise_city']}" maxlength="100" class="ipsField_fullWidth" />
-					</div>
-					<div class="ipsFieldRow">
-						<label class="ipsFieldRow_label" for="premise_state">{lang="gdpc_ffldata_state"}</label>
-						<select id="premise_state" name="premise_state" class="ipsField_select">
-							<option value="">{lang="gdpc_ffldata_state_select"}</option>
-							{{foreach $data['states'] as $st}}
-								<option value="{$st['code']}" {{if $data['premise_state'] === $st['code']}}selected{{endif}}>{$st['code']} &mdash; {$st['name']}</option>
-							{{endforeach}}
-						</select>
-					</div>
-					<div class="ipsFieldRow">
-						<label class="ipsFieldRow_label" for="premise_zip">{lang="gdpc_ffldata_zip"}</label>
-						<input type="text" id="premise_zip" name="premise_zip" value="{$data['premise_zip']}" maxlength="10" placeholder="12345 or 12345-6789" />
-					</div>
-				</div>
-			</div>
-
-			<div class="ipsBox" style="margin-bottom:16px">
-				<h2 class="ipsBox_title">{lang="gdpc_ffldata_section_status"}</h2>
-				<div class="ipsPad">
-					<div class="ipsFieldRow">
-						<label class="ipsFieldRow_label">
-							<input type="checkbox" name="active" value="1" {{if $data['active']}}checked{{endif}} />
-							{lang="gdpc_ffldata_active"}
-						</label>
-						<p class="ipsType_light ipsType_small">{lang="gdpc_ffldata_active_desc"}</p>
-					</div>
-				</div>
-			</div>
-
-			<div style="margin-top:16px;display:flex;gap:8px">
-				<button type="submit" class="ipsButton ipsButton--primary">
-					{{if $data['is_edit']}}{lang="gdpc_ffldata_save"}{{else}}{lang="gdpc_ffldata_create"}{{endif}}
-				</button>
-				<a href="{$data['cancel_url']}" class="ipsButton ipsButton--normal">{lang="gdpc_ffldata_cancel"}</a>
-			</div>
-		</form>
 
 	</div>
 </div>
@@ -305,9 +185,8 @@ TEMPLATE_EOT,
 		'template_name' => 'searchlog',
 		'template_data' => '$data',
 		'template_content' => <<<'TEMPLATE_EOT'
-<div class="ipsBox">
-	<h1 class="ipsBox_title">{lang="gdpc_searchlog_title"}</h1>
-	<div class="ipsPad">
+<div class="ipsBox ipsPull">
+	<div class="ipsBox_body ipsPad">
 
 		<div style="display:flex;gap:16px;margin-bottom:24px;flex-wrap:wrap">
 			<div class="ipsBox" style="flex:1 1 200px;padding:16px;text-align:center">
@@ -322,32 +201,34 @@ TEMPLATE_EOT,
 
 		<div style="display:flex;gap:16px;flex-wrap:wrap">
 			<div class="ipsBox" style="flex:1 1 320px;padding:16px">
-				<h3 class="ipsType_sectionHead" style="margin-top:0">{lang="gdpc_searchlog_top_title"}</h3>
+				<h2 class="ipsType_sectionHead" style="margin:0 0 12px">{lang="gdpc_searchlog_top_title"}</h2>
+				{{if count( $data['top'] ) === 0}}
+					<div class="ipsEmptyMessage"><p>No searches recorded in the last 7 days.</p></div>
+				{{else}}
 				<table class="ipsTable ipsTable_zebra" style="width:100%">
 					<thead><tr><th>{lang="gdpc_searchlog_query"}</th><th style="width:80px">{lang="gdpc_searchlog_count"}</th></tr></thead>
 					<tbody>
 					{{foreach $data['top'] as $row}}
 					<tr><td>{$row['query']}</td><td>{expression="number_format( $row['count'] )"}</td></tr>
 					{{endforeach}}
-					{{if count( $data['top'] ) === 0}}
-					<tr><td colspan="2" style="text-align:center;color:#999;padding:24px">No searches recorded in the last 7 days.</td></tr>
-					{{endif}}
 					</tbody>
 				</table>
+				{{endif}}
 			</div>
 			<div class="ipsBox" style="flex:1 1 320px;padding:16px">
-				<h3 class="ipsType_sectionHead" style="margin-top:0">{lang="gdpc_searchlog_zero_title"}</h3>
+				<h2 class="ipsType_sectionHead" style="margin:0 0 12px">{lang="gdpc_searchlog_zero_title"}</h2>
+				{{if count( $data['zero'] ) === 0}}
+					<div class="ipsEmptyMessage"><p>No zero-result searches in the last 7 days.</p></div>
+				{{else}}
 				<table class="ipsTable ipsTable_zebra" style="width:100%">
 					<thead><tr><th>{lang="gdpc_searchlog_query"}</th><th style="width:80px">{lang="gdpc_searchlog_count"}</th></tr></thead>
 					<tbody>
 					{{foreach $data['zero'] as $row}}
 					<tr><td>{$row['query']}</td><td>{expression="number_format( $row['count'] )"}</td></tr>
 					{{endforeach}}
-					{{if count( $data['zero'] ) === 0}}
-					<tr><td colspan="2" style="text-align:center;color:#999;padding:24px">No zero-result searches in the last 7 days.</td></tr>
-					{{endif}}
 					</tbody>
 				</table>
+				{{endif}}
 			</div>
 		</div>
 
@@ -365,9 +246,11 @@ TEMPLATE_EOT,
 		'template_name' => 'compliance',
 		'template_data' => '$data',
 		'template_content' => <<<'TEMPLATE_EOT'
-<div class="ipsBox">
-	<h1 class="ipsBox_title">{lang="gdpc_compliance_title"}</h1>
-	<div class="ipsPad">
+<div class="ipsBox ipsPull">
+	<div style="display:flex;justify-content:flex-end;padding:10px 16px;border-bottom:1px solid var(--i-border-color, #e0e0e0)">
+		<a href="{$data['add_url']}" class="ipsButton ipsButton--primary ipsButton--small">{lang="gdpc_compliance_add_rule"}</a>
+	</div>
+	<div class="ipsBox_body ipsPad">
 
 		<div style="display:flex;gap:16px;margin-bottom:24px;flex-wrap:wrap">
 			<div class="ipsBox" style="flex:1 1 200px;padding:16px;text-align:center">
@@ -376,10 +259,9 @@ TEMPLATE_EOT,
 			</div>
 		</div>
 
-		<div style="margin-bottom:12px">
-			<a href="{$data['add_url']}" class="ipsButton ipsButton--primary ipsButton--small">{lang="gdpc_compliance_add_rule"}</a>
-		</div>
-
+		{{if count( $data['rows'] ) === 0}}
+			<div class="ipsEmptyMessage"><p>{lang="gdpc_compliance_empty"}</p></div>
+		{{else}}
 		<table class="ipsTable ipsTable_zebra" style="width:100%">
 			<thead>
 				<tr>
@@ -388,7 +270,7 @@ TEMPLATE_EOT,
 					<th>{lang="gdpc_compliance_criteria"}</th>
 					<th>{lang="gdpc_compliance_notes"}</th>
 					<th style="width:100px">{lang="gdpc_compliance_active"}</th>
-					<th style="width:160px">{lang="gdpc_compliance_actions"}</th>
+					<th style="width:180px">{lang="gdpc_compliance_actions"}</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -406,97 +288,21 @@ TEMPLATE_EOT,
 						{{endif}}
 					</td>
 					<td>
-						<a href="{$row['edit_url']}" class="ipsButton ipsButton--small ipsButton--primary">{lang="gdpc_compliance_edit"}</a>
-						<a href="{$row['delete_url']}" class="ipsButton ipsButton--small ipsButton--negative" data-confirm>{lang="gdpc_compliance_delete"}</a>
+						<a href="{$row['edit_url']}" class="ipsButton ipsButton--normal ipsButton--small">{lang="gdpc_compliance_edit"}</a>
+						<a href="{$row['delete_url']}" class="ipsButton ipsButton--negative ipsButton--small" data-confirm>{lang="gdpc_compliance_delete"}</a>
 					</td>
 				</tr>
 			{{endforeach}}
-			{{if count( $data['rows'] ) === 0}}
-				<tr><td colspan="6" style="text-align:center;color:#999;padding:24px">{lang="gdpc_compliance_empty"}</td></tr>
-			{{endif}}
 			</tbody>
 		</table>
-
-	</div>
-</div>
-TEMPLATE_EOT,
-	],
-
-	/* ===== ADMIN: compliance add/edit form ===== */
-	[
-		'set_id'        => 1,
-		'app'           => 'gdpricecompare',
-		'location'      => 'admin',
-		'group'         => 'pricecompare',
-		'template_name' => 'complianceForm',
-		'template_data' => '$data',
-		'template_content' => <<<'TEMPLATE_EOT'
-<div class="ipsBox">
-	<h1 class="ipsBox_title">
-		{{if $data['is_edit']}}{lang="gdpc_compliance_edit_title"}{{else}}{lang="gdpc_compliance_add_title"}{{endif}}
-	</h1>
-	<div class="ipsPad">
-
-		{{if count( $data['errors'] ) > 0}}
-		<div class="ipsMessage ipsMessage--error ipsPad" style="margin-bottom:16px">
-			<strong>{lang="gdpc_compliance_form_errors"}</strong>
-			<ul style="margin:8px 0 0 20px">
-			{{foreach $data['errors'] as $err}}
-				<li>{$err}</li>
-			{{endforeach}}
-			</ul>
-		</div>
 		{{endif}}
 
-		<form method="post" action="{$data['submit_url']}" class="ipsForm ipsForm_vertical">
-			<input type="hidden" name="csrfKey" value="{$data['csrf_key']}" />
-
-			<div class="ipsFieldRow">
-				<label class="ipsFieldRow_label" for="state_code">{lang="gdpc_compliance_state"}</label>
-				<select id="state_code" name="state_code" class="ipsField_select" required>
-					<option value="">{lang="gdpc_compliance_state_select"}</option>
-					{{foreach $data['states'] as $st}}
-						<option value="{$st['code']}" {{if $data['state'] === $st['code']}}selected{{endif}}>{$st['code']} &mdash; {$st['name']}</option>
-					{{endforeach}}
-				</select>
-			</div>
-
-			<div class="ipsFieldRow">
-				<label class="ipsFieldRow_label" for="restriction_type">{lang="gdpc_compliance_type"}</label>
-				<input type="text" id="restriction_type" name="restriction_type" value="{$data['type']}" class="ipsField_fullWidth" maxlength="40" pattern="[a-z0-9_]+" placeholder="nfa, magazine_capacity, assault_weapon, handgun, shipping_prohibited, silencer, sbr, sbs" required />
-				<p class="ipsType_light ipsType_small">{lang="gdpc_compliance_type_desc"}</p>
-			</div>
-
-			<div class="ipsFieldRow">
-				<label class="ipsFieldRow_label" for="criteria_json">{lang="gdpc_compliance_criteria"}</label>
-				<textarea id="criteria_json" name="criteria_json" rows="4" class="ipsField_fullWidth" style="font-family:monospace" placeholder='{"magazine_capacity":[">",10]}'>{$data['criteria']}</textarea>
-				<p class="ipsType_light ipsType_small">{lang="gdpc_compliance_criteria_desc"}</p>
-			</div>
-
-			<div class="ipsFieldRow">
-				<label class="ipsFieldRow_label" for="notes">{lang="gdpc_compliance_notes"}</label>
-				<textarea id="notes" name="notes" rows="2" class="ipsField_fullWidth">{$data['notes']}</textarea>
-			</div>
-
-			<div class="ipsFieldRow">
-				<label class="ipsFieldRow_label">
-					<input type="checkbox" name="active" value="1" {{if $data['active']}}checked{{endif}} />
-					{lang="gdpc_compliance_active"}
-				</label>
-			</div>
-
-			<div style="margin-top:16px;display:flex;gap:8px">
-				<button type="submit" class="ipsButton ipsButton--primary">
-					{{if $data['is_edit']}}{lang="gdpc_compliance_save"}{{else}}{lang="gdpc_compliance_create"}{{endif}}
-				</button>
-				<a href="{$data['cancel_url']}" class="ipsButton ipsButton--normal">{lang="gdpc_compliance_cancel"}</a>
-			</div>
-		</form>
-
 	</div>
 </div>
 TEMPLATE_EOT,
 	],
+
+	/* ===== ADMIN: compliance form — rendered by \IPS\Helpers\Form in controller ===== */
 
 	/* ===== FRONT: product ===== */
 	[

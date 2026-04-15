@@ -63,8 +63,7 @@ class _compliance extends \IPS\Dispatcher\Controller
 
 	protected function form(): void
 	{
-		$id = (int) ( \IPS\Request::i()->id ?? 0 );
-
+		$id  = (int) ( \IPS\Request::i()->id ?? 0 );
 		$row = null;
 		if ( $id > 0 )
 		{
@@ -74,16 +73,36 @@ class _compliance extends \IPS\Dispatcher\Controller
 			}
 			catch ( \Exception ) {}
 		}
+		$isEdit = ( $id > 0 && $row );
 
-		if ( \IPS\Request::i()->requestMethod() === 'POST' )
+		$stateOptions = [ '' => '— Select a state —' ];
+		foreach ( self::stateList() as $st )
 		{
-			\IPS\Session::i()->csrfCheck();
+			$stateOptions[ $st['code'] ] = $st['code'] . ' — ' . $st['name'];
+		}
 
-			$state    = strtoupper( trim( (string) \IPS\Request::i()->state_code ) );
-			$type     = trim( (string) \IPS\Request::i()->restriction_type );
-			$criteria = trim( (string) \IPS\Request::i()->criteria_json );
-			$notes    = trim( (string) \IPS\Request::i()->notes );
-			$active   = \IPS\Request::i()->active ? 1 : 0;
+		$form = new \IPS\Helpers\Form;
+
+		$form->add( new \IPS\Helpers\Form\Select( 'state_code',
+			$row ? (string) $row['state_code'] : '', TRUE, [ 'options' => $stateOptions ] ) );
+		$form->add( new \IPS\Helpers\Form\Text( 'restriction_type',
+			$row ? (string) $row['restriction_type'] : '', TRUE, [ 'maxLength' => 40,
+				'placeholder' => 'nfa, magazine_capacity, assault_weapon, handgun, shipping_prohibited, silencer, sbr, sbs' ] ) );
+		$form->add( new \IPS\Helpers\Form\TextArea( 'criteria_json',
+			$row ? (string) ( $row['criteria_json'] ?? '' ) : '', FALSE, [ 'rows' => 4,
+				'placeholder' => '{"magazine_capacity":[">",10]}' ] ) );
+		$form->add( new \IPS\Helpers\Form\TextArea( 'notes',
+			$row ? (string) ( $row['notes'] ?? '' ) : '', FALSE, [ 'rows' => 2 ] ) );
+		$form->add( new \IPS\Helpers\Form\Checkbox( 'active',
+			$row ? ( (int) ( $row['active'] ?? 0 ) === 1 ) : TRUE, FALSE ) );
+
+		if ( $values = $form->values() )
+		{
+			$state    = strtoupper( trim( (string) $values['state_code'] ) );
+			$type     = trim( (string) $values['restriction_type'] );
+			$criteria = trim( (string) $values['criteria_json'] );
+			$notes    = trim( (string) $values['notes'] );
+			$active   = $values['active'] ? 1 : 0;
 
 			$errors = [];
 			if ( !preg_match( '/^[A-Z]{2}$/', $state ) )
@@ -114,7 +133,7 @@ class _compliance extends \IPS\Dispatcher\Controller
 					'active'           => $active,
 				];
 
-				if ( $id > 0 && $row )
+				if ( $isEdit )
 				{
 					\IPS\Db::i()->update( 'gd_state_restrictions', $payload, [ 'id=?', $id ] );
 					$msg = 'gdpc_compliance_updated';
@@ -132,42 +151,17 @@ class _compliance extends \IPS\Dispatcher\Controller
 				return;
 			}
 
-			$formData = [
-				'id'        => $id,
-				'state'     => $state,
-				'type'      => $type,
-				'criteria'  => $criteria,
-				'notes'     => $notes,
-				'active'    => $active === 1,
-				'errors'    => self::resolveErrorLabels( $errors ),
-			];
+			$lang = \IPS\Member::loggedIn()->language();
+			foreach ( $errors as $k )
+			{
+				$form->error = (string) $lang->addToStack( $k );
+			}
 		}
-		else
-		{
-			$formData = [
-				'id'        => $id,
-				'state'     => $row ? (string) $row['state_code'] : '',
-				'type'      => $row ? (string) $row['restriction_type'] : '',
-				'criteria'  => $row ? (string) ( $row['criteria_json'] ?? '' ) : '',
-				'notes'     => $row ? (string) ( $row['notes'] ?? '' ) : '',
-				'active'    => $row ? ( (int) ( $row['active'] ?? 0 ) === 1 ) : true,
-				'errors'    => [],
-			];
-		}
-
-		$formData['states']     = self::stateList();
-		$formData['submit_url'] = (string) \IPS\Http\Url::internal(
-			'app=gdpricecompare&module=pricecompare&controller=compliance&do=form' . ( $id > 0 ? '&id=' . $id : '' )
-		);
-		$formData['cancel_url'] = (string) \IPS\Http\Url::internal( 'app=gdpricecompare&module=pricecompare&controller=compliance' );
-		$formData['csrf_key']   = \IPS\Session::i()->csrfKey;
-		$formData['is_edit']    = $id > 0 && $row;
 
 		\IPS\Output::i()->title  = \IPS\Member::loggedIn()->language()->addToStack(
-			$formData['is_edit'] ? 'gdpc_compliance_edit_title' : 'gdpc_compliance_add_title'
+			$isEdit ? 'gdpc_compliance_edit_title' : 'gdpc_compliance_add_title'
 		);
-		\IPS\Output::i()->output = \IPS\Theme::i()->getTemplate( 'pricecompare', 'gdpricecompare', 'admin' )
-			->complianceForm( $formData );
+		\IPS\Output::i()->output = (string) $form;
 	}
 
 	protected function delete(): void

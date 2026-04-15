@@ -179,5 +179,26 @@
 
 		<word key="r__gdpricecompare"><![CDATA[Price Compare]]></word>
 		<word key="r__pricecompare_manage"><![CDATA[Can manage Price Comparison (dashboard, settings, FFL data, search log, compliance rules)?]]></word>
+
+		<word key="lic_seqn"><![CDATA[License number]]></word>
+		<word key="lic_type"><![CDATA[License type]]></word>
+		<word key="lic_type_desc"><![CDATA[ATF license type code (01 = dealer, 07 = manufacturer, etc.).]]></word>
+		<word key="lic_xprdte"><![CDATA[Expiration date]]></word>
+		<word key="business_name"><![CDATA[Business name]]></word>
+		<word key="licensee_name"><![CDATA[Licensee name]]></word>
+		<word key="voice_phone"><![CDATA[Phone]]></word>
+		<word key="premise_street"><![CDATA[Street]]></word>
+		<word key="premise_city"><![CDATA[City]]></word>
+		<word key="premise_state"><![CDATA[State]]></word>
+		<word key="premise_zip"><![CDATA[ZIP]]></word>
+		<word key="active"><![CDATA[Active]]></word>
+		<word key="active_desc"><![CDATA[Uncheck to hide this dealer from the public locator without deleting the record.]]></word>
+
+		<word key="state_code"><![CDATA[State]]></word>
+		<word key="restriction_type"><![CDATA[Restriction type]]></word>
+		<word key="restriction_type_desc"><![CDATA[Short machine-readable tag (lowercase letters, digits, underscores). Suggested values: nfa, magazine_capacity, assault_weapon, handgun, shipping_prohibited, silencer, sbr, sbs.]]></word>
+		<word key="criteria_json"><![CDATA[Criteria (JSON)]]></word>
+		<word key="criteria_json_desc"><![CDATA[JSON object matched against the product row. Example: {"magazine_capacity":[">",10]} — supported operators are >, >=, <, <=, !=, in.]]></word>
+		<word key="notes"><![CDATA[Notes]]></word>
 	</app>
 </language>

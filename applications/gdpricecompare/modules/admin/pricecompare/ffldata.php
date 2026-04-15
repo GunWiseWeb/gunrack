@@ -127,48 +127,103 @@ class _ffldata extends \IPS\Dispatcher\Controller
 			}
 			catch ( \Exception ) {}
 		}
+		$isEdit = ( $id > 0 && $row );
 
-		if ( \IPS\Request::i()->requestMethod() === 'POST' )
+		$stateOptions = [ '' => '— Select a state —' ];
+		foreach ( self::stateList() as $st )
 		{
-			\IPS\Session::i()->csrfCheck();
+			$stateOptions[ $st['code'] ] = $st['code'] . ' — ' . $st['name'];
+		}
 
-			$payload = [
-				'lic_seqn'       => trim( (string) \IPS\Request::i()->lic_seqn ),
-				'business_name'  => trim( (string) \IPS\Request::i()->business_name ),
-				'licensee_name'  => trim( (string) \IPS\Request::i()->licensee_name ),
-				'premise_street' => trim( (string) \IPS\Request::i()->premise_street ),
-				'premise_city'   => trim( (string) \IPS\Request::i()->premise_city ),
-				'premise_state'  => strtoupper( trim( (string) \IPS\Request::i()->premise_state ) ),
-				'premise_zip'    => trim( (string) \IPS\Request::i()->premise_zip ),
-				'voice_phone'    => trim( (string) \IPS\Request::i()->voice_phone ),
-				'lic_type'       => trim( (string) \IPS\Request::i()->lic_type ),
-				'lic_xprdte'     => trim( (string) \IPS\Request::i()->lic_xprdte ),
-				'active'         => \IPS\Request::i()->active ? 1 : 0,
-			];
+		$form = new \IPS\Helpers\Form;
+
+		$form->addHeader( 'gdpc_ffldata_section_license' );
+		$form->add( new \IPS\Helpers\Form\Text( 'lic_seqn',
+			$row ? (string) ( $row['lic_seqn'] ?? '' ) : '', FALSE, [ 'maxLength' => 32, 'placeholder' => '1-23-456-78-9X-12345' ] ) );
+		$form->add( new \IPS\Helpers\Form\Text( 'lic_type',
+			$row ? (string) ( $row['lic_type'] ?? '' ) : '', FALSE, [ 'maxLength' => 5, 'placeholder' => '01, 07, 09' ] ) );
+		$form->add( new \IPS\Helpers\Form\Date( 'lic_xprdte',
+			( $row && !empty( $row['lic_xprdte'] ) ) ? \IPS\DateTime::ts( strtotime( (string) $row['lic_xprdte'] ) ) : NULL, FALSE ) );
+
+		$form->addHeader( 'gdpc_ffldata_section_business' );
+		$form->add( new \IPS\Helpers\Form\Text( 'business_name',
+			$row ? (string) ( $row['business_name'] ?? '' ) : '', FALSE, [ 'maxLength' => 200 ] ) );
+		$form->add( new \IPS\Helpers\Form\Text( 'licensee_name',
+			$row ? (string) ( $row['licensee_name'] ?? '' ) : '', FALSE, [ 'maxLength' => 200 ] ) );
+		$form->add( new \IPS\Helpers\Form\Text( 'voice_phone',
+			$row ? (string) ( $row['voice_phone'] ?? '' ) : '', FALSE, [ 'maxLength' => 20 ] ) );
+
+		$form->addHeader( 'gdpc_ffldata_section_address' );
+		$form->add( new \IPS\Helpers\Form\Text( 'premise_street',
+			$row ? (string) ( $row['premise_street'] ?? '' ) : '', FALSE, [ 'maxLength' => 200 ] ) );
+		$form->add( new \IPS\Helpers\Form\Text( 'premise_city',
+			$row ? (string) ( $row['premise_city'] ?? '' ) : '', FALSE, [ 'maxLength' => 100 ] ) );
+		$form->add( new \IPS\Helpers\Form\Select( 'premise_state',
+			$row ? (string) ( $row['premise_state'] ?? '' ) : '', FALSE, [ 'options' => $stateOptions ] ) );
+		$form->add( new \IPS\Helpers\Form\Text( 'premise_zip',
+			$row ? (string) ( $row['premise_zip'] ?? '' ) : '', FALSE, [ 'maxLength' => 10, 'placeholder' => '12345 or 12345-6789' ] ) );
+
+		$form->addHeader( 'gdpc_ffldata_section_status' );
+		$form->add( new \IPS\Helpers\Form\Checkbox( 'active',
+			$row ? ( (int) ( $row['active'] ?? 0 ) === 1 ) : TRUE, FALSE ) );
+
+		if ( $values = $form->values() )
+		{
+			$state = strtoupper( trim( (string) $values['premise_state'] ) );
+			$zip   = trim( (string) $values['premise_zip'] );
+			$bn    = trim( (string) $values['business_name'] );
+			$ln    = trim( (string) $values['licensee_name'] );
+			$expRaw = $values['lic_xprdte'];
 
 			$errors = [];
-			if ( $payload['business_name'] === '' && $payload['licensee_name'] === '' )
+			if ( $bn === '' && $ln === '' )
 			{
 				$errors[] = 'gdpc_ffldata_err_name';
 			}
-			if ( $payload['premise_state'] !== '' && !preg_match( '/^[A-Z]{2}$/', $payload['premise_state'] ) )
+			if ( $state !== '' && !preg_match( '/^[A-Z]{2}$/', $state ) )
 			{
 				$errors[] = 'gdpc_ffldata_err_state';
 			}
-			if ( $payload['premise_zip'] !== '' && !preg_match( '/^[0-9]{5}(-[0-9]{4})?$/', $payload['premise_zip'] ) )
+			if ( $zip !== '' && !preg_match( '/^[0-9]{5}(-[0-9]{4})?$/', $zip ) )
 			{
 				$errors[] = 'gdpc_ffldata_err_zip';
 			}
-			if ( $payload['lic_xprdte'] !== '' && !preg_match( '/^\d{4}-\d{2}-\d{2}$/', $payload['lic_xprdte'] ) )
+
+			$expiry = '';
+			if ( $expRaw instanceof \IPS\DateTime )
 			{
-				$errors[] = 'gdpc_ffldata_err_expiry';
+				$expiry = $expRaw->format( 'Y-m-d' );
+			}
+			elseif ( is_string( $expRaw ) && $expRaw !== '' )
+			{
+				if ( !preg_match( '/^\d{4}-\d{2}-\d{2}$/', $expRaw ) )
+				{
+					$errors[] = 'gdpc_ffldata_err_expiry';
+				}
+				else
+				{
+					$expiry = $expRaw;
+				}
 			}
 
 			if ( count( $errors ) === 0 )
 			{
-				$payload['last_updated'] = date( 'Y-m-d H:i:s' );
+				$payload = [
+					'lic_seqn'       => trim( (string) $values['lic_seqn'] ),
+					'business_name'  => $bn,
+					'licensee_name'  => $ln,
+					'premise_street' => trim( (string) $values['premise_street'] ),
+					'premise_city'   => trim( (string) $values['premise_city'] ),
+					'premise_state'  => $state,
+					'premise_zip'    => $zip,
+					'voice_phone'    => trim( (string) $values['voice_phone'] ),
+					'lic_type'       => trim( (string) $values['lic_type'] ),
+					'lic_xprdte'     => $expiry,
+					'active'         => $values['active'] ? 1 : 0,
+					'last_updated'   => date( 'Y-m-d H:i:s' ),
+				];
 
-				if ( $id > 0 && $row )
+				if ( $isEdit )
 				{
 					\IPS\Db::i()->update( 'gd_ffl_dealers', $payload, [ 'id=?', $id ] );
 					$msg = 'gdpc_ffldata_updated';
@@ -186,46 +241,17 @@ class _ffldata extends \IPS\Dispatcher\Controller
 				return;
 			}
 
-			$formData = array_merge( $payload, [
-				'id'     => $id,
-				'active' => $payload['active'] === 1,
-				'errors' => self::resolveErrorLabels( $errors ),
-			]);
+			$lang = \IPS\Member::loggedIn()->language();
+			foreach ( $errors as $k )
+			{
+				$form->error = (string) $lang->addToStack( $k );
+			}
 		}
-		else
-		{
-			$formData = [
-				'id'             => $id,
-				'lic_seqn'       => $row ? (string) ( $row['lic_seqn'] ?? '' ) : '',
-				'business_name'  => $row ? (string) ( $row['business_name'] ?? '' ) : '',
-				'licensee_name'  => $row ? (string) ( $row['licensee_name'] ?? '' ) : '',
-				'premise_street' => $row ? (string) ( $row['premise_street'] ?? '' ) : '',
-				'premise_city'   => $row ? (string) ( $row['premise_city'] ?? '' ) : '',
-				'premise_state'  => $row ? (string) ( $row['premise_state'] ?? '' ) : '',
-				'premise_zip'    => $row ? (string) ( $row['premise_zip'] ?? '' ) : '',
-				'voice_phone'    => $row ? (string) ( $row['voice_phone'] ?? '' ) : '',
-				'lic_type'       => $row ? (string) ( $row['lic_type'] ?? '' ) : '',
-				'lic_xprdte'     => $row ? (string) ( $row['lic_xprdte'] ?? '' ) : '',
-				'active'         => $row ? ( (int) ( $row['active'] ?? 0 ) === 1 ) : true,
-				'errors'         => [],
-			];
-		}
-
-		$formData['states']     = self::stateList();
-		$formData['submit_url'] = (string) \IPS\Http\Url::internal(
-			'app=gdpricecompare&module=pricecompare&controller=ffldata&do=form' . ( $id > 0 ? '&id=' . $id : '' )
-		);
-		$formData['cancel_url'] = (string) \IPS\Http\Url::internal(
-			'app=gdpricecompare&module=pricecompare&controller=ffldata'
-		);
-		$formData['csrf_key']   = \IPS\Session::i()->csrfKey;
-		$formData['is_edit']    = $id > 0 && $row;
 
 		\IPS\Output::i()->title  = \IPS\Member::loggedIn()->language()->addToStack(
-			$formData['is_edit'] ? 'gdpc_ffldata_edit_title' : 'gdpc_ffldata_add_title'
+			$isEdit ? 'gdpc_ffldata_edit_title' : 'gdpc_ffldata_add_title'
 		);
-		\IPS\Output::i()->output = \IPS\Theme::i()->getTemplate( 'pricecompare', 'gdpricecompare', 'admin' )
-			->ffldataForm( $formData );
+		\IPS\Output::i()->output = (string) $form;
 	}
 
 	protected function delete(): void
