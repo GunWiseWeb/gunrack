@@ -12,8 +12,12 @@ class _Application extends \IPS\Application
 {
 	/**
 	 * ACP menu icon (Font Awesome name, no `fa-` prefix)
+	 *
+	 * Matches \IPS\Application::get__icon() signature — public visibility
+	 * and `: string` return type. Anything else is silently ignored by the
+	 * menu renderer and the tab shows with no glyph.
 	 */
-	protected function get__icon(): string
+	public function get__icon(): string
 	{
 		return 'database';
 	}
