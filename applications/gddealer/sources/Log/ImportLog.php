@@ -20,7 +20,7 @@ class _ImportLog extends \IPS\Patterns\ActiveRecord
 {
 	public static ?string $databaseTable   = 'gd_dealer_import_log';
 	public static string $databasePrefix   = '';
-	public static ?string $databaseColumnId = 'id';
+	public static string $databaseColumnId = 'id';
 
 	/**
 	 * Open a fresh running log row for a dealer and return it.

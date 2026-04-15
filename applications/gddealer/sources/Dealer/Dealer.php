@@ -25,7 +25,7 @@ class _Dealer extends \IPS\Patterns\ActiveRecord
 {
 	public static ?string $databaseTable   = 'gd_dealer_feed_config';
 	public static string $databasePrefix   = '';
-	public static ?string $databaseColumnId = 'dealer_id';
+	public static string $databaseColumnId = 'dealer_id';
 
 	const TIER_BASIC      = 'basic';
 	const TIER_PRO        = 'pro';

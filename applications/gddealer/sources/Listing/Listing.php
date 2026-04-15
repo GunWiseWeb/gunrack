@@ -24,7 +24,7 @@ class _Listing extends \IPS\Patterns\ActiveRecord
 {
 	public static ?string $databaseTable   = 'gd_dealer_listings';
 	public static string $databasePrefix   = '';
-	public static ?string $databaseColumnId = 'id';
+	public static string $databaseColumnId = 'id';
 
 	const STATUS_ACTIVE       = 'active';
 	const STATUS_OUT_OF_STOCK = 'out_of_stock';
