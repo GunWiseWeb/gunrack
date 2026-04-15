@@ -99,51 +99,98 @@ TEMPLATE_EOT,
 <div class="ipsBox">
 	<h1 class="ipsBox_title">{lang="gdpc_settings_title"}</h1>
 	<div class="ipsPad">
+
+		<p class="ipsType_light" style="margin-bottom:16px">{lang="gdpc_settings_intro"}</p>
+
 		<form method="post" action="" class="ipsForm ipsForm_vertical">
 			<input type="hidden" name="csrfKey" value="{$data['csrf_key']}" />
 
-			<div class="ipsFieldRow">
-				<label class="ipsFieldRow_label">{lang="gdpc_settings_default_sort"}</label>
-				<input type="text" name="gdpc_default_sort" value="{$data['default_sort']}" class="ipsField_fullWidth" />
-			</div>
-			<div class="ipsFieldRow">
-				<label class="ipsFieldRow_label">{lang="gdpc_settings_free_ship_threshold"}</label>
-				<input type="text" name="gdpc_free_ship_threshold" value="{$data['free_ship_threshold']}" class="ipsField_fullWidth" />
-			</div>
-			<div class="ipsFieldRow">
-				<label class="ipsFieldRow_label">{lang="gdpc_settings_cpr_shipping_default"}</label>
-				<input type="checkbox" name="gdpc_cpr_include_shipping_default" value="1" {{if $data['cpr_include_shipping']}}checked{{endif}} />
-			</div>
-			<div class="ipsFieldRow">
-				<label class="ipsFieldRow_label">{lang="gdpc_settings_ffl_radius"}</label>
-				<input type="number" min="1" name="gdpc_ffl_radius_default" value="{$data['ffl_radius']}" />
-			</div>
-			<div class="ipsFieldRow">
-				<label class="ipsFieldRow_label">{lang="gdpc_settings_history_basic"}</label>
-				<input type="number" min="1" name="gdpc_price_history_days_basic" value="{$data['history_basic']}" />
-			</div>
-			<div class="ipsFieldRow">
-				<label class="ipsFieldRow_label">{lang="gdpc_settings_history_pro"}</label>
-				<input type="number" min="1" name="gdpc_price_history_days_pro" value="{$data['history_pro']}" />
-			</div>
-			<div class="ipsFieldRow">
-				<label class="ipsFieldRow_label">{lang="gdpc_settings_history_enterprise"}</label>
-				<input type="number" min="1" name="gdpc_price_history_days_enterprise" value="{$data['history_enterprise']}" />
-			</div>
-			<div class="ipsFieldRow">
-				<label class="ipsFieldRow_label">{lang="gdpc_settings_gmaps_key"}</label>
-				<input type="text" name="gdpc_google_maps_api_key" value="{$data['google_maps_key']}" class="ipsField_fullWidth" />
-			</div>
-			<div class="ipsFieldRow">
-				<label class="ipsFieldRow_label">{lang="gdpc_settings_alert_dedupe"}</label>
-				<input type="number" min="1" name="gdpc_alert_dedupe_hours" value="{$data['alert_dedupe_hours']}" />
-			</div>
-			<div class="ipsFieldRow">
-				<label class="ipsFieldRow_label">{lang="gdpc_settings_report_threshold"}</label>
-				<input type="number" min="1" name="gdpc_report_priority_threshold" value="{$data['report_threshold']}" />
+			<div class="ipsBox" style="margin-bottom:16px">
+				<h2 class="ipsBox_title">{lang="gdpc_settings_section_display"}</h2>
+				<div class="ipsPad">
+					<div class="ipsFieldRow">
+						<label class="ipsFieldRow_label" for="gdpc_default_sort">{lang="gdpc_settings_default_sort"}</label>
+						<select id="gdpc_default_sort" name="gdpc_default_sort" class="ipsField_select">
+							<option value="total_price_asc" {{if $data['default_sort'] === 'total_price_asc'}}selected{{endif}}>Total price, lowest first</option>
+							<option value="total_price_desc" {{if $data['default_sort'] === 'total_price_desc'}}selected{{endif}}>Total price, highest first</option>
+							<option value="price_asc" {{if $data['default_sort'] === 'price_asc'}}selected{{endif}}>Dealer price, lowest first</option>
+							<option value="cpr_asc" {{if $data['default_sort'] === 'cpr_asc'}}selected{{endif}}>Cost per round, lowest first</option>
+						</select>
+						<p class="ipsType_light ipsType_small">{lang="gdpc_settings_default_sort_desc"}</p>
+					</div>
+				</div>
 			</div>
 
-			<div style="margin-top:16px">
+			<div class="ipsBox" style="margin-bottom:16px">
+				<h2 class="ipsBox_title">{lang="gdpc_settings_section_shipping"}</h2>
+				<div class="ipsPad">
+					<div class="ipsFieldRow">
+						<label class="ipsFieldRow_label" for="gdpc_free_ship_threshold">{lang="gdpc_settings_free_ship_threshold"}</label>
+						<input type="number" step="0.01" min="0" id="gdpc_free_ship_threshold" name="gdpc_free_ship_threshold" value="{$data['free_ship_threshold']}" />
+						<p class="ipsType_light ipsType_small">{lang="gdpc_settings_free_ship_threshold_desc"}</p>
+					</div>
+					<div class="ipsFieldRow">
+						<label class="ipsFieldRow_label">
+							<input type="checkbox" name="gdpc_cpr_include_shipping_default" value="1" {{if $data['cpr_include_shipping']}}checked{{endif}} />
+							{lang="gdpc_settings_cpr_shipping_default"}
+						</label>
+						<p class="ipsType_light ipsType_small">{lang="gdpc_settings_cpr_shipping_default_desc"}</p>
+					</div>
+				</div>
+			</div>
+
+			<div class="ipsBox" style="margin-bottom:16px">
+				<h2 class="ipsBox_title">{lang="gdpc_settings_section_ffl"}</h2>
+				<div class="ipsPad">
+					<div class="ipsFieldRow">
+						<label class="ipsFieldRow_label" for="gdpc_ffl_radius_default">{lang="gdpc_settings_ffl_radius"}</label>
+						<input type="number" min="1" max="200" id="gdpc_ffl_radius_default" name="gdpc_ffl_radius_default" value="{$data['ffl_radius']}" />
+						<p class="ipsType_light ipsType_small">{lang="gdpc_settings_ffl_radius_desc"}</p>
+					</div>
+					<div class="ipsFieldRow">
+						<label class="ipsFieldRow_label" for="gdpc_google_maps_api_key">{lang="gdpc_settings_gmaps_key"}</label>
+						<input type="text" id="gdpc_google_maps_api_key" name="gdpc_google_maps_api_key" value="{$data['google_maps_key']}" class="ipsField_fullWidth" />
+						<p class="ipsType_light ipsType_small">{lang="gdpc_settings_gmaps_key_desc"}</p>
+					</div>
+				</div>
+			</div>
+
+			<div class="ipsBox" style="margin-bottom:16px">
+				<h2 class="ipsBox_title">{lang="gdpc_settings_section_history"}</h2>
+				<div class="ipsPad">
+					<p class="ipsType_light ipsType_small" style="margin-bottom:12px">{lang="gdpc_settings_history_desc"}</p>
+					<div class="ipsFieldRow">
+						<label class="ipsFieldRow_label" for="gdpc_price_history_days_basic">{lang="gdpc_settings_history_basic"}</label>
+						<input type="number" min="1" id="gdpc_price_history_days_basic" name="gdpc_price_history_days_basic" value="{$data['history_basic']}" />
+					</div>
+					<div class="ipsFieldRow">
+						<label class="ipsFieldRow_label" for="gdpc_price_history_days_pro">{lang="gdpc_settings_history_pro"}</label>
+						<input type="number" min="1" id="gdpc_price_history_days_pro" name="gdpc_price_history_days_pro" value="{$data['history_pro']}" />
+					</div>
+					<div class="ipsFieldRow">
+						<label class="ipsFieldRow_label" for="gdpc_price_history_days_enterprise">{lang="gdpc_settings_history_enterprise"}</label>
+						<input type="number" min="1" id="gdpc_price_history_days_enterprise" name="gdpc_price_history_days_enterprise" value="{$data['history_enterprise']}" />
+					</div>
+				</div>
+			</div>
+
+			<div class="ipsBox" style="margin-bottom:16px">
+				<h2 class="ipsBox_title">{lang="gdpc_settings_section_alerts"}</h2>
+				<div class="ipsPad">
+					<div class="ipsFieldRow">
+						<label class="ipsFieldRow_label" for="gdpc_alert_dedupe_hours">{lang="gdpc_settings_alert_dedupe"}</label>
+						<input type="number" min="1" id="gdpc_alert_dedupe_hours" name="gdpc_alert_dedupe_hours" value="{$data['alert_dedupe_hours']}" />
+						<p class="ipsType_light ipsType_small">{lang="gdpc_settings_alert_dedupe_desc"}</p>
+					</div>
+					<div class="ipsFieldRow">
+						<label class="ipsFieldRow_label" for="gdpc_report_priority_threshold">{lang="gdpc_settings_report_threshold"}</label>
+						<input type="number" min="1" id="gdpc_report_priority_threshold" name="gdpc_report_priority_threshold" value="{$data['report_threshold']}" />
+						<p class="ipsType_light ipsType_small">{lang="gdpc_settings_report_threshold_desc"}</p>
+					</div>
+				</div>
+			</div>
+
+			<div style="margin-top:16px;text-align:right">
 				<button type="submit" class="ipsButton ipsButton--primary">{lang="gdpc_settings_save"}</button>
 			</div>
 		</form>
@@ -265,33 +312,122 @@ TEMPLATE_EOT,
 			</div>
 		</div>
 
+		<div style="margin-bottom:12px">
+			<a href="{$data['add_url']}" class="ipsButton ipsButton--primary ipsButton--small">{lang="gdpc_compliance_add_rule"}</a>
+		</div>
+
 		<table class="ipsTable ipsTable_zebra" style="width:100%">
 			<thead>
 				<tr>
-					<th>{lang="gdpc_compliance_state"}</th>
+					<th style="width:80px">{lang="gdpc_compliance_state"}</th>
 					<th>{lang="gdpc_compliance_type"}</th>
-					<th>{lang="gdpc_compliance_active"}</th>
+					<th>{lang="gdpc_compliance_criteria"}</th>
+					<th>{lang="gdpc_compliance_notes"}</th>
+					<th style="width:100px">{lang="gdpc_compliance_active"}</th>
+					<th style="width:160px">{lang="gdpc_compliance_actions"}</th>
 				</tr>
 			</thead>
 			<tbody>
 			{{foreach $data['rows'] as $row}}
 				<tr>
 					<td><strong>{$row['state']}</strong></td>
-					<td>{$row['type']}</td>
+					<td><code>{$row['type']}</code></td>
+					<td><code style="font-size:0.85em">{expression="htmlspecialchars( mb_substr( $row['criteria'], 0, 80 ) )"}</code></td>
+					<td>{expression="htmlspecialchars( mb_substr( $row['notes'], 0, 80 ) )"}</td>
 					<td>
 						{{if $row['active']}}
-							<span class="ipsBadge ipsBadge--positive">Active</span>
+							<span class="ipsBadge ipsBadge--positive">{lang="gdpc_compliance_status_active"}</span>
 						{{else}}
-							<span class="ipsBadge ipsBadge--neutral">Inactive</span>
+							<span class="ipsBadge ipsBadge--neutral">{lang="gdpc_compliance_status_inactive"}</span>
 						{{endif}}
+					</td>
+					<td>
+						<a href="{$row['edit_url']}" class="ipsButton ipsButton--small ipsButton--primary">{lang="gdpc_compliance_edit"}</a>
+						<a href="{$row['delete_url']}" class="ipsButton ipsButton--small ipsButton--negative" data-confirm>{lang="gdpc_compliance_delete"}</a>
 					</td>
 				</tr>
 			{{endforeach}}
 			{{if count( $data['rows'] ) === 0}}
-				<tr><td colspan="3" style="text-align:center;color:#999;padding:24px">No state restrictions configured.</td></tr>
+				<tr><td colspan="6" style="text-align:center;color:#999;padding:24px">{lang="gdpc_compliance_empty"}</td></tr>
 			{{endif}}
 			</tbody>
 		</table>
+
+	</div>
+</div>
+TEMPLATE_EOT,
+	],
+
+	/* ===== ADMIN: compliance add/edit form ===== */
+	[
+		'set_id'        => 1,
+		'app'           => 'gdpricecompare',
+		'location'      => 'admin',
+		'group'         => 'pricecompare',
+		'template_name' => 'complianceForm',
+		'template_data' => '$data',
+		'template_content' => <<<'TEMPLATE_EOT'
+<div class="ipsBox">
+	<h1 class="ipsBox_title">
+		{{if $data['is_edit']}}{lang="gdpc_compliance_edit_title"}{{else}}{lang="gdpc_compliance_add_title"}{{endif}}
+	</h1>
+	<div class="ipsPad">
+
+		{{if count( $data['errors'] ) > 0}}
+		<div class="ipsMessage ipsMessage--error ipsPad" style="margin-bottom:16px">
+			<strong>{lang="gdpc_compliance_form_errors"}</strong>
+			<ul style="margin:8px 0 0 20px">
+			{{foreach $data['errors'] as $err}}
+				<li>{$err}</li>
+			{{endforeach}}
+			</ul>
+		</div>
+		{{endif}}
+
+		<form method="post" action="{$data['submit_url']}" class="ipsForm ipsForm_vertical">
+			<input type="hidden" name="csrfKey" value="{$data['csrf_key']}" />
+
+			<div class="ipsFieldRow">
+				<label class="ipsFieldRow_label" for="state_code">{lang="gdpc_compliance_state"}</label>
+				<select id="state_code" name="state_code" class="ipsField_select" required>
+					<option value="">{lang="gdpc_compliance_state_select"}</option>
+					{{foreach $data['states'] as $st}}
+						<option value="{$st['code']}" {{if $data['state'] === $st['code']}}selected{{endif}}>{$st['code']} &mdash; {$st['name']}</option>
+					{{endforeach}}
+				</select>
+			</div>
+
+			<div class="ipsFieldRow">
+				<label class="ipsFieldRow_label" for="restriction_type">{lang="gdpc_compliance_type"}</label>
+				<input type="text" id="restriction_type" name="restriction_type" value="{$data['type']}" class="ipsField_fullWidth" maxlength="40" pattern="[a-z0-9_]+" placeholder="nfa, magazine_capacity, assault_weapon, handgun, shipping_prohibited, silencer, sbr, sbs" required />
+				<p class="ipsType_light ipsType_small">{lang="gdpc_compliance_type_desc"}</p>
+			</div>
+
+			<div class="ipsFieldRow">
+				<label class="ipsFieldRow_label" for="criteria_json">{lang="gdpc_compliance_criteria"}</label>
+				<textarea id="criteria_json" name="criteria_json" rows="4" class="ipsField_fullWidth" style="font-family:monospace" placeholder='{"magazine_capacity":[">",10]}'>{$data['criteria']}</textarea>
+				<p class="ipsType_light ipsType_small">{lang="gdpc_compliance_criteria_desc"}</p>
+			</div>
+
+			<div class="ipsFieldRow">
+				<label class="ipsFieldRow_label" for="notes">{lang="gdpc_compliance_notes"}</label>
+				<textarea id="notes" name="notes" rows="2" class="ipsField_fullWidth">{$data['notes']}</textarea>
+			</div>
+
+			<div class="ipsFieldRow">
+				<label class="ipsFieldRow_label">
+					<input type="checkbox" name="active" value="1" {{if $data['active']}}checked{{endif}} />
+					{lang="gdpc_compliance_active"}
+				</label>
+			</div>
+
+			<div style="margin-top:16px;display:flex;gap:8px">
+				<button type="submit" class="ipsButton ipsButton--primary">
+					{{if $data['is_edit']}}{lang="gdpc_compliance_save"}{{else}}{lang="gdpc_compliance_create"}{{endif}}
+				</button>
+				<a href="{$data['cancel_url']}" class="ipsButton ipsButton--normal">{lang="gdpc_compliance_cancel"}</a>
+			</div>
+		</form>
 
 	</div>
 </div>

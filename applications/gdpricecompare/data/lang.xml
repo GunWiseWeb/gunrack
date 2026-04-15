@@ -33,6 +33,20 @@
 		<word key="gdpc_settings_report_threshold"><![CDATA[Report threshold for elevated priority]]></word>
 		<word key="gdpc_settings_save"><![CDATA[Save Settings]]></word>
 		<word key="gdpc_settings_saved"><![CDATA[Settings saved.]]></word>
+		<word key="gdpc_settings_intro"><![CDATA[Tune how Price Comparison behaves across the public storefront, alerts, and the FFL locator.]]></word>
+		<word key="gdpc_settings_section_display"><![CDATA[Display]]></word>
+		<word key="gdpc_settings_section_shipping"><![CDATA[Shipping & Cost-Per-Round]]></word>
+		<word key="gdpc_settings_section_ffl"><![CDATA[FFL Locator]]></word>
+		<word key="gdpc_settings_section_history"><![CDATA[Price History Retention]]></word>
+		<word key="gdpc_settings_section_alerts"><![CDATA[Alerts & Reports]]></word>
+		<word key="gdpc_settings_default_sort_desc"><![CDATA[Applied to the comparison table when no explicit sort is chosen.]]></word>
+		<word key="gdpc_settings_free_ship_threshold_desc"><![CDATA[Orders at or above this dollar amount display the free-shipping badge when the dealer supports it.]]></word>
+		<word key="gdpc_settings_cpr_shipping_default_desc"><![CDATA[When checked, cost-per-round for ammunition includes estimated shipping by default.]]></word>
+		<word key="gdpc_settings_ffl_radius_desc"><![CDATA[Default radius used on the FFL locator when a visitor does not pick one.]]></word>
+		<word key="gdpc_settings_gmaps_key_desc"><![CDATA[Required for the FFL locator map. Leave blank to disable the map and fall back to a list-only view.]]></word>
+		<word key="gdpc_settings_history_desc"><![CDATA[How many days of price history each subscription tier can chart.]]></word>
+		<word key="gdpc_settings_alert_dedupe_desc"><![CDATA[Minimum hours between identical watchlist alerts sent to the same member.]]></word>
+		<word key="gdpc_settings_report_threshold_desc"><![CDATA[Number of user reports against a listing before it is flagged for admin review.]]></word>
 
 		<word key="gdpc_ffldata_title"><![CDATA[FFL Data Management]]></word>
 		<word key="gdpc_ffldata_count"><![CDATA[FFL records loaded]]></word>
@@ -48,9 +62,33 @@
 
 		<word key="gdpc_compliance_title"><![CDATA[State Compliance Rules]]></word>
 		<word key="gdpc_compliance_state"><![CDATA[State]]></word>
+		<word key="gdpc_compliance_state_select"><![CDATA[— Select a state —]]></word>
 		<word key="gdpc_compliance_type"><![CDATA[Restriction type]]></word>
+		<word key="gdpc_compliance_type_desc"><![CDATA[Short machine-readable tag (lowercase letters, digits, underscores). Suggested values: nfa, magazine_capacity, assault_weapon, handgun, shipping_prohibited, silencer, sbr, sbs — but any custom tag is allowed.]]></word>
+		<word key="gdpc_compliance_criteria"><![CDATA[Criteria (JSON)]]></word>
+		<word key="gdpc_compliance_criteria_desc"><![CDATA[JSON object matched against the product row. Example: {"magazine_capacity":[">",10]} — supported operators are >, >=, <, <=, !=, in.]]></word>
+		<word key="gdpc_compliance_notes"><![CDATA[Notes]]></word>
 		<word key="gdpc_compliance_active"><![CDATA[Active]]></word>
+		<word key="gdpc_compliance_status_active"><![CDATA[Active]]></word>
+		<word key="gdpc_compliance_status_inactive"><![CDATA[Inactive]]></word>
 		<word key="gdpc_compliance_count"><![CDATA[Restrictions loaded]]></word>
+		<word key="gdpc_compliance_actions"><![CDATA[Actions]]></word>
+		<word key="gdpc_compliance_add_rule"><![CDATA[Add Rule]]></word>
+		<word key="gdpc_compliance_add_title"><![CDATA[Add State Restriction]]></word>
+		<word key="gdpc_compliance_edit_title"><![CDATA[Edit State Restriction]]></word>
+		<word key="gdpc_compliance_edit"><![CDATA[Edit]]></word>
+		<word key="gdpc_compliance_delete"><![CDATA[Delete]]></word>
+		<word key="gdpc_compliance_save"><![CDATA[Save Changes]]></word>
+		<word key="gdpc_compliance_create"><![CDATA[Create Rule]]></word>
+		<word key="gdpc_compliance_cancel"><![CDATA[Cancel]]></word>
+		<word key="gdpc_compliance_empty"><![CDATA[No state restrictions configured. Click "Add Rule" to create the first entry.]]></word>
+		<word key="gdpc_compliance_added"><![CDATA[State restriction added.]]></word>
+		<word key="gdpc_compliance_updated"><![CDATA[State restriction updated.]]></word>
+		<word key="gdpc_compliance_deleted"><![CDATA[State restriction deleted.]]></word>
+		<word key="gdpc_compliance_form_errors"><![CDATA[Please correct the following before saving:]]></word>
+		<word key="gdpc_compliance_err_state"><![CDATA[Select a valid two-letter state code.]]></word>
+		<word key="gdpc_compliance_err_type"><![CDATA[Restriction type is required and may only contain lowercase letters, digits, and underscores (40 characters max).]]></word>
+		<word key="gdpc_compliance_err_criteria"><![CDATA[Criteria must be a valid JSON object, e.g. {"magazine_capacity":[">",10]}.]]></word>
 
 		<word key="gdpc_front_product_title"><![CDATA[Product]]></word>
 		<word key="gdpc_front_browse_title"><![CDATA[Category]]></word>
