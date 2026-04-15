@@ -40,12 +40,23 @@ class _hub extends \IPS\Dispatcher\Controller
 		$verified      = $this->fetchVerifiedLatest( 10 );
 		$featured      = $this->fetchFeatured( (int) ( $settings->gdr_featured_review_id ?? 0 ) );
 
+		$totalReviews        = 0;
+		$totalProductsRated  = 0;
+		$totalVerified       = 0;
+		try { $totalReviews       = (int) \IPS\Db::i()->select( 'COUNT(*)',          'gd_reviews', [ 'status=?', 'approved' ] )->first(); } catch ( \Exception ) {}
+		try { $totalProductsRated = (int) \IPS\Db::i()->select( 'COUNT(DISTINCT upc)','gd_reviews', [ 'status=?', 'approved' ] )->first(); } catch ( \Exception ) {}
+		try { $totalVerified      = (int) \IPS\Db::i()->select( 'COUNT(*)',          'gd_reviews', [ 'status=? AND verified_purchase=?', 'approved', 1 ] )->first(); } catch ( \Exception ) {}
+
 		$data = [
-			'latest'         => $latest,
-			'top_rated'      => $topRated,
-			'most_reviewed'  => $mostReviewed,
-			'verified'       => $verified,
-			'featured'       => $featured,
+			'latest'              => $latest,
+			'top_rated'           => $topRated,
+			'most_reviewed'       => $mostReviewed,
+			'verified'            => $verified,
+			'featured'            => $featured,
+			'total_reviews'       => $totalReviews,
+			'total_products'      => $totalProductsRated,
+			'total_verified'      => $totalVerified,
+			'search_url'          => (string) \IPS\Http\Url::internal( 'app=gdreviews&module=reviews&controller=hub' ),
 		];
 
 		\IPS\Output::i()->title  = \IPS\Member::loggedIn()->language()->addToStack( 'gdr_front_hub_title' );

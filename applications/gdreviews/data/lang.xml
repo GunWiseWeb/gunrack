@@ -4,6 +4,7 @@
 		<word key="__app_gdreviews"><![CDATA[GD Reviews]]></word>
 		<word key="menutab__gdreviews"><![CDATA[GD Reviews]]></word>
 		<word key="menutab__gdreviews_icon"><![CDATA[star]]></word>
+		<word key="module__gdreviews_reviews"><![CDATA[Reviews]]></word>
 		<word key="menu__gdreviews_reviews"><![CDATA[Product Reviews]]></word>
 		<word key="menu__gdreviews_reviews_dashboard"><![CDATA[Dashboard]]></word>
 		<word key="menu__gdreviews_reviews_queue"><![CDATA[Moderation Queue]]></word>
@@ -84,7 +85,13 @@
 		<word key="gdr_front_hub_empty_latest"><![CDATA[No approved reviews yet — be the first to write one.]]></word>
 		<word key="gdr_front_hub_empty_top"><![CDATA[Not enough reviews to rank products yet.]]></word>
 		<word key="gdr_front_hub_empty_verified"><![CDATA[No verified-purchase reviews yet.]]></word>
+		<word key="gdr_front_hub_empty_most"><![CDATA[No reviews counted yet.]]></word>
 		<word key="gdr_front_hub_no_featured"><![CDATA[No featured review selected.]]></word>
+		<word key="gdr_front_hub_search_ph"><![CDATA[Search reviews by product, brand, or keyword…]]></word>
+		<word key="gdr_front_hub_search_btn"><![CDATA[Search]]></word>
+		<word key="gdr_front_hub_stat_reviews"><![CDATA[reviews]]></word>
+		<word key="gdr_front_hub_stat_products"><![CDATA[products rated]]></word>
+		<word key="gdr_front_hub_stat_verified"><![CDATA[verified purchases]]></word>
 		<word key="gdr_front_by"><![CDATA[by]]></word>
 		<word key="gdr_front_verified_badge"><![CDATA[VERIFIED PURCHASE]]></word>
 		<word key="gdr_front_stars"><![CDATA[stars]]></word>
