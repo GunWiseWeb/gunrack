@@ -162,6 +162,38 @@ These were learned by comparing against a working IPS v5 plugin. They apply to e
     - `data/lang.xml` — must define `r__{permission_key}` for every permission key (shown in the ACP permission editor).
 
     Audit command: `jq -r 'to_entries[].value | to_entries[].value | to_entries[].key' applications/*/data/acprestrictions.json | sort -u` lists every declared permission; every `checkAcpPermission(` string and every `"restriction"` value in `acpmenu.json` across the app must be present in that list.
+18. **Every plugin MUST ship `data/application.json` AND `data/versions.json`** — without both files, the IPS installer rejects the uploaded tar with a generic and misleading error: *"The application you uploaded cannot be installed because it is not a valid application, the archive is corrupt or the file and directory permissions in /applications do not allow it."* The error says nothing about missing metadata — it is the same message IPS emits for permission problems, bad tar layout, or truncated archives — so it is easy to chase the wrong cause. Working IPS core apps and every correctly-built third-party app ship both files; any new plugin that omits them will fail at upload time even when Application.php, schema.json, lang.xml, and the tar layout are all otherwise correct.
+
+    `data/application.json` — single JSON object describing the app:
+
+    ```json
+    {
+        "app_directory": "gdrebates",
+        "app_author": "GunRack",
+        "app_version": "1.0.0",
+        "app_long_version": 10000,
+        "app_protected": false,
+        "app_website": "https://gunrack.deals"
+    }
+    ```
+
+    - `app_directory` — must match the folder name under `applications/` exactly.
+    - `app_version` — human-readable semver (`"1.0.0"`).
+    - `app_long_version` — integer used for upgrade comparisons. Convention: `MMmmpp` (major=1, minor=00, patch=00 → `10000`; `1.0.1` → `10001`; `1.1.0` → `10100`; `2.0.0` → `20000`).
+    - `app_protected` — `false` for third-party apps; `true` blocks uninstall.
+    - `app_website` — shown on the ACP Applications list.
+
+    `data/versions.json` — maps every long-version integer to its semver label; IPS uses this to decide which `setup/upg_{long}/` upgrade steps to run:
+
+    ```json
+    {
+        "10000": "1.0.0"
+    }
+    ```
+
+    When bumping a plugin's version, add a new entry (e.g. `"10001": "1.0.1"`) AND update `app_version` + `app_long_version` in `application.json` to match. The two files must stay in sync.
+
+    Audit command: `for d in applications/*/; do [ -f "$d/data/application.json" ] && [ -f "$d/data/versions.json" ] || echo "MISSING: $d"; done` must print nothing.
 
 ## Full specification
 Read `GunRack_Spec_v2.9.16.md` for complete specs on all 12 plugins, database schemas, acceptance criteria, server setup (Appendix B), security requirements (Appendix C), and Phase 2 roadmap (Section 19).
