@@ -398,73 +398,132 @@ $templates[] = [
 	'name'     => 'hub',
 	'params'   => 'data',
 	'content'  => <<<'TEMPLATE_EOT'
-<div class="ipsBox">
-	<div class="ipsBox_body ipsPad" style="text-align:center">
-		<h1 style="margin:0">{lang="gdr_front_hub_title"}</h1>
-		<p class="ipsType_light">{lang="gdr_front_hub_intro"}</p>
-		<p class="ipsSpacer_top">
-			<strong>{$data['active_count']}</strong> {lang="gdr_front_hub_active_count"}
-			&nbsp;&middot;&nbsp;
-			<strong>&#36;{expression="number_format($data['total_savings'], 0)"}</strong> {lang="gdr_front_hub_savings"}
-		</p>
-		<p><a href="{$data['submit_url']}" class="ipsButton ipsButton--primary">{lang="gdr_front_hub_submit_cta"}</a></p>
+<div class="ipsBox ipsPull" style="background:linear-gradient(135deg,#065f46 0%,#047857 100%);color:#fff;padding:48px 32px;margin-bottom:24px;text-align:center;border-radius:4px">
+	<h1 class="ipsType_pageTitle" style="color:#fff;margin:0 0 8px 0;font-size:2.2em">{lang="gdr_front_hub_title"}</h1>
+	<p style="margin:0 0 24px 0;font-size:1.1em;opacity:0.92">{lang="gdr_front_hub_intro"}</p>
+
+	<div style="display:flex;gap:48px;justify-content:center;flex-wrap:wrap;margin-bottom:20px">
+		<div>
+			<div style="font-size:2.4em;font-weight:bold;line-height:1">{expression="number_format( $data['active_count'] )"}</div>
+			<div style="opacity:0.9;font-size:0.95em;margin-top:4px">{lang="gdr_front_hub_active_count"}</div>
+		</div>
+		<div>
+			<div style="font-size:2.4em;font-weight:bold;line-height:1">&#36;{expression="number_format( (float) $data['total_savings'], 0 )"}</div>
+			<div style="opacity:0.9;font-size:0.95em;margin-top:4px">{lang="gdr_front_hub_savings"}</div>
+		</div>
 	</div>
+
+	<p style="margin:0"><a href="{$data['submit_url']}" class="ipsButton ipsButton--primary">{lang="gdr_front_hub_submit_cta"}</a></p>
 </div>
-<br>
+
 {{if $data['featured']}}
-<div class="ipsBox">
-	<div class="ipsBox_title"><h2>{lang="gdr_front_hub_featured"}</h2></div>
-	<div class="ipsBox_body ipsPad">
-		<h3><a href="{$data['featured']['view_url']}">{$data['featured']['title']}</a></h3>
-		<p><strong>{$data['featured']['manufacturer']}</strong> &mdash; &#36;{expression="number_format((float) ($data['featured']['rebate_amount'] ?? 0), 2)"}</p>
-		<p class="ipsType_light">{$data['featured']['description']}</p>
+<div class="ipsBox ipsPull" style="padding:20px;margin-bottom:24px;border-left:4px solid #d97706;background:var(--i-color_highlighted, #fff8ec)">
+	<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;flex-wrap:wrap">
+		<span class="ipsBadge ipsBadge--warning">{lang="gdr_front_hub_featured"}</span>
+		<a href="{$data['featured']['view_url']}" style="font-size:1.15em;font-weight:bold;text-decoration:none">{$data['featured']['title']}</a>
+		<span style="margin-left:auto;font-size:1.4em;font-weight:bold;color:#047857">&#36;{expression="number_format( (float) ( $data['featured']['rebate_amount'] ?? 0 ), 2 )"}</span>
 	</div>
+	<p class="ipsType_light ipsType_small" style="margin:0 0 8px 0">
+		<strong>{$data['featured']['manufacturer']}</strong>
+		{{if $data['featured']['days_left'] > 0}} &middot; {$data['featured']['days_left']} {lang="gdr_front_hub_days_left"}{{endif}}
+	</p>
+	<p style="margin:0">{$data['featured']['description']}</p>
+	<p style="margin:12px 0 0 0"><a href="{$data['featured']['view_url']}" class="ipsButton ipsButton--primary ipsButton--small">{lang="gdr_front_hub_view_details"}</a></p>
 </div>
-<br>
 {{endif}}
-<div class="ipsBox">
-	<div class="ipsBox_title"><h2>{lang="gdr_front_hub_expiring"}</h2></div>
-	<div class="ipsBox_body ipsPad">
-		{{if count($data['expiring']) > 0}}
-			<ul class="ipsList_reset">
-			{{foreach $data['expiring'] as $r}}
-				<li><a href="{$r['view_url']}">{$r['title']}</a> &mdash; {$r['manufacturer']} &mdash; {$r['days_left']} days</li>
-			{{endforeach}}
-			</ul>
-		{{else}}
-			<p class="ipsType_light">{lang="gdr_front_hub_empty"}</p>
-		{{endif}}
-	</div>
-</div>
-<br>
-<div class="ipsBox">
-	<div class="ipsBox_title"><h2>{lang="gdr_front_hub_newest"}</h2></div>
-	<div class="ipsBox_body ipsPad">
-		{{if count($data['newest']) > 0}}
-			<ul class="ipsList_reset">
-			{{foreach $data['newest'] as $r}}
-				<li><a href="{$r['view_url']}">{$r['title']}</a> &mdash; {$r['manufacturer']} &mdash; &#36;{expression="number_format((float) ($r['rebate_amount'] ?? 0), 2)"}</li>
-			{{endforeach}}
-			</ul>
-		{{else}}
-			<p class="ipsType_light">{lang="gdr_front_hub_empty"}</p>
-		{{endif}}
-	</div>
-</div>
-<br>
-<div class="ipsBox">
-	<div class="ipsBox_title"><h2>{lang="gdr_front_hub_top_mfrs"}</h2></div>
-	<div class="ipsBox_body ipsPad">
-		{{if count($data['top_mfrs']) > 0}}
-			<ul class="ipsList_reset">
-			{{foreach $data['top_mfrs'] as $m}}
-				<li>{$m['manufacturer']} ({$m['count']})</li>
-			{{endforeach}}
-			</ul>
-		{{else}}
-			<p class="ipsType_light">{lang="gdr_front_hub_empty"}</p>
-		{{endif}}
-	</div>
+
+<div class="ipsGrid ipsGrid_collapsePhone" style="display:flex;gap:24px;flex-wrap:wrap;margin-bottom:24px">
+
+	<section class="ipsGrid_span8" style="flex:2 1 520px">
+		<div class="ipsBox ipsPull" style="padding:20px;margin-bottom:16px">
+			<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
+				<h2 class="ipsType_sectionHead" style="margin:0">{lang="gdr_front_hub_expiring"}</h2>
+				<span class="ipsBadge ipsBadge--negative">{lang="gdr_front_hub_ending"}</span>
+			</div>
+			{{if count( $data['expiring'] ) === 0}}
+				<div class="ipsEmptyMessage"><p>{lang="gdr_front_hub_empty"}</p></div>
+			{{else}}
+				<table class="ipsTable ipsTable_zebra" style="width:100%">
+					<thead>
+						<tr>
+							<th>{lang="gdr_front_hub_col_title"}</th>
+							<th style="width:140px">{lang="gdr_front_hub_col_mfr"}</th>
+							<th style="width:100px;text-align:right">{lang="gdr_front_hub_col_amount"}</th>
+							<th style="width:120px">{lang="gdr_front_hub_col_ends"}</th>
+						</tr>
+					</thead>
+					<tbody>
+					{{foreach $data['expiring'] as $r}}
+						<tr>
+							<td><a href="{$r['view_url']}"><strong>{$r['title']}</strong></a></td>
+							<td>{$r['manufacturer']}</td>
+							<td style="text-align:right;font-weight:bold;color:#047857">&#36;{expression="number_format( (float) ( $r['rebate_amount'] ?? 0 ), 2 )"}</td>
+							<td><span class="ipsBadge ipsBadge--warning">{$r['days_left']} {lang="gdr_front_hub_days_left"}</span></td>
+						</tr>
+					{{endforeach}}
+					</tbody>
+				</table>
+			{{endif}}
+		</div>
+
+		<div class="ipsBox ipsPull" style="padding:20px">
+			<h2 class="ipsType_sectionHead" style="margin:0 0 16px 0">{lang="gdr_front_hub_newest"}</h2>
+			{{if count( $data['newest'] ) === 0}}
+				<div class="ipsEmptyMessage"><p>{lang="gdr_front_hub_empty"}</p></div>
+			{{else}}
+				<table class="ipsTable ipsTable_zebra" style="width:100%">
+					<thead>
+						<tr>
+							<th>{lang="gdr_front_hub_col_title"}</th>
+							<th style="width:140px">{lang="gdr_front_hub_col_mfr"}</th>
+							<th style="width:100px;text-align:right">{lang="gdr_front_hub_col_amount"}</th>
+						</tr>
+					</thead>
+					<tbody>
+					{{foreach $data['newest'] as $r}}
+						<tr>
+							<td><a href="{$r['view_url']}"><strong>{$r['title']}</strong></a></td>
+							<td>{$r['manufacturer']}</td>
+							<td style="text-align:right;font-weight:bold;color:#047857">&#36;{expression="number_format( (float) ( $r['rebate_amount'] ?? 0 ), 2 )"}</td>
+						</tr>
+					{{endforeach}}
+					</tbody>
+				</table>
+			{{endif}}
+		</div>
+	</section>
+
+	<aside class="ipsGrid_span4" style="flex:1 1 260px">
+		<div class="ipsBox ipsPull" style="padding:16px;margin-bottom:16px">
+			<h3 class="ipsType_sectionHead" style="margin:0 0 12px 0;font-size:1.05em">{lang="gdr_front_hub_by_type"}</h3>
+			{{if count( $data['by_type_counts'] ) === 0}}
+				<p class="ipsType_light ipsType_small">{lang="gdr_front_hub_empty"}</p>
+			{{else}}
+				<ul class="ipsList_reset" style="margin:0">
+				{{foreach $data['by_type_counts'] as $type => $count}}
+					<li style="padding:6px 0;border-bottom:1px solid var(--i-border-color, #e0e0e0);display:flex;justify-content:space-between">
+						<span>{$type}</span>
+						<span class="ipsType_light ipsType_small">{expression="number_format( $count )"}</span>
+					</li>
+				{{endforeach}}
+				</ul>
+			{{endif}}
+		</div>
+
+		<div class="ipsBox ipsPull" style="padding:16px">
+			<h3 class="ipsType_sectionHead" style="margin:0 0 12px 0;font-size:1.05em">{lang="gdr_front_hub_top_mfrs"}</h3>
+			{{if count( $data['top_mfrs'] ) === 0}}
+				<p class="ipsType_light ipsType_small">{lang="gdr_front_hub_empty"}</p>
+			{{else}}
+				<ol style="padding-left:20px;margin:0">
+				{{foreach $data['top_mfrs'] as $m}}
+					<li style="margin-bottom:6px"><strong>{$m['manufacturer']}</strong><br/><span class="ipsType_light ipsType_small">{expression="number_format( $m['count'] )"} {lang="gdr_front_hub_active_count"}</span></li>
+				{{endforeach}}
+				</ol>
+			{{endif}}
+		</div>
+	</aside>
+
 </div>
 TEMPLATE_EOT
 ];

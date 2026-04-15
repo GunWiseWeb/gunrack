@@ -148,6 +148,13 @@
 		<word key="gdr_front_hub_top_mfrs"><![CDATA[Top Manufacturers]]></word>
 		<word key="gdr_front_hub_empty"><![CDATA[No rebates match this view right now.]]></word>
 		<word key="gdr_front_hub_submit_cta"><![CDATA[Submit a rebate]]></word>
+		<word key="gdr_front_hub_days_left"><![CDATA[days left]]></word>
+		<word key="gdr_front_hub_view_details"><![CDATA[View details]]></word>
+		<word key="gdr_front_hub_ending"><![CDATA[Ending this week]]></word>
+		<word key="gdr_front_hub_col_title"><![CDATA[Rebate]]></word>
+		<word key="gdr_front_hub_col_mfr"><![CDATA[Manufacturer]]></word>
+		<word key="gdr_front_hub_col_amount"><![CDATA[Amount]]></word>
+		<word key="gdr_front_hub_col_ends"><![CDATA[Ends]]></word>
 		<word key="gdr_front_type_firearm"><![CDATA[Firearm Rebates]]></word>
 		<word key="gdr_front_type_ammo"><![CDATA[Ammo Rebates]]></word>
 		<word key="gdr_front_type_optic"><![CDATA[Optic Rebates]]></word>
