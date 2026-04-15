@@ -31,25 +31,32 @@ $defaultConflictFields = json_encode([
 	'description'       => false,
 ]);
 
+/* Wipe any existing distributor rows so reinstalls don't duplicate the seed */
+try { \IPS\Db::i()->delete( 'gd_distributor_feeds' ); } catch ( \Exception ) {}
+
 foreach ( $distributors as $dist )
 {
-	\IPS\Db::i()->insert( 'gd_distributor_feeds', [
-		'feed_name'                => $dist['feed_name'],
-		'distributor'              => $dist['distributor'],
-		'priority'                 => $dist['priority'],
-		'feed_url'                 => '',
-		'feed_format'              => 'xml',
-		'auth_type'                => 'none',
-		'auth_credentials'         => NULL,
-		'field_mapping'            => NULL,
-		'category_mapping'         => NULL,
-		'import_schedule'          => '6hr',
-		'conflict_detection_fields'=> $defaultConflictFields,
-		'active'                   => 0,
-		'last_run'                 => NULL,
-		'last_record_count'        => 0,
-		'last_run_status'          => NULL,
-	]);
+	try
+	{
+		\IPS\Db::i()->insert( 'gd_distributor_feeds', [
+			'feed_name'                => $dist['feed_name'],
+			'distributor'              => $dist['distributor'],
+			'priority'                 => $dist['priority'],
+			'feed_url'                 => '',
+			'feed_format'              => 'xml',
+			'auth_type'                => 'none',
+			'auth_credentials'         => NULL,
+			'field_mapping'            => NULL,
+			'category_mapping'         => NULL,
+			'import_schedule'          => '6hr',
+			'conflict_detection_fields'=> $defaultConflictFields,
+			'active'                   => 0,
+			'last_run'                 => NULL,
+			'last_record_count'        => 0,
+			'last_run_status'          => NULL,
+		]);
+	}
+	catch ( \Exception ) {}
 }
 
 /* Seed category taxonomy (Section 2.4) */
@@ -69,19 +76,37 @@ $categories = [
 	'Hunting Gear'           => ['Game Calls', 'Scent Control', 'Blinds', 'Feeders', 'Trail Cameras'],
 ];
 
+/* Wipe existing categories so reinstalls don't hit idx_slug duplicate errors */
+try { \IPS\Db::i()->delete( 'gd_categories' ); } catch ( \Exception ) {}
+
 $position = 0;
 foreach ( $categories as $parentName => $children )
 {
 	$slug = mb_strtolower( preg_replace( '/[^a-z0-9]+/i', '-', $parentName ) );
 	$slug = trim( $slug, '-' );
 
-	$parentId = \IPS\Db::i()->insert( 'gd_categories', [
-		'parent_id'     => 0,
-		'name'          => $parentName,
-		'slug'          => $slug,
-		'position'      => $position++,
-		'product_count' => 0,
-	]);
+	try
+	{
+		$parentId = \IPS\Db::i()->insert( 'gd_categories', [
+			'parent_id'     => 0,
+			'name'          => $parentName,
+			'slug'          => $slug,
+			'position'      => $position++,
+			'product_count' => 0,
+		]);
+	}
+	catch ( \Exception )
+	{
+		/* Already exists — fetch the existing id so children still attach correctly */
+		try
+		{
+			$parentId = (int) \IPS\Db::i()->select( 'id', 'gd_categories', [ 'slug=?', $slug ] )->first();
+		}
+		catch ( \Exception )
+		{
+			$parentId = 0;
+		}
+	}
 
 	$childPos = 0;
 	foreach ( $children as $childName )
@@ -89,13 +114,17 @@ foreach ( $categories as $parentName => $children )
 		$childSlug = $slug . '-' . mb_strtolower( preg_replace( '/[^a-z0-9]+/i', '-', $childName ) );
 		$childSlug = trim( $childSlug, '-' );
 
-		\IPS\Db::i()->insert( 'gd_categories', [
-			'parent_id'     => $parentId,
-			'name'          => $childName,
-			'slug'          => $childSlug,
-			'position'      => $childPos++,
-			'product_count' => 0,
-		]);
+		try
+		{
+			\IPS\Db::i()->insert( 'gd_categories', [
+				'parent_id'     => $parentId,
+				'name'          => $childName,
+				'slug'          => $childSlug,
+				'position'      => $childPos++,
+				'product_count' => 0,
+			]);
+		}
+		catch ( \Exception ) {}
 	}
 }
 
@@ -628,13 +657,28 @@ TEMPLATE_EOT,
 
 foreach ( $gdcatalogTemplates as $tpl )
 {
-	\IPS\Db::i()->insert( 'core_theme_templates', [
-		'template_set_id'   => 1,
-		'template_app'      => 'gdcatalog',
-		'template_location' => 'admin',
-		'template_group'    => 'catalog',
-		'template_name'     => $tpl['template_name'],
-		'template_data'     => $tpl['template_data'],
-		'template_content'  => $tpl['template_content'],
-	]);
+	/* Remove any prior row for this (set, app, location, group, name) tuple so
+	 * reinstalls reliably refresh the template content. */
+	try
+	{
+		\IPS\Db::i()->delete( 'core_theme_templates', [
+			'template_set_id=? AND template_app=? AND template_location=? AND template_group=? AND template_name=?',
+			1, 'gdcatalog', 'admin', 'catalog', $tpl['template_name'],
+		]);
+	}
+	catch ( \Exception ) {}
+
+	try
+	{
+		\IPS\Db::i()->insert( 'core_theme_templates', [
+			'template_set_id'   => 1,
+			'template_app'      => 'gdcatalog',
+			'template_location' => 'admin',
+			'template_group'    => 'catalog',
+			'template_name'     => $tpl['template_name'],
+			'template_data'     => $tpl['template_data'],
+			'template_content'  => $tpl['template_content'],
+		]);
+	}
+	catch ( \Exception ) {}
 }
