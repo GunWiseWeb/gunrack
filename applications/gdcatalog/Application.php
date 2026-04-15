@@ -13,7 +13,7 @@ class _Application extends \IPS\Application
 	/**
 	 * ACP menu icon (Font Awesome name, no `fa-` prefix)
 	 */
-	protected function get__icon()
+	protected function get__icon(): string
 	{
 		return 'database';
 	}
