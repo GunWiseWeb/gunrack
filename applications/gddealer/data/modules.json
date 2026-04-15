@@ -1,0 +1,8 @@
+{
+	"admin": {
+		"dealers": {
+			"default_controller": "dashboard",
+			"protected": false
+		}
+	}
+}

@@ -1,0 +1,34 @@
+{
+	"dealers": {
+		"dashboard": {
+			"tab": "gddealer",
+			"controller": "dashboard",
+			"do": "",
+			"restriction": "dealer_manage"
+		},
+		"dealers": {
+			"tab": "gddealer",
+			"controller": "dealers",
+			"do": "",
+			"restriction": "dealer_manage"
+		},
+		"mrr": {
+			"tab": "gddealer",
+			"controller": "mrr",
+			"do": "",
+			"restriction": "dealer_manage"
+		},
+		"unmatched": {
+			"tab": "gddealer",
+			"controller": "unmatched",
+			"do": "",
+			"restriction": "dealer_manage"
+		},
+		"settings": {
+			"tab": "gddealer",
+			"controller": "settings",
+			"do": "",
+			"restriction": "dealer_manage"
+		}
+	}
+}
