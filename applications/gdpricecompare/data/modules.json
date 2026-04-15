@@ -1,0 +1,26 @@
+{
+	"admin": {
+		"pricecompare": {
+			"default_controller": "dashboard",
+			"protected": false
+		}
+	},
+	"front": {
+		"products": {
+			"default_controller": "products",
+			"protected": false
+		},
+		"account": {
+			"default_controller": "watchlist",
+			"protected": false
+		},
+		"ffl": {
+			"default_controller": "locator",
+			"protected": false
+		},
+		"go": {
+			"default_controller": "click",
+			"protected": false
+		}
+	}
+}

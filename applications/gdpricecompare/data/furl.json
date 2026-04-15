@@ -1,0 +1,25 @@
+{
+	"topLevel": "",
+	"pages": {
+		"products_browse": {
+			"friendly": "products/{#category}",
+			"real": "app=gdpricecompare&module=products&controller=products&do=browse&category={#category}"
+		},
+		"products_view": {
+			"friendly": "products/{#category}/{#slug}",
+			"real": "app=gdpricecompare&module=products&controller=products&do=view&category={#category}&slug={#slug}"
+		},
+		"account_watchlist": {
+			"friendly": "account/watchlist",
+			"real": "app=gdpricecompare&module=account&controller=watchlist"
+		},
+		"ffl_locator": {
+			"friendly": "ffl",
+			"real": "app=gdpricecompare&module=ffl&controller=locator"
+		},
+		"go_click": {
+			"friendly": "go/{#id}",
+			"real": "app=gdpricecompare&module=go&controller=click&id={#id}"
+		}
+	}
+}

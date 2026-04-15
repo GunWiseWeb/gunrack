@@ -1,0 +1,131 @@
+{
+	"gd_watchlist": {
+		"name": "gd_watchlist",
+		"columns": {
+			"id": { "name": "id", "type": "INT", "length": 10, "unsigned": true, "allow_null": false, "auto_increment": true, "comment": "Primary key" },
+			"member_id": { "name": "member_id", "type": "INT", "length": 10, "unsigned": true, "allow_null": false, "comment": "IPS member id" },
+			"upc": { "name": "upc", "type": "VARCHAR", "length": 20, "allow_null": false, "comment": "Product UPC" },
+			"target_price": { "name": "target_price", "type": "DECIMAL", "length": "10,2", "allow_null": true, "comment": "Optional price threshold" },
+			"notify_in_stock": { "name": "notify_in_stock", "type": "TINYINT", "length": 1, "unsigned": true, "allow_null": false, "default": 0, "comment": "1 if notify on back-in-stock" },
+			"created_at": { "name": "created_at", "type": "DATETIME", "allow_null": false, "comment": "Created" },
+			"last_alerted": { "name": "last_alerted", "type": "DATETIME", "allow_null": true, "comment": "Last alert dispatch time" }
+		},
+		"indexes": {
+			"PRIMARY": { "type": "primary", "name": "PRIMARY", "length": [null], "columns": ["id"] },
+			"uq_member_upc": { "type": "unique", "name": "uq_member_upc", "length": [null, null], "columns": ["member_id", "upc"] },
+			"idx_upc": { "type": "key", "name": "idx_upc", "length": [null], "columns": ["upc"] },
+			"idx_member": { "type": "key", "name": "idx_member", "length": [null], "columns": ["member_id"] }
+		}
+	},
+	"gd_click_log": {
+		"name": "gd_click_log",
+		"columns": {
+			"id": { "name": "id", "type": "BIGINT", "length": 20, "unsigned": true, "allow_null": false, "auto_increment": true, "comment": "Primary key" },
+			"listing_id": { "name": "listing_id", "type": "INT", "length": 10, "unsigned": true, "allow_null": false, "comment": "gd_dealer_listings.id" },
+			"upc": { "name": "upc", "type": "VARCHAR", "length": 20, "allow_null": false, "comment": "Product UPC" },
+			"dealer_id": { "name": "dealer_id", "type": "INT", "length": 10, "unsigned": true, "allow_null": false, "comment": "Dealer id" },
+			"member_id": { "name": "member_id", "type": "INT", "length": 10, "unsigned": true, "allow_null": true, "comment": "Logged-in member or null for guest" },
+			"user_state": { "name": "user_state", "type": "VARCHAR", "length": 2, "allow_null": true, "comment": "Two-letter US state" },
+			"clicked_at": { "name": "clicked_at", "type": "DATETIME", "allow_null": false, "comment": "Click timestamp" }
+		},
+		"indexes": {
+			"PRIMARY": { "type": "primary", "name": "PRIMARY", "length": [null], "columns": ["id"] },
+			"idx_listing": { "type": "key", "name": "idx_listing", "length": [null], "columns": ["listing_id"] },
+			"idx_dealer": { "type": "key", "name": "idx_dealer", "length": [null], "columns": ["dealer_id"] },
+			"idx_clicked": { "type": "key", "name": "idx_clicked", "length": [null], "columns": ["clicked_at"] }
+		}
+	},
+	"gd_click_daily": {
+		"name": "gd_click_daily",
+		"columns": {
+			"id": { "name": "id", "type": "INT", "length": 10, "unsigned": true, "allow_null": false, "auto_increment": true, "comment": "Primary key" },
+			"listing_id": { "name": "listing_id", "type": "INT", "length": 10, "unsigned": true, "allow_null": false, "comment": "gd_dealer_listings.id" },
+			"dealer_id": { "name": "dealer_id", "type": "INT", "length": 10, "unsigned": true, "allow_null": false, "comment": "Dealer id" },
+			"click_date": { "name": "click_date", "type": "DATE", "allow_null": false, "comment": "Date of aggregation" },
+			"click_count": { "name": "click_count", "type": "INT", "length": 10, "unsigned": true, "allow_null": false, "default": 0, "comment": "Total clicks that day" }
+		},
+		"indexes": {
+			"PRIMARY": { "type": "primary", "name": "PRIMARY", "length": [null], "columns": ["id"] },
+			"uq_listing_date": { "type": "unique", "name": "uq_listing_date", "length": [null, null], "columns": ["listing_id", "click_date"] },
+			"idx_dealer_date": { "type": "key", "name": "idx_dealer_date", "length": [null, null], "columns": ["dealer_id", "click_date"] }
+		}
+	},
+	"gd_ffl_dealers": {
+		"name": "gd_ffl_dealers",
+		"columns": {
+			"id": { "name": "id", "type": "INT", "length": 10, "unsigned": true, "allow_null": false, "auto_increment": true, "comment": "Primary key" },
+			"lic_regn": { "name": "lic_regn", "type": "VARCHAR", "length": 5, "allow_null": true, "comment": "ATF region" },
+			"lic_dist": { "name": "lic_dist", "type": "VARCHAR", "length": 5, "allow_null": true, "comment": "ATF district" },
+			"lic_cnty": { "name": "lic_cnty", "type": "VARCHAR", "length": 10, "allow_null": true, "comment": "ATF county" },
+			"lic_type": { "name": "lic_type", "type": "VARCHAR", "length": 5, "allow_null": true, "comment": "License type (01, 07, etc.)" },
+			"lic_xprdte": { "name": "lic_xprdte", "type": "VARCHAR", "length": 10, "allow_null": true, "comment": "Expiration date" },
+			"lic_seqn": { "name": "lic_seqn", "type": "VARCHAR", "length": 32, "allow_null": true, "comment": "Sequence or full license number (manual entries)" },
+			"licensee_name": { "name": "licensee_name", "type": "VARCHAR", "length": 200, "allow_null": true, "comment": "Licensee legal name" },
+			"business_name": { "name": "business_name", "type": "VARCHAR", "length": 200, "allow_null": true, "comment": "Business trade name" },
+			"premise_street": { "name": "premise_street", "type": "VARCHAR", "length": 200, "allow_null": true, "comment": "Street" },
+			"premise_city": { "name": "premise_city", "type": "VARCHAR", "length": 100, "allow_null": true, "comment": "City" },
+			"premise_state": { "name": "premise_state", "type": "VARCHAR", "length": 2, "allow_null": true, "comment": "State code" },
+			"premise_zip": { "name": "premise_zip", "type": "VARCHAR", "length": 10, "allow_null": true, "comment": "ZIP" },
+			"voice_phone": { "name": "voice_phone", "type": "VARCHAR", "length": 20, "allow_null": true, "comment": "Phone" },
+			"lat": { "name": "lat", "type": "DECIMAL", "length": "10,7", "allow_null": true, "comment": "Latitude" },
+			"lng": { "name": "lng", "type": "DECIMAL", "length": "10,7", "allow_null": true, "comment": "Longitude" },
+			"active": { "name": "active", "type": "TINYINT", "length": 1, "unsigned": true, "allow_null": false, "default": 1, "comment": "1 = displayed in locator, 0 = hidden" },
+			"last_updated": { "name": "last_updated", "type": "DATETIME", "allow_null": true, "comment": "Last updated from ATF feed or manual edit" }
+		},
+		"indexes": {
+			"PRIMARY": { "type": "primary", "name": "PRIMARY", "length": [null], "columns": ["id"] },
+			"idx_zip": { "type": "key", "name": "idx_zip", "length": [null], "columns": ["premise_zip"] },
+			"idx_state": { "type": "key", "name": "idx_state", "length": [null], "columns": ["premise_state"] }
+		}
+	},
+	"gd_dealer_ratings": {
+		"name": "gd_dealer_ratings",
+		"columns": {
+			"id": { "name": "id", "type": "INT", "length": 10, "unsigned": true, "allow_null": false, "auto_increment": true, "comment": "Primary key" },
+			"dealer_id": { "name": "dealer_id", "type": "INT", "length": 10, "unsigned": true, "allow_null": false, "comment": "Dealer id" },
+			"member_id": { "name": "member_id", "type": "INT", "length": 10, "unsigned": true, "allow_null": false, "comment": "Reviewer" },
+			"rating_pricing": { "name": "rating_pricing", "type": "TINYINT", "length": 1, "unsigned": true, "allow_null": false, "comment": "1-5 stars — pricing accuracy" },
+			"rating_shipping": { "name": "rating_shipping", "type": "TINYINT", "length": 1, "unsigned": true, "allow_null": false, "comment": "1-5 stars — shipping speed" },
+			"rating_service": { "name": "rating_service", "type": "TINYINT", "length": 1, "unsigned": true, "allow_null": false, "comment": "1-5 stars — customer service" },
+			"review_text": { "name": "review_text", "type": "TEXT", "allow_null": true, "comment": "Optional written review" },
+			"status": { "name": "status", "type": "VARCHAR", "length": 20, "allow_null": false, "default": "pending", "comment": "pending|approved|rejected" },
+			"created_at": { "name": "created_at", "type": "DATETIME", "allow_null": false, "comment": "Submitted at" },
+			"updated_at": { "name": "updated_at", "type": "DATETIME", "allow_null": true, "comment": "Last edited" }
+		},
+		"indexes": {
+			"PRIMARY": { "type": "primary", "name": "PRIMARY", "length": [null], "columns": ["id"] },
+			"uq_dealer_member": { "type": "unique", "name": "uq_dealer_member", "length": [null, null], "columns": ["dealer_id", "member_id"] },
+			"idx_dealer_status": { "type": "key", "name": "idx_dealer_status", "length": [null, null], "columns": ["dealer_id", "status"] }
+		}
+	},
+	"gd_state_restrictions": {
+		"name": "gd_state_restrictions",
+		"columns": {
+			"id": { "name": "id", "type": "INT", "length": 10, "unsigned": true, "allow_null": false, "auto_increment": true, "comment": "Primary key" },
+			"state_code": { "name": "state_code", "type": "VARCHAR", "length": 2, "allow_null": false, "comment": "Two-letter state code" },
+			"restriction_type": { "name": "restriction_type", "type": "VARCHAR", "length": 50, "allow_null": false, "comment": "magazine_capacity|assault_weapon|nfa|etc." },
+			"criteria_json": { "name": "criteria_json", "type": "TEXT", "allow_null": true, "comment": "JSON criteria — fields and values that trigger this restriction" },
+			"notes": { "name": "notes", "type": "TEXT", "allow_null": true, "comment": "Admin notes on restriction" },
+			"active": { "name": "active", "type": "TINYINT", "length": 1, "unsigned": true, "allow_null": false, "default": 1, "comment": "1 if active" }
+		},
+		"indexes": {
+			"PRIMARY": { "type": "primary", "name": "PRIMARY", "length": [null], "columns": ["id"] },
+			"idx_state_type": { "type": "key", "name": "idx_state_type", "length": [null, null], "columns": ["state_code", "restriction_type"] }
+		}
+	},
+	"gd_search_log": {
+		"name": "gd_search_log",
+		"columns": {
+			"id": { "name": "id", "type": "BIGINT", "length": 20, "unsigned": true, "allow_null": false, "auto_increment": true, "comment": "Primary key" },
+			"query_text": { "name": "query_text", "type": "VARCHAR", "length": 255, "allow_null": false, "comment": "Query as submitted" },
+			"result_count": { "name": "result_count", "type": "INT", "length": 10, "unsigned": true, "allow_null": false, "default": 0, "comment": "Results returned" },
+			"member_id": { "name": "member_id", "type": "INT", "length": 10, "unsigned": true, "allow_null": true, "comment": "Logged-in member or null" },
+			"searched_at": { "name": "searched_at", "type": "DATETIME", "allow_null": false, "comment": "When searched" }
+		},
+		"indexes": {
+			"PRIMARY": { "type": "primary", "name": "PRIMARY", "length": [null], "columns": ["id"] },
+			"idx_query": { "type": "key", "name": "idx_query", "length": [null], "columns": ["query_text"] },
+			"idx_searched": { "type": "key", "name": "idx_searched", "length": [null], "columns": ["searched_at"] }
+		}
+	}
+}

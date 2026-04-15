@@ -1,0 +1,12 @@
+[
+	{ "key": "gdpc_default_sort", "default": "total_price_asc", "type": "text" },
+	{ "key": "gdpc_free_ship_threshold", "default": "0", "type": "text" },
+	{ "key": "gdpc_cpr_include_shipping_default", "default": "0", "type": "yn" },
+	{ "key": "gdpc_ffl_radius_default", "default": "25", "type": "text" },
+	{ "key": "gdpc_price_history_days_basic", "default": "30", "type": "text" },
+	{ "key": "gdpc_price_history_days_pro", "default": "90", "type": "text" },
+	{ "key": "gdpc_price_history_days_enterprise", "default": "365", "type": "text" },
+	{ "key": "gdpc_google_maps_api_key", "default": "", "type": "text" },
+	{ "key": "gdpc_alert_dedupe_hours", "default": "24", "type": "text" },
+	{ "key": "gdpc_report_priority_threshold", "default": "3", "type": "text" }
+]

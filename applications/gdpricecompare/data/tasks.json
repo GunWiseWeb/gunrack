@@ -1,0 +1,5 @@
+{
+	"aggregateClicks": "PT24H",
+	"dispatchWatchlistAlerts": "PT15M",
+	"refreshFflData": "P30D"
+}

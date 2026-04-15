@@ -106,6 +106,62 @@ These were learned by comparing against a working IPS v5 plugin. They apply to e
     9. If you reach for any syntax not in this list, stop and push the logic back into the controller instead.
 13. **Never use anonymous functions, closures, or `array_filter`/`array_map`/`array_walk`/`usort` with callables inside `{expression="..."}` template tags** — the IPS template compiler cannot tokenize PHP closures (`function( $f ) { ... }` or `fn( $f ) => ...`) inside expression tag arguments and throws `UnexpectedValueException` or silently emits broken PHP. Safe expressions are flat calls only: `number_format($x)`, `htmlspecialchars($x)`, `count($array)`, `strtoupper($x)`, `$x ? 'a' : 'b'`. Anything requiring a callback — counting filtered items, transforming a list, sorting — must be computed in the controller and passed as a pre-built scalar (e.g. `$activeFeedCount`, `$configuredUrlCount`) that the template prints directly via `{$activeFeedCount}`.
 14. **ACP sidebar tab icons are set via a language key in `lang.xml`, NOT via `get__icon()`** — in IPS v5 the left-sidebar tab glyph is driven by the language string `menutab__{app_directory}_icon`; `Application::get__icon()` does not control it. The value is a FontAwesome icon name with no `fa-` prefix (e.g. `database`, `shield`, `tag`, `users`, `chart-bar`). Example for gdcatalog: `<word key="menutab__gdcatalog_icon"><![CDATA[database]]></word>`. Every future plugin must include this key in `lang.xml` or the tab will render with no icon. `get__icon()` must still exist on the Application class with the `: string` return type (see Rule #11) — other parts of IPS read it — but it does not determine the ACP sidebar icon.
+15. **`data/tasks.json` uses ISO 8601 duration strings only — never cron syntax** — IPS v5's task scheduler parses task intervals as ISO 8601 durations (`PT15M`, `PT1H`, `PT24H`, `P7D`, `P30D`). A cron-style value like `"0 2 * * *"` or `"*/15 * * * *"` will not register — the task is silently dropped at install time and never fires. The keys of `tasks.json` are the task identifiers (matching the class name in `tasks/{name}.php`); the values are the interval strings. Reference values:
+    - `PT5M` — every 5 minutes
+    - `PT15M` — every 15 minutes
+    - `PT1H` — hourly
+    - `PT6H` — every 6 hours
+    - `PT24H` — daily (use `PT24H`, not `P1D`, for consistency with IPS core)
+    - `P7D` — weekly
+    - `P30D` — monthly
+    Example for a daily click aggregation plus a 15-minute alert dispatcher plus a monthly FFL refresh:
+
+    ```json
+    {
+        "aggregateClicks": "PT24H",
+        "dispatchWatchlistAlerts": "PT15M",
+        "refreshFflData": "P30D"
+    }
+    ```
+
+    IPS does not support cron expressions at any level of the task configuration — not in `tasks.json`, not in the ACP task editor. Scheduling specific times-of-day (e.g. "run at 2am daily") is not expressible in this format; either accept the first-run time as the daily anchor or compute time-of-day logic inside the task's `execute()` method and skip runs that fall outside the window.
+16. **Every ACP controller must declare `public static bool $csrfProtected = TRUE;`** — IPS v5 requires this static property on `\IPS\Dispatcher\Controller` subclasses that run in the admin dispatcher. Omitting it causes `CSRF check failed` errors on every ACP page load (not just state-changing actions) because the dispatcher's pre-execute hook refuses to dispatch controllers that haven't opted into CSRF handling. The property declaration is the opt-in; it does NOT skip CSRF checks. Declared CSRF token verification still happens inside action methods via `\IPS\Session::i()->csrfCheck()` for POST bodies and via `->csrf()` on link URLs for GET actions. Place the property immediately after the `class _controllerName extends \IPS\Dispatcher\Controller {` line:
+
+    ```php
+    class _dashboard extends \IPS\Dispatcher\Controller
+    {
+        public static bool $csrfProtected = TRUE;
+
+        public function execute(): void { ... }
+    }
+    ```
+
+    This applies to every admin controller in every plugin — `gdcatalog`, `gddealer`, `gdpricecompare`, and the nine still-to-be-built plugins. Front-end controllers (`location=front`) do not need it because the front dispatcher handles CSRF differently. Audit command: `grep -L 'csrfProtected' applications/*/modules/admin/**/*.php` must return empty.
+17. **Every plugin must ship `data/acprestrictions.json` declaring every ACP permission key referenced elsewhere** — IPS v5 resolves the `restriction` value from `data/acpmenu.json` and the argument to `\IPS\Dispatcher::i()->checkAcpPermission()` against the app's registered restrictions. If the key is not declared in `acprestrictions.json`, the dispatcher rejects the request with a generic "CSRF check failed" error on every ACP page load — even though the real problem is unknown-permission, not CSRF. The file must exist even when using a single unified permission across all admin controllers.
+
+    Format — `{ module: { controller: { permission_key: permission_lang_key } } }`:
+
+    ```json
+    {
+        "pricecompare": {
+            "dashboard":   { "pricecompare_manage": "pricecompare_manage" },
+            "settings":    { "pricecompare_manage": "pricecompare_manage" },
+            "searchlog":   { "pricecompare_manage": "pricecompare_manage" },
+            "ffldata":     { "pricecompare_manage": "pricecompare_manage" },
+            "compliance":  { "pricecompare_manage": "pricecompare_manage" }
+        }
+    }
+    ```
+
+    The outer keys are module directory names (matching `modules/admin/{module}/`). Each inner key is a controller file name (without `.php`). Each innermost entry maps a permission key (used in `checkAcpPermission()` and the `restriction` value in `acpmenu.json`) to a language string key (which the ACP permission-editor shows as the human-readable label — typically `r__{permission_key}` in `lang.xml`).
+
+    Consistency requirements across three files:
+    - `data/acprestrictions.json` — declares the permission keys.
+    - `data/acpmenu.json` — every entry's `"restriction"` value must appear as a permission key in `acprestrictions.json`.
+    - Every admin controller's `checkAcpPermission( '...' )` argument must appear as a permission key in `acprestrictions.json`.
+    - `data/lang.xml` — must define `r__{permission_key}` for every permission key (shown in the ACP permission editor).
+
+    Audit command: `jq -r 'to_entries[].value | to_entries[].value | to_entries[].key' applications/*/data/acprestrictions.json | sort -u` lists every declared permission; every `checkAcpPermission(` string and every `"restriction"` value in `acpmenu.json` across the app must be present in that list.
 
 ## Full specification
 Read `GunRack_Spec_v2.9.16.md` for complete specs on all 12 plugins, database schemas, acceptance criteria, server setup (Appendix B), security requirements (Appendix C), and Phase 2 roadmap (Section 19).

@@ -1,0 +1,34 @@
+{
+	"pricecompare": {
+		"dashboard": {
+			"tab": "gdpricecompare",
+			"controller": "dashboard",
+			"do": "manage",
+			"restriction": "pricecompare_manage"
+		},
+		"settings": {
+			"tab": "gdpricecompare",
+			"controller": "settings",
+			"do": "manage",
+			"restriction": "pricecompare_manage"
+		},
+		"ffldata": {
+			"tab": "gdpricecompare",
+			"controller": "ffldata",
+			"do": "manage",
+			"restriction": "pricecompare_manage"
+		},
+		"searchlog": {
+			"tab": "gdpricecompare",
+			"controller": "searchlog",
+			"do": "manage",
+			"restriction": "pricecompare_manage"
+		},
+		"compliance": {
+			"tab": "gdpricecompare",
+			"controller": "compliance",
+			"do": "manage",
+			"restriction": "pricecompare_manage"
+		}
+	}
+}

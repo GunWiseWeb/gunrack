@@ -1,0 +1,19 @@
+{
+	"pricecompare": {
+		"dashboard": {
+			"pricecompare_manage": "pricecompare_manage"
+		},
+		"settings": {
+			"pricecompare_manage": "pricecompare_manage"
+		},
+		"searchlog": {
+			"pricecompare_manage": "pricecompare_manage"
+		},
+		"ffldata": {
+			"pricecompare_manage": "pricecompare_manage"
+		},
+		"compliance": {
+			"pricecompare_manage": "pricecompare_manage"
+		}
+	}
+}
