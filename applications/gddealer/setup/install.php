@@ -1724,3 +1724,33 @@ foreach ( $gddealerTemplates as $tpl )
 		'template_content'  => $tpl['template_content'],
 	]);
 }
+
+/* Backfill missing dealer slugs. Existing rows from earlier installs may have
+   dealer_slug IS NULL; generate a URL-safe slug from dealer_name using the
+   same algorithm as manualOnboard() in modules/admin/dealers/dealers.php.
+   Uniqueness is enforced by the uq_dealer_slug index — append -1, -2, ...
+   until a free slug is found. */
+try
+{
+	foreach ( \IPS\Db::i()->select( 'dealer_id, dealer_name', 'gd_dealer_feed_config',
+		[ 'dealer_slug IS NULL' ] ) as $row )
+	{
+		$slug = strtolower( preg_replace( '/[^a-z0-9]+/', '-', strtolower( (string) $row['dealer_name'] ) ) );
+		$slug = trim( $slug, '-' );
+		if ( $slug === '' )
+		{
+			$slug = 'dealer-' . (int) $row['dealer_id'];
+		}
+		$base = $slug;
+		$i    = 1;
+		while ( (int) \IPS\Db::i()->select( 'COUNT(*)', 'gd_dealer_feed_config',
+			[ 'dealer_slug=?', $slug ] )->first() > 0 )
+		{
+			$slug = $base . '-' . $i++;
+		}
+		\IPS\Db::i()->update( 'gd_dealer_feed_config',
+			[ 'dealer_slug' => $slug ],
+			[ 'dealer_id=?', (int) $row['dealer_id'] ] );
+	}
+}
+catch ( \Exception ) {}
