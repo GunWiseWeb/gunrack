@@ -25,34 +25,34 @@ $gddealerTemplates = [
 <div class="ipsBox ipsPull">
 	<div class="ipsBox_body ipsPad">
 
-		<div style="display:flex;gap:16px;margin-bottom:24px;flex-wrap:wrap">
-			<div class="ipsBox" style="flex:1 1 150px;padding:16px;text-align:center">
-				<div style="font-size:2em;font-weight:bold">{$totalDealers}</div>
-				<div>{lang="gddealer_dash_total_dealers"}</div>
+		<div style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;display:flex;flex-wrap:wrap;margin-bottom:24px">
+			<div style="flex:1 1 150px;padding:20px;text-align:center;border-right:1px solid var(--i-border-color,#e0e0e0)">
+				<div style="font-size:0.8em;color:#666;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">{lang="gddealer_dash_total_dealers"}</div>
+				<div style="font-size:2em;font-weight:700">{$totalDealers}</div>
 			</div>
-			<div class="ipsBox" style="flex:1 1 150px;padding:16px;text-align:center">
-				<div style="font-size:2em;font-weight:bold;color:#2a8a2a">{$activeDealers}</div>
-				<div>{lang="gddealer_dash_active_dealers"}</div>
+			<div style="flex:1 1 150px;padding:20px;text-align:center;border-right:1px solid var(--i-border-color,#e0e0e0)">
+				<div style="font-size:0.8em;color:#666;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">{lang="gddealer_dash_active_dealers"}</div>
+				<div style="font-size:2em;font-weight:700;color:#2a8a2a">{$activeDealers}</div>
 			</div>
-			<div class="ipsBox" style="flex:1 1 150px;padding:16px;text-align:center">
-				<div style="font-size:2em;font-weight:bold;color:#c00">{$suspendedDealers}</div>
-				<div>{lang="gddealer_dash_suspended_dealers"}</div>
+			<div style="flex:1 1 150px;padding:20px;text-align:center;border-right:1px solid var(--i-border-color,#e0e0e0)">
+				<div style="font-size:0.8em;color:#666;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">{lang="gddealer_dash_suspended_dealers"}</div>
+				<div style="font-size:2em;font-weight:700;color:#c00">{$suspendedDealers}</div>
 			</div>
-			<div class="ipsBox" style="flex:1 1 150px;padding:16px;text-align:center">
-				<div style="font-size:2em;font-weight:bold">{expression="number_format( $totalListings )"}</div>
-				<div>{lang="gddealer_dash_total_listings"}</div>
+			<div style="flex:1 1 150px;padding:20px;text-align:center;border-right:1px solid var(--i-border-color,#e0e0e0)">
+				<div style="font-size:0.8em;color:#666;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">{lang="gddealer_dash_total_listings"}</div>
+				<div style="font-size:2em;font-weight:700">{expression="number_format( $totalListings )"}</div>
 			</div>
-			<div class="ipsBox" style="flex:1 1 150px;padding:16px;text-align:center">
-				<div style="font-size:2em;font-weight:bold">{expression="number_format( $inStockListings )"}</div>
-				<div>{lang="gddealer_dash_in_stock_listings"}</div>
+			<div style="flex:1 1 150px;padding:20px;text-align:center;border-right:1px solid var(--i-border-color,#e0e0e0)">
+				<div style="font-size:0.8em;color:#666;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">{lang="gddealer_dash_in_stock_listings"}</div>
+				<div style="font-size:2em;font-weight:700">{expression="number_format( $inStockListings )"}</div>
 			</div>
-			<div class="ipsBox" style="flex:1 1 150px;padding:16px;text-align:center">
-				<div style="font-size:2em;font-weight:bold">{expression="number_format( $unmatchedTotal )"}</div>
-				<div>{lang="gddealer_dash_unmatched_total"}</div>
+			<div style="flex:1 1 150px;padding:20px;text-align:center">
+				<div style="font-size:0.8em;color:#666;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">{lang="gddealer_dash_unmatched_total"}</div>
+				<div style="font-size:2em;font-weight:700">{expression="number_format( $unmatchedTotal )"}</div>
 			</div>
 		</div>
 
-		<h2>Subscription Tier Breakdown</h2>
+		<div style="padding:12px 20px;font-weight:700;font-size:0.9em;text-transform:uppercase;letter-spacing:0.05em;color:#666;border-bottom:1px solid var(--i-border-color,#e0e0e0)">Subscription Tier Breakdown</div>
 		<table class="ipsTable ipsTable_zebra" style="width:100%;margin-bottom:24px">
 			<thead>
 				<tr><th>Tier</th><th>Dealers</th></tr>
@@ -65,8 +65,8 @@ $gddealerTemplates = [
 			</tbody>
 		</table>
 
-		<h2>{lang="gddealer_dash_last_run"}</h2>
-		<p>
+		<div style="padding:12px 20px;font-weight:700;font-size:0.9em;text-transform:uppercase;letter-spacing:0.05em;color:#666;border-bottom:1px solid var(--i-border-color,#e0e0e0)">{lang="gddealer_dash_last_run"}</div>
+		<div style="padding:12px 20px">
 			{{if $lastRunTime}}
 				{$lastRunTime} &mdash;
 				{{if $lastRunStatus === 'completed'}}
@@ -81,9 +81,9 @@ $gddealerTemplates = [
 			{{else}}
 				<em>No imports have run yet.</em>
 			{{endif}}
-		</p>
+		</div>
 
-		<div style="margin-top:24px">
+		<div style="padding:12px 20px;border-top:1px solid var(--i-border-color,#e0e0e0);display:flex;gap:8px">
 			<a href="{$dealersUrl}" class="ipsButton ipsButton--primary">Manage Dealers</a>
 			<a href="{$mrrUrl}" class="ipsButton ipsButton--normal">MRR Dashboard</a>
 			<a href="{$unmatchedUrl}" class="ipsButton ipsButton--normal">Unmatched UPCs</a>
@@ -104,9 +104,9 @@ TEMPLATE_EOT,
 		'template_data' => '$dealers, $onboardUrl',
 		'template_content' => <<<'TEMPLATE_EOT'
 <div class="ipsBox ipsPull">
-	<div class="ipsBox_body ipsPad">
+	<div class="ipsBox_body">
 
-		<div style="margin-bottom:16px">
+		<div style="padding:12px 20px;border-bottom:1px solid var(--i-border-color,#e0e0e0);display:flex;gap:8px">
 			<a href="{$onboardUrl}" class="ipsButton ipsButton--primary">{lang="gddealer_onboard_button"}</a>
 		</div>
 
@@ -191,37 +191,47 @@ TEMPLATE_EOT,
 		'template_data' => '$dealer, $logs, $listings, $backUrl, $editUrl, $importUrl, $suspendUrl',
 		'template_content' => <<<'TEMPLATE_EOT'
 <div class="ipsBox ipsPull">
-	<div class="ipsBox_body ipsPad">
+	<div class="ipsBox_body">
 
-		<p><a href="{$backUrl}">&larr; Back to dealer list</a></p>
+		<div style="padding:16px 20px">
+			<a href="{$backUrl}" style="color:#666;text-decoration:none">&larr; Back to dealer list</a>
+		</div>
 
-		<div style="display:flex;gap:16px;margin-bottom:24px;flex-wrap:wrap">
-			<div class="ipsBox" style="flex:1 1 200px;padding:16px">
-				<div style="color:#666;font-size:0.9em">Subscription Tier</div>
-				<div style="font-weight:bold;margin-top:4px">{$dealer['subscription_tier']}</div>
+		<div style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;display:flex;flex-wrap:wrap;margin:0 20px 16px">
+			<div style="flex:1 1 180px;padding:16px 20px;border-right:1px solid var(--i-border-color,#e0e0e0)">
+				<div style="font-size:0.8em;color:#666;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">Subscription Tier</div>
+				<div style="font-weight:700;font-size:1.05em">{$dealer['subscription_tier']}</div>
 			</div>
-			<div class="ipsBox" style="flex:1 1 200px;padding:16px">
-				<div style="color:#666;font-size:0.9em">MRR Contribution</div>
-				<div style="font-weight:bold;margin-top:4px">{$dealer['mrr']}</div>
+			<div style="flex:1 1 180px;padding:16px 20px;border-right:1px solid var(--i-border-color,#e0e0e0)">
+				<div style="font-size:0.8em;color:#666;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">MRR Contribution</div>
+				<div style="font-weight:700;font-size:1.05em">{$dealer['mrr']}</div>
 			</div>
-			<div class="ipsBox" style="flex:1 1 200px;padding:16px">
-				<div style="color:#666;font-size:0.9em">Feed Format</div>
-				<div style="font-weight:bold;margin-top:4px">{$dealer['feed_format']}</div>
+			<div style="flex:1 1 180px;padding:16px 20px;border-right:1px solid var(--i-border-color,#e0e0e0)">
+				<div style="font-size:0.8em;color:#666;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">Feed Format</div>
+				<div style="font-weight:700;font-size:1.05em">{$dealer['feed_format']}</div>
 			</div>
-			<div class="ipsBox" style="flex:1 1 200px;padding:16px">
-				<div style="color:#666;font-size:0.9em">Schedule</div>
-				<div style="font-weight:bold;margin-top:4px">{$dealer['import_schedule']}</div>
+			<div style="flex:1 1 180px;padding:16px 20px;border-right:1px solid var(--i-border-color,#e0e0e0)">
+				<div style="font-size:0.8em;color:#666;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">Schedule</div>
+				<div style="font-weight:700;font-size:1.05em">{$dealer['import_schedule']}</div>
 			</div>
-			<div class="ipsBox" style="flex:1 1 200px;padding:16px">
-				<div style="color:#666;font-size:0.9em">Last Record Count</div>
-				<div style="font-weight:bold;margin-top:4px">{expression="number_format( $dealer['last_record_count'] )"}</div>
+			<div style="flex:1 1 180px;padding:16px 20px">
+				<div style="font-size:0.8em;color:#666;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">Last Record Count</div>
+				<div style="font-weight:700;font-size:1.05em">{expression="number_format( $dealer['last_record_count'] )"}</div>
 			</div>
 		</div>
 
-		<p><strong>Feed URL:</strong> <code>{$dealer['feed_url']}</code></p>
-		<p><strong>API Key:</strong> <code>{$dealer['api_key']}</code></p>
+		<div style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;margin:0 20px 16px">
+			<div style="padding:16px 20px;border-bottom:1px solid var(--i-border-color,#e0e0e0)">
+				<div style="font-size:0.8em;color:#666;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">Feed URL</div>
+				<div style="font-weight:700;font-size:1.05em"><code>{$dealer['feed_url']}</code></div>
+			</div>
+			<div style="padding:16px 20px">
+				<div style="font-size:0.8em;color:#666;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">API Key</div>
+				<div style="font-weight:700;font-size:1.05em"><code>{$dealer['api_key']}</code></div>
+			</div>
+		</div>
 
-		<div style="margin:16px 0">
+		<div style="padding:12px 20px;border-top:1px solid var(--i-border-color,#e0e0e0);border-bottom:1px solid var(--i-border-color,#e0e0e0);display:flex;gap:8px">
 			<a href="{$editUrl}" class="ipsButton ipsButton--primary">Edit Feed Config</a>
 			<a href="{$importUrl}" class="ipsButton ipsButton--normal">Force Import Now</a>
 			{{if $dealer['suspended']}}
@@ -231,8 +241,8 @@ TEMPLATE_EOT,
 			{{endif}}
 		</div>
 
-		<h2>Recent Import Log</h2>
-		<table class="ipsTable ipsTable_zebra" style="width:100%;margin-bottom:24px">
+		<div style="padding:12px 20px;font-weight:700;font-size:0.9em;text-transform:uppercase;letter-spacing:0.05em;color:#666;border-bottom:1px solid var(--i-border-color,#e0e0e0)">Recent Import Log</div>
+		<table class="ipsTable ipsTable_zebra" style="width:100%">
 			<thead>
 				<tr>
 					<th>Started</th>
@@ -275,7 +285,7 @@ TEMPLATE_EOT,
 			</tbody>
 		</table>
 
-		<h2>Recent Listings</h2>
+		<div style="padding:12px 20px;font-weight:700;font-size:0.9em;text-transform:uppercase;letter-spacing:0.05em;color:#666;border-bottom:1px solid var(--i-border-color,#e0e0e0)">Recent Listings</div>
 		<table class="ipsTable ipsTable_zebra" style="width:100%">
 			<thead>
 				<tr><th>UPC</th><th>Price</th><th>Stock</th><th>Status</th><th>Last Updated</th></tr>
@@ -319,22 +329,22 @@ TEMPLATE_EOT,
 <div class="ipsBox ipsPull">
 	<div class="ipsBox_body ipsPad">
 
-		<div style="display:flex;gap:16px;margin-bottom:24px;flex-wrap:wrap">
-			<div class="ipsBox" style="flex:1 1 200px;padding:16px;text-align:center">
-				<div style="font-size:2em;font-weight:bold">{$totalMrr}</div>
-				<div>{lang="gddealer_mrr_total"}</div>
+		<div style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;display:flex;flex-wrap:wrap;margin-bottom:24px">
+			<div style="flex:1 1 200px;padding:20px;text-align:center;border-right:1px solid var(--i-border-color,#e0e0e0)">
+				<div style="font-size:0.8em;color:#666;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">{lang="gddealer_mrr_total"}</div>
+				<div style="font-size:2em;font-weight:700">{$totalMrr}</div>
 			</div>
-			<div class="ipsBox" style="flex:1 1 200px;padding:16px;text-align:center">
-				<div style="font-size:2em;font-weight:bold;color:#2a8a2a">{$newSignups}</div>
-				<div>{lang="gddealer_mrr_new_signups"}</div>
+			<div style="flex:1 1 200px;padding:20px;text-align:center;border-right:1px solid var(--i-border-color,#e0e0e0)">
+				<div style="font-size:0.8em;color:#666;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">{lang="gddealer_mrr_new_signups"}</div>
+				<div style="font-size:2em;font-weight:700;color:#2a8a2a">{$newSignups}</div>
 			</div>
-			<div class="ipsBox" style="flex:1 1 200px;padding:16px;text-align:center">
-				<div style="font-size:2em;font-weight:bold;color:#c00">{$churn}</div>
-				<div>{lang="gddealer_mrr_churn"}</div>
+			<div style="flex:1 1 200px;padding:20px;text-align:center">
+				<div style="font-size:0.8em;color:#666;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">{lang="gddealer_mrr_churn"}</div>
+				<div style="font-size:2em;font-weight:700;color:#c00">{$churn}</div>
 			</div>
 		</div>
 
-		<h2>{lang="gddealer_mrr_by_tier"}</h2>
+		<div style="padding:12px 20px;font-weight:700;font-size:0.9em;text-transform:uppercase;letter-spacing:0.05em;color:#666;border-bottom:1px solid var(--i-border-color,#e0e0e0)">{lang="gddealer_mrr_by_tier"}</div>
 		<table class="ipsTable ipsTable_zebra" style="width:100%">
 			<thead>
 				<tr><th>Tier</th><th>Dealers</th><th>MRR</th></tr>
@@ -365,9 +375,9 @@ TEMPLATE_EOT,
 		'template_data' => '$rows, $total, $pagination',
 		'template_content' => <<<'TEMPLATE_EOT'
 <div class="ipsBox ipsPull">
-	<div class="ipsBox_body ipsPad">
+	<div class="ipsBox_body">
 
-		<p>{expression="number_format( $total )"} unmatched UPCs across all dealer feeds.</p>
+		<div style="padding:12px 20px;color:#666;font-size:0.9em">{expression="number_format( $total )"} unmatched UPCs across all dealer feeds.</div>
 
 		<table class="ipsTable ipsTable_zebra" style="width:100%">
 			<thead>
@@ -400,7 +410,7 @@ TEMPLATE_EOT,
 			</tbody>
 		</table>
 
-		<div style="margin-top:16px">{$pagination}</div>
+		<div style="padding:12px 20px">{$pagination|raw}</div>
 
 	</div>
 </div>
