@@ -37,6 +37,10 @@ class _dealers extends \IPS\Dispatcher\Controller
 	{
 		$raw = Dealer::loadAll();
 
+		$onboardUrl = (string) \IPS\Http\Url::internal(
+			'app=gddealer&module=dealers&controller=dealers&do=manualOnboard'
+		);
+
 		$dealers = [];
 		foreach ( $raw as $dealer )
 		{
@@ -78,7 +82,7 @@ class _dealers extends \IPS\Dispatcher\Controller
 		}
 
 		\IPS\Output::i()->title  = \IPS\Member::loggedIn()->language()->addToStack( 'gddealer_dealers_title' );
-		\IPS\Output::i()->output = \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'admin' )->dealerList( $dealers );
+		\IPS\Output::i()->output = \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'admin' )->dealerList( $dealers, $onboardUrl );
 	}
 
 	/**
@@ -158,7 +162,10 @@ class _dealers extends \IPS\Dispatcher\Controller
 	 */
 	protected function edit()
 	{
-		\IPS\Session::i()->csrfCheck();
+		if ( \IPS\Request::i()->requestMethod() === 'POST' )
+		{
+			\IPS\Session::i()->csrfCheck();
+		}
 
 		$id     = (int) \IPS\Request::i()->id;
 		$dealer = Dealer::load( $id );
@@ -259,6 +266,117 @@ class _dealers extends \IPS\Dispatcher\Controller
 			\IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dealers&do=view&id=' . (int) $dealer->dealer_id ),
 			$dealer->suspended ? 'Dealer suspended' : 'Dealer unsuspended'
 		);
+	}
+
+	/**
+	 * Manual onboarding — admin-only stub used until IPS Commerce + Stripe
+	 * is live. Creates a gd_dealer_feed_config row for the selected member,
+	 * assigns the Dealers secondary group (gddealer_group_id setting), and
+	 * generates an API key. feed_url is left NULL, which triggers the
+	 * "onboarding incomplete" banner on the frontend dashboard. Once
+	 * Commerce is wired (Section 3.3), this becomes a group-promotion
+	 * listener instead.
+	 */
+	protected function manualOnboard()
+	{
+		$form = new \IPS\Helpers\Form( 'form', 'gddealer_onboard_submit' );
+		$form->add( new \IPS\Helpers\Form\Member( 'gddealer_onboard_member', null, TRUE ) );
+		$form->add( new \IPS\Helpers\Form\Text( 'gddealer_onboard_name', '', TRUE ) );
+		$form->add( new \IPS\Helpers\Form\Select( 'gddealer_onboard_tier', Dealer::TIER_BASIC, TRUE, [
+			'options' => [
+				Dealer::TIER_BASIC      => 'Basic',
+				Dealer::TIER_PRO        => 'Pro',
+				Dealer::TIER_ENTERPRISE => 'Enterprise',
+				Dealer::TIER_FOUNDING   => 'Founding',
+			],
+		] ) );
+
+		if ( $values = $form->values() )
+		{
+			$member = $values['gddealer_onboard_member'];
+			if ( !( $member instanceof \IPS\Member ) || !$member->member_id )
+			{
+				\IPS\Output::i()->error( 'gddealer_onboard_no_member', '2GDD210/1', 400 );
+				return;
+			}
+
+			$memberId = (int) $member->member_id;
+
+			try
+			{
+				$exists = (int) \IPS\Db::i()->select( 'COUNT(*)', 'gd_dealer_feed_config', [ 'dealer_id=?', $memberId ] )->first();
+			}
+			catch ( \Exception )
+			{
+				$exists = 0;
+			}
+
+			if ( $exists > 0 )
+			{
+				\IPS\Output::i()->redirect(
+					\IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dealers&do=view&id=' . $memberId ),
+					'gddealer_onboard_existing'
+				);
+				return;
+			}
+
+			$tier    = (string) $values['gddealer_onboard_tier'];
+			$tierKey = array_key_exists( $tier, Dealer::$tierSchedules ) ? $tier : Dealer::TIER_BASIC;
+			$apiKey  = bin2hex( random_bytes( 24 ) );
+
+			\IPS\Db::i()->insert( 'gd_dealer_feed_config', [
+				'dealer_id'         => $memberId,
+				'dealer_name'       => (string) $values['gddealer_onboard_name'],
+				'subscription_tier' => $tierKey,
+				'feed_url'          => null,
+				'feed_format'       => 'xml',
+				'auth_type'         => 'none',
+				'auth_credentials'  => null,
+				'field_mapping'     => null,
+				'import_schedule'   => Dealer::$tierSchedules[ $tierKey ],
+				'active'            => 0,
+				'suspended'         => 0,
+				'last_run'          => null,
+				'last_run_status'   => null,
+				'last_record_count' => 0,
+				'api_key'           => $apiKey,
+				'created_at'        => date( 'Y-m-d H:i:s' ),
+			]);
+
+			$this->assignDealersGroup( $member );
+
+			\IPS\Output::i()->redirect(
+				\IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dealers&do=view&id=' . $memberId ),
+				'gddealer_onboard_created'
+			);
+			return;
+		}
+
+		\IPS\Output::i()->title  = \IPS\Member::loggedIn()->language()->addToStack( 'gddealer_onboard_title' );
+		\IPS\Output::i()->output = (string) $form;
+	}
+
+	/**
+	 * Add the Dealers secondary group to a member based on the
+	 * gddealer_group_id setting. No-op if the setting is unconfigured
+	 * or the member is already a member of that group.
+	 */
+	protected function assignDealersGroup( \IPS\Member $member ): void
+	{
+		$groupId = (int) \IPS\Settings::i()->gddealer_group_id;
+		if ( $groupId <= 0 )
+		{
+			return;
+		}
+
+		$current = $member->mgroup_others ? explode( ',', (string) $member->mgroup_others ) : [];
+		$current = array_filter( array_map( 'intval', $current ) );
+		if ( !in_array( $groupId, $current, true ) )
+		{
+			$current[] = $groupId;
+			$member->mgroup_others = implode( ',', $current );
+			$member->save();
+		}
 	}
 
 	/**

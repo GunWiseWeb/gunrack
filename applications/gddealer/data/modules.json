@@ -4,5 +4,11 @@
 			"default_controller": "dashboard",
 			"protected": false
 		}
+	},
+	"front": {
+		"dealers": {
+			"default_controller": "dashboard",
+			"protected": false
+		}
 	}
 }
