@@ -30,11 +30,18 @@ class _settings extends \IPS\Dispatcher\Controller
 	{
 		$form = new \IPS\Helpers\Form;
 
-		$form->add( new \IPS\Helpers\Form\Number( 'gddealer_group_id',
-			(int) \IPS\Settings::i()->gddealer_group_id, TRUE ) );
+		$form->addHeader( 'gddealer_settings_member_groups' );
 
-		$form->add( new \IPS\Helpers\Form\Number( 'gddealer_member_group_id',
-			(int) \IPS\Settings::i()->gddealer_member_group_id, FALSE ) );
+		$form->add( new \IPS\Helpers\Form\Number( 'gddealer_group_founding',
+			(int) \IPS\Settings::i()->gddealer_group_founding, FALSE ) );
+		$form->add( new \IPS\Helpers\Form\Number( 'gddealer_group_basic',
+			(int) \IPS\Settings::i()->gddealer_group_basic, FALSE ) );
+		$form->add( new \IPS\Helpers\Form\Number( 'gddealer_group_pro',
+			(int) \IPS\Settings::i()->gddealer_group_pro, FALSE ) );
+		$form->add( new \IPS\Helpers\Form\Number( 'gddealer_group_enterprise',
+			(int) \IPS\Settings::i()->gddealer_group_enterprise, FALSE ) );
+
+		$form->addHeader( 'gddealer_settings_general' );
 
 		$form->add( new \IPS\Helpers\Form\Select( 'gddealer_default_import_schedule',
 			(string) \IPS\Settings::i()->gddealer_default_import_schedule, TRUE, [
@@ -96,8 +103,10 @@ class _settings extends \IPS\Dispatcher\Controller
 		if ( $values = $form->values() )
 		{
 			$form->saveAsSettings( [
-				'gddealer_group_id'                   => (int) $values['gddealer_group_id'],
-				'gddealer_member_group_id'            => (int) $values['gddealer_member_group_id'],
+				'gddealer_group_founding'             => (int) $values['gddealer_group_founding'],
+				'gddealer_group_basic'                => (int) $values['gddealer_group_basic'],
+				'gddealer_group_pro'                  => (int) $values['gddealer_group_pro'],
+				'gddealer_group_enterprise'           => (int) $values['gddealer_group_enterprise'],
 				'gddealer_default_import_schedule'    => (string) $values['gddealer_default_import_schedule'],
 				'gddealer_out_of_stock_grace_hours'   => (int) $values['gddealer_out_of_stock_grace_hours'],
 				'gddealer_click_tracking_enabled'     => (int) $values['gddealer_click_tracking_enabled'],

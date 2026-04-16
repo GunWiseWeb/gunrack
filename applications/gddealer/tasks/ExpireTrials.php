@@ -50,9 +50,9 @@ class _ExpireTrials extends \IPS\Task
 			$rows = [];
 		}
 
-		$dealerGroupId = (int) \IPS\Settings::i()->gddealer_member_group_id;
-		$subscribeUrl  = (string) ( \IPS\Settings::i()->gddealer_subscribe_url ?: 'https://gunrack.deals/dealers/join' );
-		$contactEmail  = (string) ( \IPS\Settings::i()->gddealer_help_contact ?: 'dealers@gunrack.deals' );
+		$allDealerGroupIds = \IPS\gddealer\Dealer\Dealer::allDealerGroupIds();
+		$subscribeUrl      = (string) ( \IPS\Settings::i()->gddealer_subscribe_url ?: 'https://gunrack.deals/dealers/join' );
+		$contactEmail      = (string) ( \IPS\Settings::i()->gddealer_help_contact ?: 'dealers@gunrack.deals' );
 
 		foreach ( $rows as $row )
 		{
@@ -80,29 +80,24 @@ class _ExpireTrials extends \IPS\Task
 			}
 			catch ( \Exception ) {}
 
-			/* Remove from Dealers group */
+			/* Remove from all Dealer groups */
 			try
 			{
 				$member = \IPS\Member::load( $dealerId );
-				if ( $member->member_id )
+				if ( $member->member_id && !empty( $allDealerGroupIds ) )
 				{
-					if ( $dealerGroupId > 0 )
+					$others = $member->mgroup_others
+						? array_filter( array_map( 'intval', explode( ',', (string) $member->mgroup_others ) ) )
+						: [];
+					$others = array_values( array_diff( $others, $allDealerGroupIds ) );
+					$member->mgroup_others = implode( ',', $others );
+
+					if ( in_array( (int) $member->member_group_id, $allDealerGroupIds, true ) )
 					{
-						/* Remove from secondary groups */
-						$others = $member->mgroup_others
-							? array_filter( array_map( 'intval', explode( ',', (string) $member->mgroup_others ) ) )
-							: [];
-						$others = array_values( array_diff( $others, [ $dealerGroupId ] ) );
-						$member->mgroup_others = implode( ',', $others );
-
-						/* Reset primary group if it was the dealer group */
-						if ( (int) $member->member_group_id === $dealerGroupId )
-						{
-							$member->member_group_id = 3;
-						}
-
-						$member->save();
+						$member->member_group_id = 3;
 					}
+
+					$member->save();
 				}
 			}
 			catch ( \Exception ) {}

@@ -44,22 +44,12 @@ class DealerNav extends \IPS\core\FrontNavigation\FrontNavigationAbstract
 			return false;
 		}
 
-		// Check by configured group ID first
-		$dealerGroupId = (int) \IPS\Settings::i()->gddealer_member_group_id;
-		if ( $dealerGroupId > 0 )
+		if ( \IPS\gddealer\Dealer\Dealer::isDealerMember( $member ) )
 		{
-			if ( (int) $member->member_group_id === $dealerGroupId )
-			{
-				return true;
-			}
-			$others = array_filter( array_map( 'intval', explode( ',', (string) $member->mgroup_others ) ) );
-			if ( in_array( $dealerGroupId, $others, true ) )
-			{
-				return true;
-			}
+			return true;
 		}
 
-		// Fallback — check if member has a row in gd_dealer_feed_config
+		/* Fallback — check if member has a row in gd_dealer_feed_config */
 		try
 		{
 			$count = (int) \IPS\Db::i()->select( 'COUNT(*)', 'gd_dealer_feed_config',

@@ -159,6 +159,76 @@ class _Dealer extends \IPS\Patterns\ActiveRecord
 	{
 		return (float) ( static::$tierMrr[ $this->subscription_tier ] ?? 0.0 );
 	}
+
+	/**
+	 * Return the IPS member group ID configured for a given subscription tier.
+	 * Returns 0 if the setting is unconfigured or the tier is unknown.
+	 */
+	public static function groupIdForTier( string $tier ): int
+	{
+		$map = [
+			self::TIER_FOUNDING   => 'gddealer_group_founding',
+			self::TIER_BASIC      => 'gddealer_group_basic',
+			self::TIER_PRO        => 'gddealer_group_pro',
+			self::TIER_ENTERPRISE => 'gddealer_group_enterprise',
+		];
+
+		$key = $map[ $tier ] ?? null;
+		if ( $key === null )
+		{
+			return 0;
+		}
+
+		return (int) \IPS\Settings::i()->$key;
+	}
+
+	/**
+	 * Return all configured dealer group IDs (non-zero, deduplicated).
+	 *
+	 * @return int[]
+	 */
+	public static function allDealerGroupIds(): array
+	{
+		$ids = [];
+		foreach ( [ self::TIER_FOUNDING, self::TIER_BASIC, self::TIER_PRO, self::TIER_ENTERPRISE ] as $tier )
+		{
+			$gid = static::groupIdForTier( $tier );
+			if ( $gid > 0 )
+			{
+				$ids[] = $gid;
+			}
+		}
+		return array_values( array_unique( $ids ) );
+	}
+
+	/**
+	 * Check whether the given member belongs to any of the configured
+	 * dealer member groups (primary or secondary).
+	 */
+	public static function isDealerMember( \IPS\Member $member ): bool
+	{
+		if ( !$member->member_id )
+		{
+			return false;
+		}
+
+		$groupIds = static::allDealerGroupIds();
+		if ( empty( $groupIds ) )
+		{
+			return false;
+		}
+
+		if ( in_array( (int) $member->member_group_id, $groupIds, true ) )
+		{
+			return true;
+		}
+
+		$others = $member->mgroup_others
+			? array_filter( array_map( 'intval', explode( ',', (string) $member->mgroup_others ) ) )
+			: [];
+
+		return !empty( array_intersect( $groupIds, $others ) );
+	}
 }
 
 class Dealer extends _Dealer {}

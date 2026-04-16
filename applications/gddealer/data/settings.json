@@ -1,6 +1,18 @@
 [
 	{
-		"key": "gddealer_group_id",
+		"key": "gddealer_group_founding",
+		"default": "0"
+	},
+	{
+		"key": "gddealer_group_basic",
+		"default": "0"
+	},
+	{
+		"key": "gddealer_group_pro",
+		"default": "0"
+	},
+	{
+		"key": "gddealer_group_enterprise",
 		"default": "0"
 	},
 	{
@@ -58,10 +70,6 @@
 	{
 		"key": "gddealer_help_contact",
 		"default": "dealers@gunrack.deals"
-	},
-	{
-		"key": "gddealer_member_group_id",
-		"default": "0"
 	},
 	{
 		"key": "gddealer_subscription_billing_note",

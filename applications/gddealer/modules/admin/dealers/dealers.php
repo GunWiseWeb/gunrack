@@ -312,7 +312,7 @@ class _dealers extends \IPS\Dispatcher\Controller
 	/**
 	 * Manual onboarding — admin-only stub used until IPS Commerce + Stripe
 	 * is live. Creates a gd_dealer_feed_config row for the selected member,
-	 * assigns the Dealers secondary group (gddealer_group_id setting), and
+	 * assigns the tier-specific Dealers secondary group, and
 	 * generates an API key. feed_url is left NULL, which triggers the
 	 * "onboarding incomplete" banner on the frontend dashboard. Once
 	 * Commerce is wired (Section 3.3), this becomes a group-promotion
@@ -394,7 +394,7 @@ class _dealers extends \IPS\Dispatcher\Controller
 				'billing_note'      => trim( (string) $values['gddealer_onboard_billing_note'] ) ?: null,
 			]);
 
-			$this->assignDealersGroup( $member );
+			$this->assignDealersGroup( $member, $tierKey );
 
 			try
 			{
@@ -418,13 +418,14 @@ class _dealers extends \IPS\Dispatcher\Controller
 	}
 
 	/**
-	 * Add the Dealers secondary group to a member based on the
-	 * gddealer_group_id setting. No-op if the setting is unconfigured
-	 * or the member is already a member of that group.
+	 * Add the tier-specific Dealers secondary group to a member.
+	 * Uses Dealer::groupIdForTier() to resolve the correct group.
+	 * No-op if the setting is unconfigured or the member already
+	 * belongs to that group.
 	 */
-	protected function assignDealersGroup( \IPS\Member $member ): void
+	protected function assignDealersGroup( \IPS\Member $member, string $tier ): void
 	{
-		$groupId = (int) \IPS\Settings::i()->gddealer_group_id;
+		$groupId = Dealer::groupIdForTier( $tier );
 		if ( $groupId <= 0 )
 		{
 			return;

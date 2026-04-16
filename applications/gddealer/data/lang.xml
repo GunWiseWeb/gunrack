@@ -63,8 +63,16 @@
     <word key="gddealer_unmatched_exclude"><![CDATA[Exclude]]></word>
     <word key="gddealer_unmatched_add_to_catalog"><![CDATA[Add to Catalog]]></word>
     <word key="gddealer_settings_title"><![CDATA[Dealer Manager Settings]]></word>
-    <word key="gddealer_group_id"><![CDATA[Dealers IPS Member Group ID]]></word>
-    <word key="gddealer_group_id_desc"><![CDATA[The IPS member group ID used for subscribed dealers. Assigned automatically by IPS Commerce group promotion.]]></word>
+    <word key="gddealer_settings_member_groups"><![CDATA[Member Groups]]></word>
+    <word key="gddealer_group_founding"><![CDATA[Founding Tier Group ID]]></word>
+    <word key="gddealer_group_founding_desc"><![CDATA[IPS member group ID assigned to Founding-tier dealers. Find the ID in ACP → Members → Groups. Leave 0 if not used.]]></word>
+    <word key="gddealer_group_basic"><![CDATA[Basic Tier Group ID]]></word>
+    <word key="gddealer_group_basic_desc"><![CDATA[IPS member group ID assigned to Basic-tier dealers.]]></word>
+    <word key="gddealer_group_pro"><![CDATA[Pro Tier Group ID]]></word>
+    <word key="gddealer_group_pro_desc"><![CDATA[IPS member group ID assigned to Pro-tier dealers.]]></word>
+    <word key="gddealer_group_enterprise"><![CDATA[Enterprise Tier Group ID]]></word>
+    <word key="gddealer_group_enterprise_desc"><![CDATA[IPS member group ID assigned to Enterprise-tier dealers.]]></word>
+    <word key="gddealer_settings_general"><![CDATA[General]]></word>
     <word key="gddealer_default_import_schedule"><![CDATA[Default Import Schedule]]></word>
     <word key="gddealer_default_import_schedule_desc"><![CDATA[Schedule assigned to new dealer feeds. Pro tier overrides this to 30min; Enterprise to 15min.]]></word>
     <word key="gddealer_out_of_stock_grace_hours"><![CDATA[Out-of-Stock Grace Period (Hours)]]></word>
@@ -183,8 +191,6 @@
     <word key="gddealer_help_contact"><![CDATA[Contact Email]]></word>
     <word key="gddealer_help_contact_desc"><![CDATA[Shown at the bottom of the help page as a mailto link. Leave blank to hide.]]></word>
     <word key="gddealer_nav_dashboard"><![CDATA[Dealer Dashboard]]></word>
-    <word key="gddealer_member_group_id"><![CDATA[Dealers Member Group ID (Navigation)]]></word>
-    <word key="gddealer_member_group_id_desc"><![CDATA[IPS member group ID for the Dealers group. Members in this group see a "Dealer Dashboard" link in the user dropdown menu. Find the ID in ACP → Members → Groups.]]></word>
     <word key="gddealer_onboard_trial_expires"><![CDATA[Trial Expiry Date]]></word>
     <word key="gddealer_onboard_trial_expires_desc"><![CDATA[Optional. When set, this dealer's trial period ends on this date. A warning badge is shown in the dealer detail view when within 30 days of expiry.]]></word>
     <word key="gddealer_onboard_billing_note"><![CDATA[Billing Notes]]></word>
