@@ -1110,78 +1110,124 @@ TEMPLATE_EOT,
 		'location'      => 'front',
 		'group'         => 'dealers',
 		'template_name' => 'join',
-		'template_data' => '$tiers, $requestUrl',
+		'template_data' => '$tiers, $contactEmail',
 		'template_content' => <<<'TEMPLATE_EOT'
-<div class="ipsBox ipsPull">
-	<div class="ipsBox_body ipsPad">
+<div style="max-width:1100px;margin:0 auto;padding:0 16px">
 
-		<h1 class="ipsType_pageTitle">{lang="gddealer_front_join_title"}</h1>
-		<p style="max-width:720px">{lang="gddealer_front_join_intro"}</p>
-
-		<div style="display:flex;gap:20px;margin:32px 0;flex-wrap:wrap;align-items:stretch">
-			{{foreach $tiers as $t}}
-			<div class="ipsBox" style="{expression="$t['featured'] ? 'flex:1 1 280px;padding:28px 24px;border:2px solid #3b82f6;box-shadow:0 4px 16px rgba(59,130,246,0.15);position:relative;display:flex;flex-direction:column' : 'flex:1 1 280px;padding:28px 24px;border:1px solid #ddd;display:flex;flex-direction:column'"}">
-				{{if $t['featured']}}
-				<div style="position:absolute;top:-12px;right:16px;background:#3b82f6;color:#fff;padding:4px 12px;border-radius:12px;font-size:0.75em;font-weight:bold;text-transform:uppercase;letter-spacing:0.5px">Most Popular</div>
-				{{endif}}
-				<h2 style="margin:0 0 4px 0;font-size:1.4em">{$t['label']}</h2>
-				<div style="font-size:2em;font-weight:bold;margin:8px 0;color:#111">{$t['price']}</div>
-				<div style="color:#666;margin-bottom:20px;font-size:0.9em">{lang="gddealer_front_join_tier_schedule"} <strong>{$t['schedule']}</strong></div>
-				<ul style="list-style:none;padding:0;margin:0 0 20px 0;flex:1">
-					{{foreach $t['features'] as $f}}
-					<li style="padding:6px 0 6px 26px;position:relative;line-height:1.4">
-						<span style="position:absolute;left:0;top:6px;color:#10b981;font-weight:bold">&#10003;</span>
-						{$f}
-					</li>
-					{{endforeach}}
-				</ul>
-				<a href="{$t['commerce_url']}" class="ipsButton {expression="$t['featured'] ? 'ipsButton--primary' : 'ipsButton--normal'"}" style="width:100%;text-align:center;margin-top:auto">Get Started</a>
+	<div style="text-align:center;padding:48px 24px 40px;border-bottom:1px solid var(--i-border-color,#e0e0e0);margin-bottom:48px">
+		<div style="display:inline-block;background:#eff6ff;color:#2563eb;font-size:0.8em;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:6px 14px;border-radius:20px;margin-bottom:16px">Dealer Program</div>
+		<h1 style="font-size:2.2em;font-weight:800;margin:0 0 16px;line-height:1.2">Reach Buyers Actively Searching<br>for What You Sell</h1>
+		<p style="font-size:1.1em;color:#555;max-width:620px;margin:0 auto 24px">GunRack.deals puts your inventory in front of price-conscious buyers comparing products across multiple dealers. List once, sync automatically, sell more.</p>
+		<div style="display:flex;gap:32px;justify-content:center;flex-wrap:wrap">
+			<div style="text-align:center">
+				<div style="font-size:1.8em;font-weight:800;color:#2563eb">3</div>
+				<div style="font-size:0.85em;color:#666">Feed Formats</div>
 			</div>
-			{{endforeach}}
+			<div style="text-align:center">
+				<div style="font-size:1.8em;font-weight:800;color:#2563eb">Auto</div>
+				<div style="font-size:0.85em;color:#666">Price Sync</div>
+			</div>
+			<div style="text-align:center">
+				<div style="font-size:1.8em;font-weight:800;color:#2563eb">Live</div>
+				<div style="font-size:0.85em;color:#666">Click Analytics</div>
+			</div>
+			<div style="text-align:center">
+				<div style="font-size:1.8em;font-weight:800;color:#2563eb">FFL</div>
+				<div style="font-size:0.85em;color:#666">Verified Platform</div>
+			</div>
 		</div>
-
-		<p style="margin-top:24px;color:#666;font-size:0.9em">
-			Not ready to sign up? <a href="{$requestUrl}">Request more information</a> and our team will reach out.
-		</p>
-
 	</div>
-</div>
-TEMPLATE_EOT,
-	],
 
-	/* ===== FRONT: joinRequest (contact form) ===== */
-	[
-		'set_id'        => 1,
-		'app'           => 'gddealer',
-		'location'      => 'front',
-		'group'         => 'dealers',
-		'template_name' => 'joinRequest',
-		'template_data' => '$form',
-		'template_content' => <<<'TEMPLATE_EOT'
-<div class="ipsBox">
-	<div class="ipsPad">
-		<h1 class="ipsType_pageTitle">{lang="gddealer_front_request_title"}</h1>
-		<p style="max-width:720px">{lang="gddealer_front_request_intro"}</p>
-		{$form|raw}
-	</div>
-</div>
-TEMPLATE_EOT,
-	],
+	<h2 style="text-align:center;font-size:1.5em;font-weight:700;margin:0 0 8px">Choose Your Plan</h2>
+	<p style="text-align:center;color:#666;margin:0 0 32px">All plans include unlimited listings, automatic sync, and a self-service dealer dashboard.</p>
 
-	/* ===== FRONT: joinThanks ===== */
-	[
-		'set_id'        => 1,
-		'app'           => 'gddealer',
-		'location'      => 'front',
-		'group'         => 'dealers',
-		'template_name' => 'joinThanks',
-		'template_data' => '',
-		'template_content' => <<<'TEMPLATE_EOT'
-<div class="ipsBox">
-	<div class="ipsPad">
-		<h1 class="ipsType_pageTitle">{lang="gddealer_front_thanks_title"}</h1>
-		<p>{lang="gddealer_front_thanks_body"}</p>
+	<div style="display:flex;gap:20px;margin-bottom:48px;flex-wrap:wrap;align-items:stretch">
+		{{foreach $tiers as $t}}
+		<div style="flex:1 1 280px;background:#fff;border:2px solid {expression="$t['popular'] ? '#2563eb' : 'var(--i-border-color,#e0e0e0)'"};border-radius:12px;padding:28px;position:relative;display:flex;flex-direction:column">
+			{{if $t['popular']}}
+			<div style="position:absolute;top:-13px;left:50%;transform:translateX(-50%);background:#2563eb;color:#fff;font-size:0.75em;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;padding:4px 14px;border-radius:20px">Most Popular</div>
+			{{endif}}
+			<div style="margin-bottom:20px">
+				<h3 style="margin:0 0 4px;font-size:1.1em;font-weight:700">{$t['label']}</h3>
+				<div style="font-size:2em;font-weight:800;margin:8px 0 4px">{$t['price']}</div>
+				<div style="font-size:0.85em;color:#666">Feed sync: <strong>{$t['schedule']}</strong></div>
+			</div>
+			<ul style="list-style:none;padding:0;margin:0 0 24px;flex:1">
+				{{foreach $t['features'] as $f}}
+				<li style="display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid #f5f5f5;font-size:0.9em">
+					<span style="color:#16a34a;font-weight:700;flex-shrink:0">&#10003;</span>
+					<span>{$f}</span>
+				</li>
+				{{endforeach}}
+			</ul>
+			<a href="{$t['commerce_url']}" class="ipsButton {expression="$t['popular'] ? 'ipsButton--primary' : 'ipsButton--normal'"}" style="width:100%;text-align:center;display:block;padding:10px">Get Started</a>
+		</div>
+		{{endforeach}}
 	</div>
+
+	<div style="background:#f8faff;border:1px solid #dbeafe;border-radius:12px;padding:40px;margin-bottom:48px">
+		<h2 style="text-align:center;font-size:1.4em;font-weight:700;margin:0 0 32px">How It Works</h2>
+		<div style="display:flex;gap:24px;flex-wrap:wrap;justify-content:center">
+			<div style="flex:1 1 180px;text-align:center;max-width:220px">
+				<div style="width:48px;height:48px;background:#2563eb;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.2em;font-weight:800;margin:0 auto 12px">1</div>
+				<h4 style="margin:0 0 6px;font-weight:700">Subscribe</h4>
+				<p style="margin:0;font-size:0.85em;color:#666">Choose a plan and complete checkout through our secure store.</p>
+			</div>
+			<div style="flex:1 1 180px;text-align:center;max-width:220px">
+				<div style="width:48px;height:48px;background:#2563eb;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.2em;font-weight:800;margin:0 auto 12px">2</div>
+				<h4 style="margin:0 0 6px;font-weight:700">Connect Your Feed</h4>
+				<p style="margin:0;font-size:0.85em;color:#666">Add your product feed URL in your dealer dashboard. XML, JSON, and CSV supported.</p>
+			</div>
+			<div style="flex:1 1 180px;text-align:center;max-width:220px">
+				<div style="width:48px;height:48px;background:#2563eb;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.2em;font-weight:800;margin:0 auto 12px">3</div>
+				<h4 style="margin:0 0 6px;font-weight:700">Go Live</h4>
+				<p style="margin:0;font-size:0.85em;color:#666">Your listings go live immediately after your first import completes.</p>
+			</div>
+			<div style="flex:1 1 180px;text-align:center;max-width:220px">
+				<div style="width:48px;height:48px;background:#2563eb;color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.2em;font-weight:800;margin:0 auto 12px">4</div>
+				<h4 style="margin:0 0 6px;font-weight:700">Track Performance</h4>
+				<p style="margin:0;font-size:0.85em;color:#666">Monitor clicks, price competitiveness, and revenue opportunities in your dashboard.</p>
+			</div>
+		</div>
+	</div>
+
+	<div style="margin-bottom:48px">
+		<h2 style="text-align:center;font-size:1.4em;font-weight:700;margin:0 0 24px">Frequently Asked Questions</h2>
+		<div style="display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))">
+			<div style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:20px">
+				<h4 style="margin:0 0 8px;font-weight:700">What feed formats do you support?</h4>
+				<p style="margin:0;color:#555;font-size:0.9em">We support XML, JSON, and CSV feeds. Your feed must include UPC, price, and in-stock status at minimum. See the Help &amp; Setup guide in your dashboard for full requirements.</p>
+			</div>
+			<div style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:20px">
+				<h4 style="margin:0 0 8px;font-weight:700">How often does my inventory sync?</h4>
+				<p style="margin:0;color:#555;font-size:0.9em">Basic syncs every 6 hours, Pro every 30 minutes, Enterprise every 15 minutes. You can also trigger a manual import anytime from your dealer dashboard.</p>
+			</div>
+			<div style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:20px">
+				<h4 style="margin:0 0 8px;font-weight:700">Do I need to be an FFL dealer?</h4>
+				<p style="margin:0;color:#555;font-size:0.9em">Yes — GunRack.deals is a licensed FFL platform. You must hold a valid FFL to list firearms. Accessories and non-firearm products do not require an FFL.</p>
+			</div>
+			<div style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:20px">
+				<h4 style="margin:0 0 8px;font-weight:700">Can I cancel anytime?</h4>
+				<p style="margin:0;color:#555;font-size:0.9em">Yes. Cancel anytime from your Subscription tab. Your listings remain live until the end of your current billing period, then are automatically suspended.</p>
+			</div>
+			<div style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:20px">
+				<h4 style="margin:0 0 8px;font-weight:700">What if my UPCs aren't in your catalog?</h4>
+				<p style="margin:0;color:#555;font-size:0.9em">Unmatched UPCs are logged in your dashboard. Contact us and we'll add missing products to the catalog promptly — usually within 24 hours.</p>
+			</div>
+			<div style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:20px">
+				<h4 style="margin:0 0 8px;font-weight:700">How do I upgrade or downgrade?</h4>
+				<p style="margin:0;color:#555;font-size:0.9em">Manage your subscription from the Subscription tab in your dealer dashboard. Changes take effect on your next billing cycle.</p>
+			</div>
+		</div>
+	</div>
+
+	<div style="text-align:center;padding:40px 24px;background:#eff6ff;border-radius:12px;margin-bottom:32px">
+		<h2 style="margin:0 0 8px;font-size:1.4em;font-weight:700">Ready to reach more buyers?</h2>
+		<p style="margin:0 0 20px;color:#555">Join dealers already listing on GunRack.deals.</p>
+		<a href="{$tiers[1]['commerce_url']}" class="ipsButton ipsButton--primary" style="padding:12px 32px;font-size:1em">Get Started with Pro</a>
+		<p style="margin:12px 0 0;font-size:0.85em;color:#666">Questions? Email us at <a href="mailto:{$contactEmail}" style="color:#2563eb">{$contactEmail}</a></p>
+	</div>
+
 </div>
 TEMPLATE_EOT,
 	],
