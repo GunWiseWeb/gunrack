@@ -248,14 +248,14 @@ TEMPLATE_EOT,
 			{{endif}}
 		</div>
 
-		<div style="padding:12px 20px;border-top:1px solid var(--i-border-color,#e0e0e0);border-bottom:1px solid var(--i-border-color,#e0e0e0);display:flex;gap:8px">
-			<a href="{$editUrl}" class="ipsButton ipsButton--primary">Edit Feed Config</a>
-			<a href="{$importUrl}" class="ipsButton ipsButton--normal">Force Import Now</a>
-			<a href="{$dealer['invoice_url']}" class="ipsButton ipsButton--normal">Send Invoice</a>
+		<div style="padding:12px 20px;border-top:1px solid var(--i-border-color,#e0e0e0);border-bottom:1px solid var(--i-border-color,#e0e0e0);display:flex;gap:8px;flex-wrap:wrap">
+			<a href="{$editUrl}" class="ipsButton ipsButton--primary ipsButton--small">Edit Feed Config</a>
+			<a href="{$importUrl}" class="ipsButton ipsButton--normal ipsButton--small">Force Import Now</a>
+			<a href="{$dealer['invoice_url']}" class="ipsButton ipsButton--normal ipsButton--small">View in Commerce</a>
 			{{if $dealer['suspended']}}
-				<a href="{$suspendUrl}" class="ipsButton ipsButton--positive">Unsuspend Dealer</a>
+				<a href="{$suspendUrl}" class="ipsButton ipsButton--positive ipsButton--small">Unsuspend Dealer</a>
 			{{else}}
-				<a href="{$suspendUrl}" class="ipsButton ipsButton--negative">Suspend Dealer</a>
+				<a href="{$suspendUrl}" class="ipsButton ipsButton--negative ipsButton--small">Suspend Dealer</a>
 			{{endif}}
 		</div>
 
@@ -908,6 +908,33 @@ TEMPLATE_EOT,
 			</div>
 		</div>
 	</div>
+
+	{{if $sub['trial_expires_at']}}
+	<div style="margin-bottom:24px;padding:16px;border-radius:8px;border:1px solid {expression="$sub['trial_expiring_soon'] ? '#fca5a5' : 'var(--i-border-color,#e0e0e0)'"};background:{expression="$sub['trial_expiring_soon'] ? '#fff5f5' : '#fff'"}">
+		<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+			<div>
+				<div style="font-size:0.8em;color:#666;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">Trial Period</div>
+				<div style="font-weight:700;font-size:1.05em">
+					Expires {$sub['trial_expires_at']}
+				</div>
+				{{if $sub['trial_expiring_soon']}}
+					<div style="margin-top:4px;color:#dc2626;font-size:0.9em;font-weight:600">
+						Expires in {$sub['trial_days_left']} day{{if $sub['trial_days_left'] !== 1}}s{{endif}} — subscribe to keep your listings live
+					</div>
+				{{else}}
+					<div style="margin-top:4px;color:#666;font-size:0.85em">
+						{$sub['trial_days_left']} days remaining on your trial
+					</div>
+				{{endif}}
+			</div>
+			{{if $sub['trial_expiring_soon']}}
+			<div>
+				<a href="{$sub['commerce_url']}" class="ipsButton ipsButton--primary ipsButton--small">Subscribe Now</a>
+			</div>
+			{{endif}}
+		</div>
+	</div>
+	{{endif}}
 
 	<p>{$billingNote}</p>
 

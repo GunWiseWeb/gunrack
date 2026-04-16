@@ -146,7 +146,7 @@ class _dealers extends \IPS\Dispatcher\Controller
 		}
 
 		$invoiceUrl = (string) \IPS\Http\Url::internal(
-			'app=nexus&module=payments&controller=invoices&do=add&member_id=' . (int) $dealer->dealer_id
+			'app=nexus&module=customers&controller=search&do=view&id=' . (int) $dealer->dealer_id
 		);
 
 		$dealerData = [
