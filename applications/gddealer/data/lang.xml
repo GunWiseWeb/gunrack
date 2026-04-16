@@ -192,5 +192,7 @@
     <word key="gddealer_settings_subscription_tab"><![CDATA[Subscription Tab]]></word>
     <word key="gddealer_subscription_billing_note"><![CDATA[Subscription Tab Billing Note]]></word>
     <word key="gddealer_subscription_billing_note_desc"><![CDATA[Text shown at the bottom of the dealer-facing Subscription tab. Explains how billing works.]]></word>
+    <word key="gddealer_subscribe_url"><![CDATA[Subscribe Now Button URL]]></word>
+    <word key="gddealer_subscribe_url_desc"><![CDATA[URL for the "Subscribe Now" button shown to dealers whose trial is expiring. Leave blank to hide the button.]]></word>
   </app>
 </language>

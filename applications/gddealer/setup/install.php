@@ -188,7 +188,7 @@ TEMPLATE_EOT,
 		'location'      => 'admin',
 		'group'         => 'dealers',
 		'template_name' => 'dealerDetail',
-		'template_data' => '$dealer, $logs, $listings, $backUrl, $editUrl, $importUrl, $suspendUrl',
+		'template_data' => '$dealer, $logs, $listings, $backUrl, $editUrl, $importUrl, $suspendUrl, $invoiceUrl',
 		'template_content' => <<<'TEMPLATE_EOT'
 <div class="ipsBox ipsPull">
 	<div class="ipsBox_body">
@@ -251,12 +251,8 @@ TEMPLATE_EOT,
 		<div style="padding:12px 20px;border-top:1px solid var(--i-border-color,#e0e0e0);border-bottom:1px solid var(--i-border-color,#e0e0e0);display:flex;gap:8px;flex-wrap:wrap">
 			<a href="{$editUrl}" class="ipsButton ipsButton--primary ipsButton--small">Edit Feed Config</a>
 			<a href="{$importUrl}" class="ipsButton ipsButton--normal ipsButton--small">Force Import Now</a>
-			<a href="{$dealer['invoice_url']}" class="ipsButton ipsButton--normal ipsButton--small">View in Commerce</a>
-			{{if $dealer['suspended']}}
-				<a href="{$suspendUrl}" class="ipsButton ipsButton--positive ipsButton--small">Unsuspend Dealer</a>
-			{{else}}
-				<a href="{$suspendUrl}" class="ipsButton ipsButton--negative ipsButton--small">Suspend Dealer</a>
-			{{endif}}
+			<a href="{$invoiceUrl}" class="ipsButton ipsButton--normal ipsButton--small">View in Commerce</a>
+			<a href="{$suspendUrl}" class="ipsButton ipsButton--negative ipsButton--small">{{if $dealer['suspended']}}Unsuspend Dealer{{else}}Suspend Dealer{{endif}}</a>
 		</div>
 
 		<div style="padding:12px 20px;font-weight:700;font-size:0.9em;text-transform:uppercase;letter-spacing:0.05em;color:#666;border-bottom:1px solid var(--i-border-color,#e0e0e0)">Recent Import Log</div>
@@ -915,7 +911,7 @@ TEMPLATE_EOT,
 			<div>
 				<div style="font-size:0.8em;color:#666;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">Trial Period</div>
 				<div style="font-weight:700;font-size:1.05em">
-					Expires {$sub['trial_expires_at']}
+					Expires {$sub['trial_expires_formatted']}
 				</div>
 				{{if $sub['trial_expiring_soon']}}
 					<div style="margin-top:4px;color:#dc2626;font-size:0.9em;font-weight:600">
@@ -929,7 +925,7 @@ TEMPLATE_EOT,
 			</div>
 			{{if $sub['trial_expiring_soon']}}
 			<div>
-				<a href="{$sub['commerce_url']}" class="ipsButton ipsButton--primary ipsButton--small">Subscribe Now</a>
+				<a href="{$sub['subscribe_url']}" class="ipsButton ipsButton--primary ipsButton--small">Subscribe Now</a>
 			</div>
 			{{endif}}
 		</div>

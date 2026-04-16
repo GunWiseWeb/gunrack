@@ -66,5 +66,9 @@
 	{
 		"key": "gddealer_subscription_billing_note",
 		"default": "Billing, upgrades, and cancellation are handled through your IPS Commerce customer area. Changes take effect on your next billing cycle."
+	},
+	{
+		"key": "gddealer_subscribe_url",
+		"default": ""
 	}
 ]

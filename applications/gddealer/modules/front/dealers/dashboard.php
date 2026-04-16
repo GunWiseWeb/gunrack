@@ -605,27 +605,32 @@ class _dashboard extends \IPS\Dispatcher\Controller
 	{
 		$dealer = $this->dealer;
 
-		$trialExpiresAt    = (string) ( $dealer->trial_expires_at ?? '' );
-		$trialDaysLeft     = null;
-		$trialExpiringSoon = false;
+		$trialExpiresAt        = (string) ( $dealer->trial_expires_at ?? '' );
+		$trialDaysLeft         = null;
+		$trialExpiringSoon     = false;
+		$trialExpiresFormatted = '';
 
 		if ( $trialExpiresAt && $trialExpiresAt !== '0000-00-00 00:00:00' )
 		{
-			$expiryTs          = strtotime( $trialExpiresAt );
-			$trialDaysLeft     = (int) ceil( ( $expiryTs - time() ) / 86400 );
-			$trialExpiringSoon = $trialDaysLeft <= 30;
+			$expiryTs              = strtotime( $trialExpiresAt );
+			$trialDaysLeft         = (int) ceil( ( $expiryTs - time() ) / 86400 );
+			$trialExpiringSoon     = $trialDaysLeft <= 30;
+			$trialExpiresFormatted = date( 'F j, Y', $expiryTs );
 		}
 
+		$subscribeUrl = (string) ( \IPS\Settings::i()->gddealer_subscribe_url ?? '' );
+
 		$sub = [
-			'tier'                => (string) $dealer->subscription_tier,
-			'tier_label'          => ucfirst( (string) $dealer->subscription_tier ),
-			'mrr'                 => '$' . number_format( $dealer->mrrContribution(), 2 ),
-			'active'              => (bool) $dealer->active,
-			'suspended'           => (bool) $dealer->suspended,
-			'trial_expires_at'    => $trialExpiresAt ?: '',
-			'trial_days_left'     => $trialDaysLeft,
-			'trial_expiring_soon' => $trialExpiringSoon,
-			'commerce_url'        => (string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=join' ),
+			'tier'                    => (string) $dealer->subscription_tier,
+			'tier_label'              => ucfirst( (string) $dealer->subscription_tier ),
+			'mrr'                     => '$' . number_format( $dealer->mrrContribution(), 2 ),
+			'active'                  => (bool) $dealer->active,
+			'suspended'               => (bool) $dealer->suspended,
+			'trial_expires_at'        => $trialExpiresAt ?: '',
+			'trial_expires_formatted' => $trialExpiresFormatted,
+			'trial_days_left'         => $trialDaysLeft,
+			'trial_expiring_soon'     => $trialExpiringSoon,
+			'subscribe_url'           => $subscribeUrl ?: '#',
 		];
 
 		$billingNote = (string) ( \IPS\Settings::i()->gddealer_subscription_billing_note ?? '' );

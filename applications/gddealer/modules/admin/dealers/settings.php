@@ -69,6 +69,11 @@ class _settings extends \IPS\Dispatcher\Controller
 		$form->add( new \IPS\Helpers\Form\TextArea( 'gddealer_subscription_billing_note',
 			(string) ( $settings->gddealer_subscription_billing_note ?? '' ), FALSE, [ 'rows' => 3 ] ) );
 
+		$subscribeUrlValue = (string) ( $settings->gddealer_subscribe_url ?? '' );
+		$form->add( new \IPS\Helpers\Form\Url( 'gddealer_subscribe_url',
+			$subscribeUrlValue ? \IPS\Http\Url::external( $subscribeUrlValue ) : null,
+			FALSE ) );
+
 		$form->addHeader( 'gddealer_settings_help_content' );
 
 		$form->add( new \IPS\Helpers\Form\TextArea( 'gddealer_help_intro',
@@ -100,6 +105,7 @@ class _settings extends \IPS\Dispatcher\Controller
 				'gddealer_commerce_pro_id'            => (int) $values['gddealer_commerce_pro_id'],
 				'gddealer_commerce_enterprise_id'     => (int) $values['gddealer_commerce_enterprise_id'],
 				'gddealer_subscription_billing_note'  => (string) $values['gddealer_subscription_billing_note'],
+				'gddealer_subscribe_url'              => (string) $values['gddealer_subscribe_url'],
 				'gddealer_help_intro'                 => (string) $values['gddealer_help_intro'],
 				'gddealer_help_step1'                 => (string) $values['gddealer_help_step1'],
 				'gddealer_help_step2'                 => (string) $values['gddealer_help_step2'],

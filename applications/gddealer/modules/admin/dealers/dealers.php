@@ -165,7 +165,6 @@ class _dealers extends \IPS\Dispatcher\Controller
 			'trial_expires_at'  => $trialExpires,
 			'trial_expires_soon'=> $trialSoon,
 			'billing_note'      => (string) ( $dealer->billing_note ?? '' ),
-			'invoice_url'       => $invoiceUrl,
 		];
 
 		$backUrl    = (string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dealers' );
@@ -175,7 +174,7 @@ class _dealers extends \IPS\Dispatcher\Controller
 
 		\IPS\Output::i()->title  = $dealerData['dealer_name'];
 		\IPS\Output::i()->output = \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'admin' )->dealerDetail(
-			$dealerData, $logs, $listings, $backUrl, $editUrl, $importUrl, $suspendUrl
+			$dealerData, $logs, $listings, $backUrl, $editUrl, $importUrl, $suspendUrl, $invoiceUrl
 		);
 	}
 
