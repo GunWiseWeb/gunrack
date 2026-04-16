@@ -1,3 +1,4 @@
 {
-	"DealerImportFeeds": "PT15M"
+	"DealerImportFeeds": "PT15M",
+	"ExpireTrials": "P1D"
 }

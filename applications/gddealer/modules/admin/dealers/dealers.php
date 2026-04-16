@@ -396,6 +396,16 @@ class _dealers extends \IPS\Dispatcher\Controller
 
 			$this->assignDealersGroup( $member );
 
+			try
+			{
+				\IPS\Email::buildFromTemplate( 'gddealer', 'dealerWelcome', [
+					'name'          => $member->name,
+					'api_key'       => $apiKey,
+					'contact_email' => (string) ( \IPS\Settings::i()->gddealer_help_contact ?: 'dealers@gunrack.deals' ),
+				], \IPS\Email::TYPE_TRANSACTIONAL )->send( $member );
+			}
+			catch ( \Exception ) {}
+
 			\IPS\Output::i()->redirect(
 				\IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dealers&do=view&id=' . $memberId ),
 				'gddealer_onboard_created'

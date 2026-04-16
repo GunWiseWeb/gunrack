@@ -194,5 +194,9 @@
     <word key="gddealer_subscription_billing_note_desc"><![CDATA[Text shown at the bottom of the dealer-facing Subscription tab. Explains how billing works.]]></word>
     <word key="gddealer_subscribe_url"><![CDATA[Subscribe Now Button URL]]></word>
     <word key="gddealer_subscribe_url_desc"><![CDATA[URL for the "Subscribe Now" button shown to dealers whose trial is expiring. Leave blank to hide the button.]]></word>
+    <word key="gddealer_email_trialExpired"><![CDATA[Dealer Trial Expired]]></word>
+    <word key="gddealer_email_trialExpiringSoon"><![CDATA[Dealer Trial Expiring Soon]]></word>
+    <word key="gddealer_email_dealerWelcome"><![CDATA[Dealer Welcome Email]]></word>
+    <word key="task__ExpireTrials"><![CDATA[Expire dealer trials and suspend listings]]></word>
   </app>
 </language>
