@@ -613,9 +613,12 @@ class _dashboard extends \IPS\Dispatcher\Controller
 			'suspended'  => (bool) $dealer->suspended,
 		];
 
+		$billingNote = (string) ( \IPS\Settings::i()->gddealer_subscription_billing_note ?? '' );
+
 		$this->output( 'subscription', \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )->subscription(
 			$this->dealerSummary(),
 			$sub,
+			$billingNote,
 			$this->tabUrls()
 		) );
 	}

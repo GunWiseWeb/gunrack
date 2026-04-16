@@ -131,6 +131,24 @@ class _dealers extends \IPS\Dispatcher\Controller
 			];
 		}
 
+		$trialRaw      = $dealer->trial_expires_at ?? null;
+		$trialExpires  = $trialRaw ? (string) $trialRaw : '';
+		$trialSoon     = false;
+		if ( $trialRaw )
+		{
+			try
+			{
+				$dt = new \DateTime( $trialRaw );
+				$now = new \DateTime();
+				$trialSoon = ( $dt > $now && $dt->getTimestamp() - $now->getTimestamp() <= 30 * 86400 );
+			}
+			catch ( \Exception ) {}
+		}
+
+		$invoiceUrl = (string) \IPS\Http\Url::internal(
+			'app=nexus&module=payments&controller=invoices&do=add&member_id=' . (int) $dealer->dealer_id
+		);
+
 		$dealerData = [
 			'dealer_id'         => (int) $dealer->dealer_id,
 			'dealer_name'       => (string) $dealer->dealer_name,
@@ -144,6 +162,10 @@ class _dealers extends \IPS\Dispatcher\Controller
 			'last_record_count' => (int) $dealer->last_record_count,
 			'api_key'           => (string) ( $dealer->api_key ?? '' ),
 			'mrr'               => '$' . number_format( $dealer->mrrContribution(), 2 ),
+			'trial_expires_at'  => $trialExpires,
+			'trial_expires_soon'=> $trialSoon,
+			'billing_note'      => (string) ( $dealer->billing_note ?? '' ),
+			'invoice_url'       => $invoiceUrl,
 		];
 
 		$backUrl    = (string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dealers' );
@@ -205,6 +227,15 @@ class _dealers extends \IPS\Dispatcher\Controller
 		] ) );
 		$form->add( new \IPS\Helpers\Form\YesNo( 'gddealer_dealer_active', $dealer->active, FALSE ) );
 
+		$existingTrialDate = null;
+		if ( $dealer->trial_expires_at )
+		{
+			try { $existingTrialDate = new \IPS\DateTime( $dealer->trial_expires_at ); }
+			catch ( \Exception ) {}
+		}
+		$form->add( new \IPS\Helpers\Form\Date( 'gddealer_onboard_trial_expires', $existingTrialDate, FALSE ) );
+		$form->add( new \IPS\Helpers\Form\TextArea( 'gddealer_onboard_billing_note', (string) ( $dealer->billing_note ?? '' ), FALSE, [ 'rows' => 3 ] ) );
+
 		if ( $values = $form->values() )
 		{
 			$dealer->dealer_name       = $values['gddealer_dealer_name'];
@@ -220,6 +251,17 @@ class _dealers extends \IPS\Dispatcher\Controller
 
 			$mapJson = trim( $values['gddealer_dealer_field_mapping'] );
 			$dealer->field_mapping = ( $mapJson !== '' && json_decode( $mapJson ) !== null ) ? $mapJson : null;
+
+			if ( $values['gddealer_onboard_trial_expires'] instanceof \IPS\DateTime )
+			{
+				$dealer->trial_expires_at = $values['gddealer_onboard_trial_expires']->format( 'Y-m-d H:i:s' );
+			}
+			else
+			{
+				$dealer->trial_expires_at = null;
+			}
+			$billingNote = trim( (string) $values['gddealer_onboard_billing_note'] );
+			$dealer->billing_note = $billingNote !== '' ? $billingNote : null;
 
 			$dealer->save();
 
@@ -290,6 +332,8 @@ class _dealers extends \IPS\Dispatcher\Controller
 				Dealer::TIER_FOUNDING   => 'Founding',
 			],
 		] ) );
+		$form->add( new \IPS\Helpers\Form\Date( 'gddealer_onboard_trial_expires', null, FALSE ) );
+		$form->add( new \IPS\Helpers\Form\TextArea( 'gddealer_onboard_billing_note', '', FALSE, [ 'rows' => 3 ] ) );
 
 		if ( $values = $form->values() )
 		{
@@ -324,6 +368,12 @@ class _dealers extends \IPS\Dispatcher\Controller
 			$tierKey = array_key_exists( $tier, Dealer::$tierSchedules ) ? $tier : Dealer::TIER_BASIC;
 			$apiKey  = bin2hex( random_bytes( 24 ) );
 
+			$trialExpires = null;
+			if ( $values['gddealer_onboard_trial_expires'] instanceof \IPS\DateTime )
+			{
+				$trialExpires = $values['gddealer_onboard_trial_expires']->format( 'Y-m-d H:i:s' );
+			}
+
 			\IPS\Db::i()->insert( 'gd_dealer_feed_config', [
 				'dealer_id'         => $memberId,
 				'dealer_name'       => (string) $values['gddealer_onboard_name'],
@@ -341,6 +391,8 @@ class _dealers extends \IPS\Dispatcher\Controller
 				'last_record_count' => 0,
 				'api_key'           => $apiKey,
 				'created_at'        => date( 'Y-m-d H:i:s' ),
+				'trial_expires_at'  => $trialExpires,
+				'billing_note'      => trim( (string) $values['gddealer_onboard_billing_note'] ) ?: null,
 			]);
 
 			$this->assignDealersGroup( $member );

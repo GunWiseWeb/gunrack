@@ -185,5 +185,12 @@
     <word key="gddealer_nav_dashboard"><![CDATA[Dealer Dashboard]]></word>
     <word key="gddealer_member_group_id"><![CDATA[Dealers Member Group ID (Navigation)]]></word>
     <word key="gddealer_member_group_id_desc"><![CDATA[IPS member group ID for the Dealers group. Members in this group see a "Dealer Dashboard" link in the user dropdown menu. Find the ID in ACP → Members → Groups.]]></word>
+    <word key="gddealer_onboard_trial_expires"><![CDATA[Trial Expiry Date]]></word>
+    <word key="gddealer_onboard_trial_expires_desc"><![CDATA[Optional. When set, this dealer's trial period ends on this date. A warning badge is shown in the dealer detail view when within 30 days of expiry.]]></word>
+    <word key="gddealer_onboard_billing_note"><![CDATA[Billing Notes]]></word>
+    <word key="gddealer_onboard_billing_note_desc"><![CDATA[Internal admin notes about this dealer's billing arrangement (e.g. founding deal, comp'd, invoice terms).]]></word>
+    <word key="gddealer_settings_subscription_tab"><![CDATA[Subscription Tab]]></word>
+    <word key="gddealer_subscription_billing_note"><![CDATA[Subscription Tab Billing Note]]></word>
+    <word key="gddealer_subscription_billing_note_desc"><![CDATA[Text shown at the bottom of the dealer-facing Subscription tab. Explains how billing works.]]></word>
   </app>
 </language>

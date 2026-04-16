@@ -225,15 +225,33 @@ TEMPLATE_EOT,
 				<div style="font-size:0.8em;color:#666;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">Feed URL</div>
 				<div style="font-weight:700;font-size:1.05em"><code>{$dealer['feed_url']}</code></div>
 			</div>
-			<div style="padding:16px 20px">
+			<div style="padding:16px 20px;border-bottom:1px solid var(--i-border-color,#e0e0e0)">
 				<div style="font-size:0.8em;color:#666;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">API Key</div>
-				<div style="font-weight:700;font-size:1.05em"><code>{$dealer['api_key']}</code></div>
+				<div style="font-family:monospace;font-size:0.85em;background:#f4f4f4;padding:6px 10px;border-radius:4px;word-break:break-all">{$dealer['api_key']}</div>
 			</div>
+			{{if $dealer['trial_expires_at']}}
+			<div style="padding:16px 20px;border-bottom:1px solid var(--i-border-color,#e0e0e0)">
+				<div style="font-size:0.8em;color:#666;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">Trial Expires</div>
+				<div style="font-weight:700;font-size:1.05em">
+					{$dealer['trial_expires_at']}
+					{{if $dealer['trial_expires_soon']}}
+						<span class="ipsBadge ipsBadge--warning" style="margin-left:8px">Expires within 30 days</span>
+					{{endif}}
+				</div>
+			</div>
+			{{endif}}
+			{{if $dealer['billing_note']}}
+			<div style="padding:16px 20px">
+				<div style="font-size:0.8em;color:#666;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">Billing Notes</div>
+				<div style="font-size:0.95em;white-space:pre-wrap">{$dealer['billing_note']}</div>
+			</div>
+			{{endif}}
 		</div>
 
 		<div style="padding:12px 20px;border-top:1px solid var(--i-border-color,#e0e0e0);border-bottom:1px solid var(--i-border-color,#e0e0e0);display:flex;gap:8px">
 			<a href="{$editUrl}" class="ipsButton ipsButton--primary">Edit Feed Config</a>
 			<a href="{$importUrl}" class="ipsButton ipsButton--normal">Force Import Now</a>
+			<a href="{$dealer['invoice_url']}" class="ipsButton ipsButton--normal">Send Invoice</a>
 			{{if $dealer['suspended']}}
 				<a href="{$suspendUrl}" class="ipsButton ipsButton--positive">Unsuspend Dealer</a>
 			{{else}}
@@ -864,7 +882,7 @@ TEMPLATE_EOT,
 		'location'      => 'front',
 		'group'         => 'dealers',
 		'template_name' => 'subscription',
-		'template_data' => '$dealer, $sub, $tabUrls',
+		'template_data' => '$dealer, $sub, $billingNote, $tabUrls',
 		'template_content' => <<<'TEMPLATE_EOT'
 <div>
 
@@ -891,7 +909,7 @@ TEMPLATE_EOT,
 		</div>
 	</div>
 
-	<p>{lang="gddealer_front_subscription_note"}</p>
+	<p>{$billingNote}</p>
 
 </div>
 TEMPLATE_EOT,

@@ -987,6 +987,34 @@
 				"zerofill": false,
 				"values": [],
 				"comment": ""
+			},
+			"trial_expires_at": {
+				"name": "trial_expires_at",
+				"type": "DATETIME",
+				"length": null,
+				"decimals": null,
+				"allow_null": true,
+				"default": null,
+				"auto_increment": false,
+				"binary": false,
+				"unsigned": false,
+				"zerofill": false,
+				"values": [],
+				"comment": ""
+			},
+			"billing_note": {
+				"name": "billing_note",
+				"type": "TEXT",
+				"length": null,
+				"decimals": null,
+				"allow_null": true,
+				"default": null,
+				"auto_increment": false,
+				"binary": false,
+				"unsigned": false,
+				"zerofill": false,
+				"values": [],
+				"comment": ""
 			}
 		},
 		"indexes": {

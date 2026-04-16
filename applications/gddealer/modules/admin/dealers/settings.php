@@ -62,9 +62,14 @@ class _settings extends \IPS\Dispatcher\Controller
 		$form->add( new \IPS\Helpers\Form\Number( 'gddealer_commerce_enterprise_id',
 			(int) \IPS\Settings::i()->gddealer_commerce_enterprise_id, FALSE ) );
 
-		$form->addHeader( 'gddealer_settings_help_content' );
+		$form->addHeader( 'gddealer_settings_subscription_tab' );
 
 		$settings = \IPS\Settings::i();
+
+		$form->add( new \IPS\Helpers\Form\TextArea( 'gddealer_subscription_billing_note',
+			(string) ( $settings->gddealer_subscription_billing_note ?? '' ), FALSE, [ 'rows' => 3 ] ) );
+
+		$form->addHeader( 'gddealer_settings_help_content' );
 
 		$form->add( new \IPS\Helpers\Form\TextArea( 'gddealer_help_intro',
 			(string) ( $settings->gddealer_help_intro ?? '' ), FALSE, [ 'rows' => 3 ] ) );
@@ -86,22 +91,23 @@ class _settings extends \IPS\Dispatcher\Controller
 		if ( $values = $form->values() )
 		{
 			$form->saveAsSettings( [
-				'gddealer_group_id'                 => (int) $values['gddealer_group_id'],
-				'gddealer_member_group_id'          => (int) $values['gddealer_member_group_id'],
-				'gddealer_default_import_schedule'  => (string) $values['gddealer_default_import_schedule'],
-				'gddealer_out_of_stock_grace_hours' => (int) $values['gddealer_out_of_stock_grace_hours'],
-				'gddealer_click_tracking_enabled'   => (int) $values['gddealer_click_tracking_enabled'],
-				'gddealer_commerce_basic_id'        => (int) $values['gddealer_commerce_basic_id'],
-				'gddealer_commerce_pro_id'          => (int) $values['gddealer_commerce_pro_id'],
-				'gddealer_commerce_enterprise_id'   => (int) $values['gddealer_commerce_enterprise_id'],
-				'gddealer_help_intro'               => (string) $values['gddealer_help_intro'],
-				'gddealer_help_step1'               => (string) $values['gddealer_help_step1'],
-				'gddealer_help_step2'               => (string) $values['gddealer_help_step2'],
-				'gddealer_help_step3'               => (string) $values['gddealer_help_step3'],
-				'gddealer_help_step4'               => (string) $values['gddealer_help_step4'],
-				'gddealer_help_step5'               => (string) $values['gddealer_help_step5'],
-				'gddealer_help_requirements'        => (string) $values['gddealer_help_requirements'],
-				'gddealer_help_contact'             => (string) $values['gddealer_help_contact'],
+				'gddealer_group_id'                   => (int) $values['gddealer_group_id'],
+				'gddealer_member_group_id'            => (int) $values['gddealer_member_group_id'],
+				'gddealer_default_import_schedule'    => (string) $values['gddealer_default_import_schedule'],
+				'gddealer_out_of_stock_grace_hours'   => (int) $values['gddealer_out_of_stock_grace_hours'],
+				'gddealer_click_tracking_enabled'     => (int) $values['gddealer_click_tracking_enabled'],
+				'gddealer_commerce_basic_id'          => (int) $values['gddealer_commerce_basic_id'],
+				'gddealer_commerce_pro_id'            => (int) $values['gddealer_commerce_pro_id'],
+				'gddealer_commerce_enterprise_id'     => (int) $values['gddealer_commerce_enterprise_id'],
+				'gddealer_subscription_billing_note'  => (string) $values['gddealer_subscription_billing_note'],
+				'gddealer_help_intro'                 => (string) $values['gddealer_help_intro'],
+				'gddealer_help_step1'                 => (string) $values['gddealer_help_step1'],
+				'gddealer_help_step2'                 => (string) $values['gddealer_help_step2'],
+				'gddealer_help_step3'                 => (string) $values['gddealer_help_step3'],
+				'gddealer_help_step4'                 => (string) $values['gddealer_help_step4'],
+				'gddealer_help_step5'                 => (string) $values['gddealer_help_step5'],
+				'gddealer_help_requirements'          => (string) $values['gddealer_help_requirements'],
+				'gddealer_help_contact'               => (string) $values['gddealer_help_contact'],
 			]);
 
 			\IPS\Output::i()->redirect(
