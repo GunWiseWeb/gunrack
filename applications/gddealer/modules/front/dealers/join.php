@@ -57,53 +57,83 @@ class _join extends \IPS\Dispatcher\Controller
 			catch ( \OutOfRangeException ) { /* not a dealer yet, show landing */ }
 		}
 
+		$requestUrl = (string) \IPS\Http\Url::internal(
+			'app=gddealer&module=dealers&controller=join&do=requestAccess'
+		);
+
 		$tiers = [
 			[
-				'key'        => Dealer::TIER_BASIC,
-				'label'      => 'Basic',
-				'price'      => '$39 / month',
-				'schedule'   => 'Feed imports every 6 hours',
-				'features'   => [
+				'key'         => Dealer::TIER_BASIC,
+				'label'       => 'Basic',
+				'price'       => '$39 / month',
+				'schedule'    => 'Feed imports every 6 hours',
+				'features'    => [
 					'Unlimited listings',
 					'XML / JSON / CSV feed formats',
 					'Import logs + unmatched UPC report',
 					'Basic click-through stats',
 				],
+				'commerce_url' => $this->commerceUrlFor( (int) \IPS\Settings::i()->gddealer_commerce_basic_id, $requestUrl ),
 			],
 			[
-				'key'        => Dealer::TIER_PRO,
-				'label'      => 'Pro',
-				'price'      => '$99 / month',
-				'schedule'   => 'Feed imports every 30 minutes',
-				'features'   => [
+				'key'         => Dealer::TIER_PRO,
+				'label'       => 'Pro',
+				'price'       => '$99 / month',
+				'schedule'    => 'Feed imports every 30 minutes',
+				'features'    => [
 					'Everything in Basic',
 					'Priority placement in price comparison',
 					'Full analytics — top listings, price competitiveness',
 					'Revenue opportunity report',
 				],
+				'commerce_url' => $this->commerceUrlFor( (int) \IPS\Settings::i()->gddealer_commerce_pro_id, $requestUrl ),
+				'featured'     => TRUE,
 			],
 			[
-				'key'        => Dealer::TIER_ENTERPRISE,
-				'label'      => 'Enterprise',
-				'price'      => '$249 / month',
-				'schedule'   => 'Feed imports every 15 minutes',
-				'features'   => [
+				'key'         => Dealer::TIER_ENTERPRISE,
+				'label'       => 'Enterprise',
+				'price'       => '$249 / month',
+				'schedule'    => 'Feed imports every 15 minutes',
+				'features'    => [
 					'Everything in Pro',
 					'Fastest feed sync available',
 					'Dedicated onboarding support',
 					'Early access to new features',
 				],
+				'commerce_url' => $this->commerceUrlFor( (int) \IPS\Settings::i()->gddealer_commerce_enterprise_id, $requestUrl ),
 			],
 		];
 
-		$requestUrl = (string) \IPS\Http\Url::internal(
-			'app=gddealer&module=dealers&controller=join&do=requestAccess'
-		);
+		/* Normalize — PHP warns if 'featured' is missing on a row, so default
+		 * it on every tier to keep the template simple. */
+		foreach ( $tiers as &$t )
+		{
+			$t['featured'] = !empty( $t['featured'] );
+		}
+		unset( $t );
 
 		\IPS\Output::i()->title  = \IPS\Member::loggedIn()->language()->addToStack( 'gddealer_front_join_title' );
 		\IPS\Output::i()->output = \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )->join(
 			$tiers,
 			$requestUrl
+		);
+	}
+
+	/**
+	 * Resolve a tier's CTA URL. If an IPS Commerce product ID is configured
+	 * in the gddealer_commerce_*_id settings, send the dealer straight into
+	 * the nexus checkout flow for that product. Otherwise fall back to the
+	 * manual "Request Dealer Access" form — needed for the stub onboarding
+	 * path before Commerce+Stripe goes live.
+	 */
+	protected function commerceUrlFor( int $productId, string $fallback ): string
+	{
+		if ( $productId <= 0 )
+		{
+			return $fallback;
+		}
+		return (string) \IPS\Http\Url::internal(
+			'app=nexus&module=store&controller=product&id=' . $productId
 		);
 	}
 

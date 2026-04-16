@@ -22,9 +22,8 @@ $gddealerTemplates = [
 		'template_name' => 'dashboard',
 		'template_data' => '$totalDealers, $activeDealers, $suspendedDealers, $totalListings, $inStockListings, $unmatchedTotal, $lastRunTime, $lastRunStatus, $tierCounts, $dealersUrl, $mrrUrl, $unmatchedUrl',
 		'template_content' => <<<'TEMPLATE_EOT'
-<div class="ipsBox">
-	<h1 class="ipsBox_title">{lang="gddealer_dash_title"}</h1>
-	<div class="ipsPad">
+<div class="ipsBox ipsPull">
+	<div class="ipsBox_body ipsPad">
 
 		<div style="display:flex;gap:16px;margin-bottom:24px;flex-wrap:wrap">
 			<div class="ipsBox" style="flex:1 1 150px;padding:16px;text-align:center">
@@ -104,9 +103,8 @@ TEMPLATE_EOT,
 		'template_name' => 'dealerList',
 		'template_data' => '$dealers, $onboardUrl',
 		'template_content' => <<<'TEMPLATE_EOT'
-<div class="ipsBox">
-	<h1 class="ipsBox_title">{lang="gddealer_dealers_title"}</h1>
-	<div class="ipsPad">
+<div class="ipsBox ipsPull">
+	<div class="ipsBox_body ipsPad">
 
 		<div style="margin-bottom:16px">
 			<a href="{$onboardUrl}" class="ipsButton ipsButton--primary">{lang="gddealer_onboard_button"}</a>
@@ -192,9 +190,8 @@ TEMPLATE_EOT,
 		'template_name' => 'dealerDetail',
 		'template_data' => '$dealer, $logs, $listings, $backUrl, $editUrl, $importUrl, $suspendUrl',
 		'template_content' => <<<'TEMPLATE_EOT'
-<div class="ipsBox">
-	<h1 class="ipsBox_title">{$dealer['dealer_name']}</h1>
-	<div class="ipsPad">
+<div class="ipsBox ipsPull">
+	<div class="ipsBox_body ipsPad">
 
 		<p><a href="{$backUrl}">&larr; Back to dealer list</a></p>
 
@@ -319,9 +316,8 @@ TEMPLATE_EOT,
 		'template_name' => 'mrrDashboard',
 		'template_data' => '$totalMrr, $tierRows, $newSignups, $churn',
 		'template_content' => <<<'TEMPLATE_EOT'
-<div class="ipsBox">
-	<h1 class="ipsBox_title">{lang="gddealer_mrr_title"}</h1>
-	<div class="ipsPad">
+<div class="ipsBox ipsPull">
+	<div class="ipsBox_body ipsPad">
 
 		<div style="display:flex;gap:16px;margin-bottom:24px;flex-wrap:wrap">
 			<div class="ipsBox" style="flex:1 1 200px;padding:16px;text-align:center">
@@ -368,9 +364,8 @@ TEMPLATE_EOT,
 		'template_name' => 'unmatchedList',
 		'template_data' => '$rows, $total, $pagination',
 		'template_content' => <<<'TEMPLATE_EOT'
-<div class="ipsBox">
-	<h1 class="ipsBox_title">{lang="gddealer_unmatched_title"}</h1>
-	<div class="ipsPad">
+<div class="ipsBox ipsPull">
+	<div class="ipsBox_body ipsPad">
 
 		<p>{expression="number_format( $total )"} unmatched UPCs across all dealer feeds.</p>
 
@@ -835,29 +830,36 @@ TEMPLATE_EOT,
 		'template_name' => 'join',
 		'template_data' => '$tiers, $requestUrl',
 		'template_content' => <<<'TEMPLATE_EOT'
-<div class="ipsBox">
-	<div class="ipsPad">
+<div class="ipsBox ipsPull">
+	<div class="ipsBox_body ipsPad">
 
 		<h1 class="ipsType_pageTitle">{lang="gddealer_front_join_title"}</h1>
 		<p style="max-width:720px">{lang="gddealer_front_join_intro"}</p>
 
-		<div style="display:flex;gap:16px;margin:24px 0;flex-wrap:wrap">
+		<div style="display:flex;gap:20px;margin:32px 0;flex-wrap:wrap;align-items:stretch">
 			{{foreach $tiers as $t}}
-			<div class="ipsBox" style="flex:1 1 260px;padding:20px">
-				<h2 style="margin:0">{$t['label']}</h2>
-				<div style="font-size:1.6em;font-weight:bold;margin:8px 0">{$t['price']}</div>
-				<div style="color:#666;margin-bottom:12px">{lang="gddealer_front_join_tier_schedule"} {$t['schedule']}</div>
-				<ul style="padding-left:20px;margin:0">
+			<div class="ipsBox" style="{expression="$t['featured'] ? 'flex:1 1 280px;padding:28px 24px;border:2px solid #3b82f6;box-shadow:0 4px 16px rgba(59,130,246,0.15);position:relative;display:flex;flex-direction:column' : 'flex:1 1 280px;padding:28px 24px;border:1px solid #ddd;display:flex;flex-direction:column'"}">
+				{{if $t['featured']}}
+				<div style="position:absolute;top:-12px;right:16px;background:#3b82f6;color:#fff;padding:4px 12px;border-radius:12px;font-size:0.75em;font-weight:bold;text-transform:uppercase;letter-spacing:0.5px">Most Popular</div>
+				{{endif}}
+				<h2 style="margin:0 0 4px 0;font-size:1.4em">{$t['label']}</h2>
+				<div style="font-size:2em;font-weight:bold;margin:8px 0;color:#111">{$t['price']}</div>
+				<div style="color:#666;margin-bottom:20px;font-size:0.9em">{lang="gddealer_front_join_tier_schedule"} <strong>{$t['schedule']}</strong></div>
+				<ul style="list-style:none;padding:0;margin:0 0 20px 0;flex:1">
 					{{foreach $t['features'] as $f}}
-					<li>{$f}</li>
+					<li style="padding:6px 0 6px 26px;position:relative;line-height:1.4">
+						<span style="position:absolute;left:0;top:6px;color:#10b981;font-weight:bold">&#10003;</span>
+						{$f}
+					</li>
 					{{endforeach}}
 				</ul>
+				<a href="{$t['commerce_url']}" class="ipsButton {expression="$t['featured'] ? 'ipsButton--primary' : 'ipsButton--normal'"}" style="width:100%;text-align:center;margin-top:auto">Get Started</a>
 			</div>
 			{{endforeach}}
 		</div>
 
-		<p style="margin-top:16px">
-			<a href="{$requestUrl}" class="ipsButton ipsButton--primary">{lang="gddealer_front_join_cta"}</a>
+		<p style="margin-top:24px;color:#666;font-size:0.9em">
+			Not ready to sign up? <a href="{$requestUrl}">Request more information</a> and our team will reach out.
 		</p>
 
 	</div>

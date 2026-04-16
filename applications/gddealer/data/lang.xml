@@ -71,6 +71,13 @@
     <word key="gddealer_out_of_stock_grace_hours_desc"><![CDATA[Listings whose last_seen_in_feed is older than this many hours are marked Out of Stock.]]></word>
     <word key="gddealer_click_tracking_enabled"><![CDATA[Enable Click Tracking]]></word>
     <word key="gddealer_click_tracking_enabled_desc"><![CDATA[Records a click event when users follow a dealer listing URL from the price comparison table.]]></word>
+    <word key="gddealer_commerce_header"><![CDATA[IPS Commerce Products]]></word>
+    <word key="gddealer_commerce_basic_id"><![CDATA[Basic Tier Product ID]]></word>
+    <word key="gddealer_commerce_basic_id_desc"><![CDATA[IPS Commerce product ID for the Basic dealer subscription. The /dealers/join page CTA for Basic routes here. Leave 0 to fall back to the manual request form.]]></word>
+    <word key="gddealer_commerce_pro_id"><![CDATA[Pro Tier Product ID]]></word>
+    <word key="gddealer_commerce_pro_id_desc"><![CDATA[IPS Commerce product ID for the Pro dealer subscription.]]></word>
+    <word key="gddealer_commerce_enterprise_id"><![CDATA[Enterprise Tier Product ID]]></word>
+    <word key="gddealer_commerce_enterprise_id_desc"><![CDATA[IPS Commerce product ID for the Enterprise dealer subscription.]]></word>
     <word key="gddealer_frontend_dashboard_title"><![CDATA[Dealer Dashboard]]></word>
     <word key="gddealer_frontend_overview"><![CDATA[Overview]]></word>
     <word key="gddealer_frontend_feed_settings"><![CDATA[Feed Settings]]></word>

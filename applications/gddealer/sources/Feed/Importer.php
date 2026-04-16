@@ -32,6 +32,15 @@ class Importer
 {
 	/**
 	 * Run a full feed import for a dealer and return the completed log.
+	 *
+	 * After the per-record upsert loop completes, we:
+	 *   (a) mark stale listings out of stock (spec §3.8),
+	 *   (b) recalculate denormalized pricing fields on gd_catalog for every
+	 *       UPC touched in this run — total_min_price, free_ship_avail,
+	 *       min_cpr — which power the Plugin 3 OpenSearch filters (spec §3.8),
+	 *   (c) queue UPCs whose dealer_price decreased this run into the
+	 *       gdpc_pending_alert_upcs setting so Plugin 3's watchlist task
+	 *       can dispatch subscriber price alerts (spec §3.8 / §4.7).
 	 */
 	public static function run( Dealer $dealer ): ImportLog
 	{
@@ -59,8 +68,10 @@ class Importer
 				'alerts_triggered'  => 0,
 			];
 
-			$runStart = date( 'Y-m-d H:i:s' );
-			$seenIds  = [];
+			$runStart      = date( 'Y-m-d H:i:s' );
+			$seenIds       = [];
+			$touchedUpcs   = [];
+			$priceDropUpcs = [];
 
 			foreach ( $records as $raw )
 			{
@@ -96,7 +107,11 @@ class Importer
 					{
 						PriceHistory::record( (int) $dealer->dealer_id, $upc, (float) $canonical['dealer_price'], !empty( $canonical['in_stock'] ) );
 						$stats['records_updated']++;
-						if ( $diff['priceDelta'] < 0 ) { $stats['price_drops']++; }
+						if ( $diff['priceDelta'] < 0 )
+						{
+							$stats['price_drops']++;
+							$priceDropUpcs[ $upc ] = true;
+						}
 						if ( $diff['priceDelta'] > 0 ) { $stats['price_increases']++; }
 					}
 					else
@@ -106,10 +121,30 @@ class Importer
 					$listing->save();
 				}
 
-				$seenIds[] = (int) $listing->id;
+				$seenIds[]           = (int) $listing->id;
+				$touchedUpcs[ $upc ] = true;
 			}
 
 			self::markStale( (int) $dealer->dealer_id, $runStart );
+
+			/* Recalculate denormalized pricing on gd_catalog for every UPC
+			 * touched this run (new, updated, or unchanged). Every touched
+			 * UPC must be refreshed even if THIS dealer's listing didn't
+			 * change, because a stale-listing sweep above may have changed
+			 * the global MIN(price) across other dealers. */
+			foreach ( array_keys( $touchedUpcs ) as $upc )
+			{
+				self::updateProductPricing( (string) $upc );
+			}
+
+			/* Queue price-drop UPCs for Plugin 3's watchlist dispatcher.
+			 * This is a transient handoff — gdpricecompare reads, drains,
+			 * and clears the setting. Merge with any UPCs already queued
+			 * by a concurrent run so we don't clobber them. */
+			if ( !empty( $priceDropUpcs ) )
+			{
+				self::queuePriceAlertUpcs( array_keys( $priceDropUpcs ) );
+			}
 
 			$dealer->last_run           = $runStart;
 			$dealer->last_record_count  = $stats['records_total'];
@@ -127,6 +162,85 @@ class Importer
 			$dealer->save();
 			$log->fail( $e->getMessage() );
 			return $log;
+		}
+	}
+
+	/**
+	 * Refresh denormalized pricing fields on the gd_catalog row for a UPC.
+	 *
+	 * Aggregates all ACTIVE in-stock dealer listings across every dealer.
+	 * If no in-stock listings remain, the pricing fields are cleared so the
+	 * product drops out of Plugin 3's "available" search filter.
+	 *
+	 *   total_min_price    = MIN( dealer_price + COALESCE(shipping_cost, 0) )
+	 *   free_ship_avail    = 1 if any listing has free_shipping = 1, else 0
+	 *   min_cpr            = MIN( (dealer_price + shipping_cost) / rounds_per_box )
+	 *                        for ammo only — NULL for non-ammo products.
+	 */
+	protected static function updateProductPricing( string $upc ): void
+	{
+		try
+		{
+			$product = \IPS\Db::i()->select( 'upc, is_ammo, rounds_per_box', 'gd_catalog', [ 'upc=?', $upc ] )->first();
+		}
+		catch ( \UnderflowException )
+		{
+			return;
+		}
+
+		try
+		{
+			$agg = \IPS\Db::i()->select(
+				'MIN( dealer_price + COALESCE( shipping_cost, 0 ) ) AS total_min, MAX( free_shipping ) AS any_free_ship',
+				'gd_dealer_listings',
+				[ 'upc=? AND listing_status=? AND in_stock=?', $upc, Listing::STATUS_ACTIVE, 1 ]
+			)->first();
+		}
+		catch ( \Exception )
+		{
+			return;
+		}
+
+		$totalMin = ( $agg['total_min'] !== null ) ? (float) $agg['total_min'] : null;
+		$anyFree  = ( (int) ( $agg['any_free_ship'] ?? 0 ) ) === 1 ? 1 : 0;
+
+		$minCpr = null;
+		if ( ! empty( $product['is_ammo'] ) && (int) ( $product['rounds_per_box'] ?? 0 ) > 0 && $totalMin !== null )
+		{
+			$minCpr = round( $totalMin / (int) $product['rounds_per_box'], 4 );
+		}
+
+		\IPS\Db::i()->update( 'gd_catalog', [
+			'total_min_price'  => $totalMin,
+			'free_ship_avail'  => $anyFree,
+			'min_cpr'          => $minCpr,
+		], [ 'upc=?', $upc ] );
+	}
+
+	/**
+	 * Merge the given UPCs into the gdpc_pending_alert_upcs setting so
+	 * Plugin 3's watchlist alert dispatcher can process them. Stub handoff
+	 * only — Plugin 3 owns the actual alert mail-out.
+	 */
+	protected static function queuePriceAlertUpcs( array $upcs ): void
+	{
+		try
+		{
+			$existingRaw = (string) \IPS\Settings::i()->gdpc_pending_alert_upcs;
+			$existing    = $existingRaw !== '' ? (array) json_decode( $existingRaw, true ) : [];
+			if ( ! is_array( $existing ) ) { $existing = []; }
+
+			$merged = array_values( array_unique( array_merge( $existing, $upcs ) ) );
+
+			\IPS\Settings::i()->changeValues( [
+				'gdpc_pending_alert_upcs' => json_encode( $merged ),
+			] );
+		}
+		catch ( \Throwable )
+		{
+			/* Setting may not exist yet if Plugin 3 hasn't been installed.
+			 * That's expected during Plugin 2 isolated runs — don't fail
+			 * the whole import just because the handoff target is missing. */
 		}
 	}
 

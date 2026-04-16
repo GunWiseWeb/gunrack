@@ -50,13 +50,25 @@ class _settings extends \IPS\Dispatcher\Controller
 		$form->add( new \IPS\Helpers\Form\YesNo( 'gddealer_click_tracking_enabled',
 			(bool) \IPS\Settings::i()->gddealer_click_tracking_enabled, FALSE ) );
 
+		$form->addHeader( 'gddealer_commerce_header' );
+
+		$form->add( new \IPS\Helpers\Form\Number( 'gddealer_commerce_basic_id',
+			(int) \IPS\Settings::i()->gddealer_commerce_basic_id, FALSE ) );
+		$form->add( new \IPS\Helpers\Form\Number( 'gddealer_commerce_pro_id',
+			(int) \IPS\Settings::i()->gddealer_commerce_pro_id, FALSE ) );
+		$form->add( new \IPS\Helpers\Form\Number( 'gddealer_commerce_enterprise_id',
+			(int) \IPS\Settings::i()->gddealer_commerce_enterprise_id, FALSE ) );
+
 		if ( $values = $form->values() )
 		{
 			$form->saveAsSettings( [
-				'gddealer_group_id'                => (int) $values['gddealer_group_id'],
-				'gddealer_default_import_schedule' => (string) $values['gddealer_default_import_schedule'],
-				'gddealer_out_of_stock_grace_hours'=> (int) $values['gddealer_out_of_stock_grace_hours'],
-				'gddealer_click_tracking_enabled'  => (int) $values['gddealer_click_tracking_enabled'],
+				'gddealer_group_id'                 => (int) $values['gddealer_group_id'],
+				'gddealer_default_import_schedule'  => (string) $values['gddealer_default_import_schedule'],
+				'gddealer_out_of_stock_grace_hours' => (int) $values['gddealer_out_of_stock_grace_hours'],
+				'gddealer_click_tracking_enabled'   => (int) $values['gddealer_click_tracking_enabled'],
+				'gddealer_commerce_basic_id'        => (int) $values['gddealer_commerce_basic_id'],
+				'gddealer_commerce_pro_id'          => (int) $values['gddealer_commerce_pro_id'],
+				'gddealer_commerce_enterprise_id'   => (int) $values['gddealer_commerce_enterprise_id'],
 			]);
 
 			\IPS\Output::i()->redirect(

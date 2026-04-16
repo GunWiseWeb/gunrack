@@ -1,0 +1,9 @@
+{
+	"dealers": {
+		"dashboard":    { "dealer_manage": "dealer_manage" },
+		"dealers":      { "dealer_manage": "dealer_manage" },
+		"mrr":          { "dealer_manage": "dealer_manage" },
+		"unmatched":    { "dealer_manage": "dealer_manage" },
+		"settings":     { "dealer_manage": "dealer_manage" }
+	}
+}
