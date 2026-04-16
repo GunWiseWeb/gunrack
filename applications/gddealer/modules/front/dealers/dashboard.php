@@ -580,7 +580,23 @@ class _dashboard extends \IPS\Dispatcher\Controller
 
 	protected function help(): void
 	{
-		$this->output( 'help', \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )->help() );
+		$s = \IPS\Settings::i();
+		$requirements = array_filter( array_map( 'trim',
+			explode( "\n", (string) ( $s->gddealer_help_requirements ?? '' ) )
+		) );
+
+		$helpData = [
+			'intro'        => (string) ( $s->gddealer_help_intro ?? '' ),
+			'step1'        => (string) ( $s->gddealer_help_step1 ?? '' ),
+			'step2'        => (string) ( $s->gddealer_help_step2 ?? '' ),
+			'step3'        => (string) ( $s->gddealer_help_step3 ?? '' ),
+			'step4'        => (string) ( $s->gddealer_help_step4 ?? '' ),
+			'step5'        => (string) ( $s->gddealer_help_step5 ?? '' ),
+			'requirements' => array_values( $requirements ),
+			'contact'      => (string) ( $s->gddealer_help_contact ?? '' ),
+		];
+
+		$this->output( 'help', \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )->help( $helpData ) );
 	}
 
 	/* ---------------- Tab: Subscription ---------------- */

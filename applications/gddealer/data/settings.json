@@ -26,5 +26,37 @@
 	{
 		"key": "gddealer_commerce_enterprise_id",
 		"default": "0"
+	},
+	{
+		"key": "gddealer_help_intro",
+		"default": "Follow these steps to get your inventory syncing with GunRack.deals."
+	},
+	{
+		"key": "gddealer_help_step1",
+		"default": "Your feed must be a publicly accessible URL that returns product data in one of our supported formats: XML, JSON, or CSV. The feed must be reachable by our servers without authentication, or use Basic Auth or an API key."
+	},
+	{
+		"key": "gddealer_help_step2",
+		"default": "Your feed must be in CSV, JSON, or XML format. See the examples below each step card for the expected structure."
+	},
+	{
+		"key": "gddealer_help_step3",
+		"default": "If your feed uses different field names than our defaults, enter a JSON mapping in the Field Mapping box on the Feed Settings tab. Map your field names to ours."
+	},
+	{
+		"key": "gddealer_help_step4",
+		"default": "Go to the Feed Settings tab and enter your feed URL. Select your format (CSV, JSON, or XML). If your feed requires authentication, select the auth type and enter your credentials as JSON."
+	},
+	{
+		"key": "gddealer_help_step5",
+		"default": "After your first import completes, go to the Listings tab to see all synced products. Check the Unmatched UPCs tab for any products that couldn't be matched to our catalog."
+	},
+	{
+		"key": "gddealer_help_requirements",
+		"default": "Feed URL must be publicly accessible or use supported auth\nUPC must be a valid 12-digit barcode matching our catalog\nPrice must be a positive decimal number\nFeed must update at least daily\nProducts must comply with all applicable federal, state, and local laws\nNFA items must be clearly identified in your feed\nPricing must reflect your actual selling price"
+	},
+	{
+		"key": "gddealer_help_contact",
+		"default": "dealers@gunrack.deals"
 	}
 ]

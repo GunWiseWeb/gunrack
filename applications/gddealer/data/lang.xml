@@ -165,5 +165,22 @@
     <word key="gddealer_front_subscription_status"><![CDATA[Status]]></word>
     <word key="gddealer_front_subscription_note"><![CDATA[Billing, upgrades, and cancellation are handled through your IPS Commerce customer area. Changes take effect on your next billing cycle.]]></word>
     <word key="gddealer_front_subscription_manage"><![CDATA[Manage Subscription]]></word>
+    <word key="gddealer_settings_help_content"><![CDATA[Help & Setup Page Content]]></word>
+    <word key="gddealer_help_intro"><![CDATA[Help Page Intro]]></word>
+    <word key="gddealer_help_intro_desc"><![CDATA[Intro paragraph shown at top of the Help tab]]></word>
+    <word key="gddealer_help_step1"><![CDATA[Step 1 — Prepare Your Feed]]></word>
+    <word key="gddealer_help_step1_desc"><![CDATA[Content for the first step card on the help page]]></word>
+    <word key="gddealer_help_step2"><![CDATA[Step 2 — Format Your Feed]]></word>
+    <word key="gddealer_help_step2_desc"><![CDATA[Content for the second step card (format examples are always shown below)]]></word>
+    <word key="gddealer_help_step3"><![CDATA[Step 3 — Configure Field Mapping]]></word>
+    <word key="gddealer_help_step3_desc"><![CDATA[Content for the third step card (JSON mapping example is always shown below)]]></word>
+    <word key="gddealer_help_step4"><![CDATA[Step 4 — Enter Feed URL]]></word>
+    <word key="gddealer_help_step4_desc"><![CDATA[Content for the fourth step card (auth examples are always shown below)]]></word>
+    <word key="gddealer_help_step5"><![CDATA[Step 5 — Review Listings]]></word>
+    <word key="gddealer_help_step5_desc"><![CDATA[Content for the fifth step card]]></word>
+    <word key="gddealer_help_requirements"><![CDATA[Feed Requirements]]></word>
+    <word key="gddealer_help_requirements_desc"><![CDATA[One requirement per line. Each line becomes a bullet point in the requirements summary box.]]></word>
+    <word key="gddealer_help_contact"><![CDATA[Contact Email]]></word>
+    <word key="gddealer_help_contact_desc"><![CDATA[Shown at the bottom of the help page as a mailto link. Leave blank to hide.]]></word>
   </app>
 </language>

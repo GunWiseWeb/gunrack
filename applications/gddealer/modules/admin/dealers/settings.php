@@ -59,6 +59,27 @@ class _settings extends \IPS\Dispatcher\Controller
 		$form->add( new \IPS\Helpers\Form\Number( 'gddealer_commerce_enterprise_id',
 			(int) \IPS\Settings::i()->gddealer_commerce_enterprise_id, FALSE ) );
 
+		$form->addHeader( 'gddealer_settings_help_content' );
+
+		$settings = \IPS\Settings::i();
+
+		$form->add( new \IPS\Helpers\Form\TextArea( 'gddealer_help_intro',
+			(string) ( $settings->gddealer_help_intro ?? '' ), FALSE, [ 'rows' => 3 ] ) );
+		$form->add( new \IPS\Helpers\Form\TextArea( 'gddealer_help_step1',
+			(string) ( $settings->gddealer_help_step1 ?? '' ), FALSE, [ 'rows' => 4 ] ) );
+		$form->add( new \IPS\Helpers\Form\TextArea( 'gddealer_help_step2',
+			(string) ( $settings->gddealer_help_step2 ?? '' ), FALSE, [ 'rows' => 4 ] ) );
+		$form->add( new \IPS\Helpers\Form\TextArea( 'gddealer_help_step3',
+			(string) ( $settings->gddealer_help_step3 ?? '' ), FALSE, [ 'rows' => 4 ] ) );
+		$form->add( new \IPS\Helpers\Form\TextArea( 'gddealer_help_step4',
+			(string) ( $settings->gddealer_help_step4 ?? '' ), FALSE, [ 'rows' => 4 ] ) );
+		$form->add( new \IPS\Helpers\Form\TextArea( 'gddealer_help_step5',
+			(string) ( $settings->gddealer_help_step5 ?? '' ), FALSE, [ 'rows' => 4 ] ) );
+		$form->add( new \IPS\Helpers\Form\TextArea( 'gddealer_help_requirements',
+			(string) ( $settings->gddealer_help_requirements ?? '' ), FALSE, [ 'rows' => 8 ] ) );
+		$form->add( new \IPS\Helpers\Form\Text( 'gddealer_help_contact',
+			(string) ( $settings->gddealer_help_contact ?? '' ), FALSE ) );
+
 		if ( $values = $form->values() )
 		{
 			$form->saveAsSettings( [
@@ -69,6 +90,14 @@ class _settings extends \IPS\Dispatcher\Controller
 				'gddealer_commerce_basic_id'        => (int) $values['gddealer_commerce_basic_id'],
 				'gddealer_commerce_pro_id'          => (int) $values['gddealer_commerce_pro_id'],
 				'gddealer_commerce_enterprise_id'   => (int) $values['gddealer_commerce_enterprise_id'],
+				'gddealer_help_intro'               => (string) $values['gddealer_help_intro'],
+				'gddealer_help_step1'               => (string) $values['gddealer_help_step1'],
+				'gddealer_help_step2'               => (string) $values['gddealer_help_step2'],
+				'gddealer_help_step3'               => (string) $values['gddealer_help_step3'],
+				'gddealer_help_step4'               => (string) $values['gddealer_help_step4'],
+				'gddealer_help_step5'               => (string) $values['gddealer_help_step5'],
+				'gddealer_help_requirements'        => (string) $values['gddealer_help_requirements'],
+				'gddealer_help_contact'             => (string) $values['gddealer_help_contact'],
 			]);
 
 			\IPS\Output::i()->redirect(

@@ -894,19 +894,19 @@ TEMPLATE_EOT,
 		'location'      => 'front',
 		'group'         => 'dealers',
 		'template_name' => 'help',
-		'template_data' => '',
+		'template_data' => '$helpData',
 		'template_content' => <<<'TEMPLATE_EOT'
 <div style="max-width:800px">
 
 	<h2 style="margin:0 0 4px">Feed Setup Guide</h2>
-	<p style="color:#666;margin:0 0 24px">Follow these steps to get your inventory syncing with GunRack.deals.</p>
+	<p style="color:#666;margin:0 0 24px">{$helpData['intro']}</p>
 
 	<div style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:20px;margin-bottom:16px">
 		<h3 style="margin:0 0 12px;font-size:1.05em;font-weight:700;color:#1e3a5f">
 			<span style="background:#2563eb;color:#fff;border-radius:50%;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;font-size:0.8em;margin-right:8px;font-weight:700">1</span>
 			Prepare your product feed
 		</h3>
-		<p>Your feed must be a publicly accessible URL that returns product data in one of our supported formats: <strong>XML, JSON, or CSV</strong>. The feed must be reachable by our servers without authentication, or use Basic Auth or an API key.</p>
+		<p>{$helpData['step1']}</p>
 		<p><strong>Required fields per product:</strong></p>
 		<ul style="margin:8px 0;padding-left:20px">
 			<li><strong>UPC</strong> &mdash; 12-digit UPC barcode. Must match our catalog exactly.</li>
@@ -928,8 +928,9 @@ TEMPLATE_EOT,
 			<span style="background:#2563eb;color:#fff;border-radius:50%;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;font-size:0.8em;margin-right:8px;font-weight:700">2</span>
 			Format your feed
 		</h3>
+		<p>{$helpData['step2']}</p>
 
-		<p><strong>CSV format example:</strong></p>
+		<p style="margin-top:12px"><strong>CSV format example:</strong></p>
 		<pre style="background:#f4f4f4;padding:12px;border-radius:4px;overflow-x:auto;font-size:0.85em">upc,price,in_stock,shipping_cost,condition,product_url
 026495088565,499.99,1,15.00,new,https://yourstore.com/product/123
 000000000000,299.99,0,0.00,new,https://yourstore.com/product/456</pre>
@@ -963,8 +964,8 @@ TEMPLATE_EOT,
 			<span style="background:#2563eb;color:#fff;border-radius:50%;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;font-size:0.8em;margin-right:8px;font-weight:700">3</span>
 			Configure field mapping
 		</h3>
-		<p>If your feed uses different field names than our defaults, enter a JSON mapping in the Field Mapping box on the Feed Settings tab. Map your field names to ours:</p>
-		<pre style="background:#f4f4f4;padding:12px;border-radius:4px;overflow-x:auto;font-size:0.85em">{
+		<p>{$helpData['step3']}</p>
+		<pre style="background:#f4f4f4;padding:12px;border-radius:4px;overflow-x:auto;font-size:0.85em;margin-top:12px">{
   "UPC": "upc",
   "PRICE": "dealer_price",
   "QTY": "stock_qty",
@@ -980,12 +981,11 @@ TEMPLATE_EOT,
 			<span style="background:#2563eb;color:#fff;border-radius:50%;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;font-size:0.8em;margin-right:8px;font-weight:700">4</span>
 			Enter your feed URL
 		</h3>
-		<p>Go to the <strong>Feed Settings</strong> tab and enter your feed URL. Select your format (CSV, JSON, or XML). If your feed requires authentication, select the auth type and enter your credentials as JSON:</p>
+		<p>{$helpData['step4']}</p>
 		<ul style="margin:8px 0;padding-left:20px">
 			<li>Basic Auth: <code style="background:#f4f4f4;padding:1px 6px;border-radius:3px">{"username":"user","password":"pass"}</code></li>
 			<li>API Key: <code style="background:#f4f4f4;padding:1px 6px;border-radius:3px">{"api_key":"your-key-here"}</code></li>
 		</ul>
-		<p>Click <strong>Save Feed Settings</strong> then <strong>Run Import Now</strong> to trigger your first sync immediately.</p>
 	</div>
 
 	<div style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:20px;margin-bottom:24px">
@@ -993,23 +993,21 @@ TEMPLATE_EOT,
 			<span style="background:#2563eb;color:#fff;border-radius:50%;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;font-size:0.8em;margin-right:8px;font-weight:700">5</span>
 			Review your listings
 		</h3>
-		<p>After your first import completes, go to the <strong>Listings</strong> tab to see all synced products. Check the <strong>Unmatched UPCs</strong> tab for any products that couldn't be matched to our catalog &mdash; these won't appear in search results until the UPC is added to our database.</p>
-		<p>If you have unmatched UPCs, contact us and we'll add them to the catalog promptly.</p>
+		<p>{$helpData['step5']}</p>
 	</div>
 
 	<div style="background:#f0f7ff;border:1px solid #bfdbfe;border-radius:6px;padding:16px">
 		<h3 style="margin:0 0 8px;color:#1e40af">Feed Requirements Summary</h3>
 		<ul style="margin:0;padding-left:20px;color:#1e3a5f">
-			<li>Feed URL must be publicly accessible or use supported auth</li>
-			<li>UPC must be a valid 12-digit barcode matching our catalog</li>
-			<li>Price must be a positive decimal number</li>
-			<li>Feed must update at least daily &mdash; stale feeds cause listings to go out of stock</li>
-			<li>Do not include products you are not licensed to sell in Illinois</li>
-			<li>Handgun listings require valid FFL documentation on file with us</li>
+			{{foreach $helpData['requirements'] as $req}}
+			<li>{$req}</li>
+			{{endforeach}}
 		</ul>
 	</div>
 
-	<p style="margin-top:24px;color:#666">Questions? Contact us at <a href="mailto:dealers@gunrack.deals">dealers@gunrack.deals</a></p>
+	{{if $helpData['contact']}}
+	<p style="margin-top:24px;color:#666">Questions? Contact us at <a href="mailto:{$helpData['contact']}">{$helpData['contact']}</a></p>
+	{{endif}}
 </div>
 TEMPLATE_EOT,
 	],
