@@ -469,7 +469,7 @@ TEMPLATE_EOT,
 		</ul>
 
 		<div class="ipsTabs_content" style="margin-top:16px">
-			{$body}
+			{$body|raw}
 		</div>
 	</div>
 </div>
