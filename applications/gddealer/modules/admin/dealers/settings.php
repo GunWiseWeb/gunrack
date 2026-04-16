@@ -100,6 +100,38 @@ class _settings extends \IPS\Dispatcher\Controller
 		$form->add( new \IPS\Helpers\Form\Text( 'gddealer_help_contact',
 			(string) ( $settings->gddealer_help_contact ?? '' ), FALSE ) );
 
+		$form->addHeader( 'gddealer_settings_emails' );
+		$form->addMessage( 'gddealer_settings_emails_help' );
+
+		$getEmailTemplate = function( string $key, string $field ) {
+			try {
+				return (string) \IPS\Db::i()->select( $field, 'core_email_templates',
+					[ 'template_app=? AND template_name=?', 'gddealer', $key ]
+				)->first();
+			} catch ( \Exception ) { return ''; }
+		};
+
+		$form->add( new \IPS\Helpers\Form\Text( 'gddealer_email_welcome_subject',
+			$getEmailTemplate( 'dealerWelcome', 'template_subject' ), FALSE, [],
+			NULL, NULL, NULL, 'gddealer_email_welcome_subject' ) );
+		$form->add( new \IPS\Helpers\Form\TextArea( 'gddealer_email_welcome_body',
+			$getEmailTemplate( 'dealerWelcome', 'template_body' ), FALSE, [ 'rows' => 8 ],
+			NULL, NULL, NULL, 'gddealer_email_welcome_body' ) );
+
+		$form->add( new \IPS\Helpers\Form\Text( 'gddealer_email_expiring_subject',
+			$getEmailTemplate( 'trialExpiringSoon', 'template_subject' ), FALSE, [],
+			NULL, NULL, NULL, 'gddealer_email_expiring_subject' ) );
+		$form->add( new \IPS\Helpers\Form\TextArea( 'gddealer_email_expiring_body',
+			$getEmailTemplate( 'trialExpiringSoon', 'template_body' ), FALSE, [ 'rows' => 8 ],
+			NULL, NULL, NULL, 'gddealer_email_expiring_body' ) );
+
+		$form->add( new \IPS\Helpers\Form\Text( 'gddealer_email_expired_subject',
+			$getEmailTemplate( 'trialExpired', 'template_subject' ), FALSE, [],
+			NULL, NULL, NULL, 'gddealer_email_expired_subject' ) );
+		$form->add( new \IPS\Helpers\Form\TextArea( 'gddealer_email_expired_body',
+			$getEmailTemplate( 'trialExpired', 'template_body' ), FALSE, [ 'rows' => 8 ],
+			NULL, NULL, NULL, 'gddealer_email_expired_body' ) );
+
 		if ( $values = $form->values() )
 		{
 			$form->saveAsSettings( [
@@ -124,6 +156,19 @@ class _settings extends \IPS\Dispatcher\Controller
 				'gddealer_help_requirements'          => (string) $values['gddealer_help_requirements'],
 				'gddealer_help_contact'               => (string) $values['gddealer_help_contact'],
 			]);
+
+			$updateEmail = function( string $key, string $subject, string $body ) {
+				try {
+					\IPS\Db::i()->update( 'core_email_templates',
+						[ 'template_subject' => $subject, 'template_body' => $body ],
+						[ 'template_app=? AND template_name=?', 'gddealer', $key ]
+					);
+				} catch ( \Exception ) {}
+			};
+
+			$updateEmail( 'dealerWelcome',     $values['gddealer_email_welcome_subject'],  $values['gddealer_email_welcome_body'] );
+			$updateEmail( 'trialExpiringSoon', $values['gddealer_email_expiring_subject'], $values['gddealer_email_expiring_body'] );
+			$updateEmail( 'trialExpired',      $values['gddealer_email_expired_subject'],  $values['gddealer_email_expired_body'] );
 
 			\IPS\Output::i()->redirect(
 				\IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=settings' ),

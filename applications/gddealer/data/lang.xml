@@ -203,6 +203,14 @@
     <word key="gddealer_email_trialExpired"><![CDATA[Dealer Trial Expired]]></word>
     <word key="gddealer_email_trialExpiringSoon"><![CDATA[Dealer Trial Expiring Soon]]></word>
     <word key="gddealer_email_dealerWelcome"><![CDATA[Dealer Welcome Email]]></word>
+    <word key="gddealer_settings_emails"><![CDATA[Email Templates]]></word>
+    <word key="gddealer_settings_emails_help"><![CDATA[Edit the subject and body for each dealer email below. Available variables:<br><br><strong>Welcome email:</strong> {name}, {api_key}, {contact_email}<br><strong>Trial expiring soon:</strong> {name}, {days_left}, {expiry_date}, {subscribe_url}, {contact_email}<br><strong>Trial expired:</strong> {name}, {subscribe_url}, {contact_email}]]></word>
+    <word key="gddealer_email_welcome_subject"><![CDATA[Welcome Email — Subject]]></word>
+    <word key="gddealer_email_welcome_body"><![CDATA[Welcome Email — Body]]></word>
+    <word key="gddealer_email_expiring_subject"><![CDATA[Trial Expiring Soon — Subject]]></word>
+    <word key="gddealer_email_expiring_body"><![CDATA[Trial Expiring Soon — Body]]></word>
+    <word key="gddealer_email_expired_subject"><![CDATA[Trial Expired — Subject]]></word>
+    <word key="gddealer_email_expired_body"><![CDATA[Trial Expired — Body]]></word>
     <word key="task__ExpireTrials"><![CDATA[Expire dealer trials and suspend listings]]></word>
   </app>
 </language>
