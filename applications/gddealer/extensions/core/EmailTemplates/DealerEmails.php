@@ -34,7 +34,7 @@ class DealerEmails
 			],
 			'dealerWelcome' => [
 				'subject' => 'Welcome to GunRack.deals — Your dealer account is ready',
-				'body'    => "Hi {name},\n\nYour dealer account on GunRack.deals has been set up.\n\nYour API Key: {api_key}\n\nNext steps:\n1. Log in and go to your Dealer Dashboard\n2. Click Feed Settings and enter your product feed URL\n3. Run your first import to start appearing in price comparisons\n\nNeed help? Visit your Help & Setup tab or contact us at {contact_email}.\n\nThanks,\nThe GunRack.deals Team",
+				'body'    => "Hi {name},\n\nYour dealer account on GunRack.deals has been set up.\n\nYour API Key: {api_key}\n\nYour Public Profile: {profile_url}\n\nShare this link with your customers so they can find your listings and leave reviews.\n\nNext steps:\n1. Log in and go to your Dealer Dashboard\n2. Click Feed Settings and enter your product feed URL\n3. Run your first import to start appearing in price comparisons\n\nNeed help? Visit your Help & Setup tab or contact us at {contact_email}.\n\nThanks,\nThe GunRack.deals Team",
 			],
 			'disputeNotify' => [
 				'subject' => '{dealer_name} has contested your review on GunRack.deals',

@@ -448,6 +448,9 @@ class _dealers extends \IPS\Dispatcher\Controller
 					'name'          => $member->name,
 					'api_key'       => $apiKey,
 					'contact_email' => (string) ( \IPS\Settings::i()->gddealer_help_contact ?: 'dealers@gunrack.deals' ),
+					'profile_url'   => (string) \IPS\Http\Url::internal(
+						'app=gddealer&module=dealers&controller=profile&dealer_slug=' . urlencode( $slug )
+					),
 				], \IPS\Email::TYPE_TRANSACTIONAL )->send( $member );
 			}
 			catch ( \Exception ) {}

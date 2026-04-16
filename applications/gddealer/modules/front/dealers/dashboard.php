@@ -125,6 +125,9 @@ class _dashboard extends \IPS\Dispatcher\Controller
 			'last_run_status'      => (string) ( $lastLogRow['status']          ?? '' ),
 			'last_run_total'       => (int)    ( $lastLogRow['records_total']   ?? 0 ),
 			'last_run_errors'      => !empty( $lastLogRow['error_log'] ),
+			'profile_url'          => (string) \IPS\Http\Url::internal(
+				'app=gddealer&module=dealers&controller=profile&dealer_slug=' . urlencode( (string) $dealer->dealer_slug )
+			),
 		];
 
 		$this->output( 'overview', \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )->overview(

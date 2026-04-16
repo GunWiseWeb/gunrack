@@ -224,15 +224,6 @@ TEMPLATE_EOT,
 		</div>
 
 		<div style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;margin:0 20px 16px">
-			{{if $dealer['profile_url']}}
-			<div style="padding:16px 20px;border-bottom:1px solid var(--i-border-color,#e0e0e0)">
-				<div style="font-size:0.8em;color:#666;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">Public Profile</div>
-				<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-					<input type="text" readonly value="{$dealer['profile_url']}" onclick="this.select()" style="flex:1 1 300px;min-width:0;font-family:monospace;font-size:0.85em;background:#f4f4f4;padding:6px 10px;border:1px solid var(--i-border-color,#ccc);border-radius:4px">
-					<a href="{$dealer['profile_url']}" target="_blank" class="ipsButton ipsButton--small ipsButton--primary">Open</a>
-				</div>
-			</div>
-			{{endif}}
 			<div style="padding:16px 20px;border-bottom:1px solid var(--i-border-color,#e0e0e0)">
 				<div style="font-size:0.8em;color:#666;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">Feed URL</div>
 				<div style="font-weight:700;font-size:1.05em"><code>{$dealer['feed_url']}</code></div>
@@ -241,6 +232,15 @@ TEMPLATE_EOT,
 				<div style="font-size:0.8em;color:#666;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">API Key</div>
 				<div style="font-family:monospace;font-size:0.85em;background:#f4f4f4;padding:6px 10px;border-radius:4px;word-break:break-all">{$dealer['api_key']}</div>
 			</div>
+			{{if $dealer['profile_url']}}
+			<div style="padding:16px 20px;border-top:1px solid var(--i-border-color,#e0e0e0)">
+				<div style="font-size:0.8em;color:#666;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">Public Profile URL</div>
+				<div style="display:flex;gap:8px;align-items:center">
+					<code style="font-size:0.85em;background:#f4f4f4;padding:6px 10px;border-radius:4px;flex:1;word-break:break-all">{$dealer['profile_url']}</code>
+					<a href="{$dealer['profile_url']}" target="_blank" class="ipsButton ipsButton--normal ipsButton--small">View</a>
+				</div>
+			</div>
+			{{endif}}
 			{{if $dealer['trial_expires_at']}}
 			<div style="padding:16px 20px;border-bottom:1px solid var(--i-border-color,#e0e0e0)">
 				<div style="font-size:0.8em;color:#666;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">Trial Expires</div>
@@ -648,6 +648,15 @@ TEMPLATE_EOT,
 		<div class="ipsBox" style="flex:1 1 180px;padding:16px;text-align:center">
 			<div style="font-size:2em;font-weight:bold">{expression="number_format( $overview['clicks_30d'] )"}</div>
 			<div>{lang="gddealer_front_clicks_30d"}</div>
+		</div>
+	</div>
+
+	<div style="background:#f0f7ff;border:1px solid #bfdbfe;border-radius:8px;padding:16px;margin-bottom:24px">
+		<div style="font-size:0.8em;color:#1e40af;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px">Your Public Profile</div>
+		<p style="margin:0 0 10px;font-size:0.85em;color:#555">Share this link with customers so they can view your profile and leave reviews.</p>
+		<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+			<code style="background:#fff;border:1px solid #bfdbfe;border-radius:4px;padding:6px 10px;font-size:0.82em;flex:1;word-break:break-all;min-width:200px">{$overview['profile_url']}</code>
+			<a href="{$overview['profile_url']}" target="_blank" class="ipsButton ipsButton--normal ipsButton--small">View Profile</a>
 		</div>
 	</div>
 
