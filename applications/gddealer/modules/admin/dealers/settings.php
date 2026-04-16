@@ -33,6 +33,9 @@ class _settings extends \IPS\Dispatcher\Controller
 		$form->add( new \IPS\Helpers\Form\Number( 'gddealer_group_id',
 			(int) \IPS\Settings::i()->gddealer_group_id, TRUE ) );
 
+		$form->add( new \IPS\Helpers\Form\Number( 'gddealer_member_group_id',
+			(int) \IPS\Settings::i()->gddealer_member_group_id, FALSE ) );
+
 		$form->add( new \IPS\Helpers\Form\Select( 'gddealer_default_import_schedule',
 			(string) \IPS\Settings::i()->gddealer_default_import_schedule, TRUE, [
 				'options' => [
@@ -84,6 +87,7 @@ class _settings extends \IPS\Dispatcher\Controller
 		{
 			$form->saveAsSettings( [
 				'gddealer_group_id'                 => (int) $values['gddealer_group_id'],
+				'gddealer_member_group_id'          => (int) $values['gddealer_member_group_id'],
 				'gddealer_default_import_schedule'  => (string) $values['gddealer_default_import_schedule'],
 				'gddealer_out_of_stock_grace_hours' => (int) $values['gddealer_out_of_stock_grace_hours'],
 				'gddealer_click_tracking_enabled'   => (int) $values['gddealer_click_tracking_enabled'],
