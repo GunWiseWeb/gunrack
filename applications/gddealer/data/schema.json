@@ -1037,5 +1037,27 @@
 				"columns": ["active"]
 			}
 		}
+	},
+	"gd_dealer_ratings": {
+		"name": "gd_dealer_ratings",
+		"columns": {
+			"id":               { "name": "id", "type": "INT", "unsigned": true, "allow_null": false, "auto_increment": true },
+			"dealer_id":        { "name": "dealer_id", "type": "INT", "unsigned": true, "allow_null": false },
+			"member_id":        { "name": "member_id", "type": "INT", "unsigned": true, "allow_null": true },
+			"rating_pricing":   { "name": "rating_pricing", "type": "TINYINT", "unsigned": true, "allow_null": false },
+			"rating_shipping":  { "name": "rating_shipping", "type": "TINYINT", "unsigned": true, "allow_null": false },
+			"rating_service":   { "name": "rating_service", "type": "TINYINT", "unsigned": true, "allow_null": false },
+			"review_body":      { "name": "review_body", "type": "TEXT", "allow_null": true },
+			"dealer_response":  { "name": "dealer_response", "type": "TEXT", "allow_null": true },
+			"response_at":      { "name": "response_at", "type": "DATETIME", "allow_null": true },
+			"created_at":       { "name": "created_at", "type": "DATETIME", "allow_null": false },
+			"status":           { "name": "status", "type": "VARCHAR", "length": 20, "allow_null": false, "default": "approved" }
+		},
+		"indexes": {
+			"PRIMARY":          { "type": "primary", "name": "PRIMARY", "length": [null], "columns": ["id"] },
+			"uq_dealer_member": { "type": "unique", "name": "uq_dealer_member", "length": [null, null], "columns": ["dealer_id", "member_id"] },
+			"idx_dealer":       { "type": "key", "name": "idx_dealer", "length": [null], "columns": ["dealer_id"] },
+			"idx_member":       { "type": "key", "name": "idx_member", "length": [null], "columns": ["member_id"] }
+		}
 	}
 }

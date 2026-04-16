@@ -135,7 +135,8 @@
     <word key="gddealer_front_tab_listings"><![CDATA[Listings]]></word>
     <word key="gddealer_front_tab_unmatched"><![CDATA[Unmatched UPCs]]></word>
     <word key="gddealer_front_tab_analytics"><![CDATA[Analytics]]></word>
-    <word key="gddealer_front_tab_reviews"><![CDATA[Reviews]]></word>
+    <word key="gddealer_front_tab_reviews"><![CDATA[My Reviews]]></word>
+    <word key="gddealer_front_response_saved"><![CDATA[Your response has been posted.]]></word>
     <word key="gddealer_front_tab_subscription"><![CDATA[Subscription]]></word>
     <word key="gddealer_front_tab_help"><![CDATA[Help & Setup]]></word>
     <word key="gddealer_front_active_listings"><![CDATA[Active Listings]]></word>

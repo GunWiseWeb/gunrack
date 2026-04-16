@@ -1233,22 +1233,74 @@ TEMPLATE_EOT,
 TEMPLATE_EOT,
 	],
 
-	/* ===== FRONT: dealerReviews (stub) ===== */
+	/* ===== FRONT: dealerReviews ===== */
 	[
 		'set_id'        => 1,
 		'app'           => 'gddealer',
 		'location'      => 'front',
 		'group'         => 'dealers',
 		'template_name' => 'dealerReviews',
-		'template_data' => '',
+		'template_data' => '$data, $csrfKey',
 		'template_content' => <<<'TEMPLATE_EOT'
-<div style="text-align:center;padding:48px 24px;background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px">
-	<div style="font-size:2.5em;margin-bottom:12px">&#11088;</div>
-	<h3 style="margin:0 0 8px;font-weight:700">Reviews Manager</h3>
-	<p style="color:#666;margin:0 0 8px;max-width:480px;margin-left:auto;margin-right:auto">
-		When the Reviews system launches you'll be able to see all product reviews for items you carry and respond directly to customers here.
-	</p>
-	<p style="color:#999;font-size:0.85em;margin:0">Coming soon — currently in development.</p>
+<div style="margin-bottom:24px">
+
+	<div style="display:flex;gap:16px;margin-bottom:24px;flex-wrap:wrap">
+		<div style="flex:1 1 160px;background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:16px;text-align:center">
+			<div style="font-size:2em;font-weight:800;color:#2563eb">{$data['avg_overall']}</div>
+			<div style="color:#666;font-size:0.85em">Overall Rating</div>
+			<div style="color:#999;font-size:0.8em">{$data['total']} reviews</div>
+		</div>
+		<div style="flex:1 1 160px;background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:16px;text-align:center">
+			<div style="font-size:2em;font-weight:800">{$data['avg_pricing']}</div>
+			<div style="color:#666;font-size:0.85em">Pricing Accuracy</div>
+		</div>
+		<div style="flex:1 1 160px;background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:16px;text-align:center">
+			<div style="font-size:2em;font-weight:800">{$data['avg_shipping']}</div>
+			<div style="color:#666;font-size:0.85em">Shipping Speed</div>
+		</div>
+		<div style="flex:1 1 160px;background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:16px;text-align:center">
+			<div style="font-size:2em;font-weight:800">{$data['avg_service']}</div>
+			<div style="color:#666;font-size:0.85em">Customer Service</div>
+		</div>
+	</div>
+
+	{{if count($data['rows']) === 0}}
+		<div class="ipsEmptyMessage"><p>No reviews yet. Reviews appear here once customers rate your dealership.</p></div>
+	{{else}}
+		{{foreach $data['rows'] as $r}}
+		<div style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:20px;margin-bottom:12px">
+			<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+				<div style="display:flex;gap:16px;flex-wrap:wrap">
+					<span style="font-size:0.8em;color:#666">Pricing: <strong>{$r['rating_pricing']}/5</strong></span>
+					<span style="font-size:0.8em;color:#666">Shipping: <strong>{$r['rating_shipping']}/5</strong></span>
+					<span style="font-size:0.8em;color:#666">Service: <strong>{$r['rating_service']}/5</strong></span>
+				</div>
+				<span style="font-size:0.8em;color:#999">{$r['created_at']}</span>
+			</div>
+
+			{{if $r['review_body']}}
+			<p style="margin:0 0 12px;color:#333">{$r['review_body']}</p>
+			{{endif}}
+
+			{{if $r['dealer_response']}}
+				<div style="background:#f0f7ff;border-left:3px solid #2563eb;padding:12px 16px;border-radius:0 6px 6px 0;margin-top:8px">
+					<div style="font-size:0.8em;color:#2563eb;font-weight:700;margin-bottom:4px">Your Response &mdash; {$r['response_at']}</div>
+					<p style="margin:0;font-size:0.9em">{$r['dealer_response']}</p>
+				</div>
+			{{else}}
+				<details style="margin-top:8px">
+					<summary style="cursor:pointer;font-size:0.85em;color:#2563eb;font-weight:600">Respond to this review</summary>
+					<form method="post" action="{$r['respond_url']}" style="margin-top:8px">
+						<input type="hidden" name="csrfKey" value="{$csrfKey}">
+						<textarea name="response" rows="3" style="width:100%;border:1px solid var(--i-border-color,#ccc);border-radius:4px;padding:8px;font-size:0.9em;box-sizing:border-box" placeholder="Write a professional response visible to all buyers..."></textarea>
+						<button type="submit" class="ipsButton ipsButton--primary ipsButton--small" style="margin-top:8px">Post Response</button>
+					</form>
+				</details>
+			{{endif}}
+		</div>
+		{{endforeach}}
+	{{endif}}
+
 </div>
 TEMPLATE_EOT,
 	],

@@ -643,11 +643,92 @@ class _dashboard extends \IPS\Dispatcher\Controller
 		) );
 	}
 
-	/* ---------------- Tab: Reviews (stub) ---------------- */
+	/* ---------------- Tab: Reviews ---------------- */
 
 	protected function reviews(): void
 	{
-		$this->output( 'reviews', \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )->dealerReviews() );
+		$dealerId = (int) $this->dealer->dealer_id;
+		$rows = [];
+		$avgPricing = 0.0;
+		$avgShipping = 0.0;
+		$avgService = 0.0;
+		$total = 0;
+
+		try
+		{
+			foreach ( \IPS\Db::i()->select( '*', 'gd_dealer_ratings',
+				[ 'dealer_id=? AND status=?', $dealerId, 'approved' ],
+				'created_at DESC', [ 0, 50 ]
+			) as $r )
+			{
+				$rows[] = [
+					'id'               => (int) $r['id'],
+					'member_id'        => (int) $r['member_id'],
+					'rating_pricing'   => (int) $r['rating_pricing'],
+					'rating_shipping'  => (int) $r['rating_shipping'],
+					'rating_service'   => (int) $r['rating_service'],
+					'review_body'      => (string) ( $r['review_body'] ?? '' ),
+					'dealer_response'  => (string) ( $r['dealer_response'] ?? '' ),
+					'response_at'      => (string) ( $r['response_at'] ?? '' ),
+					'created_at'       => (string) $r['created_at'],
+					'respond_url'      => (string) \IPS\Http\Url::internal(
+						'app=gddealer&module=dealers&controller=dashboard&do=respond&id=' . (int) $r['id']
+					)->csrf(),
+				];
+			}
+		}
+		catch ( \Exception ) {}
+
+		try
+		{
+			$agg = \IPS\Db::i()->select(
+				'COUNT(*) as c, AVG(rating_pricing) as p, AVG(rating_shipping) as s, AVG(rating_service) as sv',
+				'gd_dealer_ratings', [ 'dealer_id=? AND status=?', $dealerId, 'approved' ]
+			)->first();
+			$total       = (int) $agg['c'];
+			$avgPricing  = round( (float) $agg['p'], 1 );
+			$avgShipping = round( (float) $agg['s'], 1 );
+			$avgService  = round( (float) $agg['sv'], 1 );
+		}
+		catch ( \Exception ) {}
+
+		$data = [
+			'rows'          => $rows,
+			'total'         => $total,
+			'avg_pricing'   => $avgPricing,
+			'avg_shipping'  => $avgShipping,
+			'avg_service'   => $avgService,
+			'avg_overall'   => $total > 0 ? round( ( $avgPricing + $avgShipping + $avgService ) / 3, 1 ) : 0.0,
+		];
+
+		$csrfKey = (string) \IPS\Session::i()->csrfKey;
+
+		$this->output( 'reviews', \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )->dealerReviews( $data, $csrfKey ) );
+	}
+
+	/** Post a dealer response to a review. */
+	protected function respond(): void
+	{
+		\IPS\Session::i()->csrfCheck();
+		$id       = (int) ( \IPS\Request::i()->id ?? 0 );
+		$response = trim( (string) \IPS\Request::i()->response );
+
+		if ( $id > 0 && $response !== '' )
+		{
+			try
+			{
+				\IPS\Db::i()->update( 'gd_dealer_ratings',
+					[ 'dealer_response' => $response, 'response_at' => date( 'Y-m-d H:i:s' ) ],
+					[ 'id=? AND dealer_id=?', $id, (int) $this->dealer->dealer_id ]
+				);
+			}
+			catch ( \Exception ) {}
+		}
+
+		\IPS\Output::i()->redirect(
+			\IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dashboard&do=reviews' ),
+			'gddealer_front_response_saved'
+		);
 	}
 
 	/* ---------------- Helpers ---------------- */
