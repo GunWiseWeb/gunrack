@@ -744,45 +744,103 @@ TEMPLATE_EOT,
 		'location'      => 'front',
 		'group'         => 'dealers',
 		'template_name' => 'analytics',
-		'template_data' => '$dealer, $gated, $topClicked, $tabUrls',
+		'template_data' => '$dealer, $gated, $analytics, $topClicked, $opportunities, $tabUrls',
 		'template_content' => <<<'TEMPLATE_EOT'
 <div>
 
 	{{if $gated}}
-		<div class="ipsMessage ipsMessage_info">
-			<h2>{lang="gddealer_front_analytics_gated_title"}</h2>
-			<p>{lang="gddealer_front_analytics_gated_body"}</p>
-			<p style="margin-top:8px">
-				<a href="{$tabUrls['subscription']}" class="ipsButton ipsButton--primary">{lang="gddealer_front_subscription_manage"}</a>
-			</p>
+		<div style="text-align:center;padding:48px;background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px">
+			<div style="font-size:2em;margin-bottom:8px">&#x1F4CA;</div>
+			<h3 style="margin:0 0 8px">Analytics &mdash; Pro &amp; Enterprise Only</h3>
+			<p style="color:#666;margin:0 0 16px">Upgrade to Pro or Enterprise to unlock full analytics including price competitiveness, revenue opportunities, and click-through data.</p>
+			<a href="{$tabUrls['subscription']}" class="ipsButton ipsButton--primary">View Upgrade Options</a>
 		</div>
 	{{else}}
-		<h2>{lang="gddealer_front_analytics_top_clicked"}</h2>
-		<table class="ipsTable ipsTable_zebra" style="width:100%">
-			<thead>
-				<tr>
-					<th>{lang="gddealer_listing_upc"}</th>
-					<th>Price</th>
-					<th>Clicks (30d)</th>
-					<th>Clicks (7d)</th>
-					<th>Status</th>
-				</tr>
-			</thead>
-			<tbody>
-				{{foreach $topClicked as $r}}
-				<tr>
-					<td><code>{$r['upc']}</code></td>
-					<td>{$r['dealer_price']}</td>
-					<td>{$r['clicks_30d']}</td>
-					<td>{$r['clicks_7d']}</td>
-					<td>{$r['listing_status']}</td>
-				</tr>
-				{{endforeach}}
+
+		<div style="display:flex;gap:16px;margin-bottom:24px;flex-wrap:wrap">
+			<div style="flex:1 1 180px;background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:16px;text-align:center">
+				<div style="font-size:2em;font-weight:700;color:#16a34a">{$analytics['comp_lowest']}</div>
+				<div style="color:#666;font-size:0.9em">Listings &mdash; Lowest Price</div>
+			</div>
+			<div style="flex:1 1 180px;background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:16px;text-align:center">
+				<div style="font-size:2em;font-weight:700;color:#f59e0b">{$analytics['comp_mid']}</div>
+				<div style="color:#666;font-size:0.9em">Listings &mdash; Mid Range</div>
+			</div>
+			<div style="flex:1 1 180px;background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:16px;text-align:center">
+				<div style="font-size:2em;font-weight:700;color:#dc2626">{$analytics['comp_high']}</div>
+				<div style="color:#666;font-size:0.9em">Listings &mdash; Highest Price</div>
+			</div>
+			<div style="flex:1 1 180px;background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:16px;text-align:center">
+				<div style="font-size:2em;font-weight:700;color:#2563eb">{$analytics['comp_only']}</div>
+				<div style="color:#666;font-size:0.9em">Only Dealer for UPC</div>
+			</div>
+			<div style="flex:1 1 180px;background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:16px;text-align:center">
+				<div style="font-size:2em;font-weight:700">{$analytics['price_drop_count']}</div>
+				<div style="color:#666;font-size:0.9em">Price Drops (30 days)</div>
+			</div>
+		</div>
+
+		<div style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;margin-bottom:24px">
+			<div style="padding:16px;border-bottom:1px solid var(--i-border-color,#e0e0e0)">
+				<h3 style="margin:0;font-size:1em;font-weight:700">Top 20 Most-Clicked Listings (Last 30 Days)</h3>
+			</div>
+			<table class="ipsTable ipsTable_zebra" style="width:100%">
+				<thead><tr>
+					<th>UPC</th>
+					<th style="width:120px">Your Price</th>
+					<th style="width:100px">Clicks (30d)</th>
+					<th style="width:100px">Clicks (7d)</th>
+					<th style="width:100px">Status</th>
+				</tr></thead>
+				<tbody>
 				{{if count( $topClicked ) === 0}}
-				<tr><td colspan="5" style="text-align:center;color:#999;padding:24px">{lang="gddealer_front_analytics_empty"}</td></tr>
+					<tr><td colspan="5" style="text-align:center;color:#999;padding:24px">No click-through data yet.</td></tr>
+				{{else}}
+					{{foreach $topClicked as $r}}
+					<tr>
+						<td><code>{$r['upc']}</code></td>
+						<td>${expression="number_format( (float) $r['dealer_price'], 2 )"}</td>
+						<td>{$r['click_count_30d']}</td>
+						<td>{$r['click_count_7d']}</td>
+						<td>{{if $r['in_stock']}}<span style="color:#16a34a;font-weight:600">In Stock</span>{{else}}<span style="color:#dc2626">Out of Stock</span>{{endif}}</td>
+					</tr>
+					{{endforeach}}
 				{{endif}}
-			</tbody>
-		</table>
+				</tbody>
+			</table>
+		</div>
+
+		<div style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px">
+			<div style="padding:16px;border-bottom:1px solid var(--i-border-color,#e0e0e0)">
+				<h3 style="margin:0;font-size:1em;font-weight:700">Revenue Opportunities &mdash; You Are Not the Lowest Price</h3>
+				<p style="margin:4px 0 0;color:#666;font-size:0.85em">Products where lowering your price could win more clicks.</p>
+			</div>
+			<table class="ipsTable ipsTable_zebra" style="width:100%">
+				<thead><tr>
+					<th>UPC</th>
+					<th style="width:120px">Your Price</th>
+					<th style="width:120px">Lowest Price</th>
+					<th style="width:100px">Gap</th>
+					<th style="width:100px">Clicks (30d)</th>
+				</tr></thead>
+				<tbody>
+				{{if count( $opportunities ) === 0}}
+					<tr><td colspan="5" style="text-align:center;color:#999;padding:24px">No opportunities found &mdash; you may already be competitive!</td></tr>
+				{{else}}
+					{{foreach $opportunities as $r}}
+					<tr>
+						<td><code>{$r['upc']}</code></td>
+						<td>${expression="number_format( (float) $r['your_price'], 2 )"}</td>
+						<td>${expression="number_format( (float) $r['lowest_price'], 2 )"}</td>
+						<td style="color:#dc2626;font-weight:600">+${expression="number_format( (float) $r['gap'], 2 )"}</td>
+						<td>{$r['click_count_30d']}</td>
+					</tr>
+					{{endforeach}}
+				{{endif}}
+				</tbody>
+			</table>
+		</div>
+
 	{{endif}}
 
 </div>

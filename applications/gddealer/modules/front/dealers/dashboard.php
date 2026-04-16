@@ -450,27 +450,118 @@ class _dashboard extends \IPS\Dispatcher\Controller
 		$tier   = (string) $dealer->subscription_tier;
 		$gated  = !in_array( $tier, [ Dealer::TIER_PRO, Dealer::TIER_ENTERPRISE, Dealer::TIER_FOUNDING ], true );
 
-		$topClicked = [];
+		$analytics    = [ 'comp_lowest' => 0, 'comp_mid' => 0, 'comp_high' => 0, 'comp_only' => 0, 'price_drop_count' => 0 ];
+		$topClicked   = [];
+		$opportunities = [];
+
 		if ( !$gated )
 		{
+			/* ---- 1. Load this dealer's active listings ---- */
+			$myListings = [];
 			try
 			{
-				foreach (
-					\IPS\Db::i()->select(
-						'*', 'gd_dealer_listings',
-						[ 'dealer_id=? AND click_count_30d>?', (int) $dealer->dealer_id, 0 ],
-						'click_count_30d DESC',
-						[ 0, 20 ]
-					) as $r
-				) {
+				foreach ( \IPS\Db::i()->select(
+					'upc, dealer_price, shipping_cost, click_count_30d, click_count_7d, in_stock',
+					'gd_dealer_listings',
+					[ 'dealer_id=? AND listing_status=?', (int) $dealer->dealer_id, Listing::STATUS_ACTIVE ]
+				) as $r ) {
+					$myListings[ (string) $r['upc'] ] = $r;
+				}
+			}
+			catch ( \Exception ) {}
+
+			/* ---- 2. Price competitiveness — min price from OTHER dealers per UPC ---- */
+			$otherMins = [];
+			if ( !empty( $myListings ) )
+			{
+				try
+				{
+					foreach ( \IPS\Db::i()->select(
+						'upc, MIN(dealer_price + COALESCE(shipping_cost, 0)) as min_total',
+						'gd_dealer_listings',
+						[
+							\IPS\Db::i()->in( 'upc', array_keys( $myListings ) ) . ' AND dealer_id!=? AND listing_status=?',
+							(int) $dealer->dealer_id,
+							Listing::STATUS_ACTIVE,
+						],
+						null, null, 'upc'
+					) as $r ) {
+						$otherMins[ (string) $r['upc'] ] = (float) $r['min_total'];
+					}
+				}
+				catch ( \Exception ) {}
+
+				$rawOpportunities = [];
+				foreach ( $myListings as $upc => $mine )
+				{
+					$myTotal = (float) $mine['dealer_price'] + (float) ( $mine['shipping_cost'] ?? 0 );
+
+					if ( !isset( $otherMins[ $upc ] ) )
+					{
+						$analytics['comp_only']++;
+					}
+					elseif ( $myTotal <= $otherMins[ $upc ] )
+					{
+						$analytics['comp_lowest']++;
+					}
+					elseif ( $myTotal <= $otherMins[ $upc ] * 1.10 )
+					{
+						$analytics['comp_mid']++;
+						$rawOpportunities[] = [
+							'upc'            => (string) $upc,
+							'your_price'     => $myTotal,
+							'lowest_price'   => $otherMins[ $upc ],
+							'gap'            => $myTotal - $otherMins[ $upc ],
+							'click_count_30d'=> (int) $mine['click_count_30d'],
+						];
+					}
+					else
+					{
+						$analytics['comp_high']++;
+						$rawOpportunities[] = [
+							'upc'            => (string) $upc,
+							'your_price'     => $myTotal,
+							'lowest_price'   => $otherMins[ $upc ],
+							'gap'            => $myTotal - $otherMins[ $upc ],
+							'click_count_30d'=> (int) $mine['click_count_30d'],
+						];
+					}
+				}
+
+				usort( $rawOpportunities, function ( $a, $b ) { return $b['gap'] <=> $a['gap']; } );
+				$opportunities = array_slice( $rawOpportunities, 0, 20 );
+			}
+
+			/* ---- 3. Top 20 most-clicked ---- */
+			try
+			{
+				foreach ( \IPS\Db::i()->select(
+					'upc, dealer_price, click_count_30d, click_count_7d, in_stock',
+					'gd_dealer_listings',
+					[ 'dealer_id=? AND click_count_30d>? AND listing_status=?', (int) $dealer->dealer_id, 0, Listing::STATUS_ACTIVE ],
+					'click_count_30d DESC',
+					[ 0, 20 ]
+				) as $r ) {
 					$topClicked[] = [
-						'upc'             => (string) $r['upc'],
-						'clicks_30d'      => (int) $r['click_count_30d'],
-						'clicks_7d'       => (int) $r['click_count_7d'],
-						'dealer_price'    => '$' . number_format( (float) $r['dealer_price'], 2 ),
-						'listing_status'  => (string) $r['listing_status'],
+						'upc'            => (string) $r['upc'],
+						'dealer_price'   => (float) $r['dealer_price'],
+						'click_count_30d'=> (int) $r['click_count_30d'],
+						'click_count_7d' => (int) $r['click_count_7d'],
+						'in_stock'       => (bool) $r['in_stock'],
 					];
 				}
+			}
+			catch ( \Exception ) {}
+
+			/* ---- 4. Price-drop count (last 30 days of imports) ---- */
+			try
+			{
+				$thirtyDaysAgo = date( 'Y-m-d H:i:s', time() - ( 30 * 86400 ) );
+				$analytics['price_drop_count'] = (int) \IPS\Db::i()->select(
+					'COALESCE(SUM(price_drops), 0)',
+					'gd_dealer_import_log',
+					[ 'dealer_id=? AND run_start>?', (int) $dealer->dealer_id, $thirtyDaysAgo ]
+				)->first();
 			}
 			catch ( \Exception ) {}
 		}
@@ -478,7 +569,9 @@ class _dashboard extends \IPS\Dispatcher\Controller
 		$this->output( 'analytics', \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )->analytics(
 			$this->dealerSummary(),
 			$gated,
+			$analytics,
 			$topClicked,
+			$opportunities,
 			$this->tabUrls()
 		) );
 	}
