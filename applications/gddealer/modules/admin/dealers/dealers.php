@@ -67,8 +67,7 @@ class _dealers extends \IPS\Dispatcher\Controller
 			$slug = (string) ( $dealer->dealer_slug ?? '' );
 			$profileUrl = $slug !== ''
 				? (string) \IPS\Http\Url::internal(
-					'app=gddealer&module=dealers&controller=profile&dealer_slug=' . urlencode( $slug ),
-					'front', 'dealers_profile', [ $slug ]
+					'app=gddealer&module=dealers&controller=profile&dealer_slug=' . urlencode( $slug )
 				)
 				: '';
 
@@ -162,8 +161,7 @@ class _dealers extends \IPS\Dispatcher\Controller
 		$slug       = (string) ( $dealer->dealer_slug ?? '' );
 		$profileUrl = $slug !== ''
 			? (string) \IPS\Http\Url::internal(
-				'app=gddealer&module=dealers&controller=profile&dealer_slug=' . urlencode( $slug ),
-				'front', 'dealers_profile', [ $slug ]
+				'app=gddealer&module=dealers&controller=profile&dealer_slug=' . urlencode( $slug )
 			)
 			: '';
 

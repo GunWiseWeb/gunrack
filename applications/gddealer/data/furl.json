@@ -20,10 +20,6 @@
 		"dealers_review_guidelines": {
 			"friendly": "review-guidelines",
 			"real": "app=gddealer&module=dealers&controller=profile&do=guidelines"
-		},
-		"dealers_profile": {
-			"friendly": "profile/{@dealer_slug}",
-			"real": "app=gddealer&module=dealers&controller=profile&dealer_slug={@dealer_slug}"
 		}
 	}
 }
