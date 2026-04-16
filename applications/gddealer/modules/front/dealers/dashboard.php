@@ -483,6 +483,13 @@ class _dashboard extends \IPS\Dispatcher\Controller
 		) );
 	}
 
+	/* ---------------- Tab: Help ---------------- */
+
+	protected function help(): void
+	{
+		$this->output( 'help', \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )->help() );
+	}
+
 	/* ---------------- Tab: Subscription ---------------- */
 
 	protected function subscription()
@@ -536,6 +543,7 @@ class _dashboard extends \IPS\Dispatcher\Controller
 			'unmatched'    => (string) \IPS\Http\Url::internal( $base . 'unmatched' ),
 			'analytics'    => (string) \IPS\Http\Url::internal( $base . 'analytics' ),
 			'subscription' => (string) \IPS\Http\Url::internal( $base . 'subscription' ),
+			'help'         => (string) \IPS\Http\Url::internal( $base . 'help' ),
 		];
 	}
 

@@ -436,42 +436,50 @@ TEMPLATE_EOT,
 		'template_name' => 'dealerShell',
 		'template_data' => '$dealer, $activeTab, $tabUrls, $body',
 		'template_content' => <<<'TEMPLATE_EOT'
-<div class="ipsBox">
-	<div class="ipsPad">
-		<h1 class="ipsType_pageTitle">{$dealer['dealer_name']}</h1>
-		<p style="color:#666;margin-top:-4px">
-			{lang="gddealer_front_dashboard_welcome"} &mdash;
-			<strong>{$dealer['tier_label']}</strong> plan
-		</p>
+<div style="max-width:1200px;margin:0 auto;padding:24px 16px">
 
-		{{if $dealer['suspended']}}
-			<div class="ipsMessage ipsMessage_error" style="margin:16px 0">
-				{lang="gddealer_front_suspended_banner"}
-			</div>
-		{{endif}}
-
-		{{if $dealer['onboarding_incomplete']}}
-			<div class="ipsMessage ipsMessage_warning" style="margin:16px 0">
-				<p>{lang="gddealer_front_onboarding_incomplete"}</p>
-				<p style="margin-top:8px">
-					<a href="{$tabUrls['feedSettings']}" class="ipsButton ipsButton--primary ipsButton--small">{lang="gddealer_front_onboarding_go_settings"}</a>
-				</p>
-			</div>
-		{{endif}}
-
-		<ul class="ipsTabs" style="display:flex;gap:4px;list-style:none;padding:0;margin:16px 0;border-bottom:1px solid #ddd;flex-wrap:wrap">
-			<li><a href="{$tabUrls['overview']}" class="ipsButton ipsButton--small {expression="$activeTab === 'overview' ? 'ipsButton--primary' : 'ipsButton--normal'"}">{lang="gddealer_front_tab_overview"}</a></li>
-			<li><a href="{$tabUrls['feedSettings']}" class="ipsButton ipsButton--small {expression="$activeTab === 'feedSettings' ? 'ipsButton--primary' : 'ipsButton--normal'"}">{lang="gddealer_front_tab_feed"}</a></li>
-			<li><a href="{$tabUrls['listings']}" class="ipsButton ipsButton--small {expression="$activeTab === 'listings' ? 'ipsButton--primary' : 'ipsButton--normal'"}">{lang="gddealer_front_tab_listings"}</a></li>
-			<li><a href="{$tabUrls['unmatched']}" class="ipsButton ipsButton--small {expression="$activeTab === 'unmatched' ? 'ipsButton--primary' : 'ipsButton--normal'"}">{lang="gddealer_front_tab_unmatched"}</a></li>
-			<li><a href="{$tabUrls['analytics']}" class="ipsButton ipsButton--small {expression="$activeTab === 'analytics' ? 'ipsButton--primary' : 'ipsButton--normal'"}">{lang="gddealer_front_tab_analytics"}</a></li>
-			<li><a href="{$tabUrls['subscription']}" class="ipsButton ipsButton--small {expression="$activeTab === 'subscription' ? 'ipsButton--primary' : 'ipsButton--normal'"}">{lang="gddealer_front_tab_subscription"}</a></li>
-		</ul>
-
-		<div class="ipsTabs_content" style="margin-top:16px">
-			{$body|raw}
+	<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--i-border-color, #e0e0e0)">
+		<div>
+			<h1 style="margin:0;font-size:1.4em;font-weight:700">{$dealer['dealer_name']}</h1>
+			<p style="margin:4px 0 0;color:#666;font-size:0.9em">
+				{lang="gddealer_front_dashboard_welcome"} &mdash;
+				<span style="background:#2563eb;color:#fff;padding:2px 8px;border-radius:12px;font-size:0.85em;font-weight:600">{$dealer['tier_label']}</span>
+			</p>
+		</div>
+		<div>
+			<a href="{$tabUrls['subscription']}" class="ipsButton ipsButton--normal ipsButton--small">{lang="gddealer_front_tab_subscription"}</a>
 		</div>
 	</div>
+
+	{{if $dealer['suspended']}}
+		<div class="ipsMessage ipsMessage_error" style="margin:16px 0">
+			{lang="gddealer_front_suspended_banner"}
+		</div>
+	{{endif}}
+
+	{{if $dealer['onboarding_incomplete']}}
+		<div class="ipsMessage ipsMessage_warning" style="margin:16px 0">
+			<p>{lang="gddealer_front_onboarding_incomplete"}</p>
+			<p style="margin-top:8px">
+				<a href="{$tabUrls['feedSettings']}" class="ipsButton ipsButton--primary ipsButton--small">{lang="gddealer_front_onboarding_go_settings"}</a>
+			</p>
+		</div>
+	{{endif}}
+
+	<div style="display:flex;gap:4px;margin:0 0 20px;padding-bottom:12px;border-bottom:1px solid var(--i-border-color, #e0e0e0);flex-wrap:wrap">
+		<a href="{$tabUrls['overview']}" class="ipsButton ipsButton--small {expression="$activeTab === 'overview' ? 'ipsButton--primary' : 'ipsButton--normal'"}">{lang="gddealer_front_tab_overview"}</a>
+		<a href="{$tabUrls['feedSettings']}" class="ipsButton ipsButton--small {expression="$activeTab === 'feedSettings' ? 'ipsButton--primary' : 'ipsButton--normal'"}">{lang="gddealer_front_tab_feed"}</a>
+		<a href="{$tabUrls['listings']}" class="ipsButton ipsButton--small {expression="$activeTab === 'listings' ? 'ipsButton--primary' : 'ipsButton--normal'"}">{lang="gddealer_front_tab_listings"}</a>
+		<a href="{$tabUrls['unmatched']}" class="ipsButton ipsButton--small {expression="$activeTab === 'unmatched' ? 'ipsButton--primary' : 'ipsButton--normal'"}">{lang="gddealer_front_tab_unmatched"}</a>
+		<a href="{$tabUrls['analytics']}" class="ipsButton ipsButton--small {expression="$activeTab === 'analytics' ? 'ipsButton--primary' : 'ipsButton--normal'"}">{lang="gddealer_front_tab_analytics"}</a>
+		<a href="{$tabUrls['subscription']}" class="ipsButton ipsButton--small {expression="$activeTab === 'subscription' ? 'ipsButton--primary' : 'ipsButton--normal'"}">{lang="gddealer_front_tab_subscription"}</a>
+		<a href="{$tabUrls['help']}" class="ipsButton ipsButton--small {expression="$activeTab === 'help' ? 'ipsButton--primary' : 'ipsButton--normal'"}">{lang="gddealer_front_tab_help"}</a>
+	</div>
+
+	<div style="padding:8px 0">
+		{$body|raw}
+	</div>
+
 </div>
 TEMPLATE_EOT,
 	],
@@ -817,6 +825,118 @@ TEMPLATE_EOT,
 
 	<p>{lang="gddealer_front_subscription_note"}</p>
 
+</div>
+TEMPLATE_EOT,
+	],
+
+	/* ===== FRONT: help tab body ===== */
+	[
+		'set_id'        => 1,
+		'app'           => 'gddealer',
+		'location'      => 'front',
+		'group'         => 'dealers',
+		'template_name' => 'help',
+		'template_data' => '',
+		'template_content' => <<<'TEMPLATE_EOT'
+<div style="max-width:800px">
+
+	<h2 style="margin:0 0 4px">Feed Setup Guide</h2>
+	<p style="color:#666;margin:0 0 24px">Follow these steps to get your inventory syncing with GunRack.deals.</p>
+
+	<div style="border-left:3px solid #2563eb;padding:0 0 24px 20px;margin-bottom:8px">
+		<h3 style="margin:0 0 8px">Step 1 &mdash; Prepare your product feed</h3>
+		<p>Your feed must be a publicly accessible URL that returns product data in one of our supported formats: <strong>XML, JSON, or CSV</strong>. The feed must be reachable by our servers without authentication, or use Basic Auth or an API key.</p>
+		<p><strong>Required fields per product:</strong></p>
+		<ul style="margin:8px 0;padding-left:20px">
+			<li><strong>UPC</strong> &mdash; 12-digit UPC barcode. Must match our catalog exactly.</li>
+			<li><strong>Price</strong> &mdash; Your retail price as a decimal (e.g. 499.99)</li>
+			<li><strong>In Stock</strong> &mdash; Boolean or quantity (0/1, true/false, or quantity integer)</li>
+		</ul>
+		<p><strong>Optional but recommended:</strong></p>
+		<ul style="margin:8px 0;padding-left:20px">
+			<li><strong>SKU</strong> &mdash; Your internal product identifier</li>
+			<li><strong>Shipping Cost</strong> &mdash; Flat shipping fee. Use 0 for free shipping.</li>
+			<li><strong>Condition</strong> &mdash; new, used, or refurbished</li>
+			<li><strong>Product URL</strong> &mdash; Direct link to the product on your website</li>
+			<li><strong>Stock Quantity</strong> &mdash; Exact quantity on hand</li>
+		</ul>
+	</div>
+
+	<div style="border-left:3px solid #2563eb;padding:0 0 24px 20px;margin-bottom:8px">
+		<h3 style="margin:0 0 8px">Step 2 &mdash; Format your feed</h3>
+
+		<p><strong>CSV format example:</strong></p>
+		<pre style="background:#f4f4f4;padding:12px;border-radius:4px;overflow-x:auto;font-size:0.85em">upc,price,in_stock,shipping_cost,condition,product_url
+026495088565,499.99,1,15.00,new,https://yourstore.com/product/123
+000000000000,299.99,0,0.00,new,https://yourstore.com/product/456</pre>
+
+		<p style="margin-top:16px"><strong>JSON format example:</strong></p>
+		<pre style="background:#f4f4f4;padding:12px;border-radius:4px;overflow-x:auto;font-size:0.85em">[
+  {
+    "upc": "026495088565",
+    "price": 499.99,
+    "in_stock": true,
+    "shipping_cost": 15.00,
+    "condition": "new",
+    "product_url": "https://yourstore.com/product/123"
+  }
+]</pre>
+
+		<p style="margin-top:16px"><strong>XML format example:</strong></p>
+		<pre style="background:#f4f4f4;padding:12px;border-radius:4px;overflow-x:auto;font-size:0.85em">&lt;products&gt;
+  &lt;product&gt;
+    &lt;upc&gt;026495088565&lt;/upc&gt;
+    &lt;price&gt;499.99&lt;/price&gt;
+    &lt;in_stock&gt;1&lt;/in_stock&gt;
+    &lt;shipping_cost&gt;15.00&lt;/shipping_cost&gt;
+    &lt;condition&gt;new&lt;/condition&gt;
+  &lt;/product&gt;
+&lt;/products&gt;</pre>
+	</div>
+
+	<div style="border-left:3px solid #2563eb;padding:0 0 24px 20px;margin-bottom:8px">
+		<h3 style="margin:0 0 8px">Step 3 &mdash; Configure field mapping</h3>
+		<p>If your feed uses different field names than our defaults, enter a JSON mapping in the Field Mapping box on the Feed Settings tab. Map your field names to ours:</p>
+		<pre style="background:#f4f4f4;padding:12px;border-radius:4px;overflow-x:auto;font-size:0.85em">{
+  "UPC": "upc",
+  "PRICE": "dealer_price",
+  "QTY": "stock_qty",
+  "INSTOCK": "in_stock",
+  "SHIP": "shipping_cost",
+  "COND": "condition",
+  "URL": "listing_url"
+}</pre>
+	</div>
+
+	<div style="border-left:3px solid #2563eb;padding:0 0 24px 20px;margin-bottom:8px">
+		<h3 style="margin:0 0 8px">Step 4 &mdash; Enter your feed URL</h3>
+		<p>Go to the <strong>Feed Settings</strong> tab and enter your feed URL. Select your format (CSV, JSON, or XML). If your feed requires authentication, select the auth type and enter your credentials as JSON:</p>
+		<ul style="margin:8px 0;padding-left:20px">
+			<li>Basic Auth: <code style="background:#f4f4f4;padding:1px 6px;border-radius:3px">{"username":"user","password":"pass"}</code></li>
+			<li>API Key: <code style="background:#f4f4f4;padding:1px 6px;border-radius:3px">{"api_key":"your-key-here"}</code></li>
+		</ul>
+		<p>Click <strong>Save Feed Settings</strong> then <strong>Run Import Now</strong> to trigger your first sync immediately.</p>
+	</div>
+
+	<div style="border-left:3px solid #2563eb;padding:0 0 8px 20px;margin-bottom:24px">
+		<h3 style="margin:0 0 8px">Step 5 &mdash; Review your listings</h3>
+		<p>After your first import completes, go to the <strong>Listings</strong> tab to see all synced products. Check the <strong>Unmatched UPCs</strong> tab for any products that couldn't be matched to our catalog &mdash; these won't appear in search results until the UPC is added to our database.</p>
+		<p>If you have unmatched UPCs, contact us and we'll add them to the catalog promptly.</p>
+	</div>
+
+	<div style="background:#f0f7ff;border:1px solid #bfdbfe;border-radius:6px;padding:16px">
+		<h3 style="margin:0 0 8px;color:#1e40af">Feed Requirements Summary</h3>
+		<ul style="margin:0;padding-left:20px;color:#1e3a5f">
+			<li>Feed URL must be publicly accessible or use supported auth</li>
+			<li>UPC must be a valid 12-digit barcode matching our catalog</li>
+			<li>Price must be a positive decimal number</li>
+			<li>Feed must update at least daily &mdash; stale feeds cause listings to go out of stock</li>
+			<li>Do not include products you are not licensed to sell in Illinois</li>
+			<li>Handgun listings require valid FFL documentation on file with us</li>
+		</ul>
+	</div>
+
+	<p style="margin-top:24px;color:#666">Questions? Contact us at <a href="mailto:dealers@gunrack.deals">dealers@gunrack.deals</a></p>
 </div>
 TEMPLATE_EOT,
 	],
