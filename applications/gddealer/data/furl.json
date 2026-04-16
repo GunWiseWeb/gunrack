@@ -17,6 +17,10 @@
 			"friendly": "join/{#do}",
 			"real": "app=gddealer&module=dealers&controller=join&do={#do}"
 		},
+		"dealers_review_guidelines": {
+			"friendly": "review-guidelines",
+			"real": "app=gddealer&module=dealers&controller=profile&do=guidelines"
+		},
 		"dealers_profile": {
 			"friendly": "{#dealer_slug}",
 			"real": "app=gddealer&module=dealers&controller=profile"

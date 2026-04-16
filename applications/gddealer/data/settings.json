@@ -78,5 +78,29 @@
 	{
 		"key": "gddealer_subscribe_url",
 		"default": ""
+	},
+	{
+		"key": "gddealer_guidelines_buyer_title",
+		"default": "How to Leave a Helpful Dealer Review"
+	},
+	{
+		"key": "gddealer_guidelines_buyer_body",
+		"default": "Leaving a review helps other buyers make informed decisions and helps dealers improve. Please keep reviews honest, specific, and based on your actual experience.\n\nWhat makes a good review:\n- Be specific about your transaction — what did you buy, when, how did it go\n- Rate each category based on that specific experience\n- Pricing Accuracy: did the listed price match what you paid\n- Shipping Speed: how fast did the item arrive after ordering\n- Customer Service: how responsive and helpful was the dealer\n\nReview rules:\n- Reviews must be based on a real transaction with this dealer\n- No personal attacks, profanity, or discriminatory language\n- Do not include personal information about dealer staff\n- One review per dealer — you can update your existing review if your experience changes\n- False or fraudulent reviews will be removed\n\nYour review may be contested by the dealer if they believe it is inaccurate. If contested you will be notified by email and have 30 days to respond with supporting evidence."
+	},
+	{
+		"key": "gddealer_guidelines_dispute_title",
+		"default": "Understanding the Dispute Process"
+	},
+	{
+		"key": "gddealer_guidelines_dispute_body",
+		"default": "If a dealer believes a review is inaccurate or fraudulent they may initiate a dispute. Here is how the process works:\n\nStep 1 — Dealer contests the review\nThe dealer submits a dispute with their reason and any supporting evidence such as order numbers or communications. The review stays visible with an \"Under Review\" badge while the dispute is active.\n\nStep 2 — You are notified\nYou will receive an email and site notification explaining the dealer's dispute and their evidence. You have 30 days to respond.\n\nStep 3 — Submit your response\nClick the link in your notification to view the dealer's evidence and submit your own response. You can include a written explanation and any supporting evidence you have.\n\nStep 4 — Admin reviews both sides\nOnce you respond, our admin team reviews both the dealer's evidence and your response and makes a final decision.\n\nStep 5 — Resolution\nAdmin can uphold the dispute (your review is removed from the dealer's rating average but stays visible), dismiss the dispute (your review stands), or ask you to update your review if the issue has been resolved.\n\nIf you do not respond within 30 days the dispute is automatically resolved in the dealer's favor and your review no longer counts toward their rating average.\n\nNote: Dealers have a monthly limit on how many reviews they can dispute to prevent abuse."
+	},
+	{
+		"key": "gddealer_guidelines_dealer_title",
+		"default": "Dealer Review Policy"
+	},
+	{
+		"key": "gddealer_guidelines_dealer_body",
+		"default": "As a dealer on GunRack.deals you agree to the following review policy:\n\n- You may not offer incentives in exchange for positive reviews\n- You may not ask customers to remove or change legitimate negative reviews\n- You may respond publicly to any review — keep responses professional and factual\n- You may dispute reviews you believe are fraudulent or factually inaccurate\n\nDispute limits:\n- Basic dealers: 2 disputes per month\n- Pro dealers: 5 disputes per month\n- Enterprise dealers: unlimited\n\nAbuse of the dispute system — filing disputes on legitimate reviews — may result in dispute privileges being suspended.\n\nDisputes must include a specific reason and supporting evidence. Vague disputes without evidence will be dismissed by admin."
 	}
 ]

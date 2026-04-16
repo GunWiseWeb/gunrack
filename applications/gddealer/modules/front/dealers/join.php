@@ -100,10 +100,16 @@ class _join extends \IPS\Dispatcher\Controller
 
 		$contactEmail = (string) ( \IPS\Settings::i()->gddealer_help_contact ?: 'dealers@gunrack.deals' );
 
+		$guidelinesUrl = (string) \IPS\Http\Url::internal(
+			'app=gddealer&module=dealers&controller=profile&do=guidelines',
+			'front', 'dealers_review_guidelines'
+		);
+
 		\IPS\Output::i()->title  = \IPS\Member::loggedIn()->language()->addToStack( 'gddealer_front_join_title' );
 		\IPS\Output::i()->output = \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )->join(
 			$tiers,
-			$contactEmail
+			$contactEmail,
+			$guidelinesUrl
 		);
 	}
 

@@ -160,6 +160,11 @@ class _profile extends \IPS\Dispatcher\Controller
 			'front', 'login'
 		);
 
+		$guidelinesUrl = (string) \IPS\Http\Url::internal(
+			'app=gddealer&module=dealers&controller=profile&do=guidelines',
+			'front', 'dealers_review_guidelines'
+		);
+
 		$createdAtRaw = (string) ( $dealerRow['created_at'] ?? '' );
 		$memberSince  = $createdAtRaw ? substr( $createdAtRaw, 0, 7 ) : '';
 
@@ -174,7 +179,31 @@ class _profile extends \IPS\Dispatcher\Controller
 
 		\IPS\Output::i()->title  = $dealer['dealer_name'];
 		\IPS\Output::i()->output = \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )
-			->dealerProfile( $dealer, $stats, $reviews, $canRate, $alreadyRated, $loginRequired, $rateUrl, $csrfKey, $loginUrl, $customerDispute );
+			->dealerProfile( $dealer, $stats, $reviews, $canRate, $alreadyRated, $loginRequired, $rateUrl, $csrfKey, $loginUrl, $customerDispute, $guidelinesUrl );
+	}
+
+	/**
+	 * Public "Review & Dispute Guidelines" page at /dealers/review-guidelines.
+	 * Pulls all section titles/bodies from settings so admin can edit.
+	 */
+	protected function guidelines(): void
+	{
+		$settings = \IPS\Settings::i();
+
+		$content = [
+			'buyer_title'   => (string) ( $settings->gddealer_guidelines_buyer_title   ?? '' ),
+			'buyer_body'    => (string) ( $settings->gddealer_guidelines_buyer_body    ?? '' ),
+			'dispute_title' => (string) ( $settings->gddealer_guidelines_dispute_title ?? '' ),
+			'dispute_body'  => (string) ( $settings->gddealer_guidelines_dispute_body  ?? '' ),
+			'dealer_title'  => (string) ( $settings->gddealer_guidelines_dealer_title  ?? '' ),
+			'dealer_body'   => (string) ( $settings->gddealer_guidelines_dealer_body   ?? '' ),
+		];
+
+		$contactEmail = (string) ( $settings->gddealer_help_contact ?: 'dealers@gunrack.deals' );
+
+		\IPS\Output::i()->title  = 'Review & Dispute Guidelines';
+		\IPS\Output::i()->output = \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )
+			->reviewGuidelines( $content, $contactEmail );
 	}
 
 	/**

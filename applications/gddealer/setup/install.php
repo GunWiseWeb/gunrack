@@ -1219,7 +1219,7 @@ TEMPLATE_EOT,
 		'location'      => 'front',
 		'group'         => 'dealers',
 		'template_name' => 'join',
-		'template_data' => '$tiers, $contactEmail',
+		'template_data' => '$tiers, $contactEmail, $guidelinesUrl',
 		'template_content' => <<<'TEMPLATE_EOT'
 <div style="max-width:1100px;margin:0 auto;padding:0 16px">
 
@@ -1335,6 +1335,10 @@ TEMPLATE_EOT,
 		<p style="margin:0 0 20px;color:#555">Join dealers already listing on GunRack.deals.</p>
 		<a href="{$tiers[1]['commerce_url']}" class="ipsButton ipsButton--primary" style="padding:12px 32px;font-size:1em">Get Started with Pro</a>
 		<p style="margin:12px 0 0;font-size:0.85em;color:#666">Questions? Email us at <a href="mailto:{$contactEmail}" style="color:#2563eb">{$contactEmail}</a></p>
+	</div>
+
+	<div style="text-align:center;padding:16px 0 32px;font-size:0.85em;color:#666">
+		<a href="{$guidelinesUrl}" style="color:#2563eb">Review &amp; Dispute Policy</a>
 	</div>
 
 </div>
@@ -1453,6 +1457,7 @@ TEMPLATE_EOT,
 					<summary style="cursor:pointer;font-size:0.85em;color:#dc2626;font-weight:600">Contest this review</summary>
 					<form method="post" action="{$r['dispute_url']}" style="margin-top:8px">
 						<input type="hidden" name="csrfKey" value="{$csrfKey}">
+						<p style="margin:0 0 8px;font-size:0.8em;color:#666">Read the <a href="{$data['guidelines_url']}" style="color:#2563eb" target="_blank">Dispute Guidelines</a> before contesting a review.</p>
 						<label style="display:block;font-size:0.8em;font-weight:600;margin-bottom:4px">Reason for contest</label>
 						<textarea name="dispute_reason" rows="3" required style="width:100%;border:1px solid var(--i-border-color,#ccc);border-radius:4px;padding:8px;font-size:0.9em;box-sizing:border-box;margin-bottom:8px" placeholder="Explain why this review should be removed (e.g. never purchased from us, fraudulent, violates terms)..."></textarea>
 						<label style="display:block;font-size:0.8em;font-weight:600;margin-bottom:4px">Supporting evidence (order numbers, screenshots, transaction IDs)</label>
@@ -1466,6 +1471,7 @@ TEMPLATE_EOT,
 						<summary style="cursor:pointer;font-size:0.85em;color:#dc2626;font-weight:600">Contest this review</summary>
 						<form method="post" action="{$r['dispute_url']}" style="margin-top:8px">
 							<input type="hidden" name="csrfKey" value="{$csrfKey}">
+							<p style="margin:0 0 8px;font-size:0.8em;color:#666">Read the <a href="{$data['guidelines_url']}" style="color:#2563eb" target="_blank">Dispute Guidelines</a> before contesting a review.</p>
 							<label style="display:block;font-size:0.8em;font-weight:600;margin-bottom:4px">Reason for contest</label>
 							<textarea name="dispute_reason" rows="3" required style="width:100%;border:1px solid var(--i-border-color,#ccc);border-radius:4px;padding:8px;font-size:0.9em;box-sizing:border-box;margin-bottom:8px" placeholder="Explain why this review should be removed (e.g. never purchased from us, fraudulent, violates terms)..."></textarea>
 							<label style="display:block;font-size:0.8em;font-weight:600;margin-bottom:4px">Supporting evidence (order numbers, screenshots, transaction IDs)</label>
@@ -1495,7 +1501,7 @@ TEMPLATE_EOT,
 		'location'      => 'front',
 		'group'         => 'dealers',
 		'template_name' => 'dealerProfile',
-		'template_data' => '$dealer, $stats, $reviews, $canRate, $alreadyRated, $loginRequired, $rateUrl, $csrfKey, $loginUrl, $customerDispute',
+		'template_data' => '$dealer, $stats, $reviews, $canRate, $alreadyRated, $loginRequired, $rateUrl, $csrfKey, $loginUrl, $customerDispute, $guidelinesUrl',
 		'template_content' => <<<'TEMPLATE_EOT'
 <div style="max-width:900px;margin:0 auto;padding:24px 16px">
 
@@ -1591,6 +1597,7 @@ TEMPLATE_EOT,
 			</div>
 			<textarea name="review_body" rows="4" style="width:100%;border:1px solid var(--i-border-color,#ccc);border-radius:4px;padding:8px;font-size:0.9em;box-sizing:border-box;margin-bottom:12px" placeholder="Share your experience with this dealer (optional)..."></textarea>
 			<button type="submit" class="ipsButton ipsButton--primary">Submit Review</button>
+			<p style="margin:12px 0 0;font-size:0.8em;color:#666">By leaving a review you agree to our <a href="{$guidelinesUrl}" style="color:#2563eb">Review Guidelines</a>.</p>
 		</form>
 	</div>
 	{{elseif $alreadyRated}}
@@ -1645,6 +1652,60 @@ TEMPLATE_EOT,
 		</div>
 		{{endforeach}}
 	{{endif}}
+
+</div>
+TEMPLATE_EOT,
+	],
+
+	/* ===== FRONT: reviewGuidelines ===== */
+	[
+		'set_id'        => 1,
+		'app'           => 'gddealer',
+		'location'      => 'front',
+		'group'         => 'dealers',
+		'template_name' => 'reviewGuidelines',
+		'template_data' => '$content, $contactEmail',
+		'template_content' => <<<'TEMPLATE_EOT'
+<div style="max-width:900px;margin:0 auto;padding:0 16px">
+
+	<div style="text-align:center;padding:32px 0 24px">
+		<h1 style="font-size:1.8em;font-weight:800;margin:0 0 8px">Review &amp; Dispute Guidelines</h1>
+		<p style="color:#666;margin:0">Everything you need to know about leaving reviews and how disputes work.</p>
+	</div>
+
+	<div style="display:flex;gap:12px;margin-bottom:32px;flex-wrap:wrap;justify-content:center">
+		<a href="#buyers" class="ipsButton ipsButton--normal ipsButton--small">For Buyers</a>
+		<a href="#disputes" class="ipsButton ipsButton--normal ipsButton--small">Dispute Process</a>
+		<a href="#dealers" class="ipsButton ipsButton--normal ipsButton--small">For Dealers</a>
+	</div>
+
+	<div id="buyers" style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:28px;margin-bottom:20px">
+		<h2 style="margin:0 0 16px;font-size:1.2em;font-weight:700;display:flex;align-items:center;gap:8px">
+			<span style="background:#eff6ff;color:#2563eb;width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:0.9em">&#9733;</span>
+			{$content['buyer_title']}
+		</h2>
+		<div style="color:#444;line-height:1.7;white-space:pre-line">{$content['buyer_body']}</div>
+	</div>
+
+	<div id="disputes" style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:28px;margin-bottom:20px">
+		<h2 style="margin:0 0 16px;font-size:1.2em;font-weight:700;display:flex;align-items:center;gap:8px">
+			<span style="background:#fff8f0;color:#f59e0b;width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:0.9em">&#9878;</span>
+			{$content['dispute_title']}
+		</h2>
+		<div style="color:#444;line-height:1.7;white-space:pre-line">{$content['dispute_body']}</div>
+	</div>
+
+	<div id="dealers" style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:28px;margin-bottom:32px">
+		<h2 style="margin:0 0 16px;font-size:1.2em;font-weight:700;display:flex;align-items:center;gap:8px">
+			<span style="background:#f0fdf4;color:#16a34a;width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:0.9em">&#127978;</span>
+			{$content['dealer_title']}
+		</h2>
+		<div style="color:#444;line-height:1.7;white-space:pre-line">{$content['dealer_body']}</div>
+	</div>
+
+	<div style="text-align:center;padding:16px;color:#999;font-size:0.85em">
+		Questions? Contact us at <a href="mailto:{$contactEmail}" style="color:#2563eb">{$contactEmail}</a>
+	</div>
 
 </div>
 TEMPLATE_EOT,

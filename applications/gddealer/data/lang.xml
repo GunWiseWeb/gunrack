@@ -233,5 +233,12 @@
     <word key="gddealer_email_disputeAdminNotify"><![CDATA[Review Contest — Admin Notification]]></word>
     <word key="gddealer_email_disputeDismissed"><![CDATA[Review Contest — Dealer Dismissal Notification]]></word>
     <word key="gddealer_email_disputeAutoResolved"><![CDATA[Review Contest — Customer Auto-Resolved Notification]]></word>
+    <word key="gddealer_settings_guidelines"><![CDATA[Review & Dispute Guidelines]]></word>
+    <word key="gddealer_guidelines_buyer_title"><![CDATA[Buyer Guidelines Title]]></word>
+    <word key="gddealer_guidelines_buyer_body"><![CDATA[Buyer Guidelines Content]]></word>
+    <word key="gddealer_guidelines_dispute_title"><![CDATA[Dispute Process Title]]></word>
+    <word key="gddealer_guidelines_dispute_body"><![CDATA[Dispute Process Content]]></word>
+    <word key="gddealer_guidelines_dealer_title"><![CDATA[Dealer Policy Title]]></word>
+    <word key="gddealer_guidelines_dealer_body"><![CDATA[Dealer Policy Content]]></word>
   </app>
 </language>

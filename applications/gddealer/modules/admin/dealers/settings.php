@@ -100,6 +100,23 @@ class _settings extends \IPS\Dispatcher\Controller
 		$form->add( new \IPS\Helpers\Form\Text( 'gddealer_help_contact',
 			(string) ( $settings->gddealer_help_contact ?? '' ), FALSE ) );
 
+		$form->addHeader( 'gddealer_settings_guidelines' );
+
+		$form->add( new \IPS\Helpers\Form\Text( 'gddealer_guidelines_buyer_title',
+			(string) ( $settings->gddealer_guidelines_buyer_title ?? '' ), FALSE ) );
+		$form->add( new \IPS\Helpers\Form\TextArea( 'gddealer_guidelines_buyer_body',
+			(string) ( $settings->gddealer_guidelines_buyer_body ?? '' ), FALSE, [ 'rows' => 10 ] ) );
+
+		$form->add( new \IPS\Helpers\Form\Text( 'gddealer_guidelines_dispute_title',
+			(string) ( $settings->gddealer_guidelines_dispute_title ?? '' ), FALSE ) );
+		$form->add( new \IPS\Helpers\Form\TextArea( 'gddealer_guidelines_dispute_body',
+			(string) ( $settings->gddealer_guidelines_dispute_body ?? '' ), FALSE, [ 'rows' => 12 ] ) );
+
+		$form->add( new \IPS\Helpers\Form\Text( 'gddealer_guidelines_dealer_title',
+			(string) ( $settings->gddealer_guidelines_dealer_title ?? '' ), FALSE ) );
+		$form->add( new \IPS\Helpers\Form\TextArea( 'gddealer_guidelines_dealer_body',
+			(string) ( $settings->gddealer_guidelines_dealer_body ?? '' ), FALSE, [ 'rows' => 10 ] ) );
+
 		$form->addHeader( 'gddealer_settings_emails' );
 		$form->addMessage( 'gddealer_settings_emails_help' );
 
@@ -155,6 +172,12 @@ class _settings extends \IPS\Dispatcher\Controller
 				'gddealer_help_step5'                 => (string) $values['gddealer_help_step5'],
 				'gddealer_help_requirements'          => (string) $values['gddealer_help_requirements'],
 				'gddealer_help_contact'               => (string) $values['gddealer_help_contact'],
+				'gddealer_guidelines_buyer_title'     => (string) $values['gddealer_guidelines_buyer_title'],
+				'gddealer_guidelines_buyer_body'      => (string) $values['gddealer_guidelines_buyer_body'],
+				'gddealer_guidelines_dispute_title'   => (string) $values['gddealer_guidelines_dispute_title'],
+				'gddealer_guidelines_dispute_body'    => (string) $values['gddealer_guidelines_dispute_body'],
+				'gddealer_guidelines_dealer_title'    => (string) $values['gddealer_guidelines_dealer_title'],
+				'gddealer_guidelines_dealer_body'     => (string) $values['gddealer_guidelines_dealer_body'],
 			]);
 
 			$updateEmail = function( string $key, string $subject, string $body ) {

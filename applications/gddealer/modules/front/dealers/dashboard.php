@@ -734,6 +734,10 @@ class _dashboard extends \IPS\Dispatcher\Controller
 			'avg_overall'        => $total > 0 ? round( ( $avgPricing + $avgShipping + $avgService ) / 3, 1 ) : 0.0,
 			'disputes_remaining' => $remaining,
 			'disputes_unlimited' => $remaining === -1,
+			'guidelines_url'     => (string) \IPS\Http\Url::internal(
+				'app=gddealer&module=dealers&controller=profile&do=guidelines',
+				'front', 'dealers_review_guidelines'
+			),
 		];
 
 		$csrfKey = (string) \IPS\Session::i()->csrfKey;
