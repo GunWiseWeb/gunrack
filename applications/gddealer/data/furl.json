@@ -22,8 +22,8 @@
 			"real": "app=gddealer&module=dealers&controller=profile&do=guidelines"
 		},
 		"dealers_profile": {
-			"friendly": "{#dealer_slug}",
-			"real": "app=gddealer&module=dealers&controller=profile"
+			"friendly": "profile/{!dealer_slug}",
+			"real": "app=gddealer&module=dealers&controller=profile&dealer_slug={!dealer_slug}"
 		}
 	}
 }
