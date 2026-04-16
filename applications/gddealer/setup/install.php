@@ -476,7 +476,7 @@ TEMPLATE_EOT,
 		<a href="{$tabUrls['help']}" class="ipsButton ipsButton--small {expression="$activeTab === 'help' ? 'ipsButton--primary' : 'ipsButton--normal'"}">{lang="gddealer_front_tab_help"}</a>
 	</div>
 
-	<div style="padding:8px 0">
+	<div style="padding:8px 24px">
 		{$body|raw}
 	</div>
 
@@ -627,7 +627,7 @@ TEMPLATE_EOT,
 		<input type="hidden" name="do" value="listings">
 		<div>
 			<label style="display:block;font-size:0.85em;color:#666">{lang="gddealer_front_filter"}</label>
-			<select name="filter">
+			<select name="filter" style="border:1px solid var(--i-border-color,#ccc);border-radius:4px;padding:6px 10px;background:#fff">
 				<option value="" {expression="$filter === '' ? 'selected' : ''"}>All</option>
 				<option value="active" {expression="$filter === 'active' ? 'selected' : ''"}>Active</option>
 				<option value="in_stock" {expression="$filter === 'in_stock' ? 'selected' : ''"}>In Stock</option>
@@ -638,7 +638,7 @@ TEMPLATE_EOT,
 		</div>
 		<div>
 			<label style="display:block;font-size:0.85em;color:#666">{lang="gddealer_front_search_upc"}</label>
-			<input type="text" name="q" value="{$search}" placeholder="{lang='gddealer_front_search_placeholder'}">
+			<input type="text" name="q" value="{$search}" placeholder="{lang='gddealer_front_search_placeholder'}" style="border:1px solid var(--i-border-color,#ccc);border-radius:4px;padding:6px 10px;background:#fff">
 		</div>
 		<button type="submit" class="ipsButton ipsButton--primary ipsButton--small">{lang="gddealer_front_apply"}</button>
 		<a href="{$exportUrl}" class="ipsButton ipsButton--normal ipsButton--small">{lang="gddealer_front_export_csv"}</a>
@@ -843,8 +843,11 @@ TEMPLATE_EOT,
 	<h2 style="margin:0 0 4px">Feed Setup Guide</h2>
 	<p style="color:#666;margin:0 0 24px">Follow these steps to get your inventory syncing with GunRack.deals.</p>
 
-	<div style="border-left:3px solid #2563eb;padding:0 0 24px 20px;margin-bottom:8px">
-		<h3 style="margin:0 0 8px">Step 1 &mdash; Prepare your product feed</h3>
+	<div style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:20px;margin-bottom:16px">
+		<h3 style="margin:0 0 12px;font-size:1.05em;font-weight:700;color:#1e3a5f">
+			<span style="background:#2563eb;color:#fff;border-radius:50%;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;font-size:0.8em;margin-right:8px;font-weight:700">1</span>
+			Prepare your product feed
+		</h3>
 		<p>Your feed must be a publicly accessible URL that returns product data in one of our supported formats: <strong>XML, JSON, or CSV</strong>. The feed must be reachable by our servers without authentication, or use Basic Auth or an API key.</p>
 		<p><strong>Required fields per product:</strong></p>
 		<ul style="margin:8px 0;padding-left:20px">
@@ -862,8 +865,11 @@ TEMPLATE_EOT,
 		</ul>
 	</div>
 
-	<div style="border-left:3px solid #2563eb;padding:0 0 24px 20px;margin-bottom:8px">
-		<h3 style="margin:0 0 8px">Step 2 &mdash; Format your feed</h3>
+	<div style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:20px;margin-bottom:16px">
+		<h3 style="margin:0 0 12px;font-size:1.05em;font-weight:700;color:#1e3a5f">
+			<span style="background:#2563eb;color:#fff;border-radius:50%;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;font-size:0.8em;margin-right:8px;font-weight:700">2</span>
+			Format your feed
+		</h3>
 
 		<p><strong>CSV format example:</strong></p>
 		<pre style="background:#f4f4f4;padding:12px;border-radius:4px;overflow-x:auto;font-size:0.85em">upc,price,in_stock,shipping_cost,condition,product_url
@@ -894,8 +900,11 @@ TEMPLATE_EOT,
 &lt;/products&gt;</pre>
 	</div>
 
-	<div style="border-left:3px solid #2563eb;padding:0 0 24px 20px;margin-bottom:8px">
-		<h3 style="margin:0 0 8px">Step 3 &mdash; Configure field mapping</h3>
+	<div style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:20px;margin-bottom:16px">
+		<h3 style="margin:0 0 12px;font-size:1.05em;font-weight:700;color:#1e3a5f">
+			<span style="background:#2563eb;color:#fff;border-radius:50%;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;font-size:0.8em;margin-right:8px;font-weight:700">3</span>
+			Configure field mapping
+		</h3>
 		<p>If your feed uses different field names than our defaults, enter a JSON mapping in the Field Mapping box on the Feed Settings tab. Map your field names to ours:</p>
 		<pre style="background:#f4f4f4;padding:12px;border-radius:4px;overflow-x:auto;font-size:0.85em">{
   "UPC": "upc",
@@ -908,8 +917,11 @@ TEMPLATE_EOT,
 }</pre>
 	</div>
 
-	<div style="border-left:3px solid #2563eb;padding:0 0 24px 20px;margin-bottom:8px">
-		<h3 style="margin:0 0 8px">Step 4 &mdash; Enter your feed URL</h3>
+	<div style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:20px;margin-bottom:16px">
+		<h3 style="margin:0 0 12px;font-size:1.05em;font-weight:700;color:#1e3a5f">
+			<span style="background:#2563eb;color:#fff;border-radius:50%;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;font-size:0.8em;margin-right:8px;font-weight:700">4</span>
+			Enter your feed URL
+		</h3>
 		<p>Go to the <strong>Feed Settings</strong> tab and enter your feed URL. Select your format (CSV, JSON, or XML). If your feed requires authentication, select the auth type and enter your credentials as JSON:</p>
 		<ul style="margin:8px 0;padding-left:20px">
 			<li>Basic Auth: <code style="background:#f4f4f4;padding:1px 6px;border-radius:3px">{"username":"user","password":"pass"}</code></li>
@@ -918,8 +930,11 @@ TEMPLATE_EOT,
 		<p>Click <strong>Save Feed Settings</strong> then <strong>Run Import Now</strong> to trigger your first sync immediately.</p>
 	</div>
 
-	<div style="border-left:3px solid #2563eb;padding:0 0 8px 20px;margin-bottom:24px">
-		<h3 style="margin:0 0 8px">Step 5 &mdash; Review your listings</h3>
+	<div style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:20px;margin-bottom:24px">
+		<h3 style="margin:0 0 12px;font-size:1.05em;font-weight:700;color:#1e3a5f">
+			<span style="background:#2563eb;color:#fff;border-radius:50%;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;font-size:0.8em;margin-right:8px;font-weight:700">5</span>
+			Review your listings
+		</h3>
 		<p>After your first import completes, go to the <strong>Listings</strong> tab to see all synced products. Check the <strong>Unmatched UPCs</strong> tab for any products that couldn't be matched to our catalog &mdash; these won't appear in search results until the UPC is added to our database.</p>
 		<p>If you have unmatched UPCs, contact us and we'll add them to the catalog promptly.</p>
 	</div>
