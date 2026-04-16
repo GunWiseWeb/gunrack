@@ -792,6 +792,20 @@
 				"values": [],
 				"comment": ""
 			},
+			"dealer_slug": {
+				"name": "dealer_slug",
+				"type": "VARCHAR",
+				"length": 100,
+				"decimals": null,
+				"allow_null": true,
+				"default": null,
+				"auto_increment": false,
+				"binary": false,
+				"unsigned": false,
+				"zerofill": false,
+				"values": [],
+				"comment": ""
+			},
 			"subscription_tier": {
 				"name": "subscription_tier",
 				"type": "VARCHAR",
@@ -1035,6 +1049,12 @@
 				"name": "idx_active",
 				"length": [null],
 				"columns": ["active"]
+			},
+			"uq_dealer_slug": {
+				"type": "unique",
+				"name": "uq_dealer_slug",
+				"length": [null],
+				"columns": ["dealer_slug"]
 			}
 		}
 	},

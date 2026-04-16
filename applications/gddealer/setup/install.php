@@ -162,6 +162,9 @@ TEMPLATE_EOT,
 						<a href="{$d['view_url']}" class="ipsButton ipsButton--small ipsButton--primary">View</a>
 						<a href="{$d['edit_url']}" class="ipsButton ipsButton--small ipsButton--normal">Edit</a>
 						<a href="{$d['import_url']}" class="ipsButton ipsButton--small ipsButton--normal">Import</a>
+						{{if $d['profile_url']}}
+							<a href="{$d['profile_url']}" target="_blank" class="ipsButton ipsButton--small ipsButton--normal">Profile</a>
+						{{endif}}
 						{{if $d['suspended']}}
 							<a href="{$d['suspend_url']}" class="ipsButton ipsButton--small ipsButton--positive">Unsuspend</a>
 						{{else}}
@@ -221,6 +224,15 @@ TEMPLATE_EOT,
 		</div>
 
 		<div style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;margin:0 20px 16px">
+			{{if $dealer['profile_url']}}
+			<div style="padding:16px 20px;border-bottom:1px solid var(--i-border-color,#e0e0e0)">
+				<div style="font-size:0.8em;color:#666;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">Public Profile</div>
+				<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+					<input type="text" readonly value="{$dealer['profile_url']}" onclick="this.select()" style="flex:1 1 300px;min-width:0;font-family:monospace;font-size:0.85em;background:#f4f4f4;padding:6px 10px;border:1px solid var(--i-border-color,#ccc);border-radius:4px">
+					<a href="{$dealer['profile_url']}" target="_blank" class="ipsButton ipsButton--small ipsButton--primary">Open</a>
+				</div>
+			</div>
+			{{endif}}
 			<div style="padding:16px 20px;border-bottom:1px solid var(--i-border-color,#e0e0e0)">
 				<div style="font-size:0.8em;color:#666;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">Feed URL</div>
 				<div style="font-weight:700;font-size:1.05em"><code>{$dealer['feed_url']}</code></div>
@@ -1373,6 +1385,128 @@ TEMPLATE_EOT,
 					</details>
 				</details>
 				{{endif}}
+			{{endif}}
+		</div>
+		{{endforeach}}
+	{{endif}}
+
+</div>
+TEMPLATE_EOT,
+	],
+
+	/* ===== FRONT: dealerProfile ===== */
+	[
+		'set_id'        => 1,
+		'app'           => 'gddealer',
+		'location'      => 'front',
+		'group'         => 'dealers',
+		'template_name' => 'dealerProfile',
+		'template_data' => '$dealer, $stats, $reviews, $canRate, $alreadyRated, $loginRequired, $rateUrl, $csrfKey, $loginUrl',
+		'template_content' => <<<'TEMPLATE_EOT'
+<div style="max-width:900px;margin:0 auto;padding:24px 16px">
+
+	<div style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:24px;margin-bottom:24px">
+		<div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:16px">
+			<div>
+				<h1 style="margin:0 0 4px;font-size:1.5em;font-weight:800">{$dealer['dealer_name']}</h1>
+				{{if $dealer['member_since']}}
+				<div style="font-size:0.85em;color:#666">Member since {$dealer['member_since']}</div>
+				{{endif}}
+			</div>
+			<div style="text-align:right">
+				<div style="font-size:2em;font-weight:800;color:#2563eb">{$stats['avg_overall']}</div>
+				<div style="font-size:0.8em;color:#666">{$stats['total']} reviews</div>
+			</div>
+		</div>
+		<div style="display:flex;gap:24px;margin-top:16px;flex-wrap:wrap">
+			<div style="font-size:0.85em;color:#666">Pricing Accuracy: <strong>{$stats['avg_pricing']}/5</strong></div>
+			<div style="font-size:0.85em;color:#666">Shipping Speed: <strong>{$stats['avg_shipping']}/5</strong></div>
+			<div style="font-size:0.85em;color:#666">Customer Service: <strong>{$stats['avg_service']}/5</strong></div>
+		</div>
+	</div>
+
+	{{if $canRate}}
+	<div style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:24px;margin-bottom:24px">
+		<h2 style="margin:0 0 16px;font-size:1.1em;font-weight:700">Leave a Review</h2>
+		<form method="post" action="{$rateUrl}">
+			<input type="hidden" name="csrfKey" value="{$csrfKey}">
+			<div style="display:flex;gap:24px;margin-bottom:16px;flex-wrap:wrap">
+				<div>
+					<label style="display:block;font-size:0.85em;font-weight:600;margin-bottom:4px">Pricing Accuracy</label>
+					<select name="rating_pricing" class="ipsInput ipsInput--select" required>
+						<option value="">Select</option>
+						<option value="5">5 &mdash; Excellent</option>
+						<option value="4">4 &mdash; Good</option>
+						<option value="3">3 &mdash; Average</option>
+						<option value="2">2 &mdash; Poor</option>
+						<option value="1">1 &mdash; Terrible</option>
+					</select>
+				</div>
+				<div>
+					<label style="display:block;font-size:0.85em;font-weight:600;margin-bottom:4px">Shipping Speed</label>
+					<select name="rating_shipping" class="ipsInput ipsInput--select" required>
+						<option value="">Select</option>
+						<option value="5">5 &mdash; Excellent</option>
+						<option value="4">4 &mdash; Good</option>
+						<option value="3">3 &mdash; Average</option>
+						<option value="2">2 &mdash; Poor</option>
+						<option value="1">1 &mdash; Terrible</option>
+					</select>
+				</div>
+				<div>
+					<label style="display:block;font-size:0.85em;font-weight:600;margin-bottom:4px">Customer Service</label>
+					<select name="rating_service" class="ipsInput ipsInput--select" required>
+						<option value="">Select</option>
+						<option value="5">5 &mdash; Excellent</option>
+						<option value="4">4 &mdash; Good</option>
+						<option value="3">3 &mdash; Average</option>
+						<option value="2">2 &mdash; Poor</option>
+						<option value="1">1 &mdash; Terrible</option>
+					</select>
+				</div>
+			</div>
+			<textarea name="review_body" rows="4" style="width:100%;border:1px solid var(--i-border-color,#ccc);border-radius:4px;padding:8px;font-size:0.9em;box-sizing:border-box;margin-bottom:12px" placeholder="Share your experience with this dealer (optional)..."></textarea>
+			<button type="submit" class="ipsButton ipsButton--primary">Submit Review</button>
+		</form>
+	</div>
+	{{elseif $alreadyRated}}
+	<div style="background:#f0f7ff;border:1px solid #bfdbfe;border-radius:8px;padding:16px;margin-bottom:24px;font-size:0.9em;color:#1e40af">
+		You have already reviewed this dealer. Thank you for your feedback!
+	</div>
+	{{elseif $loginRequired}}
+	<div style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:20px;margin-bottom:24px;text-align:center">
+		<p style="margin:0 0 12px;color:#666">Sign in to leave a review for this dealer.</p>
+		<a href="{$loginUrl}" class="ipsButton ipsButton--primary ipsButton--small">Sign In</a>
+	</div>
+	{{endif}}
+
+	<h2 style="font-size:1.1em;font-weight:700;margin:0 0 16px">Customer Reviews</h2>
+	{{if count($reviews) === 0}}
+		<div class="ipsEmptyMessage"><p>No reviews yet. Be the first to review this dealer.</p></div>
+	{{else}}
+		{{foreach $reviews as $r}}
+		<div style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:20px;margin-bottom:12px">
+			<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:8px">
+				<div style="display:flex;gap:16px;flex-wrap:wrap">
+					<span style="font-size:0.8em;color:#666">Pricing: <strong>{$r['rating_pricing']}/5</strong></span>
+					<span style="font-size:0.8em;color:#666">Shipping: <strong>{$r['rating_shipping']}/5</strong></span>
+					<span style="font-size:0.8em;color:#666">Service: <strong>{$r['rating_service']}/5</strong></span>
+				</div>
+				<span style="font-size:0.8em;color:#999">{$r['created_at']}</span>
+			</div>
+			{{if $r['review_body']}}
+			<p style="margin:0 0 8px;color:#333">{$r['review_body']}</p>
+			{{endif}}
+			{{if $r['disputed']}}
+			<div style="background:#fff8f0;border-left:3px solid #f59e0b;padding:8px 12px;font-size:0.85em;color:#92400e;margin-top:8px">
+				&#9888; This review is under admin review.
+			</div>
+			{{endif}}
+			{{if $r['dealer_response']}}
+			<div style="background:#f0f7ff;border-left:3px solid #2563eb;padding:12px 16px;border-radius:0 6px 6px 0;margin-top:8px">
+				<div style="font-size:0.8em;color:#2563eb;font-weight:700;margin-bottom:4px">Dealer Response</div>
+				<p style="margin:0;font-size:0.9em">{$r['dealer_response']}</p>
+			</div>
 			{{endif}}
 		</div>
 		{{endforeach}}

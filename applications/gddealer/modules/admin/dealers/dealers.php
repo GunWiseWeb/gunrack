@@ -64,9 +64,18 @@ class _dealers extends \IPS\Dispatcher\Controller
 				'app=gddealer&module=dealers&controller=dealers&do=forceImport&id=' . (int) $dealer->dealer_id
 			)->csrf();
 
+			$slug = (string) ( $dealer->dealer_slug ?? '' );
+			$profileUrl = $slug !== ''
+				? (string) \IPS\Http\Url::internal(
+					'app=gddealer&module=dealers&controller=profile&dealer_slug=' . urlencode( $slug ),
+					'front', 'dealers_profile', [ $slug ]
+				)
+				: '';
+
 			$dealers[] = [
 				'dealer_id'        => (int) $dealer->dealer_id,
 				'dealer_name'      => (string) $dealer->dealer_name,
+				'dealer_slug'      => $slug,
 				'subscription_tier'=> (string) $dealer->subscription_tier,
 				'active'           => (bool) $dealer->active,
 				'suspended'        => (bool) $dealer->suspended,
@@ -78,6 +87,7 @@ class _dealers extends \IPS\Dispatcher\Controller
 				'edit_url'         => $editUrl,
 				'suspend_url'      => $suspendUrl,
 				'import_url'       => $importUrl,
+				'profile_url'      => $profileUrl,
 			];
 		}
 
@@ -149,9 +159,18 @@ class _dealers extends \IPS\Dispatcher\Controller
 			'app=nexus&module=customers&controller=search&do=view&id=' . (int) $dealer->dealer_id
 		);
 
+		$slug       = (string) ( $dealer->dealer_slug ?? '' );
+		$profileUrl = $slug !== ''
+			? (string) \IPS\Http\Url::internal(
+				'app=gddealer&module=dealers&controller=profile&dealer_slug=' . urlencode( $slug ),
+				'front', 'dealers_profile', [ $slug ]
+			)
+			: '';
+
 		$dealerData = [
 			'dealer_id'         => (int) $dealer->dealer_id,
 			'dealer_name'       => (string) $dealer->dealer_name,
+			'dealer_slug'       => $slug,
 			'subscription_tier' => (string) $dealer->subscription_tier,
 			'feed_url'          => (string) ( $dealer->feed_url ?? '' ),
 			'feed_format'       => strtoupper( (string) $dealer->feed_format ),
@@ -165,6 +184,7 @@ class _dealers extends \IPS\Dispatcher\Controller
 			'trial_expires_at'  => $trialExpires,
 			'trial_expires_soon'=> $trialSoon,
 			'billing_note'      => (string) ( $dealer->billing_note ?? '' ),
+			'profile_url'       => $profileUrl,
 		];
 
 		$backUrl    = (string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dealers' );
@@ -373,9 +393,37 @@ class _dealers extends \IPS\Dispatcher\Controller
 				$trialExpires = $values['gddealer_onboard_trial_expires']->format( 'Y-m-d H:i:s' );
 			}
 
+			$dealerName = (string) $values['gddealer_onboard_name'];
+
+			/* Build a URL-safe slug from the dealer name. Uniqueness is
+			   enforced by the uq_dealer_slug index; we append -1, -2, ...
+			   until a free slug is found. */
+			$slug = strtolower( preg_replace( '/[^a-z0-9]+/', '-', strtolower( $dealerName ) ) );
+			$slug = trim( $slug, '-' );
+			if ( $slug === '' )
+			{
+				$slug = 'dealer-' . $memberId;
+			}
+			$base = $slug;
+			$i    = 1;
+			while ( true )
+			{
+				try
+				{
+					$exists = (int) \IPS\Db::i()->select( 'COUNT(*)', 'gd_dealer_feed_config', [ 'dealer_slug=?', $slug ] )->first();
+				}
+				catch ( \Exception )
+				{
+					$exists = 0;
+				}
+				if ( $exists === 0 ) { break; }
+				$slug = $base . '-' . $i++;
+			}
+
 			\IPS\Db::i()->insert( 'gd_dealer_feed_config', [
 				'dealer_id'         => $memberId,
-				'dealer_name'       => (string) $values['gddealer_onboard_name'],
+				'dealer_name'       => $dealerName,
+				'dealer_slug'       => $slug,
 				'subscription_tier' => $tierKey,
 				'feed_url'          => null,
 				'feed_format'       => 'xml',

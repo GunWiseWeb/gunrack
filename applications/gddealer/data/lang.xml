@@ -219,5 +219,9 @@
     <word key="gddealer_email_expired_subject"><![CDATA[Trial Expired — Subject]]></word>
     <word key="gddealer_email_expired_body"><![CDATA[Trial Expired — Body]]></word>
     <word key="task__ExpireTrials"><![CDATA[Expire dealer trials and suspend listings]]></word>
+    <word key="module__gddealer_profile"><![CDATA[Dealer Profile]]></word>
+    <word key="gddealer_profile_rating_saved"><![CDATA[Thanks for your review!]]></word>
+    <word key="gddealer_profile_rating_invalid"><![CDATA[Please rate every category from 1 to 5.]]></word>
+    <word key="dealer_not_found"><![CDATA[Dealer not found.]]></word>
   </app>
 </language>

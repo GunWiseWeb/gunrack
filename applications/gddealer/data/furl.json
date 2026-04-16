@@ -16,6 +16,10 @@
 		"dealers_join_action": {
 			"friendly": "join/{#do}",
 			"real": "app=gddealer&module=dealers&controller=join&do={#do}"
+		},
+		"dealers_profile": {
+			"friendly": "{#dealer_slug}",
+			"real": "app=gddealer&module=dealers&controller=profile"
 		}
 	}
 }
