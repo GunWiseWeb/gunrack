@@ -47,7 +47,7 @@ class _profile extends \IPS\Dispatcher\Controller
 		try
 		{
 			$dealerRow = \IPS\Db::i()->select( '*', 'gd_dealer_feed_config',
-				[ 'dealer_slug=? AND active=?', $slug, 1 ] )->first();
+				[ 'dealer_slug=?', $slug ] )->first();
 		}
 		catch ( \Exception )
 		{
@@ -56,6 +56,7 @@ class _profile extends \IPS\Dispatcher\Controller
 		}
 
 		$dealerId = (int) $dealerRow['dealer_id'];
+		$isActive = (bool) ( $dealerRow['active'] ?? 0 );
 
 		/* Aggregated ratings. Reviews resolved in the dealer's favor are
 		   excluded; pending disputes and dismissed contests still count. */
@@ -120,9 +121,10 @@ class _profile extends \IPS\Dispatcher\Controller
 			catch ( \Exception ) {}
 		}
 
-		/* A member cannot review their own dealership. */
+		/* A member cannot review their own dealership, and inactive dealers
+		   no longer accept new reviews (the rate() action enforces this too). */
 		$isOwnDealer   = $member->member_id && (int) $member->member_id === $dealerId;
-		$canRate       = $member->member_id && !$alreadyRated && !$isOwnDealer;
+		$canRate       = $isActive && $member->member_id && !$alreadyRated && !$isOwnDealer;
 		$loginRequired = !$member->member_id;
 
 		/* If this visit is in response to a dispute notification ("You have
@@ -173,6 +175,7 @@ class _profile extends \IPS\Dispatcher\Controller
 			'dealer_name'  => (string) $dealerRow['dealer_name'],
 			'dealer_slug'  => (string) $dealerRow['dealer_slug'],
 			'member_since' => $memberSince,
+			'is_active'    => $isActive,
 		];
 
 		$csrfKey = (string) \IPS\Session::i()->csrfKey;

@@ -1525,6 +1525,13 @@ TEMPLATE_EOT,
 		</div>
 	</div>
 
+	{{if !$dealer['is_active']}}
+	<div style="background:#f1f5f9;border:1px solid #cbd5e1;border-radius:8px;padding:16px 20px;margin-bottom:24px;color:#334155">
+		<strong>This dealer's listings are currently inactive.</strong>
+		<p style="margin:4px 0 0;font-size:0.9em">Inventory and pricing are not being updated. Existing reviews and ratings are shown below for reference.</p>
+	</div>
+	{{endif}}
+
 	{{if $customerDispute}}
 	<div style="background:#fff8f0;border:1px solid #f59e0b;border-radius:8px;padding:20px;margin-bottom:24px">
 		<h2 style="margin:0 0 8px;font-size:1.05em;font-weight:700;color:#92400e">{$dealer['dealer_name']} has contested your review</h2>
