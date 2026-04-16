@@ -496,6 +496,7 @@ TEMPLATE_EOT,
 		<a href="{$tabUrls['listings']}" class="ipsButton ipsButton--small {expression="$activeTab === 'listings' ? 'ipsButton--primary' : 'ipsButton--normal'"}">{lang="gddealer_front_tab_listings"}</a>
 		<a href="{$tabUrls['unmatched']}" class="ipsButton ipsButton--small {expression="$activeTab === 'unmatched' ? 'ipsButton--primary' : 'ipsButton--normal'"}">{lang="gddealer_front_tab_unmatched"}</a>
 		<a href="{$tabUrls['analytics']}" class="ipsButton ipsButton--small {expression="$activeTab === 'analytics' ? 'ipsButton--primary' : 'ipsButton--normal'"}">{lang="gddealer_front_tab_analytics"}</a>
+		<a href="{$tabUrls['reviews']}" class="ipsButton ipsButton--small {expression="$activeTab === 'reviews' ? 'ipsButton--primary' : 'ipsButton--normal'"}">{lang="gddealer_front_tab_reviews"}</a>
 		<a href="{$tabUrls['subscription']}" class="ipsButton ipsButton--small {expression="$activeTab === 'subscription' ? 'ipsButton--primary' : 'ipsButton--normal'"}">{lang="gddealer_front_tab_subscription"}</a>
 		<a href="{$tabUrls['help']}" class="ipsButton ipsButton--small {expression="$activeTab === 'help' ? 'ipsButton--primary' : 'ipsButton--normal'"}">{lang="gddealer_front_tab_help"}</a>
 	</div>
@@ -1228,6 +1229,26 @@ TEMPLATE_EOT,
 		<p style="margin:12px 0 0;font-size:0.85em;color:#666">Questions? Email us at <a href="mailto:{$contactEmail}" style="color:#2563eb">{$contactEmail}</a></p>
 	</div>
 
+</div>
+TEMPLATE_EOT,
+	],
+
+	/* ===== FRONT: dealerReviews (stub) ===== */
+	[
+		'set_id'        => 1,
+		'app'           => 'gddealer',
+		'location'      => 'front',
+		'group'         => 'dealers',
+		'template_name' => 'dealerReviews',
+		'template_data' => '',
+		'template_content' => <<<'TEMPLATE_EOT'
+<div style="text-align:center;padding:48px 24px;background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px">
+	<div style="font-size:2.5em;margin-bottom:12px">&#11088;</div>
+	<h3 style="margin:0 0 8px;font-weight:700">Reviews Manager</h3>
+	<p style="color:#666;margin:0 0 8px;max-width:480px;margin-left:auto;margin-right:auto">
+		When the Reviews system launches you'll be able to see all product reviews for items you carry and respond directly to customers here.
+	</p>
+	<p style="color:#999;font-size:0.85em;margin:0">Coming soon — currently in development.</p>
 </div>
 TEMPLATE_EOT,
 	],

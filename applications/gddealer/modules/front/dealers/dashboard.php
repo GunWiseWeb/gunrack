@@ -643,6 +643,13 @@ class _dashboard extends \IPS\Dispatcher\Controller
 		) );
 	}
 
+	/* ---------------- Tab: Reviews (stub) ---------------- */
+
+	protected function reviews(): void
+	{
+		$this->output( 'reviews', \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )->dealerReviews() );
+	}
+
 	/* ---------------- Helpers ---------------- */
 
 	/**
@@ -681,6 +688,7 @@ class _dashboard extends \IPS\Dispatcher\Controller
 			'listings'     => (string) \IPS\Http\Url::internal( $base . 'listings' ),
 			'unmatched'    => (string) \IPS\Http\Url::internal( $base . 'unmatched' ),
 			'analytics'    => (string) \IPS\Http\Url::internal( $base . 'analytics' ),
+			'reviews'      => (string) \IPS\Http\Url::internal( $base . 'reviews' ),
 			'subscription' => (string) \IPS\Http\Url::internal( $base . 'subscription' ),
 			'help'         => (string) \IPS\Http\Url::internal( $base . 'help' ),
 		];
