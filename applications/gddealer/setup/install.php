@@ -467,7 +467,7 @@ TEMPLATE_EOT,
 			<h1 style="margin:0;font-size:1.4em;font-weight:700">{$dealer['dealer_name']}</h1>
 			<p style="margin:4px 0 0;color:#666;font-size:0.9em">
 				{lang="gddealer_front_dashboard_welcome"} &mdash;
-				<span style="background:#2563eb;color:#fff;padding:2px 8px;border-radius:12px;font-size:0.85em;font-weight:600">{$dealer['tier_label']}</span>
+				<span style="background:{$dealer['tier_color']};color:#fff;padding:2px 10px;border-radius:12px;font-size:0.8em;font-weight:700;letter-spacing:0.03em">{$dealer['tier_label']}</span>
 			</p>
 		</div>
 		<div>

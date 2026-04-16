@@ -650,12 +650,19 @@ class _dashboard extends \IPS\Dispatcher\Controller
 	 */
 	protected function dealerSummary(): array
 	{
-		$d = $this->dealer;
+		$d    = $this->dealer;
+		$tier = (string) $d->subscription_tier;
 		return [
 			'dealer_id'             => (int) $d->dealer_id,
 			'dealer_name'           => (string) $d->dealer_name,
-			'subscription_tier'     => (string) $d->subscription_tier,
-			'tier_label'            => ucfirst( (string) $d->subscription_tier ),
+			'subscription_tier'     => $tier,
+			'tier_label'            => ucfirst( $tier ),
+			'tier_color'            => match( $tier ) {
+				'founding'   => '#b45309',
+				'pro'        => '#2563eb',
+				'enterprise' => '#7c3aed',
+				default      => '#6b7280',
+			},
 			'onboarding_incomplete' => empty( $d->feed_url ),
 			'suspended'             => (bool) $d->suspended,
 		];
