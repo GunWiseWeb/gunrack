@@ -223,5 +223,15 @@
     <word key="gddealer_profile_rating_saved"><![CDATA[Thanks for your review!]]></word>
     <word key="gddealer_profile_rating_invalid"><![CDATA[Please rate every category from 1 to 5.]]></word>
     <word key="dealer_not_found"><![CDATA[Dealer not found.]]></word>
+    <word key="gddealer_front_dispute_limit_reached"><![CDATA[You have reached your monthly limit for review contests. Upgrade your plan for more contests, or wait until next month.]]></word>
+    <word key="gddealer_profile_dispute_response_required"><![CDATA[Please write a response before submitting.]]></word>
+    <word key="gddealer_profile_dispute_response_saved"><![CDATA[Your response has been submitted and is now awaiting admin review.]]></word>
+    <word key="gddealer_dispute_upheld"><![CDATA[Contest upheld — review no longer affects the dealer's rating.]]></word>
+    <word key="gddealer_dispute_edit_requested"><![CDATA[Admin note sent to the customer — they have 30 days to submit a revised response.]]></word>
+    <word key="task__ResolveExpiredDisputes"><![CDATA[Auto-resolve dealer review contests past deadline]]></word>
+    <word key="gddealer_email_disputeNotify"><![CDATA[Review Contest — Customer Notification]]></word>
+    <word key="gddealer_email_disputeAdminNotify"><![CDATA[Review Contest — Admin Notification]]></word>
+    <word key="gddealer_email_disputeDismissed"><![CDATA[Review Contest — Dealer Dismissal Notification]]></word>
+    <word key="gddealer_email_disputeAutoResolved"><![CDATA[Review Contest — Customer Auto-Resolved Notification]]></word>
   </app>
 </language>

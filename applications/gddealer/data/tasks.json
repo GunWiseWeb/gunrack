@@ -1,4 +1,5 @@
 {
 	"DealerImportFeeds": "PT15M",
-	"ExpireTrials": "P1D"
+	"ExpireTrials": "P1D",
+	"ResolveExpiredDisputes": "P1D"
 }

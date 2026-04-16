@@ -645,6 +645,14 @@ class _dashboard extends \IPS\Dispatcher\Controller
 
 	/* ---------------- Tab: Reviews ---------------- */
 
+	/** Monthly dispute limit by subscription tier. */
+	protected static array $disputeLimits = [
+		'basic'      => 2,
+		'pro'        => 5,
+		'founding'   => 5,
+		'enterprise' => PHP_INT_MAX,
+	];
+
 	protected function reviews(): void
 	{
 		$dealerId = (int) $this->dealer->dealer_id;
@@ -657,7 +665,7 @@ class _dashboard extends \IPS\Dispatcher\Controller
 		try
 		{
 			foreach ( \IPS\Db::i()->select( '*', 'gd_dealer_ratings',
-				[ 'dealer_id=? AND status IN(?,?)', $dealerId, 'approved', 'disputed' ],
+				[ 'dealer_id=? AND status=?', $dealerId, 'approved' ],
 				'created_at DESC', [ 0, 50 ]
 			) as $r )
 			{
@@ -671,7 +679,9 @@ class _dashboard extends \IPS\Dispatcher\Controller
 					'dealer_response'  => (string) ( $r['dealer_response'] ?? '' ),
 					'response_at'      => (string) ( $r['response_at'] ?? '' ),
 					'created_at'       => (string) $r['created_at'],
-					'disputed'         => (int) ( $r['disputed'] ?? 0 ),
+					'dispute_status'   => (string) ( $r['dispute_status'] ?? 'none' ),
+					'dispute_outcome'  => (string) ( $r['dispute_outcome'] ?? '' ),
+					'dispute_deadline' => (string) ( $r['dispute_deadline'] ?? '' ),
 					'respond_url'      => (string) \IPS\Http\Url::internal(
 						'app=gddealer&module=dealers&controller=dashboard&do=respond&id=' . (int) $r['id']
 					)->csrf(),
@@ -683,11 +693,14 @@ class _dashboard extends \IPS\Dispatcher\Controller
 		}
 		catch ( \Exception ) {}
 
+		/* Averages exclude reviews resolved in the dealer's favor. Pending
+		   and dismissed reviews continue to count. */
 		try
 		{
 			$agg = \IPS\Db::i()->select(
 				'COUNT(*) as c, AVG(rating_pricing) as p, AVG(rating_shipping) as s, AVG(rating_service) as sv',
-				'gd_dealer_ratings', [ 'dealer_id=? AND status=?', $dealerId, 'approved' ]
+				'gd_dealer_ratings',
+				[ 'dealer_id=? AND status=? AND dispute_status<>?', $dealerId, 'approved', 'resolved_dealer' ]
 			)->first();
 			$total       = (int) $agg['c'];
 			$avgPricing  = round( (float) $agg['p'], 1 );
@@ -696,13 +709,31 @@ class _dashboard extends \IPS\Dispatcher\Controller
 		}
 		catch ( \Exception ) {}
 
+		/* Compute monthly dispute usage for this dealer. */
+		$tier     = (string) $this->dealer->subscription_tier;
+		$limit    = self::$disputeLimits[ $tier ] ?? 2;
+		$monthKey = date( 'Y-m' );
+		try
+		{
+			$used = (int) \IPS\Db::i()->select( 'count', 'gd_dealer_dispute_counts',
+				[ 'dealer_id=? AND month_key=?', $dealerId, $monthKey ]
+			)->first();
+		}
+		catch ( \Exception )
+		{
+			$used = 0;
+		}
+		$remaining = $limit === PHP_INT_MAX ? -1 : max( 0, $limit - $used );
+
 		$data = [
-			'rows'          => $rows,
-			'total'         => $total,
-			'avg_pricing'   => $avgPricing,
-			'avg_shipping'  => $avgShipping,
-			'avg_service'   => $avgService,
-			'avg_overall'   => $total > 0 ? round( ( $avgPricing + $avgShipping + $avgService ) / 3, 1 ) : 0.0,
+			'rows'               => $rows,
+			'total'              => $total,
+			'avg_pricing'        => $avgPricing,
+			'avg_shipping'       => $avgShipping,
+			'avg_service'        => $avgService,
+			'avg_overall'        => $total > 0 ? round( ( $avgPricing + $avgShipping + $avgService ) / 3, 1 ) : 0.0,
+			'disputes_remaining' => $remaining,
+			'disputes_unlimited' => $remaining === -1,
 		];
 
 		$csrfKey = (string) \IPS\Session::i()->csrfKey;
@@ -723,7 +754,7 @@ class _dashboard extends \IPS\Dispatcher\Controller
 			{
 				\IPS\Db::i()->update( 'gd_dealer_ratings',
 					[ 'dealer_response' => $response, 'response_at' => date( 'Y-m-d H:i:s' ) ],
-					[ 'id=? AND dealer_id=? AND disputed=?', $id, (int) $this->dealer->dealer_id, 0 ]
+					[ 'id=? AND dealer_id=? AND dispute_status=?', $id, (int) $this->dealer->dealer_id, 'none' ]
 				);
 			}
 			catch ( \Exception ) {}
@@ -735,31 +766,137 @@ class _dashboard extends \IPS\Dispatcher\Controller
 		);
 	}
 
-	/** Contest a review — flags it for admin review. */
+	/**
+	 * Contest a review. Opens the pending_customer stage of the dispute
+	 * flow: customer is given 30 days to respond, a dispute count is
+	 * incremented for the month, customer gets an email notification.
+	 * Monthly disputes are capped by subscription tier.
+	 */
 	protected function dispute(): void
 	{
 		\IPS\Session::i()->csrfCheck();
-		$id     = (int) ( \IPS\Request::i()->id ?? 0 );
-		$reason = trim( (string) \IPS\Request::i()->dispute_reason );
 
-		if ( $id > 0 && $reason !== '' )
+		$id       = (int) ( \IPS\Request::i()->id ?? 0 );
+		$reason   = trim( (string) \IPS\Request::i()->dispute_reason );
+		$evidence = trim( (string) \IPS\Request::i()->dispute_evidence );
+		$tier     = (string) $this->dealer->subscription_tier;
+		$dealerId = (int) $this->dealer->dealer_id;
+
+		$redirectUrl = \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dashboard&do=reviews' );
+
+		if ( $id <= 0 || $reason === '' )
+		{
+			\IPS\Output::i()->redirect( $redirectUrl );
+			return;
+		}
+
+		$limit    = self::$disputeLimits[ $tier ] ?? 2;
+		$monthKey = date( 'Y-m' );
+
+		try
+		{
+			$used = (int) \IPS\Db::i()->select( 'count', 'gd_dealer_dispute_counts',
+				[ 'dealer_id=? AND month_key=?', $dealerId, $monthKey ]
+			)->first();
+		}
+		catch ( \Exception )
+		{
+			$used = 0;
+		}
+
+		if ( $used >= $limit )
+		{
+			\IPS\Output::i()->redirect( $redirectUrl, 'gddealer_front_dispute_limit_reached' );
+			return;
+		}
+
+		/* Verify review belongs to this dealer and has no active dispute.
+		   A review previously dismissed by admin cannot be contested a
+		   second time — dispute_status must equal 'none'. */
+		try
+		{
+			$review = \IPS\Db::i()->select( '*', 'gd_dealer_ratings',
+				[ 'id=? AND dealer_id=? AND dispute_status=?', $id, $dealerId, 'none' ]
+			)->first();
+		}
+		catch ( \Exception )
+		{
+			\IPS\Output::i()->redirect( $redirectUrl );
+			return;
+		}
+
+		$deadline = date( 'Y-m-d H:i:s', strtotime( '+30 days' ) );
+
+		try
+		{
+			\IPS\Db::i()->update( 'gd_dealer_ratings', [
+				'dispute_status'   => 'pending_customer',
+				'dispute_reason'   => $reason,
+				'dispute_evidence' => $evidence !== '' ? $evidence : null,
+				'dispute_at'       => date( 'Y-m-d H:i:s' ),
+				'dispute_deadline' => $deadline,
+			], [ 'id=?', $id ] );
+		}
+		catch ( \Exception ) {}
+
+		/* Increment monthly dispute count. Insert-or-update without any
+		   raw SQL string interpolation (CLAUDE.md Rule #2). */
+		try
+		{
+			$exists = (int) \IPS\Db::i()->select( 'COUNT(*)', 'gd_dealer_dispute_counts',
+				[ 'dealer_id=? AND month_key=?', $dealerId, $monthKey ]
+			)->first();
+		}
+		catch ( \Exception )
+		{
+			$exists = 0;
+		}
+
+		try
+		{
+			if ( $exists === 0 )
+			{
+				\IPS\Db::i()->insert( 'gd_dealer_dispute_counts', [
+					'dealer_id' => $dealerId,
+					'month_key' => $monthKey,
+					'count'     => 1,
+				] );
+			}
+			else
+			{
+				\IPS\Db::i()->update( 'gd_dealer_dispute_counts',
+					'count = count + 1',
+					[ 'dealer_id=? AND month_key=?', $dealerId, $monthKey ]
+				);
+			}
+		}
+		catch ( \Exception ) {}
+
+		/* Notify the customer via transactional email. */
+		if ( (int) ( $review['member_id'] ?? 0 ) > 0 )
 		{
 			try
 			{
-				\IPS\Db::i()->update( 'gd_dealer_ratings', [
-					'disputed'       => 1,
-					'dispute_reason' => $reason,
-					'dispute_at'     => date( 'Y-m-d H:i:s' ),
-					'status'         => 'disputed',
-				], [ 'id=? AND dealer_id=?', $id, (int) $this->dealer->dealer_id ] );
+				$customer = \IPS\Member::load( (int) $review['member_id'] );
+				if ( $customer->member_id )
+				{
+					$slug       = (string) ( $this->dealer->dealer_slug ?? '' );
+					$respondUrl = (string) \IPS\Http\Url::internal(
+						'app=gddealer&module=dealers&controller=profile&dealer_slug=' . urlencode( $slug ) . '&dispute=' . $id
+					);
+					\IPS\Email::buildFromTemplate( 'gddealer', 'disputeNotify', [
+						'name'        => $customer->name,
+						'dealer_name' => (string) $this->dealer->dealer_name,
+						'reason'      => $reason,
+						'deadline'    => date( 'F j, Y', strtotime( $deadline ) ),
+						'respond_url' => $respondUrl,
+					], \IPS\Email::TYPE_TRANSACTIONAL )->send( $customer );
+				}
 			}
 			catch ( \Exception ) {}
 		}
 
-		\IPS\Output::i()->redirect(
-			\IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dashboard&do=reviews' ),
-			'gddealer_front_dispute_submitted'
-		);
+		\IPS\Output::i()->redirect( $redirectUrl, 'gddealer_front_dispute_submitted' );
 	}
 
 	/* ---------------- Helpers ---------------- */

@@ -467,7 +467,14 @@ TEMPLATE_EOT,
 						<span style="color:#999;font-size:0.85em">(dealer #{$r['dealer_id']})</span>
 						<span style="color:#666;font-size:0.85em;margin-left:8px">Reviewer: {$r['member_name']}</span>
 					</div>
-					<span style="font-size:0.8em;color:#999">Review: {$r['created_at']}</span>
+					<div style="font-size:0.8em;color:#999;text-align:right">
+						Review: {$r['created_at']}<br>
+						{{if $r['dispute_status'] === 'pending_customer'}}
+							<span class="ipsBadge ipsBadge--warning">Awaiting customer (deadline {$r['dispute_deadline']})</span>
+						{{elseif $r['dispute_status'] === 'pending_admin'}}
+							<span class="ipsBadge ipsBadge--style1">Awaiting admin decision</span>
+						{{endif}}
+					</div>
 				</div>
 
 				<div style="display:flex;gap:16px;margin-bottom:8px;flex-wrap:wrap">
@@ -477,22 +484,50 @@ TEMPLATE_EOT,
 				</div>
 
 				{{if $r['review_body']}}
-				<p style="margin:0 0 12px;color:#333;font-size:0.9em">{$r['review_body']}</p>
+				<div style="background:#f9fafb;border:1px solid #e5e7eb;padding:12px;border-radius:4px;margin-bottom:12px">
+					<div style="font-size:0.75em;color:#666;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">Customer review</div>
+					<p style="margin:0;color:#333;font-size:0.9em">{$r['review_body']}</p>
+				</div>
 				{{endif}}
 
 				{{if $r['dealer_response']}}
 				<div style="background:#f0f7ff;border-left:3px solid #2563eb;padding:8px 12px;border-radius:0 4px 4px 0;margin-bottom:12px;font-size:0.85em">
-					<strong style="color:#2563eb">Dealer Response:</strong> {$r['dealer_response']}
+					<strong style="color:#2563eb">Dealer public response:</strong> {$r['dealer_response']}
 				</div>
 				{{endif}}
 
-				<div style="background:#fff8f0;border-left:3px solid #f59e0b;padding:8px 12px;border-radius:0 4px 4px 0;margin-bottom:12px;font-size:0.85em;color:#92400e">
-					<strong>Contest Reason ({$r['dispute_at']}):</strong> {$r['dispute_reason']}
+				<div style="background:#fff8f0;border-left:3px solid #f59e0b;padding:10px 14px;border-radius:0 4px 4px 0;margin-bottom:12px;font-size:0.85em;color:#92400e">
+					<strong>Dealer contest ({$r['dispute_at']}):</strong>
+					<div style="white-space:pre-wrap;margin-top:4px">{$r['dispute_reason']}</div>
+					{{if $r['dispute_evidence']}}
+					<div style="margin-top:8px"><strong>Evidence:</strong><div style="white-space:pre-wrap;margin-top:4px">{$r['dispute_evidence']}</div></div>
+					{{endif}}
 				</div>
 
-				<div style="display:flex;gap:8px">
-					<a href="{$r['approve_url']}" class="ipsButton ipsButton--negative ipsButton--small">Remove Review</a>
-					<a href="{$r['dismiss_url']}" class="ipsButton ipsButton--normal ipsButton--small">Dismiss Contest</a>
+				{{if $r['customer_response']}}
+				<div style="background:#ecfdf5;border-left:3px solid #10b981;padding:10px 14px;border-radius:0 4px 4px 0;margin-bottom:12px;font-size:0.85em;color:#065f46">
+					<strong>Customer response ({$r['customer_responded_at']}):</strong>
+					<div style="white-space:pre-wrap;margin-top:4px">{$r['customer_response']}</div>
+					{{if $r['customer_evidence']}}
+					<div style="margin-top:8px"><strong>Evidence:</strong><div style="white-space:pre-wrap;margin-top:4px">{$r['customer_evidence']}</div></div>
+					{{endif}}
+				</div>
+				{{else}}
+				<div style="background:#f3f4f6;border:1px dashed #d1d5db;padding:10px 14px;border-radius:4px;margin-bottom:12px;font-size:0.85em;color:#6b7280">
+					<em>Customer has not yet responded.</em>
+				</div>
+				{{endif}}
+
+				<div style="display:flex;gap:8px;flex-wrap:wrap">
+					<a href="{$r['uphold_url']}" class="ipsButton ipsButton--negative ipsButton--small">Uphold Dealer (exclude from avg)</a>
+					<a href="{$r['dismiss_url']}" class="ipsButton ipsButton--positive ipsButton--small">Dismiss Contest (keep review)</a>
+					<details style="display:inline-block">
+						<summary style="cursor:pointer;padding:6px 12px;border:1px solid #d1d5db;border-radius:4px;font-size:0.85em">Request Customer Edit</summary>
+						<form method="post" action="{$r['request_edit_url']}" style="margin-top:8px;background:#f9fafb;padding:12px;border-radius:4px">
+							<textarea name="admin_note" rows="3" style="width:100%;border:1px solid #ccc;border-radius:4px;padding:8px;font-size:0.9em;box-sizing:border-box" placeholder="Note to customer explaining what to clarify..."></textarea>
+							<button type="submit" class="ipsButton ipsButton--normal ipsButton--small" style="margin-top:8px">Send request to customer</button>
+						</form>
+					</details>
 				</div>
 			</div>
 			{{endforeach}}
@@ -1337,6 +1372,14 @@ TEMPLATE_EOT,
 		</div>
 	</div>
 
+	<div style="background:#f8fafc;border:1px solid var(--i-border-color,#e0e0e0);border-radius:6px;padding:10px 14px;margin-bottom:16px;font-size:0.85em;color:#334155">
+		{{if $data['disputes_unlimited']}}
+			You have <strong>unlimited</strong> review contests this month (Enterprise plan).
+		{{else}}
+			You have <strong>{$data['disputes_remaining']}</strong> review contests remaining this month.
+		{{endif}}
+	</div>
+
 	{{if count($data['rows']) === 0}}
 		<div class="ipsEmptyMessage"><p>No reviews yet. Reviews appear here once customers rate your dealership.</p></div>
 	{{else}}
@@ -1362,11 +1405,38 @@ TEMPLATE_EOT,
 				</div>
 			{{endif}}
 
-			{{if $r['disputed']}}
-				<div style="background:#fff8f0;border-left:3px solid #f59e0b;padding:8px 12px;border-radius:0 4px 4px 0;margin-top:8px;font-size:0.85em;color:#92400e">
-					&#9888; This review has been flagged for admin review.
+			{{if $r['dispute_status'] === 'pending_customer'}}
+				<div style="background:#fff8f0;border-left:3px solid #f59e0b;padding:10px 14px;border-radius:0 4px 4px 0;margin-top:8px;font-size:0.85em;color:#92400e">
+					<strong>Contest submitted &mdash; awaiting customer response.</strong>
+					{{if $r['dispute_deadline']}}<div style="font-size:0.8em;margin-top:2px">Customer has until {$r['dispute_deadline']} to respond.</div>{{endif}}
 				</div>
-			{{else}}
+			{{endif}}
+
+			{{if $r['dispute_status'] === 'pending_admin'}}
+				<div style="background:#eff6ff;border-left:3px solid #2563eb;padding:10px 14px;border-radius:0 4px 4px 0;margin-top:8px;font-size:0.85em;color:#1e3a8a">
+					<strong>Contest under admin review.</strong> The customer has responded and admin will resolve shortly.
+				</div>
+			{{endif}}
+
+			{{if $r['dispute_status'] === 'resolved_dealer'}}
+				<div style="background:#f0fdf4;border-left:3px solid #16a34a;padding:10px 14px;border-radius:0 4px 4px 0;margin-top:8px;font-size:0.85em;color:#14532d">
+					<strong>Contest resolved in your favor.</strong> This review no longer affects your rating average.
+				</div>
+			{{endif}}
+
+			{{if $r['dispute_status'] === 'resolved_customer'}}
+				<div style="background:#fef2f2;border-left:3px solid #dc2626;padding:10px 14px;border-radius:0 4px 4px 0;margin-top:8px;font-size:0.85em;color:#7f1d1d">
+					<strong>Contest resolved in the customer's favor.</strong> The review stands.
+				</div>
+			{{endif}}
+
+			{{if $r['dispute_status'] === 'dismissed'}}
+				<div style="background:#f1f5f9;border-left:3px solid #64748b;padding:10px 14px;border-radius:0 4px 4px 0;margin-top:8px;font-size:0.85em;color:#334155">
+					<strong>Contest dismissed.</strong> This review cannot be contested again.
+				</div>
+			{{endif}}
+
+			{{if $r['dispute_status'] === 'none'}}
 				{{if $r['dealer_response'] === ''}}
 				<details style="margin-top:8px">
 					<summary style="cursor:pointer;font-size:0.85em;color:#2563eb;font-weight:600">Respond to this review</summary>
@@ -1375,15 +1445,39 @@ TEMPLATE_EOT,
 						<textarea name="response" rows="3" style="width:100%;border:1px solid var(--i-border-color,#ccc);border-radius:4px;padding:8px;font-size:0.9em;box-sizing:border-box" placeholder="Write a professional response visible to all buyers..."></textarea>
 						<button type="submit" class="ipsButton ipsButton--primary ipsButton--small" style="margin-top:8px">Post Response</button>
 					</form>
+				</details>
+				{{endif}}
+
+				{{if $data['disputes_unlimited']}}
+				<details style="margin-top:8px">
+					<summary style="cursor:pointer;font-size:0.85em;color:#dc2626;font-weight:600">Contest this review</summary>
+					<form method="post" action="{$r['dispute_url']}" style="margin-top:8px">
+						<input type="hidden" name="csrfKey" value="{$csrfKey}">
+						<label style="display:block;font-size:0.8em;font-weight:600;margin-bottom:4px">Reason for contest</label>
+						<textarea name="dispute_reason" rows="3" required style="width:100%;border:1px solid var(--i-border-color,#ccc);border-radius:4px;padding:8px;font-size:0.9em;box-sizing:border-box;margin-bottom:8px" placeholder="Explain why this review should be removed (e.g. never purchased from us, fraudulent, violates terms)..."></textarea>
+						<label style="display:block;font-size:0.8em;font-weight:600;margin-bottom:4px">Supporting evidence (order numbers, screenshots, transaction IDs)</label>
+						<textarea name="dispute_evidence" rows="3" style="width:100%;border:1px solid var(--i-border-color,#ccc);border-radius:4px;padding:8px;font-size:0.9em;box-sizing:border-box" placeholder="Paste order numbers, links, or evidence that supports your contest..."></textarea>
+						<button type="submit" class="ipsButton ipsButton--negative ipsButton--small" style="margin-top:8px">Submit Contest</button>
+					</form>
+				</details>
+				{{else}}
+					{{if $data['disputes_remaining'] > 0}}
 					<details style="margin-top:8px">
-						<summary style="cursor:pointer;font-size:0.85em;color:#dc2626">Contest this review</summary>
+						<summary style="cursor:pointer;font-size:0.85em;color:#dc2626;font-weight:600">Contest this review</summary>
 						<form method="post" action="{$r['dispute_url']}" style="margin-top:8px">
 							<input type="hidden" name="csrfKey" value="{$csrfKey}">
-							<textarea name="dispute_reason" rows="3" style="width:100%;border:1px solid var(--i-border-color,#ccc);border-radius:4px;padding:8px;font-size:0.9em;box-sizing:border-box" placeholder="Explain why this review should be removed (e.g. never purchased from us, fraudulent, violates terms)..."></textarea>
+							<label style="display:block;font-size:0.8em;font-weight:600;margin-bottom:4px">Reason for contest</label>
+							<textarea name="dispute_reason" rows="3" required style="width:100%;border:1px solid var(--i-border-color,#ccc);border-radius:4px;padding:8px;font-size:0.9em;box-sizing:border-box;margin-bottom:8px" placeholder="Explain why this review should be removed (e.g. never purchased from us, fraudulent, violates terms)..."></textarea>
+							<label style="display:block;font-size:0.8em;font-weight:600;margin-bottom:4px">Supporting evidence (order numbers, screenshots, transaction IDs)</label>
+							<textarea name="dispute_evidence" rows="3" style="width:100%;border:1px solid var(--i-border-color,#ccc);border-radius:4px;padding:8px;font-size:0.9em;box-sizing:border-box" placeholder="Paste order numbers, links, or evidence that supports your contest..."></textarea>
 							<button type="submit" class="ipsButton ipsButton--negative ipsButton--small" style="margin-top:8px">Submit Contest</button>
 						</form>
 					</details>
-				</details>
+					{{else}}
+					<div style="background:#f1f5f9;border-left:3px solid #64748b;padding:8px 12px;border-radius:0 4px 4px 0;margin-top:8px;font-size:0.8em;color:#475569">
+						You have reached your monthly contest limit. Upgrade your plan for more contests.
+					</div>
+					{{endif}}
 				{{endif}}
 			{{endif}}
 		</div>
@@ -1401,7 +1495,7 @@ TEMPLATE_EOT,
 		'location'      => 'front',
 		'group'         => 'dealers',
 		'template_name' => 'dealerProfile',
-		'template_data' => '$dealer, $stats, $reviews, $canRate, $alreadyRated, $loginRequired, $rateUrl, $csrfKey, $loginUrl',
+		'template_data' => '$dealer, $stats, $reviews, $canRate, $alreadyRated, $loginRequired, $rateUrl, $csrfKey, $loginUrl, $customerDispute',
 		'template_content' => <<<'TEMPLATE_EOT'
 <div style="max-width:900px;margin:0 auto;padding:24px 16px">
 
@@ -1424,6 +1518,36 @@ TEMPLATE_EOT,
 			<div style="font-size:0.85em;color:#666">Customer Service: <strong>{$stats['avg_service']}/5</strong></div>
 		</div>
 	</div>
+
+	{{if $customerDispute}}
+	<div style="background:#fff8f0;border:1px solid #f59e0b;border-radius:8px;padding:20px;margin-bottom:24px">
+		<h2 style="margin:0 0 8px;font-size:1.05em;font-weight:700;color:#92400e">{$dealer['dealer_name']} has contested your review</h2>
+		<p style="margin:0 0 12px;font-size:0.9em;color:#78350f">
+			The dealer has submitted a contest against the review you left.
+			{{if $customerDispute['dispute_deadline']}}You have until <strong>{$customerDispute['dispute_deadline']}</strong> to respond, or the contest will be automatically resolved in the dealer's favor.{{endif}}
+		</p>
+		{{if $customerDispute['dispute_reason']}}
+		<div style="background:#fff;border-left:3px solid #f59e0b;padding:10px 14px;margin-bottom:12px;border-radius:0 4px 4px 0">
+			<div style="font-size:0.8em;font-weight:700;color:#92400e;margin-bottom:4px">Dealer's reason</div>
+			<p style="margin:0;font-size:0.9em;color:#333">{$customerDispute['dispute_reason']}</p>
+		</div>
+		{{endif}}
+		{{if $customerDispute['dispute_evidence']}}
+		<div style="background:#fff;border-left:3px solid #f59e0b;padding:10px 14px;margin-bottom:12px;border-radius:0 4px 4px 0">
+			<div style="font-size:0.8em;font-weight:700;color:#92400e;margin-bottom:4px">Dealer's evidence</div>
+			<p style="margin:0;font-size:0.9em;color:#333;white-space:pre-wrap">{$customerDispute['dispute_evidence']}</p>
+		</div>
+		{{endif}}
+		<form method="post" action="{$customerDispute['respond_url']}">
+			<input type="hidden" name="csrfKey" value="{$csrfKey}">
+			<label style="display:block;font-size:0.85em;font-weight:600;margin-bottom:4px;color:#78350f">Your response</label>
+			<textarea name="customer_response" rows="4" required style="width:100%;border:1px solid #f59e0b;border-radius:4px;padding:8px;font-size:0.9em;box-sizing:border-box;margin-bottom:8px" placeholder="Explain your side of the story. Admin will review both accounts."></textarea>
+			<label style="display:block;font-size:0.85em;font-weight:600;margin-bottom:4px;color:#78350f">Supporting evidence (optional)</label>
+			<textarea name="customer_evidence" rows="3" style="width:100%;border:1px solid #f59e0b;border-radius:4px;padding:8px;font-size:0.9em;box-sizing:border-box;margin-bottom:8px" placeholder="Paste order numbers, links, receipts, or other evidence that supports your review..."></textarea>
+			<button type="submit" class="ipsButton ipsButton--primary">Submit My Response</button>
+		</form>
+	</div>
+	{{endif}}
 
 	{{if $canRate}}
 	<div style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:24px;margin-bottom:24px">
@@ -1497,9 +1621,19 @@ TEMPLATE_EOT,
 			{{if $r['review_body']}}
 			<p style="margin:0 0 8px;color:#333">{$r['review_body']}</p>
 			{{endif}}
-			{{if $r['disputed']}}
+			{{if $r['dispute_status'] === 'pending_customer'}}
 			<div style="background:#fff8f0;border-left:3px solid #f59e0b;padding:8px 12px;font-size:0.85em;color:#92400e;margin-top:8px">
-				&#9888; This review is under admin review.
+				&#9888; Dealer has contested this review &mdash; awaiting customer response.
+			</div>
+			{{endif}}
+			{{if $r['dispute_status'] === 'pending_admin'}}
+			<div style="background:#eff6ff;border-left:3px solid #2563eb;padding:8px 12px;font-size:0.85em;color:#1e3a8a;margin-top:8px">
+				This review is under admin review.
+			</div>
+			{{endif}}
+			{{if $r['dispute_status'] === 'dismissed'}}
+			<div style="background:#f1f5f9;border-left:3px solid #64748b;padding:8px 12px;font-size:0.85em;color:#334155;margin-top:8px">
+				Dealer's contest of this review was dismissed by admin.
 			</div>
 			{{endif}}
 			{{if $r['dealer_response']}}

@@ -36,6 +36,22 @@ class DealerEmails
 				'subject' => 'Welcome to GunRack.deals — Your dealer account is ready',
 				'body'    => "Hi {name},\n\nYour dealer account on GunRack.deals has been set up.\n\nYour API Key: {api_key}\n\nNext steps:\n1. Log in and go to your Dealer Dashboard\n2. Click Feed Settings and enter your product feed URL\n3. Run your first import to start appearing in price comparisons\n\nNeed help? Visit your Help & Setup tab or contact us at {contact_email}.\n\nThanks,\nThe GunRack.deals Team",
 			],
+			'disputeNotify' => [
+				'subject' => '{dealer_name} has contested your review on GunRack.deals',
+				'body'    => "Hi {name},\n\n{dealer_name} has contested the review you left and provided evidence.\n\nTheir reason: {reason}\n\nYou have until {deadline} to respond with your own evidence, or the dispute will be automatically resolved in the dealer's favor.\n\nRespond here: {respond_url}\n\nIf you do not respond within 30 days your review will be marked as resolved.\n\nGunRack.deals Team",
+			],
+			'disputeAdminNotify' => [
+				'subject' => 'Dealer dispute ready for admin review — GunRack.deals',
+				'body'    => "A dealer review dispute has received a customer response and is ready for admin review.\n\nLog in to review: {admin_url}\n\nGunRack.deals Team",
+			],
+			'disputeDismissed' => [
+				'subject' => 'Your review contest has been dismissed — GunRack.deals',
+				'body'    => "Hi {name},\n\nAfter reviewing the evidence submitted by both parties, admin has decided to keep the customer review as-is.\n\nThis decision is final and the review cannot be contested again.\n\nGunRack.deals Team",
+			],
+			'disputeAutoResolved' => [
+				'subject' => 'Your review dispute has been auto-resolved — GunRack.deals',
+				'body'    => "Hi {name},\n\nThe 30-day response window for the contested review on GunRack.deals has passed without a response.\n\nThe dispute has been automatically resolved in the dealer's favor. The review will no longer affect their rating average.\n\nGunRack.deals Team",
+			],
 		];
 	}
 }

@@ -492,7 +492,8 @@ class _dealers extends \IPS\Dispatcher\Controller
 	/* =============== Disputed Reviews Queue =============== */
 
 	/**
-	 * Show all disputed reviews pending admin resolution.
+	 * Show every review in 'pending_admin' or 'pending_customer' status.
+	 * Admin sees both sides of each dispute.
 	 */
 	protected function disputes()
 	{
@@ -500,7 +501,7 @@ class _dealers extends \IPS\Dispatcher\Controller
 		try
 		{
 			foreach ( \IPS\Db::i()->select( '*', 'gd_dealer_ratings',
-				[ 'disputed=? AND dispute_outcome IS NULL', 1 ],
+				[ \IPS\Db::i()->in( 'dispute_status', [ 'pending_admin', 'pending_customer' ] ) ],
 				'dispute_at ASC'
 			) as $r )
 			{
@@ -520,24 +521,33 @@ class _dealers extends \IPS\Dispatcher\Controller
 				catch ( \Exception ) {}
 
 				$rows[] = [
-					'id'              => (int) $r['id'],
-					'dealer_id'       => (int) $r['dealer_id'],
-					'dealer_name'     => $dealerName,
-					'member_id'       => (int) $r['member_id'],
-					'member_name'     => $memberName,
-					'rating_pricing'  => (int) $r['rating_pricing'],
-					'rating_shipping' => (int) $r['rating_shipping'],
-					'rating_service'  => (int) $r['rating_service'],
-					'review_body'     => (string) ( $r['review_body'] ?? '' ),
-					'dealer_response' => (string) ( $r['dealer_response'] ?? '' ),
-					'dispute_reason'  => (string) ( $r['dispute_reason'] ?? '' ),
-					'dispute_at'      => (string) ( $r['dispute_at'] ?? '' ),
-					'created_at'      => (string) $r['created_at'],
-					'approve_url'     => (string) \IPS\Http\Url::internal(
-						'app=gddealer&module=dealers&controller=dealers&do=approveDispute&id=' . (int) $r['id']
+					'id'                    => (int) $r['id'],
+					'dealer_id'             => (int) $r['dealer_id'],
+					'dealer_name'           => $dealerName,
+					'member_id'             => (int) $r['member_id'],
+					'member_name'           => $memberName,
+					'rating_pricing'        => (int) $r['rating_pricing'],
+					'rating_shipping'       => (int) $r['rating_shipping'],
+					'rating_service'        => (int) $r['rating_service'],
+					'review_body'           => (string) ( $r['review_body'] ?? '' ),
+					'dealer_response'       => (string) ( $r['dealer_response'] ?? '' ),
+					'dispute_status'        => (string) ( $r['dispute_status'] ?? '' ),
+					'dispute_reason'        => (string) ( $r['dispute_reason'] ?? '' ),
+					'dispute_evidence'      => (string) ( $r['dispute_evidence'] ?? '' ),
+					'dispute_at'            => (string) ( $r['dispute_at'] ?? '' ),
+					'dispute_deadline'      => (string) ( $r['dispute_deadline'] ?? '' ),
+					'customer_response'     => (string) ( $r['customer_response'] ?? '' ),
+					'customer_evidence'     => (string) ( $r['customer_evidence'] ?? '' ),
+					'customer_responded_at' => (string) ( $r['customer_responded_at'] ?? '' ),
+					'created_at'            => (string) $r['created_at'],
+					'uphold_url'            => (string) \IPS\Http\Url::internal(
+						'app=gddealer&module=dealers&controller=dealers&do=upholdDispute&id=' . (int) $r['id']
 					)->csrf(),
-					'dismiss_url'     => (string) \IPS\Http\Url::internal(
+					'dismiss_url'           => (string) \IPS\Http\Url::internal(
 						'app=gddealer&module=dealers&controller=dealers&do=dismissDispute&id=' . (int) $r['id']
+					)->csrf(),
+					'request_edit_url'      => (string) \IPS\Http\Url::internal(
+						'app=gddealer&module=dealers&controller=dealers&do=requestEdit&id=' . (int) $r['id']
 					)->csrf(),
 				];
 			}
@@ -549,9 +559,11 @@ class _dealers extends \IPS\Dispatcher\Controller
 	}
 
 	/**
-	 * Approve a dispute — remove the review.
+	 * Uphold the dealer's contest. Review stays visible with a badge but
+	 * is excluded from rating averages. Dealer cannot be contested twice
+	 * for the same review.
 	 */
-	protected function approveDispute()
+	protected function upholdDispute()
 	{
 		\IPS\Session::i()->csrfCheck();
 		$id = (int) \IPS\Request::i()->id;
@@ -559,43 +571,146 @@ class _dealers extends \IPS\Dispatcher\Controller
 		try
 		{
 			\IPS\Db::i()->update( 'gd_dealer_ratings', [
-				'status'              => 'removed',
-				'dispute_outcome'     => 'approved',
+				'dispute_status'      => 'resolved_dealer',
+				'dispute_outcome'     => 'upheld',
 				'dispute_resolved_by' => (int) \IPS\Member::loggedIn()->member_id,
 				'dispute_resolved_at' => date( 'Y-m-d H:i:s' ),
-			], [ 'id=? AND disputed=?', $id, 1 ] );
+			], [ 'id=? AND ' . \IPS\Db::i()->in( 'dispute_status', [ 'pending_admin', 'pending_customer' ] ), $id ] );
 		}
 		catch ( \Exception ) {}
 
 		\IPS\Output::i()->redirect(
 			\IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dealers&do=disputes' ),
-			'gddealer_dispute_approved'
+			'gddealer_dispute_upheld'
 		);
 	}
 
 	/**
-	 * Dismiss a dispute — keep the review.
+	 * Dismiss the dealer's contest. Review stands; dealer cannot re-dispute.
+	 * Dealer receives a notification.
 	 */
 	protected function dismissDispute()
 	{
 		\IPS\Session::i()->csrfCheck();
 		$id = (int) \IPS\Request::i()->id;
 
+		$dealerId = 0;
+		try
+		{
+			$row = \IPS\Db::i()->select( 'dealer_id', 'gd_dealer_ratings', [ 'id=?', $id ] )->first();
+			$dealerId = (int) $row;
+		}
+		catch ( \Exception ) {}
+
 		try
 		{
 			\IPS\Db::i()->update( 'gd_dealer_ratings', [
-				'disputed'            => 0,
-				'status'              => 'approved',
+				'dispute_status'      => 'dismissed',
 				'dispute_outcome'     => 'dismissed',
 				'dispute_resolved_by' => (int) \IPS\Member::loggedIn()->member_id,
 				'dispute_resolved_at' => date( 'Y-m-d H:i:s' ),
-			], [ 'id=? AND disputed=?', $id, 1 ] );
+			], [ 'id=? AND ' . \IPS\Db::i()->in( 'dispute_status', [ 'pending_admin', 'pending_customer' ] ), $id ] );
 		}
 		catch ( \Exception ) {}
+
+		/* Notify the dealer that their contest was dismissed. */
+		if ( $dealerId > 0 )
+		{
+			try
+			{
+				$dealerMember = \IPS\Member::load( $dealerId );
+				if ( $dealerMember->member_id )
+				{
+					\IPS\Email::buildFromTemplate( 'gddealer', 'disputeDismissed', [
+						'name' => $dealerMember->name,
+					], \IPS\Email::TYPE_TRANSACTIONAL )->send( $dealerMember );
+				}
+			}
+			catch ( \Exception ) {}
+		}
 
 		\IPS\Output::i()->redirect(
 			\IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dealers&do=disputes' ),
 			'gddealer_dispute_dismissed'
+		);
+	}
+
+	/**
+	 * Send the dispute back to the customer with an admin note asking
+	 * them to update the review. Resets dispute_status to
+	 * pending_customer and extends the deadline by 30 days.
+	 */
+	protected function requestEdit()
+	{
+		\IPS\Session::i()->csrfCheck();
+		$id       = (int) \IPS\Request::i()->id;
+		$adminNote = trim( (string) ( \IPS\Request::i()->admin_note ?? '' ) );
+
+		try
+		{
+			$row = \IPS\Db::i()->select( '*', 'gd_dealer_ratings',
+				[ 'id=? AND ' . \IPS\Db::i()->in( 'dispute_status', [ 'pending_admin', 'pending_customer' ] ), $id ]
+			)->first();
+		}
+		catch ( \Exception )
+		{
+			\IPS\Output::i()->redirect(
+				\IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dealers&do=disputes' )
+			);
+			return;
+		}
+
+		$deadline = date( 'Y-m-d H:i:s', strtotime( '+30 days' ) );
+
+		try
+		{
+			\IPS\Db::i()->update( 'gd_dealer_ratings', [
+				'dispute_status'   => 'pending_customer',
+				'dispute_deadline' => $deadline,
+				'dispute_reason'   => trim( (string) ( $row['dispute_reason'] ?? '' ) ) . ( $adminNote !== '' ? "\n\n[Admin note: {$adminNote}]" : '' ),
+			], [ 'id=?', $id ] );
+		}
+		catch ( \Exception ) {}
+
+		/* Re-notify the customer. */
+		if ( (int) ( $row['member_id'] ?? 0 ) > 0 )
+		{
+			try
+			{
+				$customer = \IPS\Member::load( (int) $row['member_id'] );
+				$slug = '';
+				try
+				{
+					$slug = (string) \IPS\Db::i()->select( 'dealer_slug', 'gd_dealer_feed_config', [ 'dealer_id=?', (int) $row['dealer_id'] ] )->first();
+				}
+				catch ( \Exception ) {}
+				$dealerName = '';
+				try
+				{
+					$dealerName = (string) \IPS\Db::i()->select( 'dealer_name', 'gd_dealer_feed_config', [ 'dealer_id=?', (int) $row['dealer_id'] ] )->first();
+				}
+				catch ( \Exception ) {}
+
+				if ( $customer->member_id && $slug !== '' )
+				{
+					$respondUrl = (string) \IPS\Http\Url::internal(
+						'app=gddealer&module=dealers&controller=profile&dealer_slug=' . urlencode( $slug ) . '&dispute=' . $id
+					);
+					\IPS\Email::buildFromTemplate( 'gddealer', 'disputeNotify', [
+						'name'        => $customer->name,
+						'dealer_name' => $dealerName,
+						'reason'      => (string) ( $row['dispute_reason'] ?? '' ) . ( $adminNote !== '' ? "\n\n[Admin note: {$adminNote}]" : '' ),
+						'deadline'    => date( 'F j, Y', strtotime( $deadline ) ),
+						'respond_url' => $respondUrl,
+					], \IPS\Email::TYPE_TRANSACTIONAL )->send( $customer );
+				}
+			}
+			catch ( \Exception ) {}
+		}
+
+		\IPS\Output::i()->redirect(
+			\IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dealers&do=disputes' ),
+			'gddealer_dispute_edit_requested'
 		);
 	}
 
