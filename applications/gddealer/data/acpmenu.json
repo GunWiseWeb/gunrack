@@ -24,6 +24,12 @@
 			"do": "",
 			"restriction": "dealer_manage"
 		},
+		"disputes": {
+			"tab": "gddealer",
+			"controller": "dealers",
+			"do": "disputes",
+			"restriction": "dealer_manage"
+		},
 		"settings": {
 			"tab": "gddealer",
 			"controller": "settings",

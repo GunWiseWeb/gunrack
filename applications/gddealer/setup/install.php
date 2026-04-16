@@ -430,6 +430,67 @@ TEMPLATE_EOT,
 </div>
 TEMPLATE_EOT,
 	],
+
+	/* ===== ADMIN: disputeQueue ===== */
+	[
+		'set_id'        => 1,
+		'app'           => 'gddealer',
+		'location'      => 'admin',
+		'group'         => 'dealers',
+		'template_name' => 'disputeQueue',
+		'template_data' => '$rows',
+		'template_content' => <<<'TEMPLATE_EOT'
+<div class="ipsBox">
+	<h2 class="ipsBox_title">{lang="gddealer_disputes_title"}</h2>
+	<div style="padding:16px">
+
+		{{if count($rows) === 0}}
+			<div class="ipsEmptyMessage"><p>No disputed reviews pending resolution.</p></div>
+		{{else}}
+			{{foreach $rows as $r}}
+			<div style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:20px;margin-bottom:16px">
+				<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+					<div>
+						<strong>{$r['dealer_name']}</strong>
+						<span style="color:#999;font-size:0.85em">(dealer #{$r['dealer_id']})</span>
+						<span style="color:#666;font-size:0.85em;margin-left:8px">Reviewer: {$r['member_name']}</span>
+					</div>
+					<span style="font-size:0.8em;color:#999">Review: {$r['created_at']}</span>
+				</div>
+
+				<div style="display:flex;gap:16px;margin-bottom:8px;flex-wrap:wrap">
+					<span style="font-size:0.8em;color:#666">Pricing: <strong>{$r['rating_pricing']}/5</strong></span>
+					<span style="font-size:0.8em;color:#666">Shipping: <strong>{$r['rating_shipping']}/5</strong></span>
+					<span style="font-size:0.8em;color:#666">Service: <strong>{$r['rating_service']}/5</strong></span>
+				</div>
+
+				{{if $r['review_body']}}
+				<p style="margin:0 0 12px;color:#333;font-size:0.9em">{$r['review_body']}</p>
+				{{endif}}
+
+				{{if $r['dealer_response']}}
+				<div style="background:#f0f7ff;border-left:3px solid #2563eb;padding:8px 12px;border-radius:0 4px 4px 0;margin-bottom:12px;font-size:0.85em">
+					<strong style="color:#2563eb">Dealer Response:</strong> {$r['dealer_response']}
+				</div>
+				{{endif}}
+
+				<div style="background:#fff8f0;border-left:3px solid #f59e0b;padding:8px 12px;border-radius:0 4px 4px 0;margin-bottom:12px;font-size:0.85em;color:#92400e">
+					<strong>Contest Reason ({$r['dispute_at']}):</strong> {$r['dispute_reason']}
+				</div>
+
+				<div style="display:flex;gap:8px">
+					<a href="{$r['approve_url']}" class="ipsButton ipsButton--negative ipsButton--small">Remove Review</a>
+					<a href="{$r['dismiss_url']}" class="ipsButton ipsButton--normal ipsButton--small">Dismiss Contest</a>
+				</div>
+			</div>
+			{{endforeach}}
+		{{endif}}
+
+	</div>
+</div>
+TEMPLATE_EOT,
+	],
+
 	/* ===== FRONT: notSubscribed ===== */
 	[
 		'set_id'        => 1,
@@ -1287,7 +1348,14 @@ TEMPLATE_EOT,
 					<div style="font-size:0.8em;color:#2563eb;font-weight:700;margin-bottom:4px">Your Response &mdash; {$r['response_at']}</div>
 					<p style="margin:0;font-size:0.9em">{$r['dealer_response']}</p>
 				</div>
+			{{endif}}
+
+			{{if $r['disputed']}}
+				<div style="background:#fff8f0;border-left:3px solid #f59e0b;padding:8px 12px;border-radius:0 4px 4px 0;margin-top:8px;font-size:0.85em;color:#92400e">
+					&#9888; This review has been flagged for admin review.
+				</div>
 			{{else}}
+				{{if $r['dealer_response'] === ''}}
 				<details style="margin-top:8px">
 					<summary style="cursor:pointer;font-size:0.85em;color:#2563eb;font-weight:600">Respond to this review</summary>
 					<form method="post" action="{$r['respond_url']}" style="margin-top:8px">
@@ -1295,7 +1363,16 @@ TEMPLATE_EOT,
 						<textarea name="response" rows="3" style="width:100%;border:1px solid var(--i-border-color,#ccc);border-radius:4px;padding:8px;font-size:0.9em;box-sizing:border-box" placeholder="Write a professional response visible to all buyers..."></textarea>
 						<button type="submit" class="ipsButton ipsButton--primary ipsButton--small" style="margin-top:8px">Post Response</button>
 					</form>
+					<details style="margin-top:8px">
+						<summary style="cursor:pointer;font-size:0.85em;color:#dc2626">Contest this review</summary>
+						<form method="post" action="{$r['dispute_url']}" style="margin-top:8px">
+							<input type="hidden" name="csrfKey" value="{$csrfKey}">
+							<textarea name="dispute_reason" rows="3" style="width:100%;border:1px solid var(--i-border-color,#ccc);border-radius:4px;padding:8px;font-size:0.9em;box-sizing:border-box" placeholder="Explain why this review should be removed (e.g. never purchased from us, fraudulent, violates terms)..."></textarea>
+							<button type="submit" class="ipsButton ipsButton--negative ipsButton--small" style="margin-top:8px">Submit Contest</button>
+						</form>
+					</details>
 				</details>
+				{{endif}}
 			{{endif}}
 		</div>
 		{{endforeach}}

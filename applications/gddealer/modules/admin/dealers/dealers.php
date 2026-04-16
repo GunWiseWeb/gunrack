@@ -441,6 +441,116 @@ class _dealers extends \IPS\Dispatcher\Controller
 		}
 	}
 
+	/* =============== Disputed Reviews Queue =============== */
+
+	/**
+	 * Show all disputed reviews pending admin resolution.
+	 */
+	protected function disputes()
+	{
+		$rows = [];
+		try
+		{
+			foreach ( \IPS\Db::i()->select( '*', 'gd_dealer_ratings',
+				[ 'disputed=? AND dispute_outcome IS NULL', 1 ],
+				'dispute_at ASC'
+			) as $r )
+			{
+				$dealerName = '';
+				try
+				{
+					$dealerName = (string) \IPS\Db::i()->select( 'dealer_name', 'gd_dealer_feed_config', [ 'dealer_id=?', (int) $r['dealer_id'] ] )->first();
+				}
+				catch ( \Exception ) {}
+
+				$memberName = '';
+				try
+				{
+					$m = \IPS\Member::load( (int) $r['member_id'] );
+					if ( $m->member_id ) { $memberName = (string) $m->name; }
+				}
+				catch ( \Exception ) {}
+
+				$rows[] = [
+					'id'              => (int) $r['id'],
+					'dealer_id'       => (int) $r['dealer_id'],
+					'dealer_name'     => $dealerName,
+					'member_id'       => (int) $r['member_id'],
+					'member_name'     => $memberName,
+					'rating_pricing'  => (int) $r['rating_pricing'],
+					'rating_shipping' => (int) $r['rating_shipping'],
+					'rating_service'  => (int) $r['rating_service'],
+					'review_body'     => (string) ( $r['review_body'] ?? '' ),
+					'dealer_response' => (string) ( $r['dealer_response'] ?? '' ),
+					'dispute_reason'  => (string) ( $r['dispute_reason'] ?? '' ),
+					'dispute_at'      => (string) ( $r['dispute_at'] ?? '' ),
+					'created_at'      => (string) $r['created_at'],
+					'approve_url'     => (string) \IPS\Http\Url::internal(
+						'app=gddealer&module=dealers&controller=dealers&do=approveDispute&id=' . (int) $r['id']
+					)->csrf(),
+					'dismiss_url'     => (string) \IPS\Http\Url::internal(
+						'app=gddealer&module=dealers&controller=dealers&do=dismissDispute&id=' . (int) $r['id']
+					)->csrf(),
+				];
+			}
+		}
+		catch ( \Exception ) {}
+
+		\IPS\Output::i()->title  = \IPS\Member::loggedIn()->language()->addToStack( 'gddealer_disputes_title' );
+		\IPS\Output::i()->output = \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'admin' )->disputeQueue( $rows );
+	}
+
+	/**
+	 * Approve a dispute — remove the review.
+	 */
+	protected function approveDispute()
+	{
+		\IPS\Session::i()->csrfCheck();
+		$id = (int) \IPS\Request::i()->id;
+
+		try
+		{
+			\IPS\Db::i()->update( 'gd_dealer_ratings', [
+				'status'              => 'removed',
+				'dispute_outcome'     => 'approved',
+				'dispute_resolved_by' => (int) \IPS\Member::loggedIn()->member_id,
+				'dispute_resolved_at' => date( 'Y-m-d H:i:s' ),
+			], [ 'id=? AND disputed=?', $id, 1 ] );
+		}
+		catch ( \Exception ) {}
+
+		\IPS\Output::i()->redirect(
+			\IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dealers&do=disputes' ),
+			'gddealer_dispute_approved'
+		);
+	}
+
+	/**
+	 * Dismiss a dispute — keep the review.
+	 */
+	protected function dismissDispute()
+	{
+		\IPS\Session::i()->csrfCheck();
+		$id = (int) \IPS\Request::i()->id;
+
+		try
+		{
+			\IPS\Db::i()->update( 'gd_dealer_ratings', [
+				'disputed'            => 0,
+				'status'              => 'approved',
+				'dispute_outcome'     => 'dismissed',
+				'dispute_resolved_by' => (int) \IPS\Member::loggedIn()->member_id,
+				'dispute_resolved_at' => date( 'Y-m-d H:i:s' ),
+			], [ 'id=? AND disputed=?', $id, 1 ] );
+		}
+		catch ( \Exception ) {}
+
+		\IPS\Output::i()->redirect(
+			\IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dealers&do=disputes' ),
+			'gddealer_dispute_dismissed'
+		);
+	}
+
 	/**
 	 * Force a feed import immediately for a dealer.
 	 */

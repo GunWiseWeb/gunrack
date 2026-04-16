@@ -10,6 +10,7 @@
     <word key="menu__gddealer_dealers_dealers"><![CDATA[Dealers]]></word>
     <word key="menu__gddealer_dealers_mrr"><![CDATA[MRR Dashboard]]></word>
     <word key="menu__gddealer_dealers_unmatched"><![CDATA[Unmatched UPCs]]></word>
+    <word key="menu__gddealer_dealers_disputes"><![CDATA[Disputed Reviews]]></word>
     <word key="menu__gddealer_dealers_settings"><![CDATA[Settings]]></word>
     <word key="menu__gddealer_dashboard"><![CDATA[Dealer Dashboard]]></word>
     <word key="module__gddealer_dashboard"><![CDATA[Dealer Dashboard]]></word>
@@ -62,6 +63,9 @@
     <word key="gddealer_unmatched_count"><![CDATA[Times Seen]]></word>
     <word key="gddealer_unmatched_exclude"><![CDATA[Exclude]]></word>
     <word key="gddealer_unmatched_add_to_catalog"><![CDATA[Add to Catalog]]></word>
+    <word key="gddealer_disputes_title"><![CDATA[Disputed Reviews]]></word>
+    <word key="gddealer_dispute_approved"><![CDATA[Contest approved — review has been removed.]]></word>
+    <word key="gddealer_dispute_dismissed"><![CDATA[Contest dismissed — review remains visible.]]></word>
     <word key="gddealer_settings_title"><![CDATA[Dealer Manager Settings]]></word>
     <word key="gddealer_settings_member_groups"><![CDATA[Member Groups]]></word>
     <word key="gddealer_group_founding"><![CDATA[Founding Tier Group ID]]></word>
@@ -137,6 +141,7 @@
     <word key="gddealer_front_tab_analytics"><![CDATA[Analytics]]></word>
     <word key="gddealer_front_tab_reviews"><![CDATA[My Reviews]]></word>
     <word key="gddealer_front_response_saved"><![CDATA[Your response has been posted.]]></word>
+    <word key="gddealer_front_dispute_submitted"><![CDATA[Your contest has been submitted for admin review.]]></word>
     <word key="gddealer_front_tab_subscription"><![CDATA[Subscription]]></word>
     <word key="gddealer_front_tab_help"><![CDATA[Help & Setup]]></word>
     <word key="gddealer_front_active_listings"><![CDATA[Active Listings]]></word>

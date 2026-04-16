@@ -657,7 +657,7 @@ class _dashboard extends \IPS\Dispatcher\Controller
 		try
 		{
 			foreach ( \IPS\Db::i()->select( '*', 'gd_dealer_ratings',
-				[ 'dealer_id=? AND status=?', $dealerId, 'approved' ],
+				[ 'dealer_id=? AND status IN(?,?)', $dealerId, 'approved', 'disputed' ],
 				'created_at DESC', [ 0, 50 ]
 			) as $r )
 			{
@@ -671,8 +671,12 @@ class _dashboard extends \IPS\Dispatcher\Controller
 					'dealer_response'  => (string) ( $r['dealer_response'] ?? '' ),
 					'response_at'      => (string) ( $r['response_at'] ?? '' ),
 					'created_at'       => (string) $r['created_at'],
+					'disputed'         => (int) ( $r['disputed'] ?? 0 ),
 					'respond_url'      => (string) \IPS\Http\Url::internal(
 						'app=gddealer&module=dealers&controller=dashboard&do=respond&id=' . (int) $r['id']
+					)->csrf(),
+					'dispute_url'      => (string) \IPS\Http\Url::internal(
+						'app=gddealer&module=dealers&controller=dashboard&do=dispute&id=' . (int) $r['id']
 					)->csrf(),
 				];
 			}
@@ -719,7 +723,7 @@ class _dashboard extends \IPS\Dispatcher\Controller
 			{
 				\IPS\Db::i()->update( 'gd_dealer_ratings',
 					[ 'dealer_response' => $response, 'response_at' => date( 'Y-m-d H:i:s' ) ],
-					[ 'id=? AND dealer_id=?', $id, (int) $this->dealer->dealer_id ]
+					[ 'id=? AND dealer_id=? AND disputed=?', $id, (int) $this->dealer->dealer_id, 0 ]
 				);
 			}
 			catch ( \Exception ) {}
@@ -728,6 +732,33 @@ class _dashboard extends \IPS\Dispatcher\Controller
 		\IPS\Output::i()->redirect(
 			\IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dashboard&do=reviews' ),
 			'gddealer_front_response_saved'
+		);
+	}
+
+	/** Contest a review — flags it for admin review. */
+	protected function dispute(): void
+	{
+		\IPS\Session::i()->csrfCheck();
+		$id     = (int) ( \IPS\Request::i()->id ?? 0 );
+		$reason = trim( (string) \IPS\Request::i()->dispute_reason );
+
+		if ( $id > 0 && $reason !== '' )
+		{
+			try
+			{
+				\IPS\Db::i()->update( 'gd_dealer_ratings', [
+					'disputed'       => 1,
+					'dispute_reason' => $reason,
+					'dispute_at'     => date( 'Y-m-d H:i:s' ),
+					'status'         => 'disputed',
+				], [ 'id=? AND dealer_id=?', $id, (int) $this->dealer->dealer_id ] );
+			}
+			catch ( \Exception ) {}
+		}
+
+		\IPS\Output::i()->redirect(
+			\IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dashboard&do=reviews' ),
+			'gddealer_front_dispute_submitted'
 		);
 	}
 

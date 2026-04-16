@@ -1051,13 +1051,20 @@
 			"dealer_response":  { "name": "dealer_response", "type": "TEXT", "allow_null": true },
 			"response_at":      { "name": "response_at", "type": "DATETIME", "allow_null": true },
 			"created_at":       { "name": "created_at", "type": "DATETIME", "allow_null": false },
-			"status":           { "name": "status", "type": "VARCHAR", "length": 20, "allow_null": false, "default": "approved" }
+			"status":           { "name": "status", "type": "VARCHAR", "length": 20, "allow_null": false, "default": "approved" },
+			"disputed":         { "name": "disputed", "type": "TINYINT", "unsigned": true, "allow_null": false, "default": 0 },
+			"dispute_reason":   { "name": "dispute_reason", "type": "TEXT", "allow_null": true },
+			"dispute_at":       { "name": "dispute_at", "type": "DATETIME", "allow_null": true },
+			"dispute_resolved_by": { "name": "dispute_resolved_by", "type": "INT", "allow_null": true },
+			"dispute_resolved_at": { "name": "dispute_resolved_at", "type": "DATETIME", "allow_null": true },
+			"dispute_outcome":  { "name": "dispute_outcome", "type": "VARCHAR", "length": 20, "allow_null": true }
 		},
 		"indexes": {
 			"PRIMARY":          { "type": "primary", "name": "PRIMARY", "length": [null], "columns": ["id"] },
 			"uq_dealer_member": { "type": "unique", "name": "uq_dealer_member", "length": [null, null], "columns": ["dealer_id", "member_id"] },
 			"idx_dealer":       { "type": "key", "name": "idx_dealer", "length": [null], "columns": ["dealer_id"] },
-			"idx_member":       { "type": "key", "name": "idx_member", "length": [null], "columns": ["member_id"] }
+			"idx_member":       { "type": "key", "name": "idx_member", "length": [null], "columns": ["member_id"] },
+			"idx_disputed":     { "type": "key", "name": "idx_disputed", "length": [null, null], "columns": ["disputed", "dispute_outcome"] }
 		}
 	}
 }
