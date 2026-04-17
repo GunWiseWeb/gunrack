@@ -112,19 +112,32 @@ class _dashboard extends \IPS\Dispatcher\Controller
 		}
 		catch ( \Exception ) {}
 
+		$lastImport = null;
+		if ( !empty( $lastLogRow ) )
+		{
+			$lastImport = [
+				'run_start'         => (string) ( $lastLogRow['run_start']         ?? '' ),
+				'status'            => (string) ( $lastLogRow['status']            ?? '' ),
+				'records_total'     => (int)    ( $lastLogRow['records_total']     ?? 0 ),
+				'records_created'   => (int)    ( $lastLogRow['records_created']   ?? 0 ),
+				'records_updated'   => (int)    ( $lastLogRow['records_updated']   ?? 0 ),
+				'records_unchanged' => (int)    ( $lastLogRow['records_unchanged'] ?? 0 ),
+				'records_unmatched' => (int)    ( $lastLogRow['records_unmatched'] ?? 0 ),
+				'has_errors'        => !empty( $lastLogRow['error_log'] ),
+			];
+		}
+
 		$overview = [
 			'tier'                 => (string) $dealer->subscription_tier,
 			'tier_label'           => ucfirst( (string) $dealer->subscription_tier ),
 			'active_listings'      => $active,
 			'out_of_stock'         => $out,
+			'unmatched'            => $unmatched,
 			'unmatched_count'      => $unmatched,
 			'clicks_7d'            => $clicks7,
 			'clicks_30d'           => $clicks30,
 			'onboarding_incomplete'=> empty( $dealer->feed_url ),
-			'last_run_time'        => (string) ( $lastLogRow['run_start']       ?? '' ),
-			'last_run_status'      => (string) ( $lastLogRow['status']          ?? '' ),
-			'last_run_total'       => (int)    ( $lastLogRow['records_total']   ?? 0 ),
-			'last_run_errors'      => !empty( $lastLogRow['error_log'] ),
+			'last_import'          => $lastImport,
 			'profile_url'          => (string) \IPS\Http\Url::internal(
 				'app=gddealer&module=dealers&controller=profile&dealer_slug=' . urlencode( (string) $dealer->dealer_slug )
 			),
@@ -1026,6 +1039,14 @@ class _dashboard extends \IPS\Dispatcher\Controller
 	{
 		$d    = $this->dealer;
 		$tier = (string) $d->subscription_tier;
+
+		$avatar = '';
+		try
+		{
+			$avatar = (string) \IPS\Member::loggedIn()->photo;
+		}
+		catch ( \Exception ) {}
+
 		return [
 			'dealer_id'             => (int) $d->dealer_id,
 			'dealer_name'           => (string) $d->dealer_name,
@@ -1039,6 +1060,7 @@ class _dashboard extends \IPS\Dispatcher\Controller
 			},
 			'onboarding_incomplete' => empty( $d->feed_url ),
 			'suspended'             => (bool) $d->suspended,
+			'avatar'                => $avatar,
 		];
 	}
 

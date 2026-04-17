@@ -568,49 +568,66 @@ TEMPLATE_EOT,
 		'template_name' => 'dealerShell',
 		'template_data' => '$dealer, $activeTab, $tabUrls, $body',
 		'template_content' => <<<'TEMPLATE_EOT'
-<div style="max-width:1200px;margin:0 auto;padding:24px 16px">
+<div class="ipsProfileContainer" style="max-width:1200px;margin:0 auto;padding:16px">
 
-	<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--i-border-color, #e0e0e0)">
-		<div>
-			<h1 style="margin:0;font-size:1.4em;font-weight:700">{$dealer['dealer_name']}</h1>
-			<p style="margin:4px 0 0;color:#666;font-size:0.9em">
-				{lang="gddealer_front_dashboard_welcome"} &mdash;
-				<span style="background:{$dealer['tier_color']};color:#fff;padding:2px 10px;border-radius:12px;font-size:0.8em;font-weight:700;letter-spacing:0.03em">{$dealer['tier_label']}</span>
-			</p>
+	<header class="ipsPageHeader ipsBox ipsBox--profileHeader ipsPull i-margin-bottom_block" style="margin-bottom:24px">
+		<div class="ipsCoverPhoto ipsCoverPhoto--profile ipsCoverPhoto--minimal" style="position:relative;border-radius:8px 8px 0 0;overflow:hidden;min-height:120px">
+			<div class="ipsCoverPhoto__container">
+				<div class="ipsFallbackImage" style="background:linear-gradient(135deg,#1e3a5f 0%,#2563eb 100%);height:120px"></div>
+			</div>
 		</div>
-		<div>
-			<a href="{$tabUrls['subscription']}" class="ipsButton ipsButton--normal ipsButton--small">{lang="gddealer_front_tab_subscription"}</a>
+		<div class="ipsCoverPhotoMeta" style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-top:none;border-radius:0 0 8px 8px;padding:16px 20px;display:flex;gap:16px;align-items:center;flex-wrap:wrap">
+			{{if $dealer['avatar']}}
+			<div class="ipsCoverPhoto__avatar" style="margin-top:-50px">
+				<span class="ipsUserPhoto ipsUserPhoto--large">
+					<img src="{$dealer['avatar']}" alt="{$dealer['dealer_name']}" loading="lazy" style="width:80px;height:80px;border-radius:50%;border:4px solid #fff;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,0.12)">
+				</span>
+			</div>
+			{{endif}}
+			<div class="ipsCoverPhoto__titles" style="flex:1;min-width:200px">
+				<div class="ipsCoverPhoto__title">
+					<h1 style="margin:0;font-size:1.4em;font-weight:800">{$dealer['dealer_name']}</h1>
+				</div>
+				<div class="ipsCoverPhoto__desc" style="margin-top:4px">
+					<span style="background:{$dealer['tier_color']};color:#fff;padding:2px 10px;border-radius:20px;font-size:0.8em;font-weight:700">{$dealer['tier_label']}</span>
+					{{if $dealer['suspended']}}
+					<span style="background:#dc2626;color:#fff;padding:2px 10px;border-radius:20px;font-size:0.8em;font-weight:700;margin-left:6px">Suspended</span>
+					{{endif}}
+				</div>
+			</div>
+			<div class="ipsCoverPhoto__buttons">
+				<a href="{$tabUrls['subscription']}" class="ipsButton ipsButton--inherit ipsButton--small">
+					<i class="fa-solid fa-credit-card" aria-hidden="true"></i>
+					<span>{lang="gddealer_front_tab_subscription"}</span>
+				</a>
+			</div>
 		</div>
-	</div>
-
-	{{if $dealer['suspended']}}
-		<div class="ipsMessage ipsMessage_error" style="margin:16px 0">
-			{lang="gddealer_front_suspended_banner"}
-		</div>
-	{{endif}}
+	</header>
 
 	{{if $dealer['onboarding_incomplete']}}
-		<div class="ipsMessage ipsMessage_warning" style="margin:16px 0">
-			<p>{lang="gddealer_front_onboarding_incomplete"}</p>
-			<p style="margin-top:8px">
-				<a href="{$tabUrls['feedSettings']}" class="ipsButton ipsButton--primary ipsButton--small">{lang="gddealer_front_onboarding_go_settings"}</a>
-			</p>
-		</div>
+	<div class="ipsMessage ipsMessage_warning i-margin-bottom_block" style="margin-bottom:16px;padding:12px 16px;background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;color:#92400e">
+		<i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+		<strong>Complete Your Setup</strong> &mdash; Your account is active but your product feed hasn't been configured yet.
+		<a href="{$tabUrls['feedSettings']}" class="ipsButton ipsButton--primary ipsButton--small" style="margin-left:12px">{lang="gddealer_front_onboarding_go_settings"}</a>
+	</div>
 	{{endif}}
 
-	<div style="display:flex;gap:4px;margin:0 0 20px;padding-bottom:12px;border-bottom:1px solid var(--i-border-color, #e0e0e0);flex-wrap:wrap">
-		<a href="{$tabUrls['overview']}" class="ipsButton ipsButton--small {expression="$activeTab === 'overview' ? 'ipsButton--primary' : 'ipsButton--normal'"}">{lang="gddealer_front_tab_overview"}</a>
-		<a href="{$tabUrls['feedSettings']}" class="ipsButton ipsButton--small {expression="$activeTab === 'feedSettings' ? 'ipsButton--primary' : 'ipsButton--normal'"}">{lang="gddealer_front_tab_feed"}</a>
-		<a href="{$tabUrls['listings']}" class="ipsButton ipsButton--small {expression="$activeTab === 'listings' ? 'ipsButton--primary' : 'ipsButton--normal'"}">{lang="gddealer_front_tab_listings"}</a>
-		<a href="{$tabUrls['unmatched']}" class="ipsButton ipsButton--small {expression="$activeTab === 'unmatched' ? 'ipsButton--primary' : 'ipsButton--normal'"}">{lang="gddealer_front_tab_unmatched"}</a>
-		<a href="{$tabUrls['analytics']}" class="ipsButton ipsButton--small {expression="$activeTab === 'analytics' ? 'ipsButton--primary' : 'ipsButton--normal'"}">{lang="gddealer_front_tab_analytics"}</a>
-		<a href="{$tabUrls['reviews']}" class="ipsButton ipsButton--small {expression="$activeTab === 'reviews' ? 'ipsButton--primary' : 'ipsButton--normal'"}">{lang="gddealer_front_tab_reviews"}</a>
-		<a href="{$tabUrls['subscription']}" class="ipsButton ipsButton--small {expression="$activeTab === 'subscription' ? 'ipsButton--primary' : 'ipsButton--normal'"}">{lang="gddealer_front_tab_subscription"}</a>
-		<a href="{$tabUrls['help']}" class="ipsButton ipsButton--small {expression="$activeTab === 'help' ? 'ipsButton--primary' : 'ipsButton--normal'"}">{lang="gddealer_front_tab_help"}</a>
-	</div>
-
-	<div style="padding:8px 24px">
-		{$body|raw}
+	<div class="ipsPwaStickyFix ipsPwaStickyFix--ipsTabs"></div>
+	<i-tabs class="ipsTabs ipsTabs--sticky ipsTabs--profile ipsTabs--stretch" data-ipsTabBar data-ipsTabBar-contentArea="#elDealerTabs_content">
+		<div role="tablist" style="display:flex;gap:0;border-bottom:1px solid var(--i-border-color,#e0e0e0);overflow-x:auto;background:#fff;border-radius:8px 8px 0 0">
+			<a href="{$tabUrls['overview']}" class="ipsTabs__tab {expression="$activeTab === 'overview' ? 'ipsTabs__activeTab' : ''"}" role="tab" aria-selected="{expression="$activeTab === 'overview' ? 'true' : 'false'"}" style="padding:12px 20px;text-decoration:none;font-weight:600;color:{expression="$activeTab === 'overview' ? '#2563eb' : '#475569'"};border-bottom:2px solid {expression="$activeTab === 'overview' ? '#2563eb' : 'transparent'"};white-space:nowrap">{lang="gddealer_front_tab_overview"}</a>
+			<a href="{$tabUrls['feedSettings']}" class="ipsTabs__tab {expression="$activeTab === 'feedSettings' ? 'ipsTabs__activeTab' : ''"}" role="tab" aria-selected="{expression="$activeTab === 'feedSettings' ? 'true' : 'false'"}" style="padding:12px 20px;text-decoration:none;font-weight:600;color:{expression="$activeTab === 'feedSettings' ? '#2563eb' : '#475569'"};border-bottom:2px solid {expression="$activeTab === 'feedSettings' ? '#2563eb' : 'transparent'"};white-space:nowrap">{lang="gddealer_front_tab_feed"}</a>
+			<a href="{$tabUrls['listings']}" class="ipsTabs__tab {expression="$activeTab === 'listings' ? 'ipsTabs__activeTab' : ''"}" role="tab" aria-selected="{expression="$activeTab === 'listings' ? 'true' : 'false'"}" style="padding:12px 20px;text-decoration:none;font-weight:600;color:{expression="$activeTab === 'listings' ? '#2563eb' : '#475569'"};border-bottom:2px solid {expression="$activeTab === 'listings' ? '#2563eb' : 'transparent'"};white-space:nowrap">{lang="gddealer_front_tab_listings"}</a>
+			<a href="{$tabUrls['unmatched']}" class="ipsTabs__tab {expression="$activeTab === 'unmatched' ? 'ipsTabs__activeTab' : ''"}" role="tab" aria-selected="{expression="$activeTab === 'unmatched' ? 'true' : 'false'"}" style="padding:12px 20px;text-decoration:none;font-weight:600;color:{expression="$activeTab === 'unmatched' ? '#2563eb' : '#475569'"};border-bottom:2px solid {expression="$activeTab === 'unmatched' ? '#2563eb' : 'transparent'"};white-space:nowrap">{lang="gddealer_front_tab_unmatched"}</a>
+			<a href="{$tabUrls['analytics']}" class="ipsTabs__tab {expression="$activeTab === 'analytics' ? 'ipsTabs__activeTab' : ''"}" role="tab" aria-selected="{expression="$activeTab === 'analytics' ? 'true' : 'false'"}" style="padding:12px 20px;text-decoration:none;font-weight:600;color:{expression="$activeTab === 'analytics' ? '#2563eb' : '#475569'"};border-bottom:2px solid {expression="$activeTab === 'analytics' ? '#2563eb' : 'transparent'"};white-space:nowrap">{lang="gddealer_front_tab_analytics"}</a>
+			<a href="{$tabUrls['reviews']}" class="ipsTabs__tab {expression="$activeTab === 'reviews' ? 'ipsTabs__activeTab' : ''"}" role="tab" aria-selected="{expression="$activeTab === 'reviews' ? 'true' : 'false'"}" style="padding:12px 20px;text-decoration:none;font-weight:600;color:{expression="$activeTab === 'reviews' ? '#2563eb' : '#475569'"};border-bottom:2px solid {expression="$activeTab === 'reviews' ? '#2563eb' : 'transparent'"};white-space:nowrap">{lang="gddealer_front_tab_reviews"}</a>
+			<a href="{$tabUrls['help']}" class="ipsTabs__tab {expression="$activeTab === 'help' ? 'ipsTabs__activeTab' : ''"}" role="tab" aria-selected="{expression="$activeTab === 'help' ? 'true' : 'false'"}" style="padding:12px 20px;text-decoration:none;font-weight:600;color:{expression="$activeTab === 'help' ? '#2563eb' : '#475569'"};border-bottom:2px solid {expression="$activeTab === 'help' ? '#2563eb' : 'transparent'"};white-space:nowrap">{lang="gddealer_front_tab_help"}</a>
+		</div>
+	</i-tabs>
+	<div id="elDealerTabs_content" class="ipsTabs__panels ipsTabs__panels--profile" style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-top:none;border-radius:0 0 8px 8px;padding:24px">
+		<div class="ipsTabs__panel">
+			{$body|raw}
+		</div>
 	</div>
 
 </div>
@@ -626,80 +643,118 @@ TEMPLATE_EOT,
 		'template_name' => 'overview',
 		'template_data' => '$dealer, $overview, $tabUrls, $prefs',
 		'template_content' => <<<'TEMPLATE_EOT'
-<div>
+<div class="ipsProfile ipsProfile--profile" style="display:flex;gap:24px;flex-wrap:wrap">
+	<aside class="ipsProfile__aside" style="flex:0 0 260px;min-width:240px">
+		<div class="ipsProfile__sticky-outer">
+			<div class="ipsProfile__sticky-inner">
+				<div class="ipsWidget" style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;margin-bottom:16px">
+					<h3 class="ipsWidget__title" style="margin:0;padding:12px 16px;border-bottom:1px solid var(--i-border-color,#f0f0f0);font-size:0.85em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#475569">Quick Links</h3>
+					<div class="ipsWidget__content">
+						<ul class="ipsList_reset" style="list-style:none;padding:0;margin:0">
+							<li style="padding:10px 16px;border-bottom:1px solid var(--i-border-color,#f0f0f0)">
+								<a href="{$overview['profile_url']}" target="_blank" style="display:flex;align-items:center;gap:8px;text-decoration:none;color:inherit">
+									<i class="fa-solid fa-user" aria-hidden="true"></i> View Public Profile
+								</a>
+							</li>
+							<li style="padding:10px 16px;border-bottom:1px solid var(--i-border-color,#f0f0f0)">
+								<a href="{$tabUrls['feedSettings']}" style="display:flex;align-items:center;gap:8px;text-decoration:none;color:inherit">
+									<i class="fa-solid fa-rss" aria-hidden="true"></i> Feed Settings
+								</a>
+							</li>
+							<li style="padding:10px 16px;border-bottom:1px solid var(--i-border-color,#f0f0f0)">
+								<a href="{$tabUrls['help']}" style="display:flex;align-items:center;gap:8px;text-decoration:none;color:inherit">
+									<i class="fa-solid fa-circle-question" aria-hidden="true"></i> Help &amp; Setup Guide
+								</a>
+							</li>
+							<li style="padding:10px 16px">
+								<a href="{$overview['customize_url']}" style="display:flex;align-items:center;gap:8px;text-decoration:none;color:inherit">
+									<i class="fa-solid fa-sliders" aria-hidden="true"></i> {lang="gddealer_front_customize_dashboard"}
+								</a>
+							</li>
+						</ul>
+					</div>
+				</div>
 
-	<div style="display:flex;justify-content:flex-end;margin-bottom:12px">
-		<a href="{$overview['customize_url']}" class="ipsButton ipsButton--normal ipsButton--small">{lang="gddealer_front_customize_dashboard"}</a>
-	</div>
+				{{if $prefs['show_profile_url']}}
+				<div class="ipsWidget" style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px">
+					<h3 class="ipsWidget__title" style="margin:0;padding:12px 16px;border-bottom:1px solid var(--i-border-color,#f0f0f0);font-size:0.85em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#475569">Your Profile URL</h3>
+					<div class="ipsWidget__content i-padding_2" style="padding:16px">
+						<code style="display:block;font-size:0.78em;word-break:break-all;background:var(--i-background,#f5f5f5);padding:8px;border-radius:4px;margin-bottom:8px">{$overview['profile_url']}</code>
+						<a href="{$overview['profile_url']}" target="_blank" class="ipsButton ipsButton--primary ipsButton--small" style="width:100%;text-align:center;display:block">View Public Profile</a>
+					</div>
+				</div>
+				{{endif}}
+			</div>
+		</div>
+	</aside>
 
-	<div style="display:flex;gap:16px;margin-bottom:24px;flex-wrap:wrap">
-		{{if $prefs['show_active']}}
-		<div style="flex:1 1 180px;padding:16px;text-align:center;background:{$prefs['card_bg']};border:1px solid {$prefs['card_border']};border-radius:8px;color:{$prefs['card_color']}">
-			<div style="font-size:2em;font-weight:bold">{expression="number_format( $overview['active_listings'] )"}</div>
-			<div style="color:{$prefs['card_label']}">{lang="gddealer_front_active_listings"}</div>
-		</div>
-		{{endif}}
-		{{if $prefs['show_outofstock']}}
-		<div style="flex:1 1 180px;padding:16px;text-align:center;background:{$prefs['card_bg']};border:1px solid {$prefs['card_border']};border-radius:8px;color:{$prefs['card_color']}">
-			<div style="font-size:2em;font-weight:bold">{expression="number_format( $overview['out_of_stock'] )"}</div>
-			<div style="color:{$prefs['card_label']}">{lang="gddealer_front_out_of_stock"}</div>
-		</div>
-		{{endif}}
-		{{if $prefs['show_unmatched']}}
-		<div style="flex:1 1 180px;padding:16px;text-align:center;background:{$prefs['card_bg']};border:1px solid {$prefs['card_border']};border-radius:8px;color:{$prefs['card_color']}">
-			<div style="font-size:2em;font-weight:bold">{expression="number_format( $overview['unmatched_count'] )"}</div>
-			<div style="color:{$prefs['card_label']}">{lang="gddealer_front_unmatched_count"}</div>
-		</div>
-		{{endif}}
-		{{if $prefs['show_clicks_7d']}}
-		<div style="flex:1 1 180px;padding:16px;text-align:center;background:{$prefs['card_bg']};border:1px solid {$prefs['card_border']};border-radius:8px;color:{$prefs['card_color']}">
-			<div style="font-size:2em;font-weight:bold">{expression="number_format( $overview['clicks_7d'] )"}</div>
-			<div style="color:{$prefs['card_label']}">{lang="gddealer_front_clicks_7d"}</div>
-		</div>
-		{{endif}}
-		{{if $prefs['show_clicks_30d']}}
-		<div style="flex:1 1 180px;padding:16px;text-align:center;background:{$prefs['card_bg']};border:1px solid {$prefs['card_border']};border-radius:8px;color:{$prefs['card_color']}">
-			<div style="font-size:2em;font-weight:bold">{expression="number_format( $overview['clicks_30d'] )"}</div>
-			<div style="color:{$prefs['card_label']}">{lang="gddealer_front_clicks_30d"}</div>
-		</div>
-		{{endif}}
-	</div>
-
-	{{if $prefs['show_profile_url']}}
-	<div style="background:#f0f7ff;border:1px solid #bfdbfe;border-radius:8px;padding:16px;margin-bottom:24px">
-		<div style="font-size:0.8em;color:#1e40af;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px">Your Public Profile</div>
-		<p style="margin:0 0 10px;font-size:0.85em;color:#555">Share this link with customers so they can view your profile and leave reviews.</p>
-		<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-			<code style="background:#fff;border:1px solid #bfdbfe;border-radius:4px;padding:6px 10px;font-size:0.82em;flex:1;word-break:break-all;min-width:200px">{$overview['profile_url']}</code>
-			<a href="{$overview['profile_url']}" target="_blank" class="ipsButton ipsButton--normal ipsButton--small">View Profile</a>
-		</div>
-	</div>
-	{{endif}}
-
-	{{if $prefs['show_last_import']}}
-	<h2>{lang="gddealer_front_last_import"}</h2>
-	<p>
-		{{if $overview['last_run_time']}}
-			<strong>{$overview['last_run_time']}</strong> &mdash;
-			{{if $overview['last_run_status'] === 'completed'}}
-				<span class="ipsBadge ipsBadge--positive">Completed</span>
-			{{elseif $overview['last_run_status'] === 'failed'}}
-				<span class="ipsBadge ipsBadge--negative">Failed</span>
-			{{elseif $overview['last_run_status'] === 'running'}}
-				<span class="ipsBadge ipsBadge--warning">Running</span>
-			{{else}}
-				<span class="ipsBadge ipsBadge--neutral">{$overview['last_run_status']}</span>
+	<div class="ipsProfile__main" style="flex:1;min-width:300px">
+		<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:24px">
+			{{if $prefs['show_active']}}
+			<div class="ipsWidget" style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px">
+				<div class="ipsWidget__content i-padding_2" style="padding:16px;text-align:center">
+					<div style="font-size:2em;font-weight:800;color:#16a34a">{expression="number_format($overview['active_listings'])"}</div>
+					<div style="font-size:0.82em;color:#666;margin-top:4px">{lang="gddealer_front_active_listings"}</div>
+				</div>
+			</div>
 			{{endif}}
-			&mdash; {expression="number_format( $overview['last_run_total'] )"} records processed
-			{{if $overview['last_run_errors']}}
-				<br><span style="color:#c00">Errors were logged &mdash; see Feed Settings &rarr; Import History.</span>
+			{{if $prefs['show_outofstock']}}
+			<div class="ipsWidget" style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px">
+				<div class="ipsWidget__content i-padding_2" style="padding:16px;text-align:center">
+					<div style="font-size:2em;font-weight:800;color:#dc2626">{expression="number_format($overview['out_of_stock'])"}</div>
+					<div style="font-size:0.82em;color:#666;margin-top:4px">{lang="gddealer_front_out_of_stock"}</div>
+				</div>
+			</div>
 			{{endif}}
-		{{else}}
-			<em>{lang="gddealer_front_last_import_none"}</em>
-		{{endif}}
-	</p>
-	{{endif}}
+			{{if $prefs['show_unmatched']}}
+			<div class="ipsWidget" style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px">
+				<div class="ipsWidget__content i-padding_2" style="padding:16px;text-align:center">
+					<div style="font-size:2em;font-weight:800;color:#f59e0b">{expression="number_format($overview['unmatched'])"}</div>
+					<div style="font-size:0.82em;color:#666;margin-top:4px">{lang="gddealer_front_unmatched_count"}</div>
+				</div>
+			</div>
+			{{endif}}
+			{{if $prefs['show_clicks_7d']}}
+			<div class="ipsWidget" style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px">
+				<div class="ipsWidget__content i-padding_2" style="padding:16px;text-align:center">
+					<div style="font-size:2em;font-weight:800">{expression="number_format($overview['clicks_7d'])"}</div>
+					<div style="font-size:0.82em;color:#666;margin-top:4px">{lang="gddealer_front_clicks_7d"}</div>
+				</div>
+			</div>
+			{{endif}}
+			{{if $prefs['show_clicks_30d']}}
+			<div class="ipsWidget" style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px">
+				<div class="ipsWidget__content i-padding_2" style="padding:16px;text-align:center">
+					<div style="font-size:2em;font-weight:800">{expression="number_format($overview['clicks_30d'])"}</div>
+					<div style="font-size:0.82em;color:#666;margin-top:4px">{lang="gddealer_front_clicks_30d"}</div>
+				</div>
+			</div>
+			{{endif}}
+		</div>
 
+		{{if $prefs['show_last_import']}}
+		<div class="ipsBox" style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px">
+			<h3 class="ipsBox__header" style="margin:0;padding:12px 16px;border-bottom:1px solid var(--i-border-color,#f0f0f0);font-size:1em;font-weight:700">{lang="gddealer_front_last_import"}</h3>
+			<div class="i-padding_2" style="padding:16px">
+				{{if $overview['last_import']}}
+				<div style="display:flex;gap:24px;flex-wrap:wrap">
+					<div><span style="font-size:0.8em;color:#666;display:block">Started</span><strong>{$overview['last_import']['run_start']}</strong></div>
+					<div><span style="font-size:0.8em;color:#666;display:block">Status</span><strong>{$overview['last_import']['status']}</strong></div>
+					<div><span style="font-size:0.8em;color:#666;display:block">Total Records</span><strong>{expression="number_format($overview['last_import']['records_total'])"}</strong></div>
+					<div><span style="font-size:0.8em;color:#666;display:block">New</span><strong style="color:#16a34a">{expression="number_format($overview['last_import']['records_created'])"}</strong></div>
+					<div><span style="font-size:0.8em;color:#666;display:block">Updated</span><strong style="color:#2563eb">{expression="number_format($overview['last_import']['records_updated'])"}</strong></div>
+					<div><span style="font-size:0.8em;color:#666;display:block">Unmatched</span><strong style="color:#f59e0b">{expression="number_format($overview['last_import']['records_unmatched'])"}</strong></div>
+				</div>
+				{{if $overview['last_import']['has_errors']}}
+				<p style="margin:12px 0 0;color:#c00;font-size:0.9em">Errors were logged &mdash; see Feed Settings &rarr; Import History.</p>
+				{{endif}}
+				{{else}}
+				<p style="margin:0;color:#999;font-style:italic">{lang="gddealer_front_last_import_none"}</p>
+				{{endif}}
+			</div>
+		</div>
+		{{endif}}
+	</div>
 </div>
 TEMPLATE_EOT,
 	],
@@ -792,14 +847,19 @@ TEMPLATE_EOT,
 		'template_content' => <<<'TEMPLATE_EOT'
 <div>
 
-	{$form|raw}
-
-	<div style="margin:16px 0">
-		<a href="{$importUrl}" class="ipsButton ipsButton--primary">{lang="gddealer_front_run_import"}</a>
+	<div class="ipsBox i-margin-bottom_block" style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;margin-bottom:24px">
+		<h3 class="ipsBox__header" style="margin:0;padding:14px 18px;border-bottom:1px solid var(--i-border-color,#f0f0f0);font-size:1em;font-weight:700">Feed Configuration</h3>
+		<div class="i-padding_2" style="padding:18px">
+			{$form|raw}
+			<div style="margin-top:16px">
+				<a href="{$importUrl}" class="ipsButton ipsButton--primary">{lang="gddealer_front_run_import"}</a>
+			</div>
+		</div>
 	</div>
 
-	<h2>{lang="gddealer_front_import_history"}</h2>
-	<table class="ipsTable ipsTable_zebra" style="width:100%">
+	<div class="ipsBox" style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px">
+		<h3 class="ipsBox__header" style="margin:0;padding:14px 18px;border-bottom:1px solid var(--i-border-color,#f0f0f0);font-size:1em;font-weight:700">{lang="gddealer_front_import_history"}</h3>
+		<table class="ipsTable ipsTable_zebra" style="width:100%">
 		<thead>
 			<tr>
 				<th>Started</th>
@@ -841,6 +901,7 @@ TEMPLATE_EOT,
 			{{endif}}
 		</tbody>
 	</table>
+	</div>
 
 </div>
 TEMPLATE_EOT,
@@ -855,7 +916,9 @@ TEMPLATE_EOT,
 		'template_name' => 'listings',
 		'template_data' => '$dealer, $rows, $total, $page, $pages, $baseUrl, $filter, $search, $exportUrl, $tabUrls',
 		'template_content' => <<<'TEMPLATE_EOT'
-<div>
+<div class="ipsBox" style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px">
+	<h3 class="ipsBox__header" style="margin:0;padding:14px 18px;border-bottom:1px solid var(--i-border-color,#f0f0f0);font-size:1em;font-weight:700">{lang="gddealer_front_tab_listings"}</h3>
+	<div class="i-padding_2" style="padding:18px">
 
 	<form method="get" action="{$tabUrls['listings']}" style="display:flex;gap:8px;flex-wrap:wrap;align-items:end;margin-bottom:16px">
 		<input type="hidden" name="app" value="gddealer">
@@ -923,6 +986,7 @@ TEMPLATE_EOT,
 	</div>
 	{{endif}}
 
+	</div>
 </div>
 TEMPLATE_EOT,
 	],
@@ -936,7 +1000,9 @@ TEMPLATE_EOT,
 		'template_name' => 'unmatched',
 		'template_data' => '$dealer, $rows, $exportUrl, $tabUrls',
 		'template_content' => <<<'TEMPLATE_EOT'
-<div>
+<div class="ipsBox" style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px">
+	<h3 class="ipsBox__header" style="margin:0;padding:14px 18px;border-bottom:1px solid var(--i-border-color,#f0f0f0);font-size:1em;font-weight:700">{lang="gddealer_front_tab_unmatched"}</h3>
+	<div class="i-padding_2" style="padding:18px">
 
 	<p>{lang="gddealer_front_unmatched_intro"}</p>
 
@@ -970,6 +1036,7 @@ TEMPLATE_EOT,
 		</tbody>
 	</table>
 
+	</div>
 </div>
 TEMPLATE_EOT,
 	],
@@ -1607,70 +1674,72 @@ TEMPLATE_EOT,
 		'template_name' => 'dealerProfile',
 		'template_data' => '$dealer, $stats, $reviews, $canRate, $alreadyRated, $loginRequired, $rateUrl, $csrfKey, $loginUrl, $customerDispute, $guidelinesUrl',
 		'template_content' => <<<'TEMPLATE_EOT'
-<div style="max-width:900px;margin:0 auto;padding:24px 16px">
+<div class="ipsProfileContainer" style="max-width:1100px;margin:0 auto;padding:16px">
 
-	<div class="ipsPageHeader ipsCoverPhoto" style="position:relative;border-radius:8px;overflow:hidden;margin-bottom:0;min-height:180px;{$dealer['cover_style']}"></div>
-
-	<div class="ipsBox" style="margin-top:-40px;padding:20px 24px 24px;border-radius:8px;position:relative;background:#fff;border:1px solid var(--i-border-color,#e0e0e0);margin-bottom:24px">
-		<div style="display:flex;gap:20px;align-items:flex-end;flex-wrap:wrap">
-			{{if $dealer['avatar']}}
-			<div class="ipsProfilePhoto" style="margin-top:-60px">
-				<img src="{$dealer['avatar']}" alt="{$dealer['dealer_name']}" style="width:96px;height:96px;border-radius:50%;border:4px solid #fff;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,0.12)">
+	<header class="ipsPageHeader ipsBox ipsBox--profileHeader ipsPull i-margin-bottom_block" style="margin-bottom:24px">
+		<div class="ipsCoverPhoto ipsCoverPhoto--profile" style="position:relative;border-radius:8px 8px 0 0;overflow:hidden;min-height:180px">
+			<div class="ipsCoverPhoto__container" style="height:180px">
+				<div class="ipsFallbackImage" style="height:180px;{$dealer['cover_style']}"></div>
 			</div>
-			{{endif}}
-			<div style="flex:1;min-width:200px">
-				<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:4px">
-					<h1 style="margin:0;font-size:1.6em;font-weight:800">{$dealer['dealer_name']}</h1>
-					<span class="ipsBadge" style="background:{$dealer['tier_color']};color:#fff;font-size:0.7em;padding:3px 8px;border-radius:4px">{$dealer['tier_label']}</span>
+		</div>
+		<div class="ipsCoverPhotoMeta" style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-top:none;border-radius:0 0 8px 8px;padding:20px 24px">
+			<div style="display:flex;gap:20px;align-items:flex-end;flex-wrap:wrap;margin-bottom:16px">
+				{{if $dealer['avatar']}}
+				<div class="ipsCoverPhoto__avatar" style="margin-top:-60px">
+					<span class="ipsUserPhoto ipsUserPhoto--large">
+						<img src="{$dealer['avatar']}" alt="{$dealer['dealer_name']}" loading="lazy" style="width:96px;height:96px;border-radius:50%;border:4px solid #fff;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,0.12)">
+					</span>
 				</div>
-				{{if $dealer['member_since']}}
-				<div style="font-size:0.85em;color:#666">Member since {$dealer['member_since']}</div>
 				{{endif}}
+				<div class="ipsCoverPhoto__titles" style="flex:1;min-width:200px">
+					<div class="ipsCoverPhoto__title">
+						<h1 style="margin:0;font-size:1.6em;font-weight:800">{$dealer['dealer_name']}</h1>
+					</div>
+					<div class="ipsCoverPhoto__desc" style="margin-top:6px">
+						<span style="background:{$dealer['tier_color']};color:#fff;padding:2px 10px;border-radius:20px;font-size:0.8em;font-weight:700">{$dealer['tier_label']}</span>
+					</div>
+				</div>
+				<div class="ipsCoverPhoto__buttons" style="display:flex;gap:8px;flex-wrap:wrap">
+					<a href="mailto:{$dealer['contact_email']}" class="ipsButton ipsButton--primary">
+						<i class="fa-solid fa-envelope" aria-hidden="true"></i>
+						<span>Contact Dealer</span>
+					</a>
+					<a href="{$guidelinesUrl}" class="ipsButton ipsButton--inherit">
+						<i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+						<span>Review Guidelines</span>
+					</a>
+				</div>
 			</div>
+			<ul class="ipsCoverPhoto__stats" style="display:flex;gap:0;list-style:none;padding:16px 0 0;margin:0;border-top:1px solid var(--i-border-color,#f0f0f0);flex-wrap:wrap">
+				<li style="flex:1;min-width:120px;text-align:center;padding:0 12px;border-right:1px solid var(--i-border-color,#f0f0f0)">
+					<h4 class="ipsCoverPhoto__statTitle" style="margin:0;font-size:0.75em;color:#666;text-transform:uppercase;letter-spacing:0.05em;font-weight:600">Overall Rating</h4>
+					<span class="ipsCoverPhoto__statValue" style="display:block;font-size:1.4em;font-weight:800;color:#2563eb;margin-top:4px">{$stats['avg_overall']} <span style="font-size:0.6em;color:#999">/ 5</span></span>
+				</li>
+				<li style="flex:1;min-width:120px;text-align:center;padding:0 12px;border-right:1px solid var(--i-border-color,#f0f0f0)">
+					<h4 class="ipsCoverPhoto__statTitle" style="margin:0;font-size:0.75em;color:#666;text-transform:uppercase;letter-spacing:0.05em;font-weight:600">Reviews</h4>
+					<span class="ipsCoverPhoto__statValue" style="display:block;font-size:1.4em;font-weight:800;margin-top:4px">{expression="number_format($stats['total'])"}</span>
+				</li>
+				<li style="flex:1;min-width:120px;text-align:center;padding:0 12px;border-right:1px solid var(--i-border-color,#f0f0f0)">
+					<h4 class="ipsCoverPhoto__statTitle" style="margin:0;font-size:0.75em;color:#666;text-transform:uppercase;letter-spacing:0.05em;font-weight:600">Member Since</h4>
+					<span class="ipsCoverPhoto__statValue" style="display:block;font-size:1.4em;font-weight:800;margin-top:4px">{{if $dealer['member_since']}}{$dealer['member_since']}{{else}}&mdash;{{endif}}</span>
+				</li>
+				<li style="flex:1;min-width:120px;text-align:center;padding:0 12px">
+					<h4 class="ipsCoverPhoto__statTitle" style="margin:0;font-size:0.75em;color:#666;text-transform:uppercase;letter-spacing:0.05em;font-weight:600">Active Listings</h4>
+					<span class="ipsCoverPhoto__statValue" style="display:block;font-size:1.4em;font-weight:800;color:#16a34a;margin-top:4px">{expression="number_format($dealer['listing_count'])"}</span>
+				</li>
+			</ul>
 		</div>
-
-		<div style="display:flex;gap:0;margin-top:20px;border-top:1px solid var(--i-border-color,#e9ecef);padding-top:16px;flex-wrap:wrap">
-			<div style="flex:1;min-width:120px;text-align:center;padding:0 12px;border-right:1px solid var(--i-border-color,#e9ecef)">
-				<div style="font-size:1.4em;font-weight:800;color:#111">{expression="number_format( $dealer['active_listings'] )"}</div>
-				<div style="font-size:0.75em;color:#666;text-transform:uppercase;letter-spacing:0.05em">Active Listings</div>
-			</div>
-			<div style="flex:1;min-width:120px;text-align:center;padding:0 12px;border-right:1px solid var(--i-border-color,#e9ecef)">
-				<div style="font-size:1.4em;font-weight:800;color:#2563eb">{$stats['avg_overall']}<span style="font-size:0.6em;color:#999"> / 5</span></div>
-				<div style="font-size:0.75em;color:#666;text-transform:uppercase;letter-spacing:0.05em">{$stats['total']} Reviews</div>
-			</div>
-			<div style="flex:1;min-width:120px;text-align:center;padding:0 12px;border-right:1px solid var(--i-border-color,#e9ecef)">
-				<div style="font-size:1.4em;font-weight:800;color:#111">{{if $dealer['member_since']}}{$dealer['member_since']}{{else}}&mdash;{{endif}}</div>
-				<div style="font-size:0.75em;color:#666;text-transform:uppercase;letter-spacing:0.05em">Member Since</div>
-			</div>
-			<div style="flex:1;min-width:120px;text-align:center;padding:0 12px">
-				<div style="font-size:1.4em;font-weight:800;color:{$dealer['tier_color']}">{$dealer['tier_label']}</div>
-				<div style="font-size:0.75em;color:#666;text-transform:uppercase;letter-spacing:0.05em">Subscription Tier</div>
-			</div>
-		</div>
-	</div>
-
-	<ul class="ipsTabs" style="display:flex;gap:0;list-style:none;padding:0;margin:0 0 -1px;border-bottom:1px solid var(--i-border-color,#e0e0e0)">
-		<li><a href="#tab-reviews" class="ipsTabs_item ipsTabs_activeItem" style="display:inline-block;padding:10px 18px;border:1px solid var(--i-border-color,#e0e0e0);border-bottom:1px solid #fff;border-radius:6px 6px 0 0;background:#fff;color:#111;text-decoration:none;font-weight:600;margin-bottom:-1px">Reviews</a></li>
-		<li><a href="#tab-about" class="ipsTabs_item" style="display:inline-block;padding:10px 18px;color:#666;text-decoration:none;font-weight:600">About</a></li>
-	</ul>
-
-	<div class="ipsBox" style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-top:none;border-radius:0 0 8px 8px;padding:24px;margin-bottom:24px">
-		<div style="display:flex;gap:24px;flex-wrap:wrap;font-size:0.85em;color:#666">
-			<div>Pricing Accuracy: <strong>{$stats['avg_pricing']}/5</strong></div>
-			<div>Shipping Speed: <strong>{$stats['avg_shipping']}/5</strong></div>
-			<div>Customer Service: <strong>{$stats['avg_service']}/5</strong></div>
-		</div>
-	</div>
+	</header>
 
 	{{if !$dealer['is_active']}}
-	<div style="background:#f1f5f9;border:1px solid #cbd5e1;border-radius:8px;padding:16px 20px;margin-bottom:24px;color:#334155">
+	<div class="ipsMessage ipsMessage_info i-margin-bottom_block" style="margin-bottom:24px;padding:14px 18px;background:#f1f5f9;border:1px solid #cbd5e1;border-radius:8px;color:#334155">
 		<strong>This dealer's listings are currently inactive.</strong>
 		<p style="margin:4px 0 0;font-size:0.9em">Inventory and pricing are not being updated. Existing reviews and ratings are shown below for reference.</p>
 	</div>
 	{{endif}}
 
 	{{if $customerDispute}}
-	<div style="background:#fff8f0;border:1px solid #f59e0b;border-radius:8px;padding:20px;margin-bottom:24px">
+	<div class="ipsBox i-margin-bottom_block" style="background:#fff8f0;border:1px solid #f59e0b;border-radius:8px;padding:20px;margin-bottom:24px">
 		<h2 style="margin:0 0 8px;font-size:1.05em;font-weight:700;color:#92400e">{$dealer['dealer_name']} has contested your review</h2>
 		<p style="margin:0 0 12px;font-size:0.9em;color:#78350f">
 			The dealer has submitted a contest against the review you left.
@@ -1691,115 +1760,175 @@ TEMPLATE_EOT,
 		<form method="post" action="{$customerDispute['respond_url']}">
 			<input type="hidden" name="csrfKey" value="{$csrfKey}">
 			<label style="display:block;font-size:0.85em;font-weight:600;margin-bottom:4px;color:#78350f">Your response</label>
-			<textarea name="customer_response" rows="4" required style="width:100%;border:1px solid #f59e0b;border-radius:4px;padding:8px;font-size:0.9em;box-sizing:border-box;margin-bottom:8px" placeholder="Explain your side of the story. Admin will review both accounts."></textarea>
+			<textarea name="customer_response" rows="4" required class="ipsInput ipsInput--text" style="width:100%;border:1px solid #f59e0b;border-radius:4px;padding:8px;font-size:0.9em;box-sizing:border-box;margin-bottom:8px" placeholder="Explain your side of the story. Admin will review both accounts."></textarea>
 			<label style="display:block;font-size:0.85em;font-weight:600;margin-bottom:4px;color:#78350f">Supporting evidence (optional)</label>
-			<textarea name="customer_evidence" rows="3" style="width:100%;border:1px solid #f59e0b;border-radius:4px;padding:8px;font-size:0.9em;box-sizing:border-box;margin-bottom:8px" placeholder="Paste order numbers, links, receipts, or other evidence that supports your review..."></textarea>
+			<textarea name="customer_evidence" rows="3" class="ipsInput ipsInput--text" style="width:100%;border:1px solid #f59e0b;border-radius:4px;padding:8px;font-size:0.9em;box-sizing:border-box;margin-bottom:8px" placeholder="Paste order numbers, links, receipts, or other evidence that supports your review..."></textarea>
 			<button type="submit" class="ipsButton ipsButton--primary">Submit My Response</button>
 		</form>
 	</div>
 	{{endif}}
 
-	{{if $canRate}}
-	<div style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:24px;margin-bottom:24px">
-		<h2 style="margin:0 0 16px;font-size:1.1em;font-weight:700">Leave a Review</h2>
-		<form method="post" action="{$rateUrl}">
-			<input type="hidden" name="csrfKey" value="{$csrfKey}">
-			<div style="display:flex;gap:24px;margin-bottom:16px;flex-wrap:wrap">
-				<div>
-					<label style="display:block;font-size:0.85em;font-weight:600;margin-bottom:4px">Pricing Accuracy</label>
-					<select name="rating_pricing" class="ipsInput ipsInput--select" required>
-						<option value="">Select</option>
-						<option value="5">5 &mdash; Excellent</option>
-						<option value="4">4 &mdash; Good</option>
-						<option value="3">3 &mdash; Average</option>
-						<option value="2">2 &mdash; Poor</option>
-						<option value="1">1 &mdash; Terrible</option>
-					</select>
-				</div>
-				<div>
-					<label style="display:block;font-size:0.85em;font-weight:600;margin-bottom:4px">Shipping Speed</label>
-					<select name="rating_shipping" class="ipsInput ipsInput--select" required>
-						<option value="">Select</option>
-						<option value="5">5 &mdash; Excellent</option>
-						<option value="4">4 &mdash; Good</option>
-						<option value="3">3 &mdash; Average</option>
-						<option value="2">2 &mdash; Poor</option>
-						<option value="1">1 &mdash; Terrible</option>
-					</select>
-				</div>
-				<div>
-					<label style="display:block;font-size:0.85em;font-weight:600;margin-bottom:4px">Customer Service</label>
-					<select name="rating_service" class="ipsInput ipsInput--select" required>
-						<option value="">Select</option>
-						<option value="5">5 &mdash; Excellent</option>
-						<option value="4">4 &mdash; Good</option>
-						<option value="3">3 &mdash; Average</option>
-						<option value="2">2 &mdash; Poor</option>
-						<option value="1">1 &mdash; Terrible</option>
-					</select>
+	<div class="ipsProfile ipsProfile--profile" style="display:flex;gap:24px;flex-wrap:wrap">
+		<aside class="ipsProfile__aside" style="flex:0 0 280px;min-width:240px">
+			<div class="ipsProfile__sticky-outer">
+				<div class="ipsProfile__sticky-inner">
+					<div class="ipsWidget" style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;margin-bottom:16px">
+						<h3 class="ipsWidget__title" style="margin:0;padding:12px 16px;border-bottom:1px solid var(--i-border-color,#f0f0f0);font-size:0.9em;font-weight:700">Rating Breakdown</h3>
+						<div class="ipsWidget__content i-padding_2" style="padding:16px">
+							<div style="margin-bottom:14px">
+								<div style="display:flex;justify-content:space-between;margin-bottom:4px">
+									<span style="font-size:0.85em">Pricing Accuracy</span>
+									<strong>{$stats['avg_pricing']}/5</strong>
+								</div>
+								<div style="background:var(--i-border-color,#e0e0e0);border-radius:4px;height:6px">
+									<div style="background:#2563eb;border-radius:4px;height:6px;width:{$stats['pct_pricing']}%"></div>
+								</div>
+							</div>
+							<div style="margin-bottom:14px">
+								<div style="display:flex;justify-content:space-between;margin-bottom:4px">
+									<span style="font-size:0.85em">Shipping Speed</span>
+									<strong>{$stats['avg_shipping']}/5</strong>
+								</div>
+								<div style="background:var(--i-border-color,#e0e0e0);border-radius:4px;height:6px">
+									<div style="background:#2563eb;border-radius:4px;height:6px;width:{$stats['pct_shipping']}%"></div>
+								</div>
+							</div>
+							<div>
+								<div style="display:flex;justify-content:space-between;margin-bottom:4px">
+									<span style="font-size:0.85em">Customer Service</span>
+									<strong>{$stats['avg_service']}/5</strong>
+								</div>
+								<div style="background:var(--i-border-color,#e0e0e0);border-radius:4px;height:6px">
+									<div style="background:#2563eb;border-radius:4px;height:6px;width:{$stats['pct_service']}%"></div>
+								</div>
+							</div>
+						</div>
+					</div>
 				</div>
 			</div>
-			<textarea name="review_body" rows="4" style="width:100%;border:1px solid var(--i-border-color,#ccc);border-radius:4px;padding:8px;font-size:0.9em;box-sizing:border-box;margin-bottom:12px" placeholder="Share your experience with this dealer (optional)..."></textarea>
-			<button type="submit" class="ipsButton ipsButton--primary">Submit Review</button>
-			<p style="margin:12px 0 0;font-size:0.8em;color:#666">By leaving a review you agree to our <a href="{$guidelinesUrl}" style="color:#2563eb">Review Guidelines</a>.</p>
-		</form>
-	</div>
-	{{elseif $alreadyRated}}
-	<div style="background:#f0f7ff;border:1px solid #bfdbfe;border-radius:8px;padding:16px;margin-bottom:24px;font-size:0.9em;color:#1e40af">
-		You have already reviewed this dealer. Thank you for your feedback!
-	</div>
-	{{elseif $loginRequired}}
-	<div style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:20px;margin-bottom:24px;text-align:center">
-		<p style="margin:0 0 12px;color:#666">Sign in to leave a review for this dealer.</p>
-		<a href="{$loginUrl}" class="ipsButton ipsButton--primary ipsButton--small">Sign In</a>
-	</div>
-	{{endif}}
+		</aside>
 
-	<h2 style="font-size:1.1em;font-weight:700;margin:0 0 16px">Customer Reviews</h2>
-	{{if count($reviews) === 0}}
-		<div class="ipsEmptyMessage"><p>No reviews yet. Be the first to review this dealer.</p></div>
-	{{else}}
-		{{foreach $reviews as $r}}
-		<div style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:20px;margin-bottom:12px">
-			<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;margin-bottom:8px">
-				<div style="display:flex;gap:16px;flex-wrap:wrap">
-					<span style="font-size:0.8em;color:#666">Pricing: <strong>{$r['rating_pricing']}/5</strong></span>
-					<span style="font-size:0.8em;color:#666">Shipping: <strong>{$r['rating_shipping']}/5</strong></span>
-					<span style="font-size:0.8em;color:#666">Service: <strong>{$r['rating_service']}/5</strong></span>
+		<div class="ipsProfile__main" style="flex:1;min-width:300px">
+			{{if $canRate}}
+			<div class="ipsBox i-margin-bottom_block" style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;margin-bottom:24px">
+				<h3 class="ipsBox__header" style="margin:0;padding:14px 18px;border-bottom:1px solid var(--i-border-color,#f0f0f0);font-size:1em;font-weight:700">Leave a Review</h3>
+				<div class="i-padding_2" style="padding:18px">
+					<form method="post" action="{$rateUrl}">
+						<input type="hidden" name="csrfKey" value="{$csrfKey}">
+						<div style="display:flex;gap:20px;margin-bottom:16px;flex-wrap:wrap">
+							<div style="flex:1 1 140px">
+								<label style="display:block;font-size:0.85em;font-weight:600;margin-bottom:6px">Pricing Accuracy</label>
+								<select name="rating_pricing" class="ipsInput ipsInput--select" required>
+									<option value="">Rate...</option>
+									<option value="5">★★★★★ Excellent</option>
+									<option value="4">★★★★☆ Good</option>
+									<option value="3">★★★☆☆ Average</option>
+									<option value="2">★★☆☆☆ Poor</option>
+									<option value="1">★☆☆☆☆ Terrible</option>
+								</select>
+							</div>
+							<div style="flex:1 1 140px">
+								<label style="display:block;font-size:0.85em;font-weight:600;margin-bottom:6px">Shipping Speed</label>
+								<select name="rating_shipping" class="ipsInput ipsInput--select" required>
+									<option value="">Rate...</option>
+									<option value="5">★★★★★ Excellent</option>
+									<option value="4">★★★★☆ Good</option>
+									<option value="3">★★★☆☆ Average</option>
+									<option value="2">★★☆☆☆ Poor</option>
+									<option value="1">★☆☆☆☆ Terrible</option>
+								</select>
+							</div>
+							<div style="flex:1 1 140px">
+								<label style="display:block;font-size:0.85em;font-weight:600;margin-bottom:6px">Customer Service</label>
+								<select name="rating_service" class="ipsInput ipsInput--select" required>
+									<option value="">Rate...</option>
+									<option value="5">★★★★★ Excellent</option>
+									<option value="4">★★★★☆ Good</option>
+									<option value="3">★★★☆☆ Average</option>
+									<option value="2">★★☆☆☆ Poor</option>
+									<option value="1">★☆☆☆☆ Terrible</option>
+								</select>
+							</div>
+						</div>
+						<textarea name="review_body" rows="4" class="ipsInput ipsInput--text" style="width:100%;box-sizing:border-box;margin-bottom:12px;border:1px solid var(--i-border-color,#ccc);border-radius:4px;padding:8px;font-size:0.9em" placeholder="Share your experience (optional but helpful)..."></textarea>
+						<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+							<span style="font-size:0.8em;color:#666">By submitting you agree to our <a href="{$guidelinesUrl}" style="color:#2563eb">review guidelines</a>.</span>
+							<button type="submit" class="ipsButton ipsButton--primary">Submit Review</button>
+						</div>
+					</form>
 				</div>
-				<span style="font-size:0.8em;color:#999">{$r['created_at']}</span>
 			</div>
-			{{if $r['review_body']}}
-			<p style="margin:0 0 8px;color:#333">{$r['review_body']}</p>
-			{{endif}}
-			{{if $r['dispute_status'] === 'pending_customer'}}
-			<div style="background:#fff8f0;border-left:3px solid #f59e0b;padding:8px 12px;font-size:0.85em;color:#92400e;margin-top:8px">
-				&#9888; Dealer has contested this review &mdash; awaiting customer response.
+			{{elseif $alreadyRated}}
+			<div class="ipsMessage ipsMessage_info i-margin-bottom_block" style="margin-bottom:24px;padding:14px 18px;background:#f0f7ff;border:1px solid #bfdbfe;border-radius:8px;color:#1e40af">
+				<i class="fa-solid fa-circle-check" aria-hidden="true"></i>
+				You have already reviewed this dealer. Thank you for your feedback!
 			</div>
-			{{endif}}
-			{{if $r['dispute_status'] === 'pending_admin'}}
-			<div style="background:#eff6ff;border-left:3px solid #2563eb;padding:8px 12px;font-size:0.85em;color:#1e3a8a;margin-top:8px">
-				This review is under admin review.
-			</div>
-			{{endif}}
-			{{if $r['dispute_status'] === 'dismissed'}}
-			<div style="background:#f1f5f9;border-left:3px solid #64748b;padding:8px 12px;font-size:0.85em;color:#334155;margin-top:8px">
-				Dealer's contest of this review was dismissed by admin.
+			{{elseif $loginRequired}}
+			<div class="ipsBox i-margin-bottom_block" style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;margin-bottom:24px">
+				<div class="i-padding_2" style="padding:24px;text-align:center">
+					<p style="margin:0 0 12px;color:#666">Sign in to leave a review for this dealer.</p>
+					<a href="{$loginUrl}" class="ipsButton ipsButton--primary">Sign In to Review</a>
+				</div>
 			</div>
 			{{endif}}
-			{{if $r['dealer_response']}}
-			<div style="background:#f0f7ff;border-left:3px solid #2563eb;padding:12px 16px;border-radius:0 6px 6px 0;margin-top:8px">
-				<div style="font-size:0.8em;color:#2563eb;font-weight:700;margin-bottom:4px">Dealer Response</div>
-				<p style="margin:0;font-size:0.9em">{$r['dealer_response']}</p>
+
+			<div class="ipsBox" style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px">
+				<h3 class="ipsBox__header" style="margin:0;padding:14px 18px;border-bottom:1px solid var(--i-border-color,#f0f0f0);font-size:1em;font-weight:700">Customer Reviews <span style="font-size:0.75em;font-weight:400;color:#666">({expression="number_format($stats['total'])"})</span></h3>
+				{{if count($reviews) === 0}}
+				<div class="i-padding_2" style="padding:32px;text-align:center;color:#999">
+					<i class="fa-regular fa-star" style="font-size:2em;display:block;margin-bottom:8px;opacity:0.4" aria-hidden="true"></i>
+					No reviews yet. Be the first to review this dealer.
+				</div>
+				{{else}}
+					{{foreach $reviews as $r}}
+					<div style="padding:18px;border-bottom:1px solid var(--i-border-color,#f0f0f0)">
+						<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:10px">
+							<div style="display:flex;gap:16px;flex-wrap:wrap">
+								<span style="font-size:0.82em;color:#555">
+									<span style="color:#f59e0b">{$r['pricing_stars']}</span> Pricing
+								</span>
+								<span style="font-size:0.82em;color:#555">
+									<span style="color:#f59e0b">{$r['shipping_stars']}</span> Shipping
+								</span>
+								<span style="font-size:0.82em;color:#555">
+									<span style="color:#f59e0b">{$r['service_stars']}</span> Service
+								</span>
+							</div>
+							<span style="font-size:0.8em;color:#999">{$r['created_at']}</span>
+						</div>
+						{{if $r['review_body']}}
+						<p style="margin:0 0 10px;line-height:1.6">{$r['review_body']}</p>
+						{{endif}}
+						{{if $r['is_under_review']}}
+						<div class="ipsMessage ipsMessage_warning" style="font-size:0.85em;margin-top:8px;padding:8px 12px;background:#fff8f0;border-left:3px solid #f59e0b;color:#92400e;border-radius:0 4px 4px 0">
+							<i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
+							This review is currently under admin review.
+						</div>
+						{{endif}}
+						{{if $r['dispute_status'] === 'dismissed'}}
+						<div style="font-size:0.85em;margin-top:8px;padding:8px 12px;background:#f1f5f9;border-left:3px solid #64748b;color:#334155;border-radius:0 4px 4px 0">
+							Dealer's contest of this review was dismissed by admin.
+						</div>
+						{{endif}}
+						{{if $r['dealer_response']}}
+						<div style="background:var(--i-background,#f8f9fa);border-left:3px solid #2563eb;padding:12px 16px;border-radius:0 6px 6px 0;margin-top:10px">
+							<div style="font-size:0.78em;color:#2563eb;font-weight:700;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.05em">
+								<i class="fa-solid fa-reply" aria-hidden="true"></i> Dealer Response
+							</div>
+							<p style="margin:0;font-size:0.9em;line-height:1.5">{$r['dealer_response']}</p>
+						</div>
+						{{endif}}
+					</div>
+					{{endforeach}}
+				{{endif}}
 			</div>
-			{{endif}}
 		</div>
-		{{endforeach}}
-	{{endif}}
+	</div>
 
 </div>
 TEMPLATE_EOT,
 	],
+
 
 	/* ===== FRONT: reviewGuidelines ===== */
 	[
@@ -1823,28 +1952,28 @@ TEMPLATE_EOT,
 		<a href="#dealers" class="ipsButton ipsButton--normal ipsButton--small">For Dealers</a>
 	</div>
 
-	<div id="buyers" style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:28px;margin-bottom:20px">
-		<h2 style="margin:0 0 16px;font-size:1.2em;font-weight:700;display:flex;align-items:center;gap:8px">
+	<div id="buyers" class="ipsBox i-margin-bottom_block" style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;margin-bottom:20px">
+		<h3 class="ipsBox__header" style="margin:0;padding:16px 24px;border-bottom:1px solid var(--i-border-color,#f0f0f0);font-size:1.1em;font-weight:700;display:flex;align-items:center;gap:10px">
 			<span style="background:#eff6ff;color:#2563eb;width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:0.9em">&#9733;</span>
 			{$content['buyer_title']}
-		</h2>
-		<div style="color:#444;line-height:1.7;white-space:pre-line">{$content['buyer_body']}</div>
+		</h3>
+		<div class="i-padding_2" style="padding:24px;color:#444;line-height:1.7;white-space:pre-line">{$content['buyer_body']}</div>
 	</div>
 
-	<div id="disputes" style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:28px;margin-bottom:20px">
-		<h2 style="margin:0 0 16px;font-size:1.2em;font-weight:700;display:flex;align-items:center;gap:8px">
+	<div id="disputes" class="ipsBox i-margin-bottom_block" style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;margin-bottom:20px">
+		<h3 class="ipsBox__header" style="margin:0;padding:16px 24px;border-bottom:1px solid var(--i-border-color,#f0f0f0);font-size:1.1em;font-weight:700;display:flex;align-items:center;gap:10px">
 			<span style="background:#fff8f0;color:#f59e0b;width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:0.9em">&#9878;</span>
 			{$content['dispute_title']}
-		</h2>
-		<div style="color:#444;line-height:1.7;white-space:pre-line">{$content['dispute_body']}</div>
+		</h3>
+		<div class="i-padding_2" style="padding:24px;color:#444;line-height:1.7;white-space:pre-line">{$content['dispute_body']}</div>
 	</div>
 
-	<div id="dealers" style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:28px;margin-bottom:32px">
-		<h2 style="margin:0 0 16px;font-size:1.2em;font-weight:700;display:flex;align-items:center;gap:8px">
+	<div id="dealers" class="ipsBox i-margin-bottom_block" style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;margin-bottom:32px">
+		<h3 class="ipsBox__header" style="margin:0;padding:16px 24px;border-bottom:1px solid var(--i-border-color,#f0f0f0);font-size:1.1em;font-weight:700;display:flex;align-items:center;gap:10px">
 			<span style="background:#f0fdf4;color:#16a34a;width:32px;height:32px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:0.9em">&#127978;</span>
 			{$content['dealer_title']}
-		</h2>
-		<div style="color:#444;line-height:1.7;white-space:pre-line">{$content['dealer_body']}</div>
+		</h3>
+		<div class="i-padding_2" style="padding:24px;color:#444;line-height:1.7;white-space:pre-line">{$content['dealer_body']}</div>
 	</div>
 
 	<div style="text-align:center;padding:16px;color:#999;font-size:0.85em">

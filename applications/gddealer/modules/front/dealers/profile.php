@@ -215,6 +215,20 @@ class _profile extends \IPS\Dispatcher\Controller
 			? 'background-image:url(' . $coverPhoto . ');background-size:cover;background-position:center'
 			: 'background:linear-gradient(135deg,#1e3a8a 0%,#2563eb 100%)';
 
+		$contactEmail = '';
+		try
+		{
+			if ( isset( $ipsMember ) && $ipsMember->member_id )
+			{
+				$contactEmail = (string) $ipsMember->email;
+			}
+		}
+		catch ( \Exception ) {}
+		if ( $contactEmail === '' )
+		{
+			$contactEmail = (string) ( \IPS\Settings::i()->gddealer_help_contact ?: 'dealers@gunrack.deals' );
+		}
+
 		$dealer = [
 			'dealer_id'       => $dealerId,
 			'dealer_name'     => (string) $dealerRow['dealer_name'],
@@ -228,7 +242,22 @@ class _profile extends \IPS\Dispatcher\Controller
 			'tier_label'      => $tierLabel,
 			'tier_color'      => $tierColor,
 			'active_listings' => $activeListings,
+			'listing_count'   => $activeListings,
+			'contact_email'   => $contactEmail,
 		];
+
+		$stats['pct_pricing']  = $stats['avg_pricing']  > 0 ? (int) round( ( $stats['avg_pricing']  / 5 ) * 100 ) : 0;
+		$stats['pct_shipping'] = $stats['avg_shipping'] > 0 ? (int) round( ( $stats['avg_shipping'] / 5 ) * 100 ) : 0;
+		$stats['pct_service']  = $stats['avg_service']  > 0 ? (int) round( ( $stats['avg_service']  / 5 ) * 100 ) : 0;
+
+		foreach ( $reviews as &$rRef )
+		{
+			$rRef['pricing_stars']  = str_repeat( '★', max( 0, min( 5, (int) $rRef['rating_pricing'] ) ) );
+			$rRef['shipping_stars'] = str_repeat( '★', max( 0, min( 5, (int) $rRef['rating_shipping'] ) ) );
+			$rRef['service_stars']  = str_repeat( '★', max( 0, min( 5, (int) $rRef['rating_service'] ) ) );
+			$rRef['is_under_review'] = in_array( $rRef['dispute_status'], [ 'pending_customer', 'pending_admin' ], true );
+		}
+		unset( $rRef );
 
 		$csrfKey = (string) \IPS\Session::i()->csrfKey;
 
