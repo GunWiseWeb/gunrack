@@ -266,5 +266,20 @@
     <word key="gddealer_front_disputes_suspended"><![CDATA[Your dispute privileges have been suspended by an administrator. You cannot contest reviews until the suspension is lifted.]]></word>
     <word key="gddealer_disputes_suspended_on"><![CDATA[Dispute privileges suspended for this dealer.]]></word>
     <word key="gddealer_disputes_suspended_off"><![CDATA[Dispute privileges restored for this dealer.]]></word>
+    <word key="gddealer_settings_theme"><![CDATA[Theme & Colors]]></word>
+    <word key="gddealer_settings_tier_colors"><![CDATA[Tier Badge Colors]]></word>
+    <word key="gddealer_color_primary"><![CDATA[Primary Color]]></word>
+    <word key="gddealer_color_active_tab_bg"><![CDATA[Active Tab Background]]></word>
+    <word key="gddealer_color_active_tab_text"><![CDATA[Active Tab Text Color]]></word>
+    <word key="gddealer_color_inactive_tab_text"><![CDATA[Inactive Tab Text Color]]></word>
+    <word key="gddealer_color_accent"><![CDATA[Accent Color (success/positive)]]></word>
+    <word key="gddealer_color_warning"><![CDATA[Warning Color]]></word>
+    <word key="gddealer_color_danger"><![CDATA[Danger Color]]></word>
+    <word key="gddealer_color_header_bg"><![CDATA[Cover Photo Fallback Color]]></word>
+    <word key="gddealer_color_card_bg"><![CDATA[Stat Card Background]]></word>
+    <word key="gddealer_founding_badge_color"><![CDATA[Founding Tier Badge Color]]></word>
+    <word key="gddealer_basic_badge_color"><![CDATA[Basic Tier Badge Color]]></word>
+    <word key="gddealer_pro_badge_color"><![CDATA[Pro Tier Badge Color]]></word>
+    <word key="gddealer_enterprise_badge_color"><![CDATA[Enterprise Tier Badge Color]]></word>
   </app>
 </language>

@@ -592,7 +592,7 @@ TEMPLATE_EOT,
   .gdShellTabs [role="tablist"] a { flex:1 1 100%; }
 }
 </style>
-<div style="width:100%;box-sizing:border-box">
+<div class="gdDealerWrapper" style="width:100%;box-sizing:border-box">
 
 	<header class="ipsPageHeader ipsBox ipsBox--profileHeader ipsPull i-margin-bottom_block" style="width:100%;box-sizing:border-box;border-radius:8px;overflow:hidden;margin-bottom:16px">
 		<div class="ipsCoverPhoto ipsCoverPhoto--profile" style="position:relative;overflow:hidden;min-height:160px">
@@ -600,7 +600,7 @@ TEMPLATE_EOT,
 				{{if $dealer['cover_photo_url']}}
 					<img src="{$dealer['cover_photo_url']}" class="ipsCoverPhoto__image" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover">
 				{{else}}
-					<div class="ipsFallbackImage" style="background:linear-gradient(135deg,#1e3a5f 0%,#2563eb 100%);width:100%;height:160px"></div>
+					<div class="ipsFallbackImage gdDealerCoverFallback" style="background:linear-gradient(135deg,#1e3a5f 0%,#2563eb 100%);width:100%;height:160px"></div>
 				{{endif}}
 			</div>
 		</div>
@@ -646,7 +646,7 @@ TEMPLATE_EOT,
 	{{endif}}
 
 	<div class="ipsPwaStickyFix ipsPwaStickyFix--ipsTabs"></div>
-	<i-tabs class="ipsTabs ipsTabs--sticky ipsTabs--profile ipsTabs--stretch gdShellTabs">
+	<i-tabs class="ipsTabs ipsTabs--sticky ipsTabs--profile ipsTabs--stretch gdShellTabs gdDealerTabs">
 		<div role="tablist" style="display:flex;gap:0;border-bottom:1px solid var(--i-border-color,#e0e0e0);overflow-x:auto;background:#fff;border-radius:8px 8px 0 0">
 			<a href="{$tabUrls['overview']}" class="ipsTabs__tab {expression="$activeTab === 'overview' ? 'ipsTabs__activeTab' : ''"}" role="tab" aria-selected="{expression="$activeTab === 'overview' ? 'true' : 'false'"}" style="padding:12px 20px;text-decoration:none;font-weight:600;color:{expression="$activeTab === 'overview' ? '#2563eb' : '#475569'"};border-bottom:2px solid {expression="$activeTab === 'overview' ? '#2563eb' : 'transparent'"};white-space:nowrap">{lang="gddealer_front_tab_overview"}</a>
 			<a href="{$tabUrls['feedSettings']}" class="ipsTabs__tab {expression="$activeTab === 'feedSettings' ? 'ipsTabs__activeTab' : ''"}" role="tab" aria-selected="{expression="$activeTab === 'feedSettings' ? 'true' : 'false'"}" style="padding:12px 20px;text-decoration:none;font-weight:600;color:{expression="$activeTab === 'feedSettings' ? '#2563eb' : '#475569'"};border-bottom:2px solid {expression="$activeTab === 'feedSettings' ? '#2563eb' : 'transparent'"};white-space:nowrap">{lang="gddealer_front_tab_feed"}</a>
@@ -724,7 +724,7 @@ TEMPLATE_EOT,
 	<div class="ipsProfile__main" style="flex:1;min-width:300px">
 		<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:24px">
 			{{if $prefs['show_active']}}
-			<div class="ipsWidget" style="background:{$prefs['card_bg']};color:{$prefs['card_color']};border:1px solid {$prefs['card_border']};border-radius:8px">
+			<div class="ipsWidget gdStatCard" style="background:{$prefs['card_bg']};color:{$prefs['card_color']};border:1px solid {$prefs['card_border']};border-radius:8px">
 				<div class="ipsWidget__content i-padding_2" style="padding:16px;text-align:center">
 					<div style="font-size:2em;font-weight:800;color:{$prefs['num_success']}">{expression="number_format($overview['active_listings'])"}</div>
 					<div style="font-size:0.82em;color:{$prefs['card_label']};margin-top:4px">{lang="gddealer_front_active_listings"}</div>
@@ -732,7 +732,7 @@ TEMPLATE_EOT,
 			</div>
 			{{endif}}
 			{{if $prefs['show_outofstock']}}
-			<div class="ipsWidget" style="background:{$prefs['card_bg']};color:{$prefs['card_color']};border:1px solid {$prefs['card_border']};border-radius:8px">
+			<div class="ipsWidget gdStatCard" style="background:{$prefs['card_bg']};color:{$prefs['card_color']};border:1px solid {$prefs['card_border']};border-radius:8px">
 				<div class="ipsWidget__content i-padding_2" style="padding:16px;text-align:center">
 					<div style="font-size:2em;font-weight:800;color:{$prefs['num_danger']}">{expression="number_format($overview['out_of_stock'])"}</div>
 					<div style="font-size:0.82em;color:{$prefs['card_label']};margin-top:4px">{lang="gddealer_front_out_of_stock"}</div>
@@ -740,7 +740,7 @@ TEMPLATE_EOT,
 			</div>
 			{{endif}}
 			{{if $prefs['show_unmatched']}}
-			<div class="ipsWidget" style="background:{$prefs['card_bg']};color:{$prefs['card_color']};border:1px solid {$prefs['card_border']};border-radius:8px">
+			<div class="ipsWidget gdStatCard" style="background:{$prefs['card_bg']};color:{$prefs['card_color']};border:1px solid {$prefs['card_border']};border-radius:8px">
 				<div class="ipsWidget__content i-padding_2" style="padding:16px;text-align:center">
 					<div style="font-size:2em;font-weight:800;color:{$prefs['num_warning']}">{expression="number_format($overview['unmatched'])"}</div>
 					<div style="font-size:0.82em;color:{$prefs['card_label']};margin-top:4px">{lang="gddealer_front_unmatched_count"}</div>
@@ -748,7 +748,7 @@ TEMPLATE_EOT,
 			</div>
 			{{endif}}
 			{{if $prefs['show_clicks_7d']}}
-			<div class="ipsWidget" style="background:{$prefs['card_bg']};color:{$prefs['card_color']};border:1px solid {$prefs['card_border']};border-radius:8px">
+			<div class="ipsWidget gdStatCard" style="background:{$prefs['card_bg']};color:{$prefs['card_color']};border:1px solid {$prefs['card_border']};border-radius:8px">
 				<div class="ipsWidget__content i-padding_2" style="padding:16px;text-align:center">
 					<div style="font-size:2em;font-weight:800;color:{$prefs['num_default']}">{expression="number_format($overview['clicks_7d'])"}</div>
 					<div style="font-size:0.82em;color:{$prefs['card_label']};margin-top:4px">{lang="gddealer_front_clicks_7d"}</div>
@@ -756,7 +756,7 @@ TEMPLATE_EOT,
 			</div>
 			{{endif}}
 			{{if $prefs['show_clicks_30d']}}
-			<div class="ipsWidget" style="background:{$prefs['card_bg']};color:{$prefs['card_color']};border:1px solid {$prefs['card_border']};border-radius:8px">
+			<div class="ipsWidget gdStatCard" style="background:{$prefs['card_bg']};color:{$prefs['card_color']};border:1px solid {$prefs['card_border']};border-radius:8px">
 				<div class="ipsWidget__content i-padding_2" style="padding:16px;text-align:center">
 					<div style="font-size:2em;font-weight:800;color:{$prefs['num_default']}">{expression="number_format($overview['clicks_30d'])"}</div>
 					<div style="font-size:0.82em;color:{$prefs['card_label']};margin-top:4px">{lang="gddealer_front_clicks_30d"}</div>
@@ -1780,7 +1780,7 @@ TEMPLATE_EOT,
 }
 </style>
 
-<div style="width:100%;max-width:1446px;margin:0 auto;padding:0 24px;box-sizing:border-box">
+<div class="gdDealerWrapper" style="width:100%;max-width:1446px;margin:0 auto;padding:0 24px;box-sizing:border-box">
 
 	<header class="ipsPageHeader ipsBox ipsBox--profileHeader ipsPull i-margin-bottom_block" style="width:100%;box-sizing:border-box;border-radius:8px;overflow:hidden;margin-bottom:16px">
 		<div class="ipsCoverPhoto ipsCoverPhoto--profile" style="position:relative;overflow:hidden;min-height:180px">
@@ -1788,7 +1788,7 @@ TEMPLATE_EOT,
 				{{if $dealer['cover_photo_url']}}
 					<img src="{$dealer['cover_photo_url']}" class="ipsCoverPhoto__image" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover">
 				{{else}}
-					<div class="ipsFallbackImage" style="background:linear-gradient(135deg,#1e3a8a 0%,#2563eb 100%);width:100%;height:180px"></div>
+					<div class="ipsFallbackImage gdDealerCoverFallback" style="background:linear-gradient(135deg,#1e3a8a 0%,#2563eb 100%);width:100%;height:180px"></div>
 				{{endif}}
 			</div>
 		</div>

@@ -102,5 +102,21 @@
 	{
 		"key": "gddealer_guidelines_dealer_body",
 		"default": "As a dealer on GunRack.deals you agree to the following review policy:\n\n- You may not offer incentives in exchange for positive reviews\n- You may not ask customers to remove or change legitimate negative reviews\n- You may respond publicly to any review — keep responses professional and factual\n- You may dispute reviews you believe are fraudulent or factually inaccurate\n\nDispute limits:\n- Basic dealers: 2 disputes per month\n- Pro dealers: 5 disputes per month\n- Enterprise dealers: unlimited\n\nAbuse of the dispute system — filing disputes on legitimate reviews — may result in dispute privileges being suspended by an administrator. When suspended, you will not be able to file new contests until the suspension is lifted. A suspension notice will appear on your Reviews tab. Contact dealers@gunrack.deals if you believe a suspension was applied in error.\n\nDisputes must include a specific reason and supporting evidence. Vague disputes without evidence will be dismissed by admin."
-	}
+	},
+	{ "key": "gddealer_color_primary", "default": "#2563eb" },
+	{ "key": "gddealer_color_primary_text", "default": "#ffffff" },
+	{ "key": "gddealer_color_active_tab_bg", "default": "#1e3a5f" },
+	{ "key": "gddealer_color_active_tab_text", "default": "#ffffff" },
+	{ "key": "gddealer_color_inactive_tab_text", "default": "#374151" },
+	{ "key": "gddealer_color_accent", "default": "#16a34a" },
+	{ "key": "gddealer_color_warning", "default": "#d97706" },
+	{ "key": "gddealer_color_danger", "default": "#dc2626" },
+	{ "key": "gddealer_color_header_bg", "default": "#1e3a5f" },
+	{ "key": "gddealer_color_card_bg", "default": "#ffffff" },
+	{ "key": "gddealer_color_card_border", "default": "#e0e0e0" },
+	{ "key": "gddealer_color_page_bg", "default": "" },
+	{ "key": "gddealer_founding_badge_color", "default": "#b45309" },
+	{ "key": "gddealer_basic_badge_color", "default": "#6b7280" },
+	{ "key": "gddealer_pro_badge_color", "default": "#2563eb" },
+	{ "key": "gddealer_enterprise_badge_color", "default": "#7c3aed" }
 ]

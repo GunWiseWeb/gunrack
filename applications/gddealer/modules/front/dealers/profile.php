@@ -40,6 +40,51 @@ class _profile extends \IPS\Dispatcher\Controller
 		};
 	}
 
+	/**
+	 * Admin-configurable theme variables. Mirrors the dashboard
+	 * controller's themeVars() so the public dealer profile picks up
+	 * the same site-wide palette.
+	 */
+	protected function themeVars(): string
+	{
+		$s = \IPS\Settings::i();
+		return '<style>
+:root {
+	--gd-primary:            ' . ( $s->gddealer_color_primary ?: '#2563eb' ) . ';
+	--gd-primary-text:       ' . ( $s->gddealer_color_primary_text ?: '#ffffff' ) . ';
+	--gd-tab-active-bg:      ' . ( $s->gddealer_color_active_tab_bg ?: '#1e3a5f' ) . ';
+	--gd-tab-active-text:    ' . ( $s->gddealer_color_active_tab_text ?: '#ffffff' ) . ';
+	--gd-tab-inactive-text:  ' . ( $s->gddealer_color_inactive_tab_text ?: '#374151' ) . ';
+	--gd-accent:             ' . ( $s->gddealer_color_accent ?: '#16a34a' ) . ';
+	--gd-warning:            ' . ( $s->gddealer_color_warning ?: '#d97706' ) . ';
+	--gd-danger:             ' . ( $s->gddealer_color_danger ?: '#dc2626' ) . ';
+	--gd-header-bg:          ' . ( $s->gddealer_color_header_bg ?: '#1e3a5f' ) . ';
+	--gd-card-bg:            ' . ( $s->gddealer_color_card_bg ?: '#ffffff' ) . ';
+	--gd-card-border:        ' . ( $s->gddealer_color_card_border ?: '#e0e0e0' ) . ';
+}
+.gdDealerTabs .ipsTabs__tab[aria-selected="true"] {
+	background: var(--gd-tab-active-bg) !important;
+	color: var(--gd-tab-active-text) !important;
+	border-color: var(--gd-tab-active-bg) !important;
+}
+.gdDealerTabs .ipsTabs__tab[aria-selected="false"] {
+	color: var(--gd-tab-inactive-text) !important;
+}
+.gdDealerWrapper .ipsButton--primary {
+	background: var(--gd-primary) !important;
+	color: var(--gd-primary-text) !important;
+	border-color: var(--gd-primary) !important;
+}
+.gdStatCard {
+	background: var(--gd-card-bg) !important;
+	border-color: var(--gd-card-border) !important;
+}
+.gdDealerCoverFallback {
+	background: var(--gd-header-bg) !important;
+}
+</style>';
+	}
+
 	/** Map a 1–5 rating to a human-readable label on the shared scale. */
 	private static function ratingLabel( float $r ): string
 	{
@@ -281,10 +326,10 @@ class _profile extends \IPS\Dispatcher\Controller
 		$tier      = (string) ( $dealerRow['subscription_tier'] ?? 'basic' );
 		$tierLabel = ucfirst( $tier );
 		$tierColor = match( $tier ) {
-			'founding'   => '#b45309',
-			'pro'        => '#2563eb',
-			'enterprise' => '#7c3aed',
-			default      => '#6b7280',
+			'founding'   => (string) ( \IPS\Settings::i()->gddealer_founding_badge_color   ?: '#b45309' ),
+			'pro'        => (string) ( \IPS\Settings::i()->gddealer_pro_badge_color        ?: '#2563eb' ),
+			'enterprise' => (string) ( \IPS\Settings::i()->gddealer_enterprise_badge_color ?: '#7c3aed' ),
+			default      => (string) ( \IPS\Settings::i()->gddealer_basic_badge_color      ?: '#6b7280' ),
 		};
 
 		$contactEmail = '';
@@ -334,7 +379,7 @@ class _profile extends \IPS\Dispatcher\Controller
 		$csrfKey = (string) \IPS\Session::i()->csrfKey;
 
 		\IPS\Output::i()->title  = $dealer['dealer_name'];
-		\IPS\Output::i()->output = \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )
+		\IPS\Output::i()->output = $this->themeVars() . \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )
 			->dealerProfile( $dealer, $stats, $reviews, $canRate, $alreadyRated, $loginRequired, $rateUrl, $csrfKey, $loginUrl, $customerDispute, $guidelinesUrl );
 	}
 
@@ -358,7 +403,7 @@ class _profile extends \IPS\Dispatcher\Controller
 		$contactEmail = (string) ( $settings->gddealer_help_contact ?: 'dealers@gunrack.deals' );
 
 		\IPS\Output::i()->title  = 'Review & Dispute Guidelines';
-		\IPS\Output::i()->output = \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )
+		\IPS\Output::i()->output = $this->themeVars() . \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )
 			->reviewGuidelines( $content, $contactEmail );
 	}
 

@@ -117,6 +117,62 @@ class _settings extends \IPS\Dispatcher\Controller
 		$form->add( new \IPS\Helpers\Form\TextArea( 'gddealer_guidelines_dealer_body',
 			(string) ( $settings->gddealer_guidelines_dealer_body ?? '' ), FALSE, [ 'rows' => 10 ] ) );
 
+		$form->addHeader( 'gddealer_settings_theme' );
+
+		$form->add( new \IPS\Helpers\Form\Color( 'gddealer_color_primary',
+			\IPS\Settings::i()->gddealer_color_primary ?: '#2563eb', FALSE,
+			[], NULL, NULL, NULL, 'gddealer_color_primary' ) );
+
+		$form->add( new \IPS\Helpers\Form\Color( 'gddealer_color_active_tab_bg',
+			\IPS\Settings::i()->gddealer_color_active_tab_bg ?: '#1e3a5f', FALSE,
+			[], NULL, NULL, NULL, 'gddealer_color_active_tab_bg' ) );
+
+		$form->add( new \IPS\Helpers\Form\Color( 'gddealer_color_active_tab_text',
+			\IPS\Settings::i()->gddealer_color_active_tab_text ?: '#ffffff', FALSE,
+			[], NULL, NULL, NULL, 'gddealer_color_active_tab_text' ) );
+
+		$form->add( new \IPS\Helpers\Form\Color( 'gddealer_color_inactive_tab_text',
+			\IPS\Settings::i()->gddealer_color_inactive_tab_text ?: '#374151', FALSE,
+			[], NULL, NULL, NULL, 'gddealer_color_inactive_tab_text' ) );
+
+		$form->add( new \IPS\Helpers\Form\Color( 'gddealer_color_accent',
+			\IPS\Settings::i()->gddealer_color_accent ?: '#16a34a', FALSE,
+			[], NULL, NULL, NULL, 'gddealer_color_accent' ) );
+
+		$form->add( new \IPS\Helpers\Form\Color( 'gddealer_color_warning',
+			\IPS\Settings::i()->gddealer_color_warning ?: '#d97706', FALSE,
+			[], NULL, NULL, NULL, 'gddealer_color_warning' ) );
+
+		$form->add( new \IPS\Helpers\Form\Color( 'gddealer_color_danger',
+			\IPS\Settings::i()->gddealer_color_danger ?: '#dc2626', FALSE,
+			[], NULL, NULL, NULL, 'gddealer_color_danger' ) );
+
+		$form->add( new \IPS\Helpers\Form\Color( 'gddealer_color_header_bg',
+			\IPS\Settings::i()->gddealer_color_header_bg ?: '#1e3a5f', FALSE,
+			[], NULL, NULL, NULL, 'gddealer_color_header_bg' ) );
+
+		$form->add( new \IPS\Helpers\Form\Color( 'gddealer_color_card_bg',
+			\IPS\Settings::i()->gddealer_color_card_bg ?: '#ffffff', FALSE,
+			[], NULL, NULL, NULL, 'gddealer_color_card_bg' ) );
+
+		$form->addHeader( 'gddealer_settings_tier_colors' );
+
+		$form->add( new \IPS\Helpers\Form\Color( 'gddealer_founding_badge_color',
+			\IPS\Settings::i()->gddealer_founding_badge_color ?: '#b45309', FALSE,
+			[], NULL, NULL, NULL, 'gddealer_founding_badge_color' ) );
+
+		$form->add( new \IPS\Helpers\Form\Color( 'gddealer_basic_badge_color',
+			\IPS\Settings::i()->gddealer_basic_badge_color ?: '#6b7280', FALSE,
+			[], NULL, NULL, NULL, 'gddealer_basic_badge_color' ) );
+
+		$form->add( new \IPS\Helpers\Form\Color( 'gddealer_pro_badge_color',
+			\IPS\Settings::i()->gddealer_pro_badge_color ?: '#2563eb', FALSE,
+			[], NULL, NULL, NULL, 'gddealer_pro_badge_color' ) );
+
+		$form->add( new \IPS\Helpers\Form\Color( 'gddealer_enterprise_badge_color',
+			\IPS\Settings::i()->gddealer_enterprise_badge_color ?: '#7c3aed', FALSE,
+			[], NULL, NULL, NULL, 'gddealer_enterprise_badge_color' ) );
+
 		$form->addHeader( 'gddealer_settings_emails' );
 		$form->addMessage( 'gddealer_settings_emails_help' );
 
@@ -178,6 +234,19 @@ class _settings extends \IPS\Dispatcher\Controller
 				'gddealer_guidelines_dispute_body'    => (string) $values['gddealer_guidelines_dispute_body'],
 				'gddealer_guidelines_dealer_title'    => (string) $values['gddealer_guidelines_dealer_title'],
 				'gddealer_guidelines_dealer_body'     => (string) $values['gddealer_guidelines_dealer_body'],
+				'gddealer_color_primary'              => (string) $values['gddealer_color_primary'],
+				'gddealer_color_active_tab_bg'        => (string) $values['gddealer_color_active_tab_bg'],
+				'gddealer_color_active_tab_text'      => (string) $values['gddealer_color_active_tab_text'],
+				'gddealer_color_inactive_tab_text'    => (string) $values['gddealer_color_inactive_tab_text'],
+				'gddealer_color_accent'               => (string) $values['gddealer_color_accent'],
+				'gddealer_color_warning'              => (string) $values['gddealer_color_warning'],
+				'gddealer_color_danger'               => (string) $values['gddealer_color_danger'],
+				'gddealer_color_header_bg'            => (string) $values['gddealer_color_header_bg'],
+				'gddealer_color_card_bg'              => (string) $values['gddealer_color_card_bg'],
+				'gddealer_founding_badge_color'       => (string) $values['gddealer_founding_badge_color'],
+				'gddealer_basic_badge_color'          => (string) $values['gddealer_basic_badge_color'],
+				'gddealer_pro_badge_color'            => (string) $values['gddealer_pro_badge_color'],
+				'gddealer_enterprise_badge_color'     => (string) $values['gddealer_enterprise_badge_color'],
 			]);
 
 			$updateEmail = function( string $key, string $subject, string $body ) {

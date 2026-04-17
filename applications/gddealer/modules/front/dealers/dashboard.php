@@ -1127,10 +1127,10 @@ class _dashboard extends \IPS\Dispatcher\Controller
 			'subscription_tier'     => $tier,
 			'tier_label'            => ucfirst( $tier ),
 			'tier_color'            => match( $tier ) {
-				'founding'   => '#b45309',
-				'pro'        => '#2563eb',
-				'enterprise' => '#7c3aed',
-				default      => '#6b7280',
+				'founding'   => (string) ( \IPS\Settings::i()->gddealer_founding_badge_color   ?: '#b45309' ),
+				'pro'        => (string) ( \IPS\Settings::i()->gddealer_pro_badge_color        ?: '#2563eb' ),
+				'enterprise' => (string) ( \IPS\Settings::i()->gddealer_enterprise_badge_color ?: '#7c3aed' ),
+				default      => (string) ( \IPS\Settings::i()->gddealer_basic_badge_color      ?: '#6b7280' ),
 			},
 			'onboarding_incomplete' => empty( $d->feed_url ),
 			'suspended'             => (bool) $d->suspended,
@@ -1162,12 +1162,58 @@ class _dashboard extends \IPS\Dispatcher\Controller
 	}
 
 	/**
+	 * Admin-configurable theme variables injected at the top of every
+	 * dealer page. CSS rules target the gdDealerWrapper / gdDealerTabs /
+	 * gdStatCard / gdDealerCoverFallback classes to override any inline
+	 * color fallbacks left over in the templates.
+	 */
+	protected function themeVars(): string
+	{
+		$s = \IPS\Settings::i();
+		return '<style>
+:root {
+	--gd-primary:            ' . ( $s->gddealer_color_primary ?: '#2563eb' ) . ';
+	--gd-primary-text:       ' . ( $s->gddealer_color_primary_text ?: '#ffffff' ) . ';
+	--gd-tab-active-bg:      ' . ( $s->gddealer_color_active_tab_bg ?: '#1e3a5f' ) . ';
+	--gd-tab-active-text:    ' . ( $s->gddealer_color_active_tab_text ?: '#ffffff' ) . ';
+	--gd-tab-inactive-text:  ' . ( $s->gddealer_color_inactive_tab_text ?: '#374151' ) . ';
+	--gd-accent:             ' . ( $s->gddealer_color_accent ?: '#16a34a' ) . ';
+	--gd-warning:            ' . ( $s->gddealer_color_warning ?: '#d97706' ) . ';
+	--gd-danger:             ' . ( $s->gddealer_color_danger ?: '#dc2626' ) . ';
+	--gd-header-bg:          ' . ( $s->gddealer_color_header_bg ?: '#1e3a5f' ) . ';
+	--gd-card-bg:            ' . ( $s->gddealer_color_card_bg ?: '#ffffff' ) . ';
+	--gd-card-border:        ' . ( $s->gddealer_color_card_border ?: '#e0e0e0' ) . ';
+}
+.gdDealerTabs .ipsTabs__tab[aria-selected="true"] {
+	background: var(--gd-tab-active-bg) !important;
+	color: var(--gd-tab-active-text) !important;
+	border-color: var(--gd-tab-active-bg) !important;
+}
+.gdDealerTabs .ipsTabs__tab[aria-selected="false"] {
+	color: var(--gd-tab-inactive-text) !important;
+}
+.gdDealerWrapper .ipsButton--primary {
+	background: var(--gd-primary) !important;
+	color: var(--gd-primary-text) !important;
+	border-color: var(--gd-primary) !important;
+}
+.gdStatCard {
+	background: var(--gd-card-bg) !important;
+	border-color: var(--gd-card-border) !important;
+}
+.gdDealerCoverFallback {
+	background: var(--gd-header-bg) !important;
+}
+</style>';
+	}
+
+	/**
 	 * Wrap a tab body in the dealerShell template and push to output.
 	 */
 	protected function output( string $activeTab, string $body ): void
 	{
 		\IPS\Output::i()->title  = \IPS\Member::loggedIn()->language()->addToStack( 'gddealer_frontend_dashboard_title' );
-		\IPS\Output::i()->output = \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )->dealerShell(
+		\IPS\Output::i()->output = $this->themeVars() . \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )->dealerShell(
 			$this->dealerSummary(),
 			$activeTab,
 			$this->tabUrls(),
