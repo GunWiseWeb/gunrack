@@ -128,13 +128,124 @@ class _dashboard extends \IPS\Dispatcher\Controller
 			'profile_url'          => (string) \IPS\Http\Url::internal(
 				'app=gddealer&module=dealers&controller=profile&dealer_slug=' . urlencode( (string) $dealer->dealer_slug )
 			),
+			'customize_url'        => (string) \IPS\Http\Url::internal(
+				'app=gddealer&module=dealers&controller=dashboard&do=customize'
+			),
 		];
 
 		$this->output( 'overview', \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )->overview(
 			$this->dealerSummary(),
 			$overview,
-			$this->tabUrls()
+			$this->tabUrls(),
+			$this->dashboardPrefs()
 		) );
+	}
+
+	/* ---------------- Tab: Customize Dashboard ---------------- */
+
+	protected function customize(): void
+	{
+		$prefs = $this->dashboardPrefs();
+		$saveUrl = (string) \IPS\Http\Url::internal(
+			'app=gddealer&module=dealers&controller=dashboard&do=saveCustomize'
+		)->csrf();
+		$cancelUrl = (string) \IPS\Http\Url::internal(
+			'app=gddealer&module=dealers&controller=dashboard&do=overview'
+		);
+		$csrfKey = (string) \IPS\Session::i()->csrfKey;
+
+		$this->output( 'overview', \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )->dashboardCustomize(
+			$prefs, $saveUrl, $cancelUrl, $csrfKey
+		) );
+	}
+
+	protected function saveCustomize(): void
+	{
+		\IPS\Session::i()->csrfCheck();
+
+		$req      = \IPS\Request::i();
+		$theme    = (string) ( $req->card_theme ?? 'default' );
+		$validTh  = [ 'default', 'dark', 'accent' ];
+		if ( !in_array( $theme, $validTh, true ) ) { $theme = 'default'; }
+
+		$prefs = [
+			'show_active'      => (bool) ( $req->show_active      ?? false ),
+			'show_outofstock'  => (bool) ( $req->show_outofstock  ?? false ),
+			'show_unmatched'   => (bool) ( $req->show_unmatched   ?? false ),
+			'show_clicks_7d'   => (bool) ( $req->show_clicks_7d   ?? false ),
+			'show_clicks_30d'  => (bool) ( $req->show_clicks_30d  ?? false ),
+			'show_last_import' => (bool) ( $req->show_last_import ?? false ),
+			'show_profile_url' => (bool) ( $req->show_profile_url ?? false ),
+			'card_theme'       => $theme,
+		];
+
+		try
+		{
+			\IPS\Db::i()->update( 'gd_dealer_feed_config',
+				[ 'dealer_dashboard_prefs' => json_encode( $prefs ) ],
+				[ 'dealer_id=?', (int) $this->dealer->dealer_id ]
+			);
+		}
+		catch ( \Exception ) {}
+
+		\IPS\Output::i()->redirect(
+			\IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dashboard&do=overview' ),
+			'gddealer_front_customize_saved'
+		);
+	}
+
+	/**
+	 * Load dashboard preferences for the current dealer. Returns the
+	 * stored JSON merged over the defaults so missing keys never break
+	 * the template.
+	 */
+	protected function dashboardPrefs(): array
+	{
+		$defaults = [
+			'show_active'      => true,
+			'show_outofstock'  => true,
+			'show_unmatched'   => true,
+			'show_clicks_7d'   => true,
+			'show_clicks_30d'  => true,
+			'show_last_import' => true,
+			'show_profile_url' => true,
+			'card_theme'       => 'default',
+		];
+
+		$raw = (string) ( $this->dealer->dealer_dashboard_prefs ?? '' );
+		if ( $raw !== '' )
+		{
+			$decoded = json_decode( $raw, true );
+			if ( is_array( $decoded ) )
+			{
+				$defaults = array_merge( $defaults, $decoded );
+			}
+		}
+
+		$theme = $defaults['card_theme'];
+		$themeStyles = match( $theme ) {
+			'dark'   => [
+				'card_bg'     => '#0f172a',
+				'card_border' => '#1e293b',
+				'card_color'  => '#f1f5f9',
+				'card_label'  => '#94a3b8',
+			],
+			'accent' => [
+				'card_bg'     => '#eff6ff',
+				'card_border' => '#bfdbfe',
+				'card_color'  => '#1e3a8a',
+				'card_label'  => '#1e40af',
+			],
+			default  => [
+				'card_bg'     => '#ffffff',
+				'card_border' => 'var(--i-border-color,#e0e0e0)',
+				'card_color'  => '#111827',
+				'card_label'  => '#6b7280',
+			],
+		};
+		$defaults = array_merge( $defaults, $themeStyles );
+
+		return $defaults;
 	}
 
 	/* ---------------- Tab: Feed Settings ---------------- */

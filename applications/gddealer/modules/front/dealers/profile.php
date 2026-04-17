@@ -167,15 +167,67 @@ class _profile extends \IPS\Dispatcher\Controller
 			'front', 'dealers_review_guidelines'
 		);
 
-		$createdAtRaw = (string) ( $dealerRow['created_at'] ?? '' );
-		$memberSince  = $createdAtRaw ? substr( $createdAtRaw, 0, 7 ) : '';
+		/* Pull the matching IPS member so we can show their avatar, cover
+		   photo, and accurate join date — the dealer profile page mirrors
+		   the IPS member profile layout. */
+		$avatar      = '';
+		$coverPhoto  = '';
+		$memberSince = '';
+		try
+		{
+			$ipsMember = \IPS\Member::load( $dealerId );
+			if ( $ipsMember->member_id )
+			{
+				$avatar = (string) $ipsMember->photo;
+				if ( $ipsMember->joined instanceof \IPS\DateTime )
+				{
+					$memberSince = $ipsMember->joined->format( 'F Y' );
+				}
+				$coverPhoto = (string) ( $ipsMember->pp_cover_photo ?? '' );
+			}
+		}
+		catch ( \Exception ) {}
+
+		if ( $memberSince === '' )
+		{
+			$createdAtRaw = (string) ( $dealerRow['created_at'] ?? '' );
+			$memberSince  = $createdAtRaw ? substr( $createdAtRaw, 0, 7 ) : '';
+		}
+
+		$activeListings = 0;
+		try
+		{
+			$activeListings = (int) \IPS\Db::i()->select( 'COUNT(*)', 'gd_dealer_listings',
+				[ 'dealer_id=? AND listing_status=?', $dealerId, 'active' ] )->first();
+		}
+		catch ( \Exception ) {}
+
+		$tier      = (string) ( $dealerRow['subscription_tier'] ?? 'basic' );
+		$tierLabel = ucfirst( $tier );
+		$tierColor = match( $tier ) {
+			'founding'   => '#b45309',
+			'pro'        => '#2563eb',
+			'enterprise' => '#7c3aed',
+			default      => '#6b7280',
+		};
+
+		$coverStyle = $coverPhoto !== ''
+			? 'background-image:url(' . $coverPhoto . ');background-size:cover;background-position:center'
+			: 'background:linear-gradient(135deg,#1e3a8a 0%,#2563eb 100%)';
 
 		$dealer = [
-			'dealer_id'    => $dealerId,
-			'dealer_name'  => (string) $dealerRow['dealer_name'],
-			'dealer_slug'  => (string) $dealerRow['dealer_slug'],
-			'member_since' => $memberSince,
-			'is_active'    => $isActive,
+			'dealer_id'       => $dealerId,
+			'dealer_name'     => (string) $dealerRow['dealer_name'],
+			'dealer_slug'     => (string) $dealerRow['dealer_slug'],
+			'member_since'    => $memberSince,
+			'is_active'       => $isActive,
+			'avatar'          => $avatar,
+			'cover_photo'     => $coverPhoto,
+			'cover_style'     => $coverStyle,
+			'tier'            => $tier,
+			'tier_label'      => $tierLabel,
+			'tier_color'      => $tierColor,
+			'active_listings' => $activeListings,
 		];
 
 		$csrfKey = (string) \IPS\Session::i()->csrfKey;

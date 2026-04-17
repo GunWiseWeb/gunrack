@@ -1029,6 +1029,20 @@
 				"zerofill": false,
 				"values": [],
 				"comment": ""
+			},
+			"dealer_dashboard_prefs": {
+				"name": "dealer_dashboard_prefs",
+				"type": "TEXT",
+				"length": null,
+				"decimals": null,
+				"allow_null": true,
+				"default": null,
+				"auto_increment": false,
+				"binary": false,
+				"unsigned": false,
+				"zerofill": false,
+				"values": [],
+				"comment": ""
 			}
 		},
 		"indexes": {

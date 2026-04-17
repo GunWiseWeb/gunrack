@@ -624,33 +624,48 @@ TEMPLATE_EOT,
 		'location'      => 'front',
 		'group'         => 'dealers',
 		'template_name' => 'overview',
-		'template_data' => '$dealer, $overview, $tabUrls',
+		'template_data' => '$dealer, $overview, $tabUrls, $prefs',
 		'template_content' => <<<'TEMPLATE_EOT'
 <div>
 
-	<div style="display:flex;gap:16px;margin-bottom:24px;flex-wrap:wrap">
-		<div class="ipsBox" style="flex:1 1 180px;padding:16px;text-align:center">
-			<div style="font-size:2em;font-weight:bold">{expression="number_format( $overview['active_listings'] )"}</div>
-			<div>{lang="gddealer_front_active_listings"}</div>
-		</div>
-		<div class="ipsBox" style="flex:1 1 180px;padding:16px;text-align:center">
-			<div style="font-size:2em;font-weight:bold;color:#c00">{expression="number_format( $overview['out_of_stock'] )"}</div>
-			<div>{lang="gddealer_front_out_of_stock"}</div>
-		</div>
-		<div class="ipsBox" style="flex:1 1 180px;padding:16px;text-align:center">
-			<div style="font-size:2em;font-weight:bold;color:#c96">{expression="number_format( $overview['unmatched_count'] )"}</div>
-			<div>{lang="gddealer_front_unmatched_count"}</div>
-		</div>
-		<div class="ipsBox" style="flex:1 1 180px;padding:16px;text-align:center">
-			<div style="font-size:2em;font-weight:bold">{expression="number_format( $overview['clicks_7d'] )"}</div>
-			<div>{lang="gddealer_front_clicks_7d"}</div>
-		</div>
-		<div class="ipsBox" style="flex:1 1 180px;padding:16px;text-align:center">
-			<div style="font-size:2em;font-weight:bold">{expression="number_format( $overview['clicks_30d'] )"}</div>
-			<div>{lang="gddealer_front_clicks_30d"}</div>
-		</div>
+	<div style="display:flex;justify-content:flex-end;margin-bottom:12px">
+		<a href="{$overview['customize_url']}" class="ipsButton ipsButton--normal ipsButton--small">{lang="gddealer_front_customize_dashboard"}</a>
 	</div>
 
+	<div style="display:flex;gap:16px;margin-bottom:24px;flex-wrap:wrap">
+		{{if $prefs['show_active']}}
+		<div style="flex:1 1 180px;padding:16px;text-align:center;background:{$prefs['card_bg']};border:1px solid {$prefs['card_border']};border-radius:8px;color:{$prefs['card_color']}">
+			<div style="font-size:2em;font-weight:bold">{expression="number_format( $overview['active_listings'] )"}</div>
+			<div style="color:{$prefs['card_label']}">{lang="gddealer_front_active_listings"}</div>
+		</div>
+		{{endif}}
+		{{if $prefs['show_outofstock']}}
+		<div style="flex:1 1 180px;padding:16px;text-align:center;background:{$prefs['card_bg']};border:1px solid {$prefs['card_border']};border-radius:8px;color:{$prefs['card_color']}">
+			<div style="font-size:2em;font-weight:bold">{expression="number_format( $overview['out_of_stock'] )"}</div>
+			<div style="color:{$prefs['card_label']}">{lang="gddealer_front_out_of_stock"}</div>
+		</div>
+		{{endif}}
+		{{if $prefs['show_unmatched']}}
+		<div style="flex:1 1 180px;padding:16px;text-align:center;background:{$prefs['card_bg']};border:1px solid {$prefs['card_border']};border-radius:8px;color:{$prefs['card_color']}">
+			<div style="font-size:2em;font-weight:bold">{expression="number_format( $overview['unmatched_count'] )"}</div>
+			<div style="color:{$prefs['card_label']}">{lang="gddealer_front_unmatched_count"}</div>
+		</div>
+		{{endif}}
+		{{if $prefs['show_clicks_7d']}}
+		<div style="flex:1 1 180px;padding:16px;text-align:center;background:{$prefs['card_bg']};border:1px solid {$prefs['card_border']};border-radius:8px;color:{$prefs['card_color']}">
+			<div style="font-size:2em;font-weight:bold">{expression="number_format( $overview['clicks_7d'] )"}</div>
+			<div style="color:{$prefs['card_label']}">{lang="gddealer_front_clicks_7d"}</div>
+		</div>
+		{{endif}}
+		{{if $prefs['show_clicks_30d']}}
+		<div style="flex:1 1 180px;padding:16px;text-align:center;background:{$prefs['card_bg']};border:1px solid {$prefs['card_border']};border-radius:8px;color:{$prefs['card_color']}">
+			<div style="font-size:2em;font-weight:bold">{expression="number_format( $overview['clicks_30d'] )"}</div>
+			<div style="color:{$prefs['card_label']}">{lang="gddealer_front_clicks_30d"}</div>
+		</div>
+		{{endif}}
+	</div>
+
+	{{if $prefs['show_profile_url']}}
 	<div style="background:#f0f7ff;border:1px solid #bfdbfe;border-radius:8px;padding:16px;margin-bottom:24px">
 		<div style="font-size:0.8em;color:#1e40af;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px">Your Public Profile</div>
 		<p style="margin:0 0 10px;font-size:0.85em;color:#555">Share this link with customers so they can view your profile and leave reviews.</p>
@@ -659,7 +674,9 @@ TEMPLATE_EOT,
 			<a href="{$overview['profile_url']}" target="_blank" class="ipsButton ipsButton--normal ipsButton--small">View Profile</a>
 		</div>
 	</div>
+	{{endif}}
 
+	{{if $prefs['show_last_import']}}
 	<h2>{lang="gddealer_front_last_import"}</h2>
 	<p>
 		{{if $overview['last_run_time']}}
@@ -681,7 +698,85 @@ TEMPLATE_EOT,
 			<em>{lang="gddealer_front_last_import_none"}</em>
 		{{endif}}
 	</p>
+	{{endif}}
 
+</div>
+TEMPLATE_EOT,
+	],
+
+	/* ===== FRONT: dashboardCustomize ===== */
+	[
+		'set_id'        => 1,
+		'app'           => 'gddealer',
+		'location'      => 'front',
+		'group'         => 'dealers',
+		'template_name' => 'dashboardCustomize',
+		'template_data' => '$prefs, $saveUrl, $cancelUrl, $csrfKey',
+		'template_content' => <<<'TEMPLATE_EOT'
+<div style="max-width:720px">
+	<h2 style="margin:0 0 6px;font-size:1.3em;font-weight:800">{lang="gddealer_front_customize_title"}</h2>
+	<p style="margin:0 0 20px;color:#666">{lang="gddealer_front_customize_intro"}</p>
+
+	<form method="post" action="{$saveUrl}">
+		<input type="hidden" name="csrfKey" value="{$csrfKey}">
+
+		<div class="ipsBox" style="padding:20px;margin-bottom:16px">
+			<h3 style="margin:0 0 12px;font-size:1em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#475569">{lang="gddealer_front_customize_section_visibility"}</h3>
+			<div style="display:flex;flex-direction:column;gap:10px">
+				<label style="display:flex;align-items:center;gap:10px;cursor:pointer">
+					<input type="checkbox" name="show_active" value="1" {{if $prefs['show_active']}}checked{{endif}}>
+					<span>{lang="gddealer_front_customize_show_active"}</span>
+				</label>
+				<label style="display:flex;align-items:center;gap:10px;cursor:pointer">
+					<input type="checkbox" name="show_outofstock" value="1" {{if $prefs['show_outofstock']}}checked{{endif}}>
+					<span>{lang="gddealer_front_customize_show_outofstock"}</span>
+				</label>
+				<label style="display:flex;align-items:center;gap:10px;cursor:pointer">
+					<input type="checkbox" name="show_unmatched" value="1" {{if $prefs['show_unmatched']}}checked{{endif}}>
+					<span>{lang="gddealer_front_customize_show_unmatched"}</span>
+				</label>
+				<label style="display:flex;align-items:center;gap:10px;cursor:pointer">
+					<input type="checkbox" name="show_clicks_7d" value="1" {{if $prefs['show_clicks_7d']}}checked{{endif}}>
+					<span>{lang="gddealer_front_customize_show_clicks_7d"}</span>
+				</label>
+				<label style="display:flex;align-items:center;gap:10px;cursor:pointer">
+					<input type="checkbox" name="show_clicks_30d" value="1" {{if $prefs['show_clicks_30d']}}checked{{endif}}>
+					<span>{lang="gddealer_front_customize_show_clicks_30d"}</span>
+				</label>
+				<label style="display:flex;align-items:center;gap:10px;cursor:pointer">
+					<input type="checkbox" name="show_last_import" value="1" {{if $prefs['show_last_import']}}checked{{endif}}>
+					<span>{lang="gddealer_front_customize_show_last_import"}</span>
+				</label>
+				<label style="display:flex;align-items:center;gap:10px;cursor:pointer">
+					<input type="checkbox" name="show_profile_url" value="1" {{if $prefs['show_profile_url']}}checked{{endif}}>
+					<span>{lang="gddealer_front_customize_show_profile_url"}</span>
+				</label>
+			</div>
+		</div>
+
+		<div class="ipsBox" style="padding:20px;margin-bottom:20px">
+			<h3 style="margin:0 0 12px;font-size:1em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#475569">{lang="gddealer_front_customize_section_theme"}</h3>
+			<div style="display:flex;flex-direction:column;gap:10px">
+				<label style="display:flex;align-items:center;gap:10px;cursor:pointer">
+					<input type="radio" name="card_theme" value="default" {{if $prefs['card_theme'] === 'default'}}checked{{endif}}>
+					<span>{lang="gddealer_front_customize_theme_default"}</span>
+				</label>
+				<label style="display:flex;align-items:center;gap:10px;cursor:pointer">
+					<input type="radio" name="card_theme" value="dark" {{if $prefs['card_theme'] === 'dark'}}checked{{endif}}>
+					<span>{lang="gddealer_front_customize_theme_dark"}</span>
+				</label>
+				<label style="display:flex;align-items:center;gap:10px;cursor:pointer">
+					<input type="radio" name="card_theme" value="accent" {{if $prefs['card_theme'] === 'accent'}}checked{{endif}}>
+					<span>{lang="gddealer_front_customize_theme_accent"}</span>
+				</label>
+			</div>
+		</div>
+
+		<div style="display:flex;gap:8px">
+			<button type="submit" class="ipsButton ipsButton--primary">{lang="gddealer_front_customize_save"}</button>
+			<a href="{$cancelUrl}" class="ipsButton ipsButton--normal">Cancel</a>
+		</div>
+	</form>
 </div>
 TEMPLATE_EOT,
 	],
@@ -1514,23 +1609,56 @@ TEMPLATE_EOT,
 		'template_content' => <<<'TEMPLATE_EOT'
 <div style="max-width:900px;margin:0 auto;padding:24px 16px">
 
-	<div style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:24px;margin-bottom:24px">
-		<div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:16px">
-			<div>
-				<h1 style="margin:0 0 4px;font-size:1.5em;font-weight:800">{$dealer['dealer_name']}</h1>
+	<div class="ipsPageHeader ipsCoverPhoto" style="position:relative;border-radius:8px;overflow:hidden;margin-bottom:0;min-height:180px;{$dealer['cover_style']}"></div>
+
+	<div class="ipsBox" style="margin-top:-40px;padding:20px 24px 24px;border-radius:8px;position:relative;background:#fff;border:1px solid var(--i-border-color,#e0e0e0);margin-bottom:24px">
+		<div style="display:flex;gap:20px;align-items:flex-end;flex-wrap:wrap">
+			{{if $dealer['avatar']}}
+			<div class="ipsProfilePhoto" style="margin-top:-60px">
+				<img src="{$dealer['avatar']}" alt="{$dealer['dealer_name']}" style="width:96px;height:96px;border-radius:50%;border:4px solid #fff;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,0.12)">
+			</div>
+			{{endif}}
+			<div style="flex:1;min-width:200px">
+				<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:4px">
+					<h1 style="margin:0;font-size:1.6em;font-weight:800">{$dealer['dealer_name']}</h1>
+					<span class="ipsBadge" style="background:{$dealer['tier_color']};color:#fff;font-size:0.7em;padding:3px 8px;border-radius:4px">{$dealer['tier_label']}</span>
+				</div>
 				{{if $dealer['member_since']}}
 				<div style="font-size:0.85em;color:#666">Member since {$dealer['member_since']}</div>
 				{{endif}}
 			</div>
-			<div style="text-align:right">
-				<div style="font-size:2em;font-weight:800;color:#2563eb">{$stats['avg_overall']}</div>
-				<div style="font-size:0.8em;color:#666">{$stats['total']} reviews</div>
+		</div>
+
+		<div style="display:flex;gap:0;margin-top:20px;border-top:1px solid var(--i-border-color,#e9ecef);padding-top:16px;flex-wrap:wrap">
+			<div style="flex:1;min-width:120px;text-align:center;padding:0 12px;border-right:1px solid var(--i-border-color,#e9ecef)">
+				<div style="font-size:1.4em;font-weight:800;color:#111">{expression="number_format( $dealer['active_listings'] )"}</div>
+				<div style="font-size:0.75em;color:#666;text-transform:uppercase;letter-spacing:0.05em">Active Listings</div>
+			</div>
+			<div style="flex:1;min-width:120px;text-align:center;padding:0 12px;border-right:1px solid var(--i-border-color,#e9ecef)">
+				<div style="font-size:1.4em;font-weight:800;color:#2563eb">{$stats['avg_overall']}<span style="font-size:0.6em;color:#999"> / 5</span></div>
+				<div style="font-size:0.75em;color:#666;text-transform:uppercase;letter-spacing:0.05em">{$stats['total']} Reviews</div>
+			</div>
+			<div style="flex:1;min-width:120px;text-align:center;padding:0 12px;border-right:1px solid var(--i-border-color,#e9ecef)">
+				<div style="font-size:1.4em;font-weight:800;color:#111">{{if $dealer['member_since']}}{$dealer['member_since']}{{else}}&mdash;{{endif}}</div>
+				<div style="font-size:0.75em;color:#666;text-transform:uppercase;letter-spacing:0.05em">Member Since</div>
+			</div>
+			<div style="flex:1;min-width:120px;text-align:center;padding:0 12px">
+				<div style="font-size:1.4em;font-weight:800;color:{$dealer['tier_color']}">{$dealer['tier_label']}</div>
+				<div style="font-size:0.75em;color:#666;text-transform:uppercase;letter-spacing:0.05em">Subscription Tier</div>
 			</div>
 		</div>
-		<div style="display:flex;gap:24px;margin-top:16px;flex-wrap:wrap">
-			<div style="font-size:0.85em;color:#666">Pricing Accuracy: <strong>{$stats['avg_pricing']}/5</strong></div>
-			<div style="font-size:0.85em;color:#666">Shipping Speed: <strong>{$stats['avg_shipping']}/5</strong></div>
-			<div style="font-size:0.85em;color:#666">Customer Service: <strong>{$stats['avg_service']}/5</strong></div>
+	</div>
+
+	<ul class="ipsTabs" style="display:flex;gap:0;list-style:none;padding:0;margin:0 0 -1px;border-bottom:1px solid var(--i-border-color,#e0e0e0)">
+		<li><a href="#tab-reviews" class="ipsTabs_item ipsTabs_activeItem" style="display:inline-block;padding:10px 18px;border:1px solid var(--i-border-color,#e0e0e0);border-bottom:1px solid #fff;border-radius:6px 6px 0 0;background:#fff;color:#111;text-decoration:none;font-weight:600;margin-bottom:-1px">Reviews</a></li>
+		<li><a href="#tab-about" class="ipsTabs_item" style="display:inline-block;padding:10px 18px;color:#666;text-decoration:none;font-weight:600">About</a></li>
+	</ul>
+
+	<div class="ipsBox" style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-top:none;border-radius:0 0 8px 8px;padding:24px;margin-bottom:24px">
+		<div style="display:flex;gap:24px;flex-wrap:wrap;font-size:0.85em;color:#666">
+			<div>Pricing Accuracy: <strong>{$stats['avg_pricing']}/5</strong></div>
+			<div>Shipping Speed: <strong>{$stats['avg_shipping']}/5</strong></div>
+			<div>Customer Service: <strong>{$stats['avg_service']}/5</strong></div>
 		</div>
 	</div>
 
@@ -1770,3 +1898,27 @@ try
 	}
 }
 catch ( \Exception ) {}
+
+/* Schema migration: add dealer_dashboard_prefs column on upgrade installs.
+   On fresh installs schema.json creates it; this guards re-installs over
+   an older copy of the table. */
+try
+{
+	$cols = \IPS\Db::i()->getTableDefinition( 'gd_dealer_feed_config' );
+	if ( !isset( $cols['columns']['dealer_dashboard_prefs'] ) )
+	{
+		\IPS\Db::i()->addColumn( 'gd_dealer_feed_config', [
+			'name'       => 'dealer_dashboard_prefs',
+			'type'       => 'TEXT',
+			'length'     => null,
+			'allow_null' => true,
+			'default'    => null,
+		] );
+	}
+}
+catch ( \Exception ) {}
+
+/* Force furl + applications cache rebuild so new routes/templates appear
+   without a manual cache flush. */
+unset( \IPS\Data\Store::i()->furl_configuration );
+unset( \IPS\Data\Store::i()->applications );
