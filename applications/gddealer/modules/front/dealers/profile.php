@@ -57,8 +57,47 @@ class _profile extends \IPS\Dispatcher\Controller
 	 */
 	protected function manage(): void
 	{
-		$slug   = trim( (string) ( \IPS\Request::i()->dealer_slug ?? '' ) );
 		$member = \IPS\Member::loggedIn();
+
+		/* Primary: IPS furl sets this via matched params. */
+		$slug = trim( (string) ( \IPS\Request::i()->dealer_slug ?? '' ) );
+
+		/* Fallback: when Force Friendly URLs is enabled, IPS can redirect
+		   the raw URL to the compiled friendly form but strip the matched
+		   dealer_slug param before the controller runs. Parse REQUEST_URI
+		   directly so the profile still resolves. */
+		if ( $slug === '' )
+		{
+			$uri   = (string) parse_url( (string) ( $_SERVER['REQUEST_URI'] ?? '' ), PHP_URL_PATH );
+			$parts = array_values( array_filter( explode( '/', trim( $uri, '/' ) ) ) );
+
+			foreach ( $parts as $i => $part )
+			{
+				if ( $part === 'profile' && isset( $parts[ $i + 1 ] ) )
+				{
+					$slug = trim( (string) $parts[ $i + 1 ] );
+					break;
+				}
+			}
+
+			if ( $slug === '' )
+			{
+				$last = end( $parts );
+				if ( $last && $last !== 'profile' && $last !== 'dealers' )
+				{
+					try
+					{
+						$count = (int) \IPS\Db::i()->select( 'COUNT(*)', 'gd_dealer_feed_config',
+							[ 'dealer_slug=?', $last ] )->first();
+						if ( $count > 0 )
+						{
+							$slug = (string) $last;
+						}
+					}
+					catch ( \Exception ) {}
+				}
+			}
+		}
 
 		if ( $slug === '' )
 		{

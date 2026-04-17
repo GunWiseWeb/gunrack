@@ -623,8 +623,7 @@ TEMPLATE_EOT,
 
 	{{if $dealer['onboarding_incomplete']}}
 	<div class="ipsMessage ipsMessage_warning i-margin-bottom_block" style="margin-bottom:16px;padding:12px 16px;background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;color:#92400e">
-		<i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
-		<span><strong>Complete Your Setup</strong> &mdash; Your account is active but your product feed hasn't been configured yet.</span>
+		<strong>Complete Your Setup</strong> &mdash; Your account is active but your product feed hasn't been configured yet.
 		<a href="{$tabUrls['feedSettings']}" class="ipsButton ipsButton--primary ipsButton--small" style="margin-left:12px">
 			<i class="fa-solid fa-gear" aria-hidden="true"></i>
 			<span>{lang="gddealer_front_onboarding_go_settings"}</span>
@@ -1822,8 +1821,7 @@ TEMPLATE_EOT,
 
 	{{if !$dealer['is_active']}}
 	<div class="ipsMessage ipsMessage_info i-margin-bottom_block" style="margin-bottom:24px;padding:14px 18px;background:#f1f5f9;border:1px solid #cbd5e1;border-radius:8px;color:#334155">
-		<i class="fa-solid fa-circle-info" aria-hidden="true"></i>
-		<span><strong>This dealer's listings are currently inactive.</strong></span>
+		<strong>This dealer's listings are currently inactive.</strong>
 		<p style="margin:4px 0 0;font-size:0.9em">Inventory and pricing are not being updated. Existing reviews and ratings are shown below for reference.</p>
 	</div>
 	{{endif}}
@@ -1950,8 +1948,7 @@ TEMPLATE_EOT,
 			</div>
 			{{elseif $alreadyRated}}
 			<div class="ipsMessage ipsMessage_info i-margin-bottom_block" style="margin-bottom:24px;padding:14px 18px;background:#f0f7ff;border:1px solid #bfdbfe;border-radius:8px;color:#1e40af">
-				<i class="fa-solid fa-circle-check" aria-hidden="true"></i>
-				<span>You have already reviewed this dealer. Thank you for your feedback!</span>
+				You have already reviewed this dealer. Thank you for your feedback!
 			</div>
 			{{elseif $loginRequired}}
 			<div class="ipsBox i-margin-bottom_block" style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;margin-bottom:24px">
@@ -1992,7 +1989,6 @@ TEMPLATE_EOT,
 						{{endif}}
 						{{if $r['is_under_review']}}
 						<div class="ipsMessage ipsMessage_warning" style="font-size:0.85em;margin-top:8px;padding:8px 12px;background:#fff8f0;border-left:3px solid #f59e0b;color:#92400e;border-radius:0 4px 4px 0">
-							<i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
 							This review is currently under admin review.
 						</div>
 						{{endif}}
