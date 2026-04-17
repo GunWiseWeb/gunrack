@@ -72,21 +72,22 @@ class _dealers extends \IPS\Dispatcher\Controller
 				: '';
 
 			$dealers[] = [
-				'dealer_id'        => (int) $dealer->dealer_id,
-				'dealer_name'      => (string) $dealer->dealer_name,
-				'dealer_slug'      => $slug,
-				'subscription_tier'=> (string) $dealer->subscription_tier,
-				'active'           => (bool) $dealer->active,
-				'suspended'        => (bool) $dealer->suspended,
-				'listing_count'    => $listingCount,
-				'last_run'         => $dealer->last_run ?? null,
-				'last_run_status'  => $dealer->last_run_status ?? null,
-				'mrr'              => '$' . number_format( $dealer->mrrContribution(), 2 ),
-				'view_url'         => $viewUrl,
-				'edit_url'         => $editUrl,
-				'suspend_url'      => $suspendUrl,
-				'import_url'       => $importUrl,
-				'profile_url'      => $profileUrl,
+				'dealer_id'           => (int) $dealer->dealer_id,
+				'dealer_name'         => (string) $dealer->dealer_name,
+				'dealer_slug'         => $slug,
+				'subscription_tier'   => (string) $dealer->subscription_tier,
+				'active'              => (bool) $dealer->active,
+				'suspended'           => (bool) $dealer->suspended,
+				'disputes_suspended'  => (bool) ( $dealer->disputes_suspended ?? 0 ),
+				'listing_count'       => $listingCount,
+				'last_run'            => $dealer->last_run ?? null,
+				'last_run_status'     => $dealer->last_run_status ?? null,
+				'mrr'                 => '$' . number_format( $dealer->mrrContribution(), 2 ),
+				'view_url'            => $viewUrl,
+				'edit_url'            => $editUrl,
+				'suspend_url'         => $suspendUrl,
+				'import_url'          => $importUrl,
+				'profile_url'         => $profileUrl,
 			];
 		}
 
@@ -181,18 +182,20 @@ class _dealers extends \IPS\Dispatcher\Controller
 			'mrr'               => '$' . number_format( $dealer->mrrContribution(), 2 ),
 			'trial_expires_at'  => $trialExpires,
 			'trial_expires_soon'=> $trialSoon,
-			'billing_note'      => (string) ( $dealer->billing_note ?? '' ),
-			'profile_url'       => $profileUrl,
+			'billing_note'         => (string) ( $dealer->billing_note ?? '' ),
+			'profile_url'          => $profileUrl,
+			'disputes_suspended'   => (bool) ( $dealer->disputes_suspended ?? 0 ),
 		];
 
 		$backUrl    = (string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dealers' );
 		$editUrl    = (string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dealers&do=edit&id=' . (int) $dealer->dealer_id )->csrf();
 		$importUrl  = (string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dealers&do=forceImport&id=' . (int) $dealer->dealer_id )->csrf();
 		$suspendUrl = (string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dealers&do=toggleSuspend&id=' . (int) $dealer->dealer_id )->csrf();
+		$disputeSuspendUrl = (string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dealers&do=toggleDisputeSuspend&id=' . (int) $dealer->dealer_id )->csrf();
 
 		\IPS\Output::i()->title  = $dealerData['dealer_name'];
 		\IPS\Output::i()->output = \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'admin' )->dealerDetail(
-			$dealerData, $logs, $listings, $backUrl, $editUrl, $importUrl, $suspendUrl, $invoiceUrl
+			$dealerData, $logs, $listings, $backUrl, $editUrl, $importUrl, $suspendUrl, $invoiceUrl, $disputeSuspendUrl
 		);
 	}
 
@@ -488,6 +491,25 @@ class _dealers extends \IPS\Dispatcher\Controller
 			$member->mgroup_others = implode( ',', $current );
 			$member->save();
 		}
+	}
+
+	/**
+	 * Toggle dispute suspension for a dealer. Suspended dealers cannot
+	 * file new review contests until an admin lifts the suspension.
+	 */
+	protected function toggleDisputeSuspend(): void
+	{
+		\IPS\Session::i()->csrfCheck();
+
+		$dealer = Dealer::load( (int) \IPS\Request::i()->id );
+		$current = (int) ( $dealer->disputes_suspended ?? 0 );
+		$dealer->disputes_suspended = $current ? 0 : 1;
+		$dealer->save();
+
+		\IPS\Output::i()->redirect(
+			\IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dealers&do=view&id=' . (int) $dealer->dealer_id ),
+			$dealer->disputes_suspended ? 'gddealer_disputes_suspended_on' : 'gddealer_disputes_suspended_off'
+		);
 	}
 
 	/* =============== Disputed Reviews Queue =============== */

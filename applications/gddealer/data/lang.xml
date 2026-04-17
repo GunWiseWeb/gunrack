@@ -263,5 +263,8 @@
     <word key="gddealer_reg_dealer_name"><![CDATA[Dealer / Business Name]]></word>
     <word key="gddealer_reg_feed_format"><![CDATA[Feed Format]]></word>
     <word key="gddealer_reg_feed_url"><![CDATA[Feed URL (optional — can be added later)]]></word>
+    <word key="gddealer_front_disputes_suspended"><![CDATA[Your dispute privileges have been suspended by an administrator. You cannot contest reviews until the suspension is lifted.]]></word>
+    <word key="gddealer_disputes_suspended_on"><![CDATA[Dispute privileges suspended for this dealer.]]></word>
+    <word key="gddealer_disputes_suspended_off"><![CDATA[Dispute privileges restored for this dealer.]]></word>
   </app>
 </language>

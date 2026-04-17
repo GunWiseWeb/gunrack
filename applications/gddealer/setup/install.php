@@ -145,6 +145,9 @@ TEMPLATE_EOT,
 						{{else}}
 							<span class="ipsBadge ipsBadge--neutral">Inactive</span>
 						{{endif}}
+						{{if $d['disputes_suspended']}}
+							<span class="ipsBadge ipsBadge--warning" style="margin-left:4px">Disputes Off</span>
+						{{endif}}
 					</td>
 					<td>{expression="number_format( $d['listing_count'] )"}</td>
 					<td>
@@ -191,7 +194,7 @@ TEMPLATE_EOT,
 		'location'      => 'admin',
 		'group'         => 'dealers',
 		'template_name' => 'dealerDetail',
-		'template_data' => '$dealer, $logs, $listings, $backUrl, $editUrl, $importUrl, $suspendUrl, $invoiceUrl',
+		'template_data' => '$dealer, $logs, $listings, $backUrl, $editUrl, $importUrl, $suspendUrl, $invoiceUrl, $disputeSuspendUrl',
 		'template_content' => <<<'TEMPLATE_EOT'
 <div class="ipsBox ipsPull">
 	<div class="ipsBox_body">
@@ -260,11 +263,19 @@ TEMPLATE_EOT,
 			{{endif}}
 		</div>
 
+		{{if $dealer['disputes_suspended']}}
+		<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:6px;padding:10px 16px;margin:0 20px 12px;display:flex;align-items:center;gap:8px">
+			<span class="ipsBadge ipsBadge--negative">DISPUTES SUSPENDED</span>
+			<span style="font-size:0.85em;color:#991b1b">This dealer cannot file new review contests until an admin lifts the suspension.</span>
+		</div>
+		{{endif}}
+
 		<div style="padding:12px 20px;border-top:1px solid var(--i-border-color,#e0e0e0);border-bottom:1px solid var(--i-border-color,#e0e0e0);display:flex;gap:8px;flex-wrap:wrap">
 			<a href="{$editUrl}" class="ipsButton ipsButton--primary ipsButton--small">Edit Feed Config</a>
 			<a href="{$importUrl}" class="ipsButton ipsButton--normal ipsButton--small">Force Import Now</a>
 			<a href="{$invoiceUrl}" class="ipsButton ipsButton--normal ipsButton--small">View in Commerce</a>
 			<a href="{$suspendUrl}" class="ipsButton ipsButton--negative ipsButton--small">{{if $dealer['suspended']}}Unsuspend Dealer{{else}}Suspend Dealer{{endif}}</a>
+			<a href="{$disputeSuspendUrl}" class="ipsButton ipsButton--small {{if $dealer['disputes_suspended']}}ipsButton--positive{{else}}ipsButton--warning{{endif}}">{{if $dealer['disputes_suspended']}}Unsuspend Disputes{{else}}Suspend Disputes{{endif}}</a>
 		</div>
 
 		<div style="padding:12px 20px;font-weight:700;font-size:0.9em;text-transform:uppercase;letter-spacing:0.05em;color:#666;border-bottom:1px solid var(--i-border-color,#e0e0e0)">Recent Import Log</div>
@@ -1609,6 +1620,15 @@ TEMPLATE_EOT,
 			<div style="color:#666;font-size:0.85em">Customer Service</div>
 		</div>
 	</div>
+
+	{{if $data['disputes_suspended']}}
+	<div style="background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+		<div>
+			<strong style="color:#991b1b">Disputes Suspended</strong>
+			<span style="color:#7f1d1d;margin-left:6px">&mdash; Your ability to contest reviews has been suspended by a site administrator. Contact <a href="mailto:{$data['help_email']}" style="color:#2563eb">{$data['help_email']}</a> for more information.</span>
+		</div>
+	</div>
+	{{endif}}
 
 	<div style="background:#f8fafc;border:1px solid var(--i-border-color,#e0e0e0);border-radius:6px;padding:10px 14px;margin-bottom:16px;font-size:0.85em;color:#334155">
 		{{if $data['disputes_unlimited']}}

@@ -921,6 +921,8 @@ class _dashboard extends \IPS\Dispatcher\Controller
 				'app=gddealer&module=dealers&controller=profile&do=guidelines',
 				'front', 'dealers_review_guidelines'
 			),
+			'disputes_suspended' => (bool) ( $this->dealer->disputes_suspended ?? 0 ),
+			'help_email'         => (string) ( \IPS\Settings::i()->gddealer_help_contact ?: 'dealers@gunrack.deals' ),
 		];
 
 		$csrfKey = (string) \IPS\Session::i()->csrfKey;
@@ -970,6 +972,12 @@ class _dashboard extends \IPS\Dispatcher\Controller
 		$dealerId = (int) $this->dealer->dealer_id;
 
 		$redirectUrl = \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dashboard&do=reviews' );
+
+		if ( (int) ( $this->dealer->disputes_suspended ?? 0 ) )
+		{
+			\IPS\Output::i()->redirect( $redirectUrl, 'gddealer_front_disputes_suspended' );
+			return;
+		}
 
 		if ( $id <= 0 || $reason === '' )
 		{
@@ -1126,6 +1134,8 @@ class _dashboard extends \IPS\Dispatcher\Controller
 			},
 			'onboarding_incomplete' => empty( $d->feed_url ),
 			'suspended'             => (bool) $d->suspended,
+			'disputes_suspended'    => (bool) ( $d->disputes_suspended ?? 0 ),
+			'help_email'            => (string) ( \IPS\Settings::i()->gddealer_help_contact ?: 'dealers@gunrack.deals' ),
 			'avatar_url'            => $avatarUrl,
 			'cover_photo_url'       => $coverPhotoUrl,
 			'cover_offset'          => $coverOffset,
