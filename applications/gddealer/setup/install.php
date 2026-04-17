@@ -1546,6 +1546,36 @@ TEMPLATE_EOT,
 TEMPLATE_EOT,
 	],
 
+	/* ===== FRONT: dealerRegister (self-service onboarding) ===== */
+	[
+		'set_id'        => 1,
+		'app'           => 'gddealer',
+		'location'      => 'front',
+		'group'         => 'dealers',
+		'template_name' => 'dealerRegister',
+		'template_data' => '$form, $tier, $name, $guidelinesUrl',
+		'template_content' => <<<'TEMPLATE_EOT'
+<div style="max-width:600px;margin:0 auto;padding:24px 16px">
+	<div class="ipsBox">
+		<div style="padding:32px 28px;text-align:center;border-bottom:1px solid var(--i-border-color,#e0e0e0)">
+			<i class="fa-solid fa-store" style="font-size:2.5em;color:#2563eb;margin-bottom:12px;display:block" aria-hidden="true"></i>
+			<h1 style="margin:0 0 8px;font-size:1.4em;font-weight:800">Complete Your Dealer Setup</h1>
+			<p style="margin:0;color:#666">Your subscription is active. Just a few details to get your dealer profile live.</p>
+			<div style="margin-top:12px">
+				<span style="background:#2563eb;color:#fff;padding:3px 12px;border-radius:20px;font-size:0.8em;font-weight:700;text-transform:uppercase">{$tier} Plan</span>
+			</div>
+		</div>
+		<div style="padding:28px">
+			{$form|raw}
+		</div>
+	</div>
+	<p style="text-align:center;margin-top:16px;font-size:0.85em;color:#888">
+		Need help? Visit our <a href="{$guidelinesUrl}" style="color:#2563eb">Review &amp; Setup Guidelines</a>
+	</p>
+</div>
+TEMPLATE_EOT,
+	],
+
 	/* ===== FRONT: dealerReviews ===== */
 	[
 		'set_id'        => 1,

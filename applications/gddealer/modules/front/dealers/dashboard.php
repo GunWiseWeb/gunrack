@@ -39,7 +39,9 @@ class _dashboard extends \IPS\Dispatcher\Controller
 
 	public function execute(): void
 	{
-		if ( !\IPS\Member::loggedIn()->member_id )
+		$member = \IPS\Member::loggedIn();
+
+		if ( !$member->member_id )
 		{
 			\IPS\Output::i()->redirect( \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=join' ) );
 			return;
@@ -47,16 +49,26 @@ class _dashboard extends \IPS\Dispatcher\Controller
 
 		try
 		{
-			$this->dealer = Dealer::load( (int) \IPS\Member::loggedIn()->member_id );
+			$this->dealer = Dealer::load( (int) $member->member_id );
 		}
 		catch ( \OutOfRangeException )
 		{
 			$this->dealer = null;
 		}
 
+		/* Member is in a dealer group (via Commerce subscription) but has
+		   not yet completed the one-time self-service registration form. */
+		if ( $this->dealer === null && Dealer::isDealerMember( $member ) )
+		{
+			\IPS\Output::i()->redirect(
+				\IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=join&do=register' )
+			);
+			return;
+		}
+
 		if ( $this->dealer === null )
 		{
-			\IPS\Output::i()->title  = \IPS\Member::loggedIn()->language()->addToStack( 'gddealer_frontend_dashboard_title' );
+			\IPS\Output::i()->title  = $member->language()->addToStack( 'gddealer_frontend_dashboard_title' );
 			\IPS\Output::i()->output = \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )->notSubscribed(
 				(string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=join' )
 			);

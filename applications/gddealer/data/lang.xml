@@ -257,5 +257,11 @@
     <word key="gddealer_guidelines_dispute_body"><![CDATA[Dispute Process Content]]></word>
     <word key="gddealer_guidelines_dealer_title"><![CDATA[Dealer Policy Title]]></word>
     <word key="gddealer_guidelines_dealer_body"><![CDATA[Dealer Policy Content]]></word>
+    <word key="gddealer_register_title"><![CDATA[Complete Dealer Setup]]></word>
+    <word key="gddealer_register_submit"><![CDATA[Complete Setup & Go to Dashboard]]></word>
+    <word key="gddealer_register_complete"><![CDATA[Welcome! Your dealer account is ready.]]></word>
+    <word key="gddealer_reg_dealer_name"><![CDATA[Dealer / Business Name]]></word>
+    <word key="gddealer_reg_feed_format"><![CDATA[Feed Format]]></word>
+    <word key="gddealer_reg_feed_url"><![CDATA[Feed URL (optional — can be added later)]]></word>
   </app>
 </language>
