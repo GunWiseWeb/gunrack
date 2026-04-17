@@ -173,6 +173,27 @@ class _settings extends \IPS\Dispatcher\Controller
 			\IPS\Settings::i()->gddealer_enterprise_badge_color ?: '#7c3aed', FALSE,
 			[], NULL, NULL, NULL, 'gddealer_enterprise_badge_color' ) );
 
+		$form->addHeader( 'gddealer_settings_quicklinks' );
+
+		$currentLinks = json_decode( (string) ( \IPS\Settings::i()->gddealer_quicklinks ?: '[]' ), true );
+		if ( !is_array( $currentLinks ) || empty( $currentLinks ) )
+		{
+			$currentLinks = [
+				[ 'icon' => 'fa-solid fa-user',           'label' => 'View Public Profile',  'url_type' => 'profile',       'custom_url' => '' ],
+				[ 'icon' => 'fa-solid fa-rss',            'label' => 'Feed Settings',         'url_type' => 'feed_settings', 'custom_url' => '' ],
+				[ 'icon' => 'fa-solid fa-circle-question','label' => 'Help & Setup Guide',    'url_type' => 'help',          'custom_url' => '' ],
+				[ 'icon' => 'fa-solid fa-sliders',        'label' => 'Customize Dashboard',   'url_type' => 'customize',     'custom_url' => '' ],
+			];
+		}
+
+		$form->add( new \IPS\Helpers\Form\TextArea( 'gddealer_quicklinks_json',
+			json_encode( $currentLinks, JSON_PRETTY_PRINT ), FALSE,
+			[ 'rows' => 10 ],
+			NULL, NULL,
+			'<p style="margin-top:4px;font-size:0.85em;color:#666">JSON array. Each item: <code>{"icon":"fa-solid fa-user","label":"My Label","url_type":"profile","custom_url":""}</code><br>url_type options: profile, feed_settings, listings, unmatched, analytics, reviews, help, subscription, customize, custom</p>',
+			'gddealer_quicklinks_json'
+		) );
+
 		$form->addHeader( 'gddealer_settings_emails' );
 		$form->addMessage( 'gddealer_settings_emails_help' );
 
@@ -248,6 +269,15 @@ class _settings extends \IPS\Dispatcher\Controller
 				'gddealer_pro_badge_color'            => (string) $values['gddealer_pro_badge_color'],
 				'gddealer_enterprise_badge_color'     => (string) $values['gddealer_enterprise_badge_color'],
 			]);
+
+			if ( isset( $values['gddealer_quicklinks_json'] ) )
+			{
+				$decoded = json_decode( trim( (string) $values['gddealer_quicklinks_json'] ), true );
+				if ( is_array( $decoded ) )
+				{
+					\IPS\Settings::i()->changeValues( [ 'gddealer_quicklinks' => json_encode( $decoded ) ] );
+				}
+			}
 
 			$updateEmail = function( string $key, string $subject, string $body ) {
 				try {

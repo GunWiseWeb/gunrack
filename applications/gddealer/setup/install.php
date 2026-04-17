@@ -692,26 +692,14 @@ TEMPLATE_EOT,
 					<h3 class="ipsWidget__title" style="margin:0;padding:12px 16px;border-bottom:1px solid var(--i-border-color,#f0f0f0);font-size:0.85em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#475569">Quick Links</h3>
 					<div class="ipsWidget__content">
 						<ul class="ipsList_reset" style="list-style:none;padding:0;margin:0">
-							<li style="padding:10px 16px;border-bottom:1px solid var(--i-border-color,#f0f0f0)">
-								<a href="{$overview['profile_url']}" target="_blank" style="display:flex;align-items:center;gap:8px;text-decoration:none;color:inherit">
-									<i class="fa-solid fa-user" aria-hidden="true"></i> View Public Profile
+							{{foreach $overview['quick_links'] as $ql}}
+							<li style="border-bottom:1px solid var(--i-border-color,#f0f0f0)">
+								<a href="{$ql['url']}" {{if $ql['external']}}target="_blank" rel="noopener"{{endif}} style="display:flex;align-items:center;gap:10px;padding:10px 16px;color:inherit;text-decoration:none">
+									<i class="{$ql['icon']}" aria-hidden="true" style="width:16px;text-align:center;color:var(--gd-primary,#2563eb);flex-shrink:0"></i>
+									<span style="font-size:0.9em">{$ql['label']}</span>
 								</a>
 							</li>
-							<li style="padding:10px 16px;border-bottom:1px solid var(--i-border-color,#f0f0f0)">
-								<a href="{$tabUrls['feedSettings']}" style="display:flex;align-items:center;gap:8px;text-decoration:none;color:inherit">
-									<i class="fa-solid fa-rss" aria-hidden="true"></i> Feed Settings
-								</a>
-							</li>
-							<li style="padding:10px 16px;border-bottom:1px solid var(--i-border-color,#f0f0f0)">
-								<a href="{$tabUrls['help']}" style="display:flex;align-items:center;gap:8px;text-decoration:none;color:inherit">
-									<i class="fa-solid fa-circle-question" aria-hidden="true"></i> Help &amp; Setup Guide
-								</a>
-							</li>
-							<li style="padding:10px 16px">
-								<a href="{$overview['customize_url']}" style="display:flex;align-items:center;gap:8px;text-decoration:none;color:inherit">
-									<i class="fa-solid fa-sliders" aria-hidden="true"></i> {lang="gddealer_front_customize_dashboard"}
-								</a>
-							</li>
+							{{endforeach}}
 						</ul>
 					</div>
 				</div>
@@ -732,42 +720,42 @@ TEMPLATE_EOT,
 	<div class="ipsProfile__main" style="flex:1;min-width:300px">
 		<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:24px">
 			{{if $prefs['show_active']}}
-			<div class="ipsWidget gdStatCard" style="background:{$prefs['card_bg']};color:{$prefs['card_color']};border:1px solid {$prefs['card_border']};border-radius:8px">
+			<div class="ipsWidget gdStatCard" style="background:{$overview['card_styles']['bg']};color:{$overview['card_styles']['color']};border:1px solid {$overview['card_styles']['border']};border-radius:8px">
 				<div class="ipsWidget__content i-padding_2" style="padding:16px;text-align:center">
-					<div style="font-size:2em;font-weight:800;color:{$prefs['num_success']}">{expression="number_format($overview['active_listings'])"}</div>
-					<div style="font-size:0.82em;color:{$prefs['card_label']};margin-top:4px">{lang="gddealer_front_active_listings"}</div>
+					<div style="font-size:2em;font-weight:800;color:{{if $overview['numbers_light']}}#ffffff{{else}}var(--gd-accent,#16a34a){{endif}}">{expression="number_format($overview['active_listings'])"}</div>
+					<div style="font-size:0.82em;color:{$overview['card_styles']['label']};margin-top:4px">{lang="gddealer_front_active_listings"}</div>
 				</div>
 			</div>
 			{{endif}}
 			{{if $prefs['show_outofstock']}}
-			<div class="ipsWidget gdStatCard" style="background:{$prefs['card_bg']};color:{$prefs['card_color']};border:1px solid {$prefs['card_border']};border-radius:8px">
+			<div class="ipsWidget gdStatCard" style="background:{$overview['card_styles']['bg']};color:{$overview['card_styles']['color']};border:1px solid {$overview['card_styles']['border']};border-radius:8px">
 				<div class="ipsWidget__content i-padding_2" style="padding:16px;text-align:center">
-					<div style="font-size:2em;font-weight:800;color:{$prefs['num_danger']}">{expression="number_format($overview['out_of_stock'])"}</div>
-					<div style="font-size:0.82em;color:{$prefs['card_label']};margin-top:4px">{lang="gddealer_front_out_of_stock"}</div>
+					<div style="font-size:2em;font-weight:800;color:{{if $overview['numbers_light']}}#ffffff{{else}}var(--gd-danger,#dc2626){{endif}}">{expression="number_format($overview['out_of_stock'])"}</div>
+					<div style="font-size:0.82em;color:{$overview['card_styles']['label']};margin-top:4px">{lang="gddealer_front_out_of_stock"}</div>
 				</div>
 			</div>
 			{{endif}}
 			{{if $prefs['show_unmatched']}}
-			<div class="ipsWidget gdStatCard" style="background:{$prefs['card_bg']};color:{$prefs['card_color']};border:1px solid {$prefs['card_border']};border-radius:8px">
+			<div class="ipsWidget gdStatCard" style="background:{$overview['card_styles']['bg']};color:{$overview['card_styles']['color']};border:1px solid {$overview['card_styles']['border']};border-radius:8px">
 				<div class="ipsWidget__content i-padding_2" style="padding:16px;text-align:center">
-					<div style="font-size:2em;font-weight:800;color:{$prefs['num_warning']}">{expression="number_format($overview['unmatched'])"}</div>
-					<div style="font-size:0.82em;color:{$prefs['card_label']};margin-top:4px">{lang="gddealer_front_unmatched_count"}</div>
+					<div style="font-size:2em;font-weight:800;color:{{if $overview['numbers_light']}}#ffffff{{else}}var(--gd-warning,#d97706){{endif}}">{expression="number_format($overview['unmatched'])"}</div>
+					<div style="font-size:0.82em;color:{$overview['card_styles']['label']};margin-top:4px">{lang="gddealer_front_unmatched_count"}</div>
 				</div>
 			</div>
 			{{endif}}
 			{{if $prefs['show_clicks_7d']}}
-			<div class="ipsWidget gdStatCard" style="background:{$prefs['card_bg']};color:{$prefs['card_color']};border:1px solid {$prefs['card_border']};border-radius:8px">
+			<div class="ipsWidget gdStatCard" style="background:{$overview['card_styles']['bg']};color:{$overview['card_styles']['color']};border:1px solid {$overview['card_styles']['border']};border-radius:8px">
 				<div class="ipsWidget__content i-padding_2" style="padding:16px;text-align:center">
-					<div style="font-size:2em;font-weight:800;color:{$prefs['num_default']}">{expression="number_format($overview['clicks_7d'])"}</div>
-					<div style="font-size:0.82em;color:{$prefs['card_label']};margin-top:4px">{lang="gddealer_front_clicks_7d"}</div>
+					<div style="font-size:2em;font-weight:800;color:{{if $overview['numbers_light']}}#ffffff{{else}}inherit{{endif}}">{expression="number_format($overview['clicks_7d'])"}</div>
+					<div style="font-size:0.82em;color:{$overview['card_styles']['label']};margin-top:4px">{lang="gddealer_front_clicks_7d"}</div>
 				</div>
 			</div>
 			{{endif}}
 			{{if $prefs['show_clicks_30d']}}
-			<div class="ipsWidget gdStatCard" style="background:{$prefs['card_bg']};color:{$prefs['card_color']};border:1px solid {$prefs['card_border']};border-radius:8px">
+			<div class="ipsWidget gdStatCard" style="background:{$overview['card_styles']['bg']};color:{$overview['card_styles']['color']};border:1px solid {$overview['card_styles']['border']};border-radius:8px">
 				<div class="ipsWidget__content i-padding_2" style="padding:16px;text-align:center">
-					<div style="font-size:2em;font-weight:800;color:{$prefs['num_default']}">{expression="number_format($overview['clicks_30d'])"}</div>
-					<div style="font-size:0.82em;color:{$prefs['card_label']};margin-top:4px">{lang="gddealer_front_clicks_30d"}</div>
+					<div style="font-size:2em;font-weight:800;color:{{if $overview['numbers_light']}}#ffffff{{else}}inherit{{endif}}">{expression="number_format($overview['clicks_30d'])"}</div>
+					<div style="font-size:0.82em;color:{$overview['card_styles']['label']};margin-top:4px">{lang="gddealer_front_clicks_30d"}</div>
 				</div>
 			</div>
 			{{endif}}

@@ -118,5 +118,6 @@
 	{ "key": "gddealer_founding_badge_color", "default": "#b45309" },
 	{ "key": "gddealer_basic_badge_color", "default": "#6b7280" },
 	{ "key": "gddealer_pro_badge_color", "default": "#2563eb" },
-	{ "key": "gddealer_enterprise_badge_color", "default": "#7c3aed" }
+	{ "key": "gddealer_enterprise_badge_color", "default": "#7c3aed" },
+	{ "key": "gddealer_quicklinks", "default": "" }
 ]

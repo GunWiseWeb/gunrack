@@ -168,6 +168,66 @@ class _dashboard extends \IPS\Dispatcher\Controller
 			),
 		];
 
+		/* Dealer's personal card theme. Overrides admin global card colors
+		   for their own dashboard — we apply styles inline on each stat
+		   card rather than through the global CSS variable so the admin
+		   settings remain the default for dealers who pick "default". */
+		$prefsRaw = json_decode( (string) ( $dealer->dealer_dashboard_prefs ?? '{}' ), true );
+		if ( !is_array( $prefsRaw ) ) { $prefsRaw = []; }
+		$cardTheme = (string) ( $prefsRaw['card_theme'] ?? 'default' );
+
+		$s = \IPS\Settings::i();
+		$cardStyles = match( $cardTheme ) {
+			'dark'   => [ 'bg' => '#1e2d3d', 'color' => '#ffffff', 'border' => '#2d4a6b', 'label' => '#94a3b8' ],
+			'accent' => [ 'bg' => (string) ( $s->gddealer_color_primary ?: '#2563eb' ), 'color' => '#ffffff', 'border' => 'transparent', 'label' => 'rgba(255,255,255,0.8)' ],
+			default  => [
+				'bg'     => (string) ( $s->gddealer_color_card_bg     ?: '#ffffff' ),
+				'color'  => 'inherit',
+				'border' => (string) ( $s->gddealer_color_card_border ?: '#e0e0e0' ),
+				'label'  => '#6b7280',
+			],
+		};
+		$overview['card_styles']   = $cardStyles;
+		$overview['numbers_light'] = in_array( $cardTheme, [ 'dark', 'accent' ], true );
+
+		/* Admin-configurable quick-link list with fallback defaults. */
+		$rawLinks = json_decode( (string) ( $s->gddealer_quicklinks ?: '[]' ), true );
+		if ( !is_array( $rawLinks ) || empty( $rawLinks ) )
+		{
+			$rawLinks = [
+				[ 'icon' => 'fa-solid fa-user',           'label' => 'View Public Profile',  'url_type' => 'profile',       'custom_url' => '' ],
+				[ 'icon' => 'fa-solid fa-rss',            'label' => 'Feed Settings',         'url_type' => 'feed_settings', 'custom_url' => '' ],
+				[ 'icon' => 'fa-solid fa-circle-question','label' => 'Help & Setup Guide',    'url_type' => 'help',          'custom_url' => '' ],
+				[ 'icon' => 'fa-solid fa-sliders',        'label' => 'Customize Dashboard',   'url_type' => 'customize',     'custom_url' => '' ],
+			];
+		}
+
+		$resolvedLinks = [];
+		foreach ( $rawLinks as $link )
+		{
+			$type = (string) ( $link['url_type'] ?? 'custom' );
+			$url  = match( $type ) {
+				'profile'       => $overview['profile_url'],
+				'feed_settings' => (string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dashboard&do=feedSettings' ),
+				'listings'      => (string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dashboard&do=listings' ),
+				'unmatched'     => (string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dashboard&do=unmatched' ),
+				'analytics'     => (string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dashboard&do=analytics' ),
+				'reviews'       => (string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dashboard&do=reviews' ),
+				'help'          => (string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dashboard&do=help' ),
+				'subscription'  => (string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dashboard&do=subscription' ),
+				'customize'     => (string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dashboard&do=customize' ),
+				default         => (string) ( $link['custom_url'] ?? '#' ),
+			};
+
+			$resolvedLinks[] = [
+				'icon'     => htmlspecialchars( (string) ( $link['icon']  ?? 'fa-solid fa-link' ), ENT_QUOTES ),
+				'label'    => htmlspecialchars( (string) ( $link['label'] ?? 'Link' ),             ENT_QUOTES ),
+				'url'      => $url,
+				'external' => ( $type === 'custom' ),
+			];
+		}
+		$overview['quick_links'] = $resolvedLinks;
+
 		$this->output( 'overview', \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )->overview(
 			$this->dealerSummary(),
 			$overview,
@@ -1191,8 +1251,6 @@ class _dashboard extends \IPS\Dispatcher\Controller
 	--gd-warning:            ' . ( $s->gddealer_color_warning ?: '#d97706' ) . ';
 	--gd-danger:             ' . ( $s->gddealer_color_danger ?: '#dc2626' ) . ';
 	--gd-header-bg:          ' . ( $s->gddealer_color_header_bg ?: '#1e3a5f' ) . ';
-	--gd-card-bg:            ' . ( $s->gddealer_color_card_bg ?: '#ffffff' ) . ';
-	--gd-card-border:        ' . ( $s->gddealer_color_card_border ?: '#e0e0e0' ) . ';
 }
 .gdDealerTabs .ipsTabs__tab[aria-selected="true"] {
 	background: var(--gd-tab-active-bg) !important;
@@ -1206,10 +1264,6 @@ class _dashboard extends \IPS\Dispatcher\Controller
 	background: var(--gd-primary) !important;
 	color: var(--gd-primary-text) !important;
 	border-color: var(--gd-primary) !important;
-}
-.gdStatCard {
-	background: var(--gd-card-bg) !important;
-	border-color: var(--gd-card-border) !important;
 }
 .gdDealerCoverFallback {
 	background: var(--gd-header-bg) !important;
