@@ -1043,13 +1043,14 @@ class _dashboard extends \IPS\Dispatcher\Controller
 		$avatar = '';
 		try
 		{
-			$avatar = (string) \IPS\Member::loggedIn()->photo;
+			$avatar = htmlspecialchars( (string) \IPS\Member::loggedIn()->photo, ENT_QUOTES, 'UTF-8' );
 		}
 		catch ( \Exception ) {}
 
 		return [
 			'dealer_id'             => (int) $d->dealer_id,
 			'dealer_name'           => (string) $d->dealer_name,
+			'dealer_slug'           => (string) ( $d->dealer_slug ?? '' ),
 			'subscription_tier'     => $tier,
 			'tier_label'            => ucfirst( $tier ),
 			'tier_color'            => match( $tier ) {

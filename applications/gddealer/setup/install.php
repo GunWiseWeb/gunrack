@@ -580,7 +580,7 @@ TEMPLATE_EOT,
 			{{if $dealer['avatar']}}
 			<div class="ipsCoverPhoto__avatar" style="margin-top:-50px">
 				<span class="ipsUserPhoto ipsUserPhoto--large">
-					<img src="{$dealer['avatar']}" alt="{$dealer['dealer_name']}" loading="lazy" style="width:80px;height:80px;border-radius:50%;border:4px solid #fff;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,0.12)">
+					<img src="{$dealer['avatar']}" alt="{$dealer['dealer_name']}" loading="lazy" onerror="this.style.display='none'" style="width:80px;height:80px;border-radius:50%;border:4px solid #fff;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,0.12)">
 				</span>
 			</div>
 			{{endif}}
@@ -613,7 +613,7 @@ TEMPLATE_EOT,
 	{{endif}}
 
 	<div class="ipsPwaStickyFix ipsPwaStickyFix--ipsTabs"></div>
-	<i-tabs class="ipsTabs ipsTabs--sticky ipsTabs--profile ipsTabs--stretch" data-ipsTabBar data-ipsTabBar-contentArea="#elDealerTabs_content">
+	<i-tabs class="ipsTabs ipsTabs--sticky ipsTabs--profile ipsTabs--stretch">
 		<div role="tablist" style="display:flex;gap:0;border-bottom:1px solid var(--i-border-color,#e0e0e0);overflow-x:auto;background:#fff;border-radius:8px 8px 0 0">
 			<a href="{$tabUrls['overview']}" class="ipsTabs__tab {expression="$activeTab === 'overview' ? 'ipsTabs__activeTab' : ''"}" role="tab" aria-selected="{expression="$activeTab === 'overview' ? 'true' : 'false'"}" style="padding:12px 20px;text-decoration:none;font-weight:600;color:{expression="$activeTab === 'overview' ? '#2563eb' : '#475569'"};border-bottom:2px solid {expression="$activeTab === 'overview' ? '#2563eb' : 'transparent'"};white-space:nowrap">{lang="gddealer_front_tab_overview"}</a>
 			<a href="{$tabUrls['feedSettings']}" class="ipsTabs__tab {expression="$activeTab === 'feedSettings' ? 'ipsTabs__activeTab' : ''"}" role="tab" aria-selected="{expression="$activeTab === 'feedSettings' ? 'true' : 'false'"}" style="padding:12px 20px;text-decoration:none;font-weight:600;color:{expression="$activeTab === 'feedSettings' ? '#2563eb' : '#475569'"};border-bottom:2px solid {expression="$activeTab === 'feedSettings' ? '#2563eb' : 'transparent'"};white-space:nowrap">{lang="gddealer_front_tab_feed"}</a>
@@ -679,7 +679,7 @@ TEMPLATE_EOT,
 				<div class="ipsWidget" style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px">
 					<h3 class="ipsWidget__title" style="margin:0;padding:12px 16px;border-bottom:1px solid var(--i-border-color,#f0f0f0);font-size:0.85em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#475569">Your Profile URL</h3>
 					<div class="ipsWidget__content i-padding_2" style="padding:16px">
-						<code style="display:block;font-size:0.78em;word-break:break-all;background:var(--i-background,#f5f5f5);padding:8px;border-radius:4px;margin-bottom:8px">{$overview['profile_url']}</code>
+						<code style="display:block;font-size:0.78em;word-break:break-all;background:var(--i-background,#f5f5f5);padding:8px;border-radius:4px;margin-bottom:8px">gunrack.deals/dealers/profile/{$dealer['dealer_slug']}</code>
 						<a href="{$overview['profile_url']}" target="_blank" class="ipsButton ipsButton--primary ipsButton--small" style="width:100%;text-align:center;display:block">View Public Profile</a>
 					</div>
 				</div>
@@ -1687,7 +1687,7 @@ TEMPLATE_EOT,
 				{{if $dealer['avatar']}}
 				<div class="ipsCoverPhoto__avatar" style="margin-top:-60px">
 					<span class="ipsUserPhoto ipsUserPhoto--large">
-						<img src="{$dealer['avatar']}" alt="{$dealer['dealer_name']}" loading="lazy" style="width:96px;height:96px;border-radius:50%;border:4px solid #fff;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,0.12)">
+						<img src="{$dealer['avatar']}" alt="{$dealer['dealer_name']}" loading="lazy" onerror="this.style.display='none'" style="width:96px;height:96px;border-radius:50%;border:4px solid #fff;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,0.12)">
 					</span>
 				</div>
 				{{endif}}

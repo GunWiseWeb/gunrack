@@ -178,7 +178,7 @@ class _profile extends \IPS\Dispatcher\Controller
 			$ipsMember = \IPS\Member::load( $dealerId );
 			if ( $ipsMember->member_id )
 			{
-				$avatar = (string) $ipsMember->photo;
+				$avatar = htmlspecialchars( (string) $ipsMember->photo, ENT_QUOTES, 'UTF-8' );
 				if ( $ipsMember->joined instanceof \IPS\DateTime )
 				{
 					$memberSince = $ipsMember->joined->format( 'F Y' );
