@@ -568,19 +568,19 @@ TEMPLATE_EOT,
 		'template_name' => 'dealerShell',
 		'template_data' => '$dealer, $activeTab, $tabUrls, $body',
 		'template_content' => <<<'TEMPLATE_EOT'
-<div class="gdDealerWrapper" style="width:100%;max-width:1400px;margin:0 auto;padding:16px;box-sizing:border-box">
+<div style="width:100%;box-sizing:border-box">
 
-	<header class="ipsPageHeader ipsBox ipsBox--profileHeader ipsPull i-margin-bottom_block" style="margin-bottom:24px">
-		<div class="ipsCoverPhoto ipsCoverPhoto--profile" style="position:relative;border-radius:8px 8px 0 0;overflow:hidden;min-height:160px">
-			<div class="ipsCoverPhoto__container" style="height:160px">
+	<header class="ipsPageHeader ipsBox ipsBox--profileHeader ipsPull i-margin-bottom_block" style="width:100%;box-sizing:border-box;border-radius:8px;overflow:hidden;margin-bottom:16px">
+		<div class="ipsCoverPhoto ipsCoverPhoto--profile" style="position:relative;overflow:hidden;min-height:160px">
+			<div class="ipsCoverPhoto__container" style="width:100%;height:160px;overflow:hidden">
 				{{if $dealer['cover_photo_url']}}
-					<img src="{$dealer['cover_photo_url']}" class="ipsCoverPhoto__image" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;object-position:center {$dealer['cover_offset']}%">
+					<img src="{$dealer['cover_photo_url']}" class="ipsCoverPhoto__image" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover">
 				{{else}}
-					<div class="ipsFallbackImage" style="background:linear-gradient(135deg,#1e3a5f 0%,#2563eb 100%);height:160px"></div>
+					<div class="ipsFallbackImage" style="background:linear-gradient(135deg,#1e3a5f 0%,#2563eb 100%);width:100%;height:160px"></div>
 				{{endif}}
 			</div>
 		</div>
-		<div class="ipsCoverPhotoMeta" style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-top:none;border-radius:0 0 8px 8px;padding:16px 20px;display:flex;gap:16px;align-items:center;flex-wrap:wrap">
+		<div class="ipsCoverPhotoMeta" style="background:#fff;border-top:none;padding:16px 20px;display:flex;gap:16px;align-items:center;flex-wrap:wrap">
 			{{if $dealer['avatar_url']}}
 			<div class="ipsCoverPhoto__avatar" id="elProfilePhoto" style="margin-top:-50px">
 				<span class="ipsUserPhoto ipsUserPhoto--xlarge">
@@ -1678,19 +1678,19 @@ TEMPLATE_EOT,
 		'template_name' => 'dealerProfile',
 		'template_data' => '$dealer, $stats, $reviews, $canRate, $alreadyRated, $loginRequired, $rateUrl, $csrfKey, $loginUrl, $customerDispute, $guidelinesUrl',
 		'template_content' => <<<'TEMPLATE_EOT'
-<div class="ipsProfileContainer" style="max-width:1100px;margin:0 auto;padding:16px">
+<div style="width:100%;max-width:1200px;margin:0 auto;padding:0 16px;box-sizing:border-box">
 
-	<header class="ipsPageHeader ipsBox ipsBox--profileHeader ipsPull i-margin-bottom_block" style="margin-bottom:24px">
-		<div class="ipsCoverPhoto ipsCoverPhoto--profile" style="position:relative;border-radius:8px 8px 0 0;overflow:hidden;min-height:180px">
-			<div class="ipsCoverPhoto__container" style="height:180px">
+	<header class="ipsPageHeader ipsBox ipsBox--profileHeader ipsPull i-margin-bottom_block" style="width:100%;box-sizing:border-box;border-radius:8px;overflow:hidden;margin-bottom:16px">
+		<div class="ipsCoverPhoto ipsCoverPhoto--profile" style="position:relative;overflow:hidden;min-height:180px">
+			<div class="ipsCoverPhoto__container" style="width:100%;height:180px;overflow:hidden">
 				{{if $dealer['cover_photo_url']}}
-					<img src="{$dealer['cover_photo_url']}" class="ipsCoverPhoto__image" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;object-position:center {$dealer['cover_offset']}%">
+					<img src="{$dealer['cover_photo_url']}" class="ipsCoverPhoto__image" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover">
 				{{else}}
-					<div class="ipsFallbackImage" style="height:180px;background:linear-gradient(135deg,#1e3a8a 0%,#2563eb 100%)"></div>
+					<div class="ipsFallbackImage" style="background:linear-gradient(135deg,#1e3a8a 0%,#2563eb 100%);width:100%;height:180px"></div>
 				{{endif}}
 			</div>
 		</div>
-		<div class="ipsCoverPhotoMeta" style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-top:none;border-radius:0 0 8px 8px;padding:20px 24px">
+		<div class="ipsCoverPhotoMeta" style="background:#fff;border-top:none;padding:20px 24px">
 			<div style="display:flex;gap:20px;align-items:flex-end;flex-wrap:wrap;margin-bottom:16px">
 				{{if $dealer['avatar_url']}}
 				<div class="ipsCoverPhoto__avatar" id="elProfilePhoto" style="margin-top:-60px">
@@ -1718,22 +1718,22 @@ TEMPLATE_EOT,
 					</a>
 				</div>
 			</div>
-			<ul class="ipsCoverPhoto__stats" style="display:flex;gap:0;list-style:none;padding:16px 0 0;margin:0;border-top:1px solid var(--i-border-color,#f0f0f0);flex-wrap:wrap">
+			<ul class="ipsCoverPhoto__stats" style="display:flex;list-style:none;padding:16px 0 0;margin:0;border-top:1px solid var(--i-border-color,#f0f0f0);flex-wrap:wrap">
 				<li style="flex:1;min-width:120px;text-align:center;padding:0 12px;border-right:1px solid var(--i-border-color,#f0f0f0)">
-					<h4 class="ipsCoverPhoto__statTitle" style="margin:0;font-size:0.75em;color:#666;text-transform:uppercase;letter-spacing:0.05em;font-weight:600">Overall Rating</h4>
-					<span class="ipsCoverPhoto__statValue" style="display:block;font-size:1.4em;font-weight:800;color:#2563eb;margin-top:4px">{$stats['avg_overall']} <span style="font-size:0.6em;color:#999">/ 5</span></span>
+					<h4 class="ipsCoverPhoto__statTitle">Overall Rating</h4>
+					<span class="ipsCoverPhoto__statValue" style="color:#2563eb;font-weight:800">{$stats['avg_overall']}<small style="font-size:0.6em;color:#666"> /5</small></span>
 				</li>
 				<li style="flex:1;min-width:120px;text-align:center;padding:0 12px;border-right:1px solid var(--i-border-color,#f0f0f0)">
-					<h4 class="ipsCoverPhoto__statTitle" style="margin:0;font-size:0.75em;color:#666;text-transform:uppercase;letter-spacing:0.05em;font-weight:600">Reviews</h4>
-					<span class="ipsCoverPhoto__statValue" style="display:block;font-size:1.4em;font-weight:800;margin-top:4px">{expression="number_format($stats['total'])"}</span>
+					<h4 class="ipsCoverPhoto__statTitle">Reviews</h4>
+					<span class="ipsCoverPhoto__statValue">{expression="number_format($stats['total'])"}</span>
 				</li>
 				<li style="flex:1;min-width:120px;text-align:center;padding:0 12px;border-right:1px solid var(--i-border-color,#f0f0f0)">
-					<h4 class="ipsCoverPhoto__statTitle" style="margin:0;font-size:0.75em;color:#666;text-transform:uppercase;letter-spacing:0.05em;font-weight:600">Member Since</h4>
-					<span class="ipsCoverPhoto__statValue" style="display:block;font-size:1.4em;font-weight:800;margin-top:4px">{{if $dealer['member_since']}}{$dealer['member_since']}{{else}}&mdash;{{endif}}</span>
+					<h4 class="ipsCoverPhoto__statTitle">Member Since</h4>
+					<span class="ipsCoverPhoto__statValue">{{if $dealer['member_since']}}{$dealer['member_since']}{{else}}&mdash;{{endif}}</span>
 				</li>
 				<li style="flex:1;min-width:120px;text-align:center;padding:0 12px">
-					<h4 class="ipsCoverPhoto__statTitle" style="margin:0;font-size:0.75em;color:#666;text-transform:uppercase;letter-spacing:0.05em;font-weight:600">Active Listings</h4>
-					<span class="ipsCoverPhoto__statValue" style="display:block;font-size:1.4em;font-weight:800;color:#16a34a;margin-top:4px">{expression="number_format($dealer['listing_count'])"}</span>
+					<h4 class="ipsCoverPhoto__statTitle">Active Listings</h4>
+					<span class="ipsCoverPhoto__statValue" style="color:#16a34a;font-weight:700">{expression="number_format($dealer['listing_count'])"}</span>
 				</li>
 			</ul>
 		</div>
@@ -1777,7 +1777,7 @@ TEMPLATE_EOT,
 	{{endif}}
 
 	<div class="ipsProfile ipsProfile--profile" style="display:flex;gap:24px;flex-wrap:wrap">
-		<aside class="ipsProfile__aside" style="flex:0 0 280px;min-width:240px">
+		<aside class="ipsProfile__aside" style="width:300px;flex-shrink:0">
 			<div class="ipsProfile__sticky-outer">
 				<div class="ipsProfile__sticky-inner">
 					<div class="ipsWidget" style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;margin-bottom:16px">
@@ -1816,7 +1816,7 @@ TEMPLATE_EOT,
 			</div>
 		</aside>
 
-		<div class="ipsProfile__main" style="flex:1;min-width:300px">
+		<div class="ipsProfile__main" style="flex:1 1 0;min-width:0">
 			{{if $canRate}}
 			<div class="ipsBox i-margin-bottom_block" style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;margin-bottom:24px">
 				<h3 class="ipsBox__header" style="margin:0;padding:14px 18px;border-bottom:1px solid var(--i-border-color,#f0f0f0);font-size:1em;font-weight:700">Leave a Review</h3>
