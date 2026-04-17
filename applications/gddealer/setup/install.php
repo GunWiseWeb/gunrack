@@ -568,19 +568,23 @@ TEMPLATE_EOT,
 		'template_name' => 'dealerShell',
 		'template_data' => '$dealer, $activeTab, $tabUrls, $body',
 		'template_content' => <<<'TEMPLATE_EOT'
-<div class="ipsProfileContainer" style="max-width:1200px;margin:0 auto;padding:16px">
+<div class="gdDealerWrapper" style="width:100%;max-width:1400px;margin:0 auto;padding:16px;box-sizing:border-box">
 
 	<header class="ipsPageHeader ipsBox ipsBox--profileHeader ipsPull i-margin-bottom_block" style="margin-bottom:24px">
-		<div class="ipsCoverPhoto ipsCoverPhoto--profile ipsCoverPhoto--minimal" style="position:relative;border-radius:8px 8px 0 0;overflow:hidden;min-height:120px">
-			<div class="ipsCoverPhoto__container">
-				<div class="ipsFallbackImage" style="background:linear-gradient(135deg,#1e3a5f 0%,#2563eb 100%);height:120px"></div>
+		<div class="ipsCoverPhoto ipsCoverPhoto--profile" style="position:relative;border-radius:8px 8px 0 0;overflow:hidden;min-height:160px">
+			<div class="ipsCoverPhoto__container" style="height:160px">
+				{{if $dealer['cover_photo_url']}}
+					<img src="{$dealer['cover_photo_url']}" class="ipsCoverPhoto__image" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;object-position:center {$dealer['cover_offset']}%">
+				{{else}}
+					<div class="ipsFallbackImage" style="background:linear-gradient(135deg,#1e3a5f 0%,#2563eb 100%);height:160px"></div>
+				{{endif}}
 			</div>
 		</div>
 		<div class="ipsCoverPhotoMeta" style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-top:none;border-radius:0 0 8px 8px;padding:16px 20px;display:flex;gap:16px;align-items:center;flex-wrap:wrap">
-			{{if $dealer['avatar']}}
-			<div class="ipsCoverPhoto__avatar" style="margin-top:-50px">
-				<span class="ipsUserPhoto ipsUserPhoto--large">
-					<img src="{$dealer['avatar']}" alt="{$dealer['dealer_name']}" loading="lazy" onerror="this.style.display='none'" style="width:80px;height:80px;border-radius:50%;border:4px solid #fff;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,0.12)">
+			{{if $dealer['avatar_url']}}
+			<div class="ipsCoverPhoto__avatar" id="elProfilePhoto" style="margin-top:-50px">
+				<span class="ipsUserPhoto ipsUserPhoto--xlarge">
+					<img src="{$dealer['avatar_url']}" alt="" loading="lazy" onerror="this.style.display='none'">
 				</span>
 			</div>
 			{{endif}}
@@ -691,42 +695,42 @@ TEMPLATE_EOT,
 	<div class="ipsProfile__main" style="flex:1;min-width:300px">
 		<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:24px">
 			{{if $prefs['show_active']}}
-			<div class="ipsWidget" style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px">
+			<div class="ipsWidget" style="background:{$prefs['card_bg']};color:{$prefs['card_color']};border:1px solid {$prefs['card_border']};border-radius:8px">
 				<div class="ipsWidget__content i-padding_2" style="padding:16px;text-align:center">
-					<div style="font-size:2em;font-weight:800;color:#16a34a">{expression="number_format($overview['active_listings'])"}</div>
-					<div style="font-size:0.82em;color:#666;margin-top:4px">{lang="gddealer_front_active_listings"}</div>
+					<div style="font-size:2em;font-weight:800;color:{$prefs['num_success']}">{expression="number_format($overview['active_listings'])"}</div>
+					<div style="font-size:0.82em;color:{$prefs['card_label']};margin-top:4px">{lang="gddealer_front_active_listings"}</div>
 				</div>
 			</div>
 			{{endif}}
 			{{if $prefs['show_outofstock']}}
-			<div class="ipsWidget" style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px">
+			<div class="ipsWidget" style="background:{$prefs['card_bg']};color:{$prefs['card_color']};border:1px solid {$prefs['card_border']};border-radius:8px">
 				<div class="ipsWidget__content i-padding_2" style="padding:16px;text-align:center">
-					<div style="font-size:2em;font-weight:800;color:#dc2626">{expression="number_format($overview['out_of_stock'])"}</div>
-					<div style="font-size:0.82em;color:#666;margin-top:4px">{lang="gddealer_front_out_of_stock"}</div>
+					<div style="font-size:2em;font-weight:800;color:{$prefs['num_danger']}">{expression="number_format($overview['out_of_stock'])"}</div>
+					<div style="font-size:0.82em;color:{$prefs['card_label']};margin-top:4px">{lang="gddealer_front_out_of_stock"}</div>
 				</div>
 			</div>
 			{{endif}}
 			{{if $prefs['show_unmatched']}}
-			<div class="ipsWidget" style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px">
+			<div class="ipsWidget" style="background:{$prefs['card_bg']};color:{$prefs['card_color']};border:1px solid {$prefs['card_border']};border-radius:8px">
 				<div class="ipsWidget__content i-padding_2" style="padding:16px;text-align:center">
-					<div style="font-size:2em;font-weight:800;color:#f59e0b">{expression="number_format($overview['unmatched'])"}</div>
-					<div style="font-size:0.82em;color:#666;margin-top:4px">{lang="gddealer_front_unmatched_count"}</div>
+					<div style="font-size:2em;font-weight:800;color:{$prefs['num_warning']}">{expression="number_format($overview['unmatched'])"}</div>
+					<div style="font-size:0.82em;color:{$prefs['card_label']};margin-top:4px">{lang="gddealer_front_unmatched_count"}</div>
 				</div>
 			</div>
 			{{endif}}
 			{{if $prefs['show_clicks_7d']}}
-			<div class="ipsWidget" style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px">
+			<div class="ipsWidget" style="background:{$prefs['card_bg']};color:{$prefs['card_color']};border:1px solid {$prefs['card_border']};border-radius:8px">
 				<div class="ipsWidget__content i-padding_2" style="padding:16px;text-align:center">
-					<div style="font-size:2em;font-weight:800">{expression="number_format($overview['clicks_7d'])"}</div>
-					<div style="font-size:0.82em;color:#666;margin-top:4px">{lang="gddealer_front_clicks_7d"}</div>
+					<div style="font-size:2em;font-weight:800;color:{$prefs['num_default']}">{expression="number_format($overview['clicks_7d'])"}</div>
+					<div style="font-size:0.82em;color:{$prefs['card_label']};margin-top:4px">{lang="gddealer_front_clicks_7d"}</div>
 				</div>
 			</div>
 			{{endif}}
 			{{if $prefs['show_clicks_30d']}}
-			<div class="ipsWidget" style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px">
+			<div class="ipsWidget" style="background:{$prefs['card_bg']};color:{$prefs['card_color']};border:1px solid {$prefs['card_border']};border-radius:8px">
 				<div class="ipsWidget__content i-padding_2" style="padding:16px;text-align:center">
-					<div style="font-size:2em;font-weight:800">{expression="number_format($overview['clicks_30d'])"}</div>
-					<div style="font-size:0.82em;color:#666;margin-top:4px">{lang="gddealer_front_clicks_30d"}</div>
+					<div style="font-size:2em;font-weight:800;color:{$prefs['num_default']}">{expression="number_format($overview['clicks_30d'])"}</div>
+					<div style="font-size:0.82em;color:{$prefs['card_label']};margin-top:4px">{lang="gddealer_front_clicks_30d"}</div>
 				</div>
 			</div>
 			{{endif}}
@@ -1679,15 +1683,19 @@ TEMPLATE_EOT,
 	<header class="ipsPageHeader ipsBox ipsBox--profileHeader ipsPull i-margin-bottom_block" style="margin-bottom:24px">
 		<div class="ipsCoverPhoto ipsCoverPhoto--profile" style="position:relative;border-radius:8px 8px 0 0;overflow:hidden;min-height:180px">
 			<div class="ipsCoverPhoto__container" style="height:180px">
-				<div class="ipsFallbackImage" style="height:180px;{$dealer['cover_style']}"></div>
+				{{if $dealer['cover_photo_url']}}
+					<img src="{$dealer['cover_photo_url']}" class="ipsCoverPhoto__image" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover;object-position:center {$dealer['cover_offset']}%">
+				{{else}}
+					<div class="ipsFallbackImage" style="height:180px;background:linear-gradient(135deg,#1e3a8a 0%,#2563eb 100%)"></div>
+				{{endif}}
 			</div>
 		</div>
 		<div class="ipsCoverPhotoMeta" style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-top:none;border-radius:0 0 8px 8px;padding:20px 24px">
 			<div style="display:flex;gap:20px;align-items:flex-end;flex-wrap:wrap;margin-bottom:16px">
-				{{if $dealer['avatar']}}
-				<div class="ipsCoverPhoto__avatar" style="margin-top:-60px">
-					<span class="ipsUserPhoto ipsUserPhoto--large">
-						<img src="{$dealer['avatar']}" alt="{$dealer['dealer_name']}" loading="lazy" onerror="this.style.display='none'" style="width:96px;height:96px;border-radius:50%;border:4px solid #fff;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,0.12)">
+				{{if $dealer['avatar_url']}}
+				<div class="ipsCoverPhoto__avatar" id="elProfilePhoto" style="margin-top:-60px">
+					<span class="ipsUserPhoto ipsUserPhoto--xlarge">
+						<img src="{$dealer['avatar_url']}" alt="" loading="lazy" onerror="this.style.display='none'">
 					</span>
 				</div>
 				{{endif}}

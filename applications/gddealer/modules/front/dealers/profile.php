@@ -170,20 +170,26 @@ class _profile extends \IPS\Dispatcher\Controller
 		/* Pull the matching IPS member so we can show their avatar, cover
 		   photo, and accurate join date — the dealer profile page mirrors
 		   the IPS member profile layout. */
-		$avatar      = '';
-		$coverPhoto  = '';
-		$memberSince = '';
+		$avatarUrl     = '';
+		$coverPhotoUrl = '';
+		$coverOffset   = 0;
+		$memberSince   = '';
 		try
 		{
 			$ipsMember = \IPS\Member::load( $dealerId );
 			if ( $ipsMember->member_id )
 			{
-				$avatar = htmlspecialchars( (string) $ipsMember->photo, ENT_QUOTES, 'UTF-8' );
+				$avatarUrl = (string) ( $ipsMember->get_photo( true, false ) ?? '' );
 				if ( $ipsMember->joined instanceof \IPS\DateTime )
 				{
 					$memberSince = $ipsMember->joined->format( 'F Y' );
 				}
-				$coverPhoto = (string) ( $ipsMember->pp_cover_photo ?? '' );
+				$cp = $ipsMember->coverPhoto();
+				if ( $cp->file )
+				{
+					$coverPhotoUrl = (string) $cp->file->url;
+				}
+				$coverOffset = (int) ( $cp->offset ?? 0 );
 			}
 		}
 		catch ( \Exception ) {}
@@ -211,10 +217,6 @@ class _profile extends \IPS\Dispatcher\Controller
 			default      => '#6b7280',
 		};
 
-		$coverStyle = $coverPhoto !== ''
-			? 'background-image:url(' . $coverPhoto . ');background-size:cover;background-position:center'
-			: 'background:linear-gradient(135deg,#1e3a8a 0%,#2563eb 100%)';
-
 		$contactEmail = '';
 		try
 		{
@@ -235,9 +237,9 @@ class _profile extends \IPS\Dispatcher\Controller
 			'dealer_slug'     => (string) $dealerRow['dealer_slug'],
 			'member_since'    => $memberSince,
 			'is_active'       => $isActive,
-			'avatar'          => $avatar,
-			'cover_photo'     => $coverPhoto,
-			'cover_style'     => $coverStyle,
+			'avatar_url'      => $avatarUrl,
+			'cover_photo_url' => $coverPhotoUrl,
+			'cover_offset'    => $coverOffset,
 			'tier'            => $tier,
 			'tier_label'      => $tierLabel,
 			'tier_color'      => $tierColor,

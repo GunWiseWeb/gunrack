@@ -238,22 +238,34 @@ class _dashboard extends \IPS\Dispatcher\Controller
 		$theme = $defaults['card_theme'];
 		$themeStyles = match( $theme ) {
 			'dark'   => [
-				'card_bg'     => '#0f172a',
-				'card_border' => '#1e293b',
-				'card_color'  => '#f1f5f9',
+				'card_bg'     => '#1e2d3d',
+				'card_border' => '#334155',
+				'card_color'  => '#ffffff',
 				'card_label'  => '#94a3b8',
+				'num_success' => '#86efac',
+				'num_danger'  => '#fca5a5',
+				'num_warning' => '#fcd34d',
+				'num_default' => '#ffffff',
 			],
 			'accent' => [
-				'card_bg'     => '#eff6ff',
-				'card_border' => '#bfdbfe',
-				'card_color'  => '#1e3a8a',
-				'card_label'  => '#1e40af',
+				'card_bg'     => '#1e40af',
+				'card_border' => '#1e3a8a',
+				'card_color'  => '#ffffff',
+				'card_label'  => '#bfdbfe',
+				'num_success' => '#bbf7d0',
+				'num_danger'  => '#fecaca',
+				'num_warning' => '#fef3c7',
+				'num_default' => '#ffffff',
 			],
 			default  => [
 				'card_bg'     => '#ffffff',
 				'card_border' => 'var(--i-border-color,#e0e0e0)',
 				'card_color'  => '#111827',
 				'card_label'  => '#6b7280',
+				'num_success' => '#16a34a',
+				'num_danger'  => '#dc2626',
+				'num_warning' => '#f59e0b',
+				'num_default' => 'inherit',
 			],
 		};
 		$defaults = array_merge( $defaults, $themeStyles );
@@ -1040,10 +1052,19 @@ class _dashboard extends \IPS\Dispatcher\Controller
 		$d    = $this->dealer;
 		$tier = (string) $d->subscription_tier;
 
-		$avatar = '';
+		$avatarUrl       = '';
+		$coverPhotoUrl   = '';
+		$coverOffset     = 0;
 		try
 		{
-			$avatar = htmlspecialchars( (string) \IPS\Member::loggedIn()->photo, ENT_QUOTES, 'UTF-8' );
+			$ipsMember = \IPS\Member::loggedIn();
+			$avatarUrl = (string) ( $ipsMember->get_photo( true, false ) ?? '' );
+			$cp        = $ipsMember->coverPhoto();
+			if ( $cp->file )
+			{
+				$coverPhotoUrl = (string) $cp->file->url;
+			}
+			$coverOffset = (int) ( $cp->offset ?? 0 );
 		}
 		catch ( \Exception ) {}
 
@@ -1061,7 +1082,9 @@ class _dashboard extends \IPS\Dispatcher\Controller
 			},
 			'onboarding_incomplete' => empty( $d->feed_url ),
 			'suspended'             => (bool) $d->suspended,
-			'avatar'                => $avatar,
+			'avatar_url'            => $avatarUrl,
+			'cover_photo_url'       => $coverPhotoUrl,
+			'cover_offset'          => $coverOffset,
 		];
 	}
 
