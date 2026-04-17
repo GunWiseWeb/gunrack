@@ -556,14 +556,22 @@ TEMPLATE_EOT,
 		'location'      => 'front',
 		'group'         => 'dealers',
 		'template_name' => 'notSubscribed',
-		'template_data' => '$joinUrl',
+		'template_data' => '$joinUrl, $contactEmail',
 		'template_content' => <<<'TEMPLATE_EOT'
-<div class="ipsBox">
-	<h1 class="ipsBox_title">{lang="gddealer_frontend_dashboard_title"}</h1>
-	<div class="ipsPad">
-		<p>{lang="gddealer_frontend_not_subscribed"}</p>
-		<p style="margin-top:16px">
-			<a href="{$joinUrl}" class="ipsButton ipsButton--primary">{lang="gddealer_front_join_cta"}</a>
+<div style="max-width:600px;margin:40px auto;padding:0 16px">
+	<div class="ipsBox" style="text-align:center;padding:48px 32px">
+		<i class="fa-solid fa-store-slash" style="font-size:3em;color:#9ca3af;margin-bottom:16px;display:block" aria-hidden="true"></i>
+		<h2 style="margin:0 0 12px;font-size:1.4em;font-weight:800">No Dealer Subscription Found</h2>
+		<p style="color:#6b7280;margin:0 0 24px;line-height:1.6">
+			You don't have an active dealer subscription on your account.<br>
+			Sign up to list your inventory and reach buyers on GunRack.deals.
+		</p>
+		<a href="{$joinUrl}" class="ipsButton ipsButton--primary" style="padding:12px 32px">
+			<i class="fa-solid fa-store" aria-hidden="true"></i>
+			<span>Become a Dealer</span>
+		</a>
+		<p style="margin:16px 0 0;font-size:0.85em;color:#9ca3af">
+			Already subscribed? Contact us at <a href="mailto:{$contactEmail}">{$contactEmail}</a> and we'll get your account set up.
 		</p>
 	</div>
 </div>

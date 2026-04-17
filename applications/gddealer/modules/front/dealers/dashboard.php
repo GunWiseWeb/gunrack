@@ -47,6 +47,14 @@ class _dashboard extends \IPS\Dispatcher\Controller
 			return;
 		}
 
+		if ( $member->isAdmin() )
+		{
+			\IPS\Output::i()->redirect(
+				\IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dealers', 'admin' )
+			);
+			return;
+		}
+
 		try
 		{
 			$this->dealer = Dealer::load( (int) $member->member_id );
@@ -68,9 +76,11 @@ class _dashboard extends \IPS\Dispatcher\Controller
 
 		if ( $this->dealer === null )
 		{
+			$contactEmail = (string) ( \IPS\Settings::i()->gddealer_help_contact ?: 'dealers@gunrack.deals' );
 			\IPS\Output::i()->title  = $member->language()->addToStack( 'gddealer_frontend_dashboard_title' );
 			\IPS\Output::i()->output = \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )->notSubscribed(
-				(string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=join' )
+				(string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=join' ),
+				$contactEmail
 			);
 			return;
 		}
