@@ -568,6 +568,19 @@ TEMPLATE_EOT,
 		'template_name' => 'dealerShell',
 		'template_data' => '$dealer, $activeTab, $tabUrls, $body',
 		'template_content' => <<<'TEMPLATE_EOT'
+<style>
+@media (max-width: 768px) {
+  .gdTableWrap { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  .gdHelpLayout { flex-direction:column !important; }
+  .gdHelpSidebar { width:100% !important; position:static !important; }
+  .gdFlexWrap > .ipsProfile__aside { width:100% !important; flex-shrink:1 !important; }
+  .gdShellTabs [role="tablist"] { flex-wrap:wrap !important; }
+  .gdShellTabs [role="tablist"] a { flex:1 1 auto; text-align:center; padding:10px 12px !important; font-size:0.85em; }
+}
+@media (max-width: 480px) {
+  .gdShellTabs [role="tablist"] a { flex:1 1 100%; }
+}
+</style>
 <div style="width:100%;box-sizing:border-box">
 
 	<header class="ipsPageHeader ipsBox ipsBox--profileHeader ipsPull i-margin-bottom_block" style="width:100%;box-sizing:border-box;border-radius:8px;overflow:hidden;margin-bottom:16px">
@@ -611,13 +624,16 @@ TEMPLATE_EOT,
 	{{if $dealer['onboarding_incomplete']}}
 	<div class="ipsMessage ipsMessage_warning i-margin-bottom_block" style="margin-bottom:16px;padding:12px 16px;background:#fffbeb;border:1px solid #fcd34d;border-radius:8px;color:#92400e">
 		<i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
-		<strong>Complete Your Setup</strong> &mdash; Your account is active but your product feed hasn't been configured yet.
-		<a href="{$tabUrls['feedSettings']}" class="ipsButton ipsButton--primary ipsButton--small" style="margin-left:12px">{lang="gddealer_front_onboarding_go_settings"}</a>
+		<span><strong>Complete Your Setup</strong> &mdash; Your account is active but your product feed hasn't been configured yet.</span>
+		<a href="{$tabUrls['feedSettings']}" class="ipsButton ipsButton--primary ipsButton--small" style="margin-left:12px">
+			<i class="fa-solid fa-gear" aria-hidden="true"></i>
+			<span>{lang="gddealer_front_onboarding_go_settings"}</span>
+		</a>
 	</div>
 	{{endif}}
 
 	<div class="ipsPwaStickyFix ipsPwaStickyFix--ipsTabs"></div>
-	<i-tabs class="ipsTabs ipsTabs--sticky ipsTabs--profile ipsTabs--stretch">
+	<i-tabs class="ipsTabs ipsTabs--sticky ipsTabs--profile ipsTabs--stretch gdShellTabs">
 		<div role="tablist" style="display:flex;gap:0;border-bottom:1px solid var(--i-border-color,#e0e0e0);overflow-x:auto;background:#fff;border-radius:8px 8px 0 0">
 			<a href="{$tabUrls['overview']}" class="ipsTabs__tab {expression="$activeTab === 'overview' ? 'ipsTabs__activeTab' : ''"}" role="tab" aria-selected="{expression="$activeTab === 'overview' ? 'true' : 'false'"}" style="padding:12px 20px;text-decoration:none;font-weight:600;color:{expression="$activeTab === 'overview' ? '#2563eb' : '#475569'"};border-bottom:2px solid {expression="$activeTab === 'overview' ? '#2563eb' : 'transparent'"};white-space:nowrap">{lang="gddealer_front_tab_overview"}</a>
 			<a href="{$tabUrls['feedSettings']}" class="ipsTabs__tab {expression="$activeTab === 'feedSettings' ? 'ipsTabs__activeTab' : ''"}" role="tab" aria-selected="{expression="$activeTab === 'feedSettings' ? 'true' : 'false'"}" style="padding:12px 20px;text-decoration:none;font-weight:600;color:{expression="$activeTab === 'feedSettings' ? '#2563eb' : '#475569'"};border-bottom:2px solid {expression="$activeTab === 'feedSettings' ? '#2563eb' : 'transparent'"};white-space:nowrap">{lang="gddealer_front_tab_feed"}</a>
@@ -647,7 +663,7 @@ TEMPLATE_EOT,
 		'template_name' => 'overview',
 		'template_data' => '$dealer, $overview, $tabUrls, $prefs',
 		'template_content' => <<<'TEMPLATE_EOT'
-<div class="ipsProfile ipsProfile--profile" style="display:flex;gap:24px;flex-wrap:wrap">
+<div class="ipsProfile ipsProfile--profile gdFlexWrap" style="display:flex;gap:24px;flex-wrap:wrap">
 	<aside class="ipsProfile__aside" style="flex:0 0 260px;min-width:240px">
 		<div class="ipsProfile__sticky-outer">
 			<div class="ipsProfile__sticky-inner">
@@ -863,6 +879,7 @@ TEMPLATE_EOT,
 
 	<div class="ipsBox" style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px">
 		<h3 class="ipsBox__header" style="margin:0;padding:14px 18px;border-bottom:1px solid var(--i-border-color,#f0f0f0);font-size:1em;font-weight:700">{lang="gddealer_front_import_history"}</h3>
+		<div class="gdTableWrap">
 		<table class="ipsTable ipsTable_zebra" style="width:100%">
 		<thead>
 			<tr>
@@ -905,6 +922,7 @@ TEMPLATE_EOT,
 			{{endif}}
 		</tbody>
 	</table>
+		</div>
 	</div>
 
 </div>
@@ -950,6 +968,7 @@ TEMPLATE_EOT,
 
 	<p style="color:#666">{expression="number_format( $total )"} listings total.</p>
 
+	<div class="gdTableWrap">
 	<table class="ipsTable ipsTable_zebra" style="width:100%">
 		<thead>
 			<tr>
@@ -983,6 +1002,7 @@ TEMPLATE_EOT,
 			{{endif}}
 		</tbody>
 	</table>
+	</div>
 
 	{{if $pages > 1}}
 	<div style="margin-top:16px">
@@ -1014,6 +1034,7 @@ TEMPLATE_EOT,
 		<a href="{$exportUrl}" class="ipsButton ipsButton--normal ipsButton--small">{lang="gddealer_front_export_csv"}</a>
 	</p>
 
+	<div class="gdTableWrap">
 	<table class="ipsTable ipsTable_zebra" style="width:100%">
 		<thead>
 			<tr>
@@ -1039,6 +1060,7 @@ TEMPLATE_EOT,
 			{{endif}}
 		</tbody>
 	</table>
+	</div>
 
 	</div>
 </div>
@@ -1092,6 +1114,7 @@ TEMPLATE_EOT,
 			<div style="padding:16px;border-bottom:1px solid var(--i-border-color,#e0e0e0)">
 				<h3 style="margin:0;font-size:1em;font-weight:700">Top 20 Most-Clicked Listings (Last 30 Days)</h3>
 			</div>
+			<div class="gdTableWrap">
 			<table class="ipsTable ipsTable_zebra" style="width:100%">
 				<thead><tr>
 					<th>UPC</th>
@@ -1116,6 +1139,7 @@ TEMPLATE_EOT,
 				{{endif}}
 				</tbody>
 			</table>
+			</div>
 		</div>
 
 		<div style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px">
@@ -1123,6 +1147,7 @@ TEMPLATE_EOT,
 				<h3 style="margin:0;font-size:1em;font-weight:700">Revenue Opportunities &mdash; You Are Not the Lowest Price</h3>
 				<p style="margin:4px 0 0;color:#666;font-size:0.85em">Products where lowering your price could win more clicks.</p>
 			</div>
+			<div class="gdTableWrap">
 			<table class="ipsTable ipsTable_zebra" style="width:100%">
 				<thead><tr>
 					<th>UPC</th>
@@ -1147,6 +1172,7 @@ TEMPLATE_EOT,
 				{{endif}}
 				</tbody>
 			</table>
+			</div>
 		</div>
 
 	{{endif}}
@@ -1236,7 +1262,7 @@ TEMPLATE_EOT,
 	<h2 style="margin:0 0 4px">Feed Setup Guide</h2>
 	<p style="color:#666;margin:0 0 24px">{$helpData['intro']}</p>
 
-	<div style="display:flex;gap:24px;align-items:flex-start">
+	<div class="gdHelpLayout" style="display:flex;gap:24px;align-items:flex-start">
 
 		<div style="flex:1 1 0;min-width:0">
 
@@ -1346,7 +1372,7 @@ TEMPLATE_EOT,
 
 		</div>
 
-		<div style="width:280px;flex-shrink:0;position:sticky;top:24px">
+		<div class="gdHelpSidebar" style="width:280px;flex-shrink:0;position:sticky;top:24px">
 
 			<div style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:20px;margin-bottom:16px">
 				<h3 style="margin:0 0 12px;font-size:0.95em;font-weight:700">Quick Field Reference</h3>
@@ -1682,6 +1708,22 @@ TEMPLATE_EOT,
 #ipsLayout_mainArea { max-width: 100% !important; }
 #ipsLayout_main { max-width: 100% !important; }
 .ipsLayout_container { max-width: 1446px !important; }
+.gdDealerStats { display:flex; flex-wrap:wrap; border-top:1px solid var(--i-border-color,#e8e8e8); margin-top:16px; }
+.gdDealerStats > div { flex:1 1 120px; padding:16px 20px; text-align:center; min-height:80px; display:flex; flex-direction:column; justify-content:center; }
+.gdDealerStats > div + div { border-left:1px solid var(--i-border-color,#e8e8e8); }
+@media (max-width: 768px) {
+  .gdDealerStats > div { flex:1 1 45%; min-height:60px; }
+  .gdDealerStats > div + div { border-left:none; }
+  .gdDealerStats > div:nth-child(odd) { border-right:1px solid var(--i-border-color,#e8e8e8); }
+  .gdDealerStats > div:nth-child(n+3) { border-top:1px solid var(--i-border-color,#e8e8e8); }
+  .gdProfileSidebar { width:100% !important; flex-shrink:1 !important; }
+  .gdProfileButtons { justify-content:center; }
+  .gdTableWrap { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+}
+@media (max-width: 480px) {
+  .gdDealerStats > div { flex:1 1 100%; border-left:none !important; border-right:none !important; }
+  .gdDealerStats > div + div { border-top:1px solid var(--i-border-color,#e8e8e8); }
+}
 </style>
 
 <div style="width:100%;max-width:1446px;margin:0 auto;padding:0 24px;box-sizing:border-box">
@@ -1713,30 +1755,32 @@ TEMPLATE_EOT,
 						<span style="background:{$dealer['tier_color']};color:#fff;padding:2px 10px;border-radius:20px;font-size:0.8em;font-weight:700">{$dealer['tier_label']}</span>
 					</div>
 				</div>
-				<div class="ipsCoverPhoto__buttons" style="display:flex;gap:8px;flex-wrap:wrap">
+				<div class="ipsCoverPhoto__buttons gdProfileButtons" style="display:flex;gap:8px;flex-wrap:wrap">
 					<a href="mailto:{$dealer['contact_email']}" class="ipsButton ipsButton--primary">
-						<i class="fa-solid fa-envelope" aria-hidden="true" style="margin-right:6px"></i>Contact Dealer
+						<i class="fa-solid fa-envelope" aria-hidden="true"></i>
+						<span>Contact Dealer</span>
 					</a>
 					<a href="{$guidelinesUrl}" class="ipsButton ipsButton--inherit">
-						<i class="fa-solid fa-circle-info" aria-hidden="true" style="margin-right:6px"></i>Review Guidelines
+						<i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+						<span>Review Guidelines</span>
 					</a>
 				</div>
 			</div>
-			<div style="display:flex;border-top:1px solid var(--i-border-color,#e8e8e8);margin-top:16px">
-				<div style="flex:1;padding:16px 20px;border-right:1px solid var(--i-border-color,#e8e8e8);text-align:center">
-					<div style="font-size:0.75em;color:#888;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px">Overall Rating</div>
+			<div class="gdDealerStats">
+				<div>
+					<div style="font-size:0.75em;color:#888;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;white-space:nowrap">Overall Rating</div>
 					<div style="font-size:1.6em;font-weight:800;color:#2563eb;line-height:1">{$stats['avg_overall']}<span style="font-size:0.45em;color:#888;font-weight:400"> /5</span></div>
 				</div>
-				<div style="flex:1;padding:16px 20px;border-right:1px solid var(--i-border-color,#e8e8e8);text-align:center">
-					<div style="font-size:0.75em;color:#888;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px">Reviews</div>
+				<div>
+					<div style="font-size:0.75em;color:#888;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;white-space:nowrap">Reviews</div>
 					<div style="font-size:1.6em;font-weight:800;line-height:1">{$stats['total']}</div>
 				</div>
-				<div style="flex:1;padding:16px 20px;border-right:1px solid var(--i-border-color,#e8e8e8);text-align:center">
-					<div style="font-size:0.75em;color:#888;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px">Member Since</div>
+				<div>
+					<div style="font-size:0.75em;color:#888;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;white-space:nowrap">Member Since</div>
 					<div style="font-size:1.6em;font-weight:800;line-height:1">{{if $dealer['member_since']}}{$dealer['member_since']}{{else}}&mdash;{{endif}}</div>
 				</div>
-				<div style="flex:1;padding:16px 20px;text-align:center">
-					<div style="font-size:0.75em;color:#888;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px">Active Listings</div>
+				<div>
+					<div style="font-size:0.75em;color:#888;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;white-space:nowrap">Active Listings</div>
 					<div style="font-size:1.6em;font-weight:800;color:#16a34a;line-height:1">{$dealer['listing_count']}</div>
 				</div>
 			</div>
@@ -1745,7 +1789,8 @@ TEMPLATE_EOT,
 
 	{{if !$dealer['is_active']}}
 	<div class="ipsMessage ipsMessage_info i-margin-bottom_block" style="margin-bottom:24px;padding:14px 18px;background:#f1f5f9;border:1px solid #cbd5e1;border-radius:8px;color:#334155">
-		<strong>This dealer's listings are currently inactive.</strong>
+		<i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+		<span><strong>This dealer's listings are currently inactive.</strong></span>
 		<p style="margin:4px 0 0;font-size:0.9em">Inventory and pricing are not being updated. Existing reviews and ratings are shown below for reference.</p>
 	</div>
 	{{endif}}
@@ -1781,7 +1826,7 @@ TEMPLATE_EOT,
 	{{endif}}
 
 	<div class="ipsProfile ipsProfile--profile" style="display:flex;gap:24px;flex-wrap:wrap">
-		<aside class="ipsProfile__aside" style="width:300px;flex-shrink:0">
+		<aside class="ipsProfile__aside gdProfileSidebar" style="width:300px;flex-shrink:0">
 			<div class="ipsProfile__sticky-outer">
 				<div class="ipsProfile__sticky-inner">
 					<div class="ipsWidget" style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;margin-bottom:16px">
@@ -1873,7 +1918,7 @@ TEMPLATE_EOT,
 			{{elseif $alreadyRated}}
 			<div class="ipsMessage ipsMessage_info i-margin-bottom_block" style="margin-bottom:24px;padding:14px 18px;background:#f0f7ff;border:1px solid #bfdbfe;border-radius:8px;color:#1e40af">
 				<i class="fa-solid fa-circle-check" aria-hidden="true"></i>
-				You have already reviewed this dealer. Thank you for your feedback!
+				<span>You have already reviewed this dealer. Thank you for your feedback!</span>
 			</div>
 			{{elseif $loginRequired}}
 			<div class="ipsBox i-margin-bottom_block" style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;margin-bottom:24px">
