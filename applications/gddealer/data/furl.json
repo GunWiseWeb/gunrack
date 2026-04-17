@@ -7,7 +7,7 @@
 		},
 		"dealers_dashboard_tab": {
 			"friendly": "dashboard/{@do}",
-			"real": "app=gddealer&module=dealers&controller=dashboard&do={@do}"
+			"real": "app=gddealer&module=dealers&controller=dashboard"
 		},
 		"dealers_join": {
 			"friendly": "join",
@@ -15,11 +15,15 @@
 		},
 		"dealers_join_action": {
 			"friendly": "join/{@do}",
-			"real": "app=gddealer&module=dealers&controller=join&do={@do}"
+			"real": "app=gddealer&module=dealers&controller=join"
 		},
 		"dealers_review_guidelines": {
 			"friendly": "review-guidelines",
 			"real": "app=gddealer&module=dealers&controller=profile&do=guidelines"
+		},
+		"dealers_profile": {
+			"friendly": "profile/{@dealer_slug}",
+			"real": "app=gddealer&module=dealers&controller=profile"
 		}
 	}
 }
