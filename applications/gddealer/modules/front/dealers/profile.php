@@ -29,6 +29,28 @@ class _profile extends \IPS\Dispatcher\Controller
 		parent::execute();
 	}
 
+	/** Map a 1–5 rating to a color on the shared rating scale. */
+	private static function ratingColor( float $r ): string
+	{
+		return match( true ) {
+			$r >= 4.0 => '#16a34a',
+			$r >= 3.0 => '#d97706',
+			$r > 0    => '#dc2626',
+			default   => '#9ca3af',
+		};
+	}
+
+	/** Map a 1–5 rating to a human-readable label on the shared scale. */
+	private static function ratingLabel( float $r ): string
+	{
+		return match( true ) {
+			$r >= 4.0 => 'Excellent',
+			$r >= 3.0 => 'Good',
+			$r > 0    => 'Poor',
+			default   => 'No ratings yet',
+		};
+	}
+
 	/**
 	 * Default: render the public profile for the dealer identified by
 	 * the {dealer_slug} URL segment.
@@ -84,6 +106,12 @@ class _profile extends \IPS\Dispatcher\Controller
 		}
 		catch ( \Exception ) {}
 
+		$stats['rating_color']   = self::ratingColor( (float) $stats['avg_overall'] );
+		$stats['rating_label']   = self::ratingLabel( (float) $stats['avg_overall'] );
+		$stats['color_pricing']  = self::ratingColor( (float) $stats['avg_pricing'] );
+		$stats['color_shipping'] = self::ratingColor( (float) $stats['avg_shipping'] );
+		$stats['color_service']  = self::ratingColor( (float) $stats['avg_service'] );
+
 		/* Reviews list — all approved rows. Dispute status is surfaced per
 		   row so the template can render the appropriate badge. */
 		$reviews = [];
@@ -94,6 +122,7 @@ class _profile extends \IPS\Dispatcher\Controller
 				'created_at DESC', [ 0, 50 ]
 			) as $r )
 			{
+				$reviewAvg = ( (int) $r['rating_pricing'] + (int) $r['rating_shipping'] + (int) $r['rating_service'] ) / 3;
 				$reviews[] = [
 					'id'              => (int) $r['id'],
 					'member_id'       => (int) ( $r['member_id'] ?? 0 ),
@@ -105,6 +134,8 @@ class _profile extends \IPS\Dispatcher\Controller
 					'created_at'      => (string) $r['created_at'],
 					'dispute_status'  => (string) ( $r['dispute_status'] ?? 'none' ),
 					'dispute_outcome' => (string) ( $r['dispute_outcome'] ?? '' ),
+					'avg_color'       => self::ratingColor( (float) $reviewAvg ),
+					'avg_overall'     => round( $reviewAvg, 1 ),
 				];
 			}
 		}

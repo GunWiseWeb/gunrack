@@ -1559,20 +1559,21 @@ TEMPLATE_EOT,
 
 	<div style="display:flex;gap:16px;margin-bottom:24px;flex-wrap:wrap">
 		<div style="flex:1 1 160px;background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:16px;text-align:center">
-			<div style="font-size:2em;font-weight:800;color:#2563eb">{$data['avg_overall']}</div>
-			<div style="color:#666;font-size:0.85em">Overall Rating</div>
-			<div style="color:#999;font-size:0.8em">{$data['total']} reviews</div>
+			<div style="font-size:2em;font-weight:800;color:{$data['rating_color']};line-height:1">{$data['avg_overall']}</div>
+			<div style="color:#666;font-size:0.85em;margin-top:4px">Overall Rating</div>
+			<div style="font-size:0.72em;font-weight:600;color:{$data['rating_color']};margin-top:4px">{$data['rating_label']}</div>
+			<div style="color:#999;font-size:0.8em;margin-top:4px">{$data['total']} reviews</div>
 		</div>
 		<div style="flex:1 1 160px;background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:16px;text-align:center">
-			<div style="font-size:2em;font-weight:800">{$data['avg_pricing']}</div>
+			<div style="font-size:2em;font-weight:800;color:{$data['color_pricing']}">{$data['avg_pricing']}</div>
 			<div style="color:#666;font-size:0.85em">Pricing Accuracy</div>
 		</div>
 		<div style="flex:1 1 160px;background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:16px;text-align:center">
-			<div style="font-size:2em;font-weight:800">{$data['avg_shipping']}</div>
+			<div style="font-size:2em;font-weight:800;color:{$data['color_shipping']}">{$data['avg_shipping']}</div>
 			<div style="color:#666;font-size:0.85em">Shipping Speed</div>
 		</div>
 		<div style="flex:1 1 160px;background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:16px;text-align:center">
-			<div style="font-size:2em;font-weight:800">{$data['avg_service']}</div>
+			<div style="font-size:2em;font-weight:800;color:{$data['color_service']}">{$data['avg_service']}</div>
 			<div style="color:#666;font-size:0.85em">Customer Service</div>
 		</div>
 	</div>
@@ -1591,7 +1592,8 @@ TEMPLATE_EOT,
 		{{foreach $data['rows'] as $r}}
 		<div style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:20px;margin-bottom:12px">
 			<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;flex-wrap:wrap;gap:8px">
-				<div style="display:flex;gap:16px;flex-wrap:wrap">
+				<div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center">
+					<span style="font-size:0.8em;font-weight:700;color:{$r['avg_color']};background:{$r['avg_color']}18;padding:2px 8px;border-radius:12px">{$r['avg_overall']} / 5</span>
 					<span style="font-size:0.8em;color:#666">Pricing: <strong>{$r['rating_pricing']}/5</strong></span>
 					<span style="font-size:0.8em;color:#666">Shipping: <strong>{$r['rating_shipping']}/5</strong></span>
 					<span style="font-size:0.8em;color:#666">Service: <strong>{$r['rating_service']}/5</strong></span>
@@ -1768,8 +1770,9 @@ TEMPLATE_EOT,
 			</div>
 			<div class="gdDealerStats">
 				<div>
-					<div style="font-size:0.75em;color:#888;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;white-space:nowrap">Overall Rating</div>
-					<div style="font-size:1.6em;font-weight:800;color:#2563eb;line-height:1">{$stats['avg_overall']}<span style="font-size:0.45em;color:#888;font-weight:400"> /5</span></div>
+					<div style="font-size:0.72em;color:#888;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;white-space:nowrap">Overall Rating</div>
+					<div style="font-size:1.6em;font-weight:800;color:{$stats['rating_color']};line-height:1">{$stats['avg_overall']}<span style="font-size:0.45em;color:#888;font-weight:400"> /5</span></div>
+					<div style="font-size:0.72em;font-weight:600;color:{$stats['rating_color']};margin-top:4px">{$stats['rating_label']}</div>
 				</div>
 				<div>
 					<div style="font-size:0.75em;color:#888;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;white-space:nowrap">Reviews</div>
@@ -1835,28 +1838,28 @@ TEMPLATE_EOT,
 							<div style="margin-bottom:14px">
 								<div style="display:flex;justify-content:space-between;margin-bottom:4px">
 									<span style="font-size:0.85em">Pricing Accuracy</span>
-									<strong>{$stats['avg_pricing']}/5</strong>
+									<strong style="color:{$stats['color_pricing']}">{$stats['avg_pricing']}/5</strong>
 								</div>
-								<div style="background:var(--i-border-color,#e0e0e0);border-radius:4px;height:6px">
-									<div style="background:#2563eb;border-radius:4px;height:6px;width:{$stats['pct_pricing']}%"></div>
+								<div style="background:var(--i-border-color,#e0e0e0);border-radius:4px;height:8px">
+									<div style="background:{$stats['color_pricing']};border-radius:4px;height:8px;width:{$stats['pct_pricing']}%;transition:width 0.3s ease"></div>
 								</div>
 							</div>
 							<div style="margin-bottom:14px">
 								<div style="display:flex;justify-content:space-between;margin-bottom:4px">
 									<span style="font-size:0.85em">Shipping Speed</span>
-									<strong>{$stats['avg_shipping']}/5</strong>
+									<strong style="color:{$stats['color_shipping']}">{$stats['avg_shipping']}/5</strong>
 								</div>
-								<div style="background:var(--i-border-color,#e0e0e0);border-radius:4px;height:6px">
-									<div style="background:#2563eb;border-radius:4px;height:6px;width:{$stats['pct_shipping']}%"></div>
+								<div style="background:var(--i-border-color,#e0e0e0);border-radius:4px;height:8px">
+									<div style="background:{$stats['color_shipping']};border-radius:4px;height:8px;width:{$stats['pct_shipping']}%;transition:width 0.3s ease"></div>
 								</div>
 							</div>
 							<div>
 								<div style="display:flex;justify-content:space-between;margin-bottom:4px">
 									<span style="font-size:0.85em">Customer Service</span>
-									<strong>{$stats['avg_service']}/5</strong>
+									<strong style="color:{$stats['color_service']}">{$stats['avg_service']}/5</strong>
 								</div>
-								<div style="background:var(--i-border-color,#e0e0e0);border-radius:4px;height:6px">
-									<div style="background:#2563eb;border-radius:4px;height:6px;width:{$stats['pct_service']}%"></div>
+								<div style="background:var(--i-border-color,#e0e0e0);border-radius:4px;height:8px">
+									<div style="background:{$stats['color_service']};border-radius:4px;height:8px;width:{$stats['pct_service']}%;transition:width 0.3s ease"></div>
 								</div>
 							</div>
 						</div>
@@ -1940,7 +1943,8 @@ TEMPLATE_EOT,
 					{{foreach $reviews as $r}}
 					<div style="padding:18px;border-bottom:1px solid var(--i-border-color,#f0f0f0)">
 						<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:10px">
-							<div style="display:flex;gap:16px;flex-wrap:wrap">
+							<div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center">
+								<span style="font-size:0.8em;font-weight:700;color:{$r['avg_color']};background:{$r['avg_color']}18;padding:2px 8px;border-radius:12px">{$r['avg_overall']} / 5</span>
 								<span style="font-size:0.82em;color:#555">
 									<span style="color:#f59e0b">{$r['pricing_stars']}</span> Pricing
 								</span>
