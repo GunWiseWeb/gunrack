@@ -1678,7 +1678,13 @@ TEMPLATE_EOT,
 		'template_name' => 'dealerProfile',
 		'template_data' => '$dealer, $stats, $reviews, $canRate, $alreadyRated, $loginRequired, $rateUrl, $csrfKey, $loginUrl, $customerDispute, $guidelinesUrl',
 		'template_content' => <<<'TEMPLATE_EOT'
-<div style="width:100%;max-width:1200px;margin:0 auto;padding:0 16px;box-sizing:border-box">
+<style>
+#ipsLayout_mainArea { max-width: 100% !important; }
+#ipsLayout_main { max-width: 100% !important; }
+.ipsLayout_container { max-width: 1446px !important; }
+</style>
+
+<div style="width:100%;max-width:1446px;margin:0 auto;padding:0 24px;box-sizing:border-box">
 
 	<header class="ipsPageHeader ipsBox ipsBox--profileHeader ipsPull i-margin-bottom_block" style="width:100%;box-sizing:border-box;border-radius:8px;overflow:hidden;margin-bottom:16px">
 		<div class="ipsCoverPhoto ipsCoverPhoto--profile" style="position:relative;overflow:hidden;min-height:180px">
@@ -1691,7 +1697,7 @@ TEMPLATE_EOT,
 			</div>
 		</div>
 		<div class="ipsCoverPhotoMeta" style="background:#fff;border-top:none;padding:20px 24px">
-			<div style="display:flex;gap:20px;align-items:flex-end;flex-wrap:wrap;margin-bottom:16px">
+			<div style="display:flex;gap:20px;align-items:flex-end;flex-wrap:wrap">
 				{{if $dealer['avatar_url']}}
 				<div class="ipsCoverPhoto__avatar" id="elProfilePhoto" style="margin-top:-60px">
 					<span class="ipsUserPhoto ipsUserPhoto--xlarge">
@@ -1709,33 +1715,31 @@ TEMPLATE_EOT,
 				</div>
 				<div class="ipsCoverPhoto__buttons" style="display:flex;gap:8px;flex-wrap:wrap">
 					<a href="mailto:{$dealer['contact_email']}" class="ipsButton ipsButton--primary">
-						<i class="fa-solid fa-envelope" aria-hidden="true"></i>
-						<span>Contact Dealer</span>
+						<i class="fa-solid fa-envelope" aria-hidden="true" style="margin-right:6px"></i>Contact Dealer
 					</a>
 					<a href="{$guidelinesUrl}" class="ipsButton ipsButton--inherit">
-						<i class="fa-solid fa-circle-info" aria-hidden="true"></i>
-						<span>Review Guidelines</span>
+						<i class="fa-solid fa-circle-info" aria-hidden="true" style="margin-right:6px"></i>Review Guidelines
 					</a>
 				</div>
 			</div>
-			<ul class="ipsCoverPhoto__stats" style="display:flex;list-style:none;padding:16px 0 0;margin:0;border-top:1px solid var(--i-border-color,#f0f0f0);flex-wrap:wrap">
-				<li style="flex:1;min-width:120px;text-align:center;padding:0 12px;border-right:1px solid var(--i-border-color,#f0f0f0)">
-					<h4 class="ipsCoverPhoto__statTitle">Overall Rating</h4>
-					<span class="ipsCoverPhoto__statValue" style="color:#2563eb;font-weight:800">{$stats['avg_overall']}<small style="font-size:0.6em;color:#666"> /5</small></span>
-				</li>
-				<li style="flex:1;min-width:120px;text-align:center;padding:0 12px;border-right:1px solid var(--i-border-color,#f0f0f0)">
-					<h4 class="ipsCoverPhoto__statTitle">Reviews</h4>
-					<span class="ipsCoverPhoto__statValue">{expression="number_format($stats['total'])"}</span>
-				</li>
-				<li style="flex:1;min-width:120px;text-align:center;padding:0 12px;border-right:1px solid var(--i-border-color,#f0f0f0)">
-					<h4 class="ipsCoverPhoto__statTitle">Member Since</h4>
-					<span class="ipsCoverPhoto__statValue">{{if $dealer['member_since']}}{$dealer['member_since']}{{else}}&mdash;{{endif}}</span>
-				</li>
-				<li style="flex:1;min-width:120px;text-align:center;padding:0 12px">
-					<h4 class="ipsCoverPhoto__statTitle">Active Listings</h4>
-					<span class="ipsCoverPhoto__statValue" style="color:#16a34a;font-weight:700">{expression="number_format($dealer['listing_count'])"}</span>
-				</li>
-			</ul>
+			<div style="display:flex;border-top:1px solid var(--i-border-color,#e8e8e8);margin-top:16px">
+				<div style="flex:1;padding:16px 20px;border-right:1px solid var(--i-border-color,#e8e8e8);text-align:center">
+					<div style="font-size:0.75em;color:#888;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px">Overall Rating</div>
+					<div style="font-size:1.6em;font-weight:800;color:#2563eb;line-height:1">{$stats['avg_overall']}<span style="font-size:0.45em;color:#888;font-weight:400"> /5</span></div>
+				</div>
+				<div style="flex:1;padding:16px 20px;border-right:1px solid var(--i-border-color,#e8e8e8);text-align:center">
+					<div style="font-size:0.75em;color:#888;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px">Reviews</div>
+					<div style="font-size:1.6em;font-weight:800;line-height:1">{$stats['total']}</div>
+				</div>
+				<div style="flex:1;padding:16px 20px;border-right:1px solid var(--i-border-color,#e8e8e8);text-align:center">
+					<div style="font-size:0.75em;color:#888;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px">Member Since</div>
+					<div style="font-size:1.6em;font-weight:800;line-height:1">{{if $dealer['member_since']}}{$dealer['member_since']}{{else}}&mdash;{{endif}}</div>
+				</div>
+				<div style="flex:1;padding:16px 20px;text-align:center">
+					<div style="font-size:0.75em;color:#888;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px">Active Listings</div>
+					<div style="font-size:1.6em;font-weight:800;color:#16a34a;line-height:1">{$dealer['listing_count']}</div>
+				</div>
+			</div>
 		</div>
 	</header>
 
