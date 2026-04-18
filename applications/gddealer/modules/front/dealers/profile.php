@@ -524,7 +524,7 @@ class _profile extends \IPS\Dispatcher\Controller
 		}
 		catch ( \Exception ) {}
 
-		/* Email the dealer about the new review. */
+		/* Email + IPS notification to the dealer about the new review. */
 		try
 		{
 			$dealerMember = \IPS\Member::load( $dealerId );
@@ -538,6 +538,24 @@ class _profile extends \IPS\Dispatcher\Controller
 						'app=gddealer&module=dealers&controller=dashboard&do=reviews'
 					),
 				], \IPS\Email::TYPE_TRANSACTIONAL )->send( $dealerMember );
+
+				try
+				{
+					$notification = new \IPS\Notification(
+						\IPS\Application::load( 'gddealer' ),
+						'new_dealer_review',
+						$dealerMember,
+						[ $dealerMember ],
+						[
+							'reviewer_id'   => (int) $member->member_id,
+							'reviewer_name' => (string) $member->name,
+							'dealer_name'   => (string) $dealerRow['dealer_name'],
+						]
+					);
+					$notification->recipients->attach( $dealerMember );
+					$notification->send();
+				}
+				catch ( \Exception ) {}
 			}
 		}
 		catch ( \Exception ) {}
@@ -619,13 +637,14 @@ class _profile extends \IPS\Dispatcher\Controller
 		}
 		catch ( \Exception ) {}
 
-		/* Email admins so they can resolve the dispute. */
+		/* Email + IPS notification to admins so they can resolve the dispute. */
 		try
 		{
 			$adminUrl = (string) \IPS\Http\Url::internal(
 				'app=gddealer&module=dealers&controller=dealers&do=disputes',
 				'admin'
 			);
+			$dealerName = (string) ( $dealerRow['dealer_name'] ?? '' );
 
 			foreach ( \IPS\Db::i()->select( '*', 'core_members',
 				[ \IPS\Db::i()->in( 'member_group_id', [ 4 ] ) ],
@@ -640,6 +659,23 @@ class _profile extends \IPS\Dispatcher\Controller
 						\IPS\Email::buildFromTemplate( 'gddealer', 'disputeAdminNotify', [
 							'admin_url' => $adminUrl,
 						], \IPS\Email::TYPE_TRANSACTIONAL )->send( $admin );
+
+						try
+						{
+							$notification = new \IPS\Notification(
+								\IPS\Application::load( 'gddealer' ),
+								'dispute_admin_review',
+								$admin,
+								[ $admin ],
+								[
+									'dealer_name'   => $dealerName,
+									'reviewer_name' => (string) $member->name,
+								]
+							);
+							$notification->recipients->attach( $admin );
+							$notification->send();
+						}
+						catch ( \Exception ) {}
 					}
 				}
 				catch ( \Exception ) {}
