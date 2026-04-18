@@ -2,6 +2,51 @@
 
 How to add a new version to the `gddealer` IPS application so existing installs get schema changes and data migrations automatically instead of losing data on re-install.
 
+## The Golden Rule
+
+**Every time you make ANY change to the plugin — new feature, bug fix, template change, new column, anything — you must bump the version before building the tar. No exceptions.**
+
+### The version bump checklist (do this every single time)
+
+1. Look at the current highest version in `data/versions.json`.
+2. Increment by 1 (e.g. `10002` → `10003`).
+3. Add a new entry to `data/versions.json`:
+   ```json
+   "1.0.3": 10003
+   ```
+4. Create `setup/upg_10003/queries.json` — put any new `ALTER TABLE` or `CREATE TABLE` statements here (via the IPS schema helpers), or `[]` if the schema didn't change.
+5. Create `setup/upg_10003/upgrade.php` using the exact class structure below:
+   ```php
+   <?php
+
+   namespace IPS\gddealer\setup\upg_10003;
+
+   use function defined;
+
+   if ( !defined( '\IPS\SUITE_UNIQUE_KEY' ) )
+   {
+       header( ( $_SERVER['SERVER_PROTOCOL'] ?? 'HTTP/1.0' ) . ' 403 Forbidden' );
+       exit;
+   }
+
+   class _upgrade
+   {
+       public function step1(): bool
+       {
+           // Describe what changed in this version
+           // Put data migrations here
+           // Seed any new templates here using \IPS\Db::i()->insert() with ON DUPLICATE KEY UPDATE
+           return TRUE;
+       }
+   }
+
+   class upgrade extends _upgrade {}
+   ```
+6. If new templates were added, seed them in `step1()` of the upgrade file.
+7. Rebuild the tar and push.
+
+**Never build a tar without doing all 7 steps first.**
+
 ## How IPS upgrades work
 
 On upgrade IPS compares the version integer stored in `core_applications.app_long_version` (DB column) against each entry in `data/versions.json`. For every entry whose integer is greater than the stored value, IPS runs:
