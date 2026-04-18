@@ -14,7 +14,9 @@
  * Uses the same slug algorithm as manualOnboard() in the ACP controller.
  */
 
-namespace IPS\gddealer\setup;
+namespace IPS\gddealer\setup\upg_10001;
+
+use function defined;
 
 if ( !defined( '\IPS\SUITE_UNIQUE_KEY' ) )
 {

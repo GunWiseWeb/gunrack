@@ -53,6 +53,12 @@ Fresh installs skip all upg_ scripts and run `setup/install.php` which seeds eve
 - **versions.json key/value direction:** Keys are the human-readable version string (e.g. `"1.0.2"`), values are the integer (e.g. `10002`). NOT the other way around. IPS iterates keys as display labels and compares values against the stored version integer.
 - **Integer vs string types matter in versions.json:** Values must be bare integers (`10002`), not quoted strings (`"10002"`). Keys must be quoted strings (`"1.0.2"`), which JSON requires for object keys anyway.
 - **Highest integer in versions.json wins:** That entry is treated as the current version and triggers all `upg_XXXXX` scripts whose integer is between the stored DB value and the new highest.
+- **upgrade.php must be a class, not a plain PHP file** — IPS autoloads `upgrade.php` as a class. A plain PHP file without the `_upgrade`/`upgrade` class structure causes "Class could not be loaded". Required structure:
+  - Namespace must be `IPS\gddealer\setup\upg_XXXXX` — the version number is part of the namespace.
+  - Must have `class _upgrade` with at least `step1(): bool` returning `TRUE`.
+  - Must have `class upgrade extends _upgrade {}` as the final line.
+  - Include `use function defined;` after the namespace declaration.
+- **Bump versions.json for every change** — every time ANY change is made to the plugin, add a new version entry to `data/versions.json` and create a corresponding `setup/upg_XXXXX/` directory (even if `queries.json` is `[]` and `step1()` is a no-op).
 
 ## Current version history
 

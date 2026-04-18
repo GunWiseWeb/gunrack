@@ -9,7 +9,9 @@
  * to run regardless of which state the install is in.
  */
 
-namespace IPS\gddealer\setup;
+namespace IPS\gddealer\setup\upg_10002;
+
+use function defined;
 
 if ( !defined( '\IPS\SUITE_UNIQUE_KEY' ) )
 {
