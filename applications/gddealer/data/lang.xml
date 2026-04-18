@@ -291,5 +291,13 @@
     <word key="gddealer_notif_new_review_text"><![CDATA[%s left a review on your dealer profile.]]></word>
     <word key="gddealer_notif_dispute_title"><![CDATA[Review Dispute Update]]></word>
     <word key="gddealer_notif_dispute_text"><![CDATA[There is an update on a review dispute.]]></word>
+    <word key="gddealer_notif_review_disputed_title"><![CDATA[Your Review Has Been Contested]]></word>
+    <word key="gddealer_notif_review_disputed_text"><![CDATA[%s has contested your review. You have 30 days to respond.]]></word>
+    <word key="gddealer_notif_dispute_admin_review_title"><![CDATA[Dispute Ready for Admin Review]]></word>
+    <word key="gddealer_notif_dispute_admin_review_text"><![CDATA[%s responded to a review dispute on %s. Admin action required.]]></word>
+    <word key="gddealer_notif_dispute_upheld_title"><![CDATA[Your Contest Was Upheld]]></word>
+    <word key="gddealer_notif_dispute_upheld_text"><![CDATA[An admin has upheld your review contest. The review no longer affects your rating.]]></word>
+    <word key="gddealer_notif_dispute_dismissed_title"><![CDATA[Your Contest Was Dismissed]]></word>
+    <word key="gddealer_notif_dispute_dismissed_text"><![CDATA[An admin has dismissed your review contest. The review remains visible.]]></word>
   </app>
 </language>

@@ -1147,7 +1147,7 @@ class _dashboard extends \IPS\Dispatcher\Controller
 		}
 		catch ( \Exception ) {}
 
-		/* Notify the customer via transactional email. */
+		/* Notify the customer via transactional email and IPS notification. */
 		if ( (int) ( $review['member_id'] ?? 0 ) > 0 )
 		{
 			try
@@ -1166,6 +1166,19 @@ class _dashboard extends \IPS\Dispatcher\Controller
 						'deadline'    => date( 'F j, Y', strtotime( $deadline ) ),
 						'respond_url' => $respondUrl,
 					], \IPS\Email::TYPE_TRANSACTIONAL )->send( $customer );
+
+					$notification = new \IPS\Notification(
+						\IPS\Application::load( 'gddealer' ),
+						'review_disputed',
+						$customer,
+						[ $customer ],
+						[
+							'dealer_name' => (string) $this->dealer->dealer_name,
+							'respond_url' => $respondUrl,
+						]
+					);
+					$notification->recipients->attach( $customer );
+					$notification->send();
 				}
 			}
 			catch ( \Exception ) {}

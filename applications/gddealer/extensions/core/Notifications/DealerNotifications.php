@@ -55,6 +55,112 @@ class DealerNotifications
 					);
 				},
 			],
+			'review_disputed' => [
+				'default'          => [ 'inline' ],
+				'disabled'         => [],
+				'title'            => 'gddealer_notif_review_disputed_title',
+				'text'             => 'gddealer_notif_review_disputed_text',
+				'icon'             => 'fa-solid fa-flag',
+				'url'              => function( $data )
+				{
+					return isset( $data['respond_url'] )
+						? \IPS\Http\Url::external( $data['respond_url'] )
+						: \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=profile' );
+				},
+				'title_callback'   => function( $data )
+				{
+					return \IPS\Member::loggedIn()->language()->addToStack(
+						'gddealer_notif_review_disputed_title'
+					);
+				},
+				'content_callback' => function( $data )
+				{
+					return \IPS\Member::loggedIn()->language()->addToStack(
+						'gddealer_notif_review_disputed_text',
+						FALSE,
+						[ 'sprintf' => [ $data['dealer_name'] ?? 'A dealer' ] ]
+					);
+				},
+			],
+			'dispute_admin_review' => [
+				'default'          => [ 'inline' ],
+				'disabled'         => [],
+				'title'            => 'gddealer_notif_dispute_admin_review_title',
+				'text'             => 'gddealer_notif_dispute_admin_review_text',
+				'icon'             => 'fa-solid fa-gavel',
+				'url'              => function( $data )
+				{
+					return isset( $data['admin_url'] )
+						? \IPS\Http\Url::external( $data['admin_url'] )
+						: \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dealers&do=disputes', 'admin' );
+				},
+				'title_callback'   => function( $data )
+				{
+					return \IPS\Member::loggedIn()->language()->addToStack(
+						'gddealer_notif_dispute_admin_review_title'
+					);
+				},
+				'content_callback' => function( $data )
+				{
+					$reviewer = $data['reviewer_name'] ?? 'A customer';
+					$dealer   = $data['dealer_name'] ?? 'a dealer';
+					return \IPS\Member::loggedIn()->language()->addToStack(
+						'gddealer_notif_dispute_admin_review_text',
+						FALSE,
+						[ 'sprintf' => [ $reviewer, $dealer ] ]
+					);
+				},
+			],
+			'dispute_upheld' => [
+				'default'          => [ 'inline' ],
+				'disabled'         => [],
+				'title'            => 'gddealer_notif_dispute_upheld_title',
+				'text'             => 'gddealer_notif_dispute_upheld_text',
+				'icon'             => 'fa-solid fa-check-circle',
+				'url'              => function( $data )
+				{
+					return \IPS\Http\Url::internal(
+						'app=gddealer&module=dealers&controller=dashboard&do=reviews'
+					);
+				},
+				'title_callback'   => function( $data )
+				{
+					return \IPS\Member::loggedIn()->language()->addToStack(
+						'gddealer_notif_dispute_upheld_title'
+					);
+				},
+				'content_callback' => function( $data )
+				{
+					return \IPS\Member::loggedIn()->language()->addToStack(
+						'gddealer_notif_dispute_upheld_text'
+					);
+				},
+			],
+			'dispute_dismissed' => [
+				'default'          => [ 'inline' ],
+				'disabled'         => [],
+				'title'            => 'gddealer_notif_dispute_dismissed_title',
+				'text'             => 'gddealer_notif_dispute_dismissed_text',
+				'icon'             => 'fa-solid fa-times-circle',
+				'url'              => function( $data )
+				{
+					return \IPS\Http\Url::internal(
+						'app=gddealer&module=dealers&controller=dashboard&do=reviews'
+					);
+				},
+				'title_callback'   => function( $data )
+				{
+					return \IPS\Member::loggedIn()->language()->addToStack(
+						'gddealer_notif_dispute_dismissed_title'
+					);
+				},
+				'content_callback' => function( $data )
+				{
+					return \IPS\Member::loggedIn()->language()->addToStack(
+						'gddealer_notif_dispute_dismissed_text'
+					);
+				},
+			],
 		];
 	}
 }

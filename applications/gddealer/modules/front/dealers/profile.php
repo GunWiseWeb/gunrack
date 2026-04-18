@@ -623,13 +623,14 @@ class _profile extends \IPS\Dispatcher\Controller
 		}
 		catch ( \Exception ) {}
 
-		/* Notify admins so they can resolve the dispute. */
+		/* Notify admins via email and IPS notification so they can resolve the dispute. */
 		try
 		{
 			$adminUrl = (string) \IPS\Http\Url::internal(
 				'app=gddealer&module=dealers&controller=dealers&do=disputes',
 				'admin'
 			);
+			$dealerName = (string) ( $dealerRow['dealer_name'] ?? '' );
 
 			foreach ( \IPS\Db::i()->select( '*', 'core_members',
 				[ \IPS\Db::i()->in( 'member_group_id', [ 4 ] ) ],
@@ -644,6 +645,20 @@ class _profile extends \IPS\Dispatcher\Controller
 						\IPS\Email::buildFromTemplate( 'gddealer', 'disputeAdminNotify', [
 							'admin_url' => $adminUrl,
 						], \IPS\Email::TYPE_TRANSACTIONAL )->send( $admin );
+
+						$notification = new \IPS\Notification(
+							\IPS\Application::load( 'gddealer' ),
+							'dispute_admin_review',
+							$admin,
+							[ $admin ],
+							[
+								'dealer_name'   => $dealerName,
+								'reviewer_name' => (string) $member->name,
+								'admin_url'     => $adminUrl,
+							]
+						);
+						$notification->recipients->attach( $admin );
+						$notification->send();
 					}
 				}
 				catch ( \Exception ) {}

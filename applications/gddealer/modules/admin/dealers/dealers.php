@@ -591,6 +591,13 @@ class _dealers extends \IPS\Dispatcher\Controller
 		\IPS\Session::i()->csrfCheck();
 		$id = (int) \IPS\Request::i()->id;
 
+		$dealerId = 0;
+		try
+		{
+			$dealerId = (int) \IPS\Db::i()->select( 'dealer_id', 'gd_dealer_ratings', [ 'id=?', $id ] )->first();
+		}
+		catch ( \Exception ) {}
+
 		try
 		{
 			\IPS\Db::i()->update( 'gd_dealer_ratings', [
@@ -601,6 +608,33 @@ class _dealers extends \IPS\Dispatcher\Controller
 			], [ 'id=? AND ' . \IPS\Db::i()->in( 'dispute_status', [ 'pending_admin', 'pending_customer' ] ), $id ] );
 		}
 		catch ( \Exception ) {}
+
+		if ( $dealerId > 0 )
+		{
+			try
+			{
+				$dealerMember = \IPS\Member::load( $dealerId );
+				if ( $dealerMember->member_id )
+				{
+					\IPS\Email::buildFromTemplate( 'gddealer', 'disputeUpheld', [
+						'name' => $dealerMember->name,
+					], \IPS\Email::TYPE_TRANSACTIONAL )->send( $dealerMember );
+
+					$notification = new \IPS\Notification(
+						\IPS\Application::load( 'gddealer' ),
+						'dispute_upheld',
+						$dealerMember,
+						[ $dealerMember ],
+						[
+							'dealer_name' => (string) $dealerMember->name,
+						]
+					);
+					$notification->recipients->attach( $dealerMember );
+					$notification->send();
+				}
+			}
+			catch ( \Exception ) {}
+		}
 
 		\IPS\Output::i()->redirect(
 			\IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dealers&do=disputes' ),
@@ -647,6 +681,18 @@ class _dealers extends \IPS\Dispatcher\Controller
 					\IPS\Email::buildFromTemplate( 'gddealer', 'disputeDismissed', [
 						'name' => $dealerMember->name,
 					], \IPS\Email::TYPE_TRANSACTIONAL )->send( $dealerMember );
+
+					$notification = new \IPS\Notification(
+						\IPS\Application::load( 'gddealer' ),
+						'dispute_dismissed',
+						$dealerMember,
+						[ $dealerMember ],
+						[
+							'dealer_name' => (string) $dealerMember->name,
+						]
+					);
+					$notification->recipients->attach( $dealerMember );
+					$notification->send();
 				}
 			}
 			catch ( \Exception ) {}
