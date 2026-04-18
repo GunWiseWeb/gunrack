@@ -547,7 +547,9 @@ class _profile extends \IPS\Dispatcher\Controller
 		}
 		catch ( \Exception ) {}
 
-		/* Email + IPS notification to the dealer about the new review. */
+		/* Email to the dealer — own try/catch so a template failure cannot
+		   swallow the inline notification below. */
+		$dealerMember = NULL;
 		try
 		{
 			$dealerMember = \IPS\Member::load( $dealerId );
@@ -561,24 +563,30 @@ class _profile extends \IPS\Dispatcher\Controller
 						'app=gddealer&module=dealers&controller=dashboard&do=reviews'
 					),
 				], \IPS\Email::TYPE_TRANSACTIONAL )->send( $dealerMember );
+			}
+		}
+		catch ( \Exception ) {}
 
-				try
-				{
-					$notification = new \IPS\Notification(
-						\IPS\Application::load( 'gddealer' ),
-						'new_dealer_review',
-						$dealerMember,
-						[ $dealerMember ],
-						[
-							'reviewer_id'   => (int) $member->member_id,
-							'reviewer_name' => (string) $member->name,
-							'dealer_name'   => (string) $dealerRow['dealer_name'],
-						]
-					);
-					$notification->recipients->attach( $dealerMember );
-					$notification->send();
-				}
-				catch ( \Exception ) {}
+		/* IPS inline notification to the dealer — completely independent
+		   try/catch so a failed email above does not suppress it. */
+		try
+		{
+			$dealerMember = $dealerMember ?? \IPS\Member::load( $dealerId );
+			if ( $dealerMember && $dealerMember->member_id )
+			{
+				$notification = new \IPS\Notification(
+					\IPS\Application::load( 'gddealer' ),
+					'new_dealer_review',
+					$dealerMember,
+					[ $dealerMember ],
+					[
+						'reviewer_id'   => (int) $member->member_id,
+						'reviewer_name' => (string) $member->name,
+						'dealer_name'   => (string) $dealerRow['dealer_name'],
+					]
+				);
+				$notification->recipients->attach( $dealerMember );
+				$notification->send();
 			}
 		}
 		catch ( \Exception ) {}
@@ -674,31 +682,42 @@ class _profile extends \IPS\Dispatcher\Controller
 				null, [ 0, 50 ]
 			) as $m )
 			{
+				$admin = NULL;
 				try
 				{
 					$admin = \IPS\Member::constructFromData( $m );
-					if ( $admin->member_id )
+				}
+				catch ( \Exception ) {}
+
+				/* Email to this admin — own try/catch. */
+				try
+				{
+					if ( $admin && $admin->member_id )
 					{
 						\IPS\Email::buildFromTemplate( 'gddealer', 'disputeAdminNotify', [
 							'admin_url' => $adminUrl,
 						], \IPS\Email::TYPE_TRANSACTIONAL )->send( $admin );
+					}
+				}
+				catch ( \Exception ) {}
 
-						try
-						{
-							$notification = new \IPS\Notification(
-								\IPS\Application::load( 'gddealer' ),
-								'dispute_admin_review',
-								$admin,
-								[ $admin ],
-								[
-									'dealer_name'   => $dealerName,
-									'reviewer_name' => (string) $member->name,
-								]
-							);
-							$notification->recipients->attach( $admin );
-							$notification->send();
-						}
-						catch ( \Exception ) {}
+				/* IPS notification to this admin — completely independent. */
+				try
+				{
+					if ( $admin && $admin->member_id )
+					{
+						$notification = new \IPS\Notification(
+							\IPS\Application::load( 'gddealer' ),
+							'dispute_admin_review',
+							$admin,
+							[ $admin ],
+							[
+								'dealer_name'   => $dealerName,
+								'reviewer_name' => (string) $member->name,
+							]
+						);
+						$notification->recipients->attach( $admin );
+						$notification->send();
 					}
 				}
 				catch ( \Exception ) {}

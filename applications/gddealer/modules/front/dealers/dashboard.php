@@ -1028,69 +1028,85 @@ class _dashboard extends \IPS\Dispatcher\Controller
 			}
 			catch ( \Exception ) {}
 
-			/* Email, IPS notification, and PM to the reviewer so they know the dealer replied. */
+			/* Look up the reviewer once; each side-effect below gets its
+			   own fully independent try/catch so a failure in one channel
+			   cannot suppress the others. */
+			$reviewerMember = NULL;
+			$dealerName     = (string) $this->dealer->dealer_name;
+			$slug           = (string) ( $this->dealer->dealer_slug ?? '' );
+			$profileUrl     = (string) \IPS\Http\Url::internal(
+				'app=gddealer&module=dealers&controller=profile&dealer_slug=' . urlencode( $slug )
+			);
+
 			try
 			{
-				$review = \IPS\Db::i()->select( '*', 'gd_dealer_ratings', [ 'id=?', $id ] )->first();
+				$review         = \IPS\Db::i()->select( '*', 'gd_dealer_ratings', [ 'id=?', $id ] )->first();
 				$reviewerMember = \IPS\Member::load( (int) $review['member_id'] );
+			}
+			catch ( \Exception ) {}
 
-				if ( $reviewerMember->member_id )
+			/* Email to the reviewer — own try/catch. */
+			try
+			{
+				if ( $reviewerMember && $reviewerMember->member_id )
 				{
-					$dealerName = (string) $this->dealer->dealer_name;
-					$slug       = (string) ( $this->dealer->dealer_slug ?? '' );
-					$profileUrl = (string) \IPS\Http\Url::internal(
-						'app=gddealer&module=dealers&controller=profile&dealer_slug=' . urlencode( $slug )
-					);
-
 					\IPS\Email::buildFromTemplate( 'gddealer', 'dealerResponded', [
 						'name'        => $reviewerMember->name,
 						'dealer_name' => $dealerName,
 						'response'    => $response,
 						'profile_url' => $profileUrl,
 					], \IPS\Email::TYPE_TRANSACTIONAL )->send( $reviewerMember );
+				}
+			}
+			catch ( \Exception ) {}
 
-					try
+			/* IPS inline notification to the reviewer — own try/catch. */
+			try
+			{
+				if ( $reviewerMember && $reviewerMember->member_id )
+				{
+					$notification = new \IPS\Notification(
+						\IPS\Application::load( 'gddealer' ),
+						'dealer_responded',
+						$reviewerMember,
+						[ $reviewerMember ],
+						[
+							'dealer_name' => $dealerName,
+							'dealer_slug' => $slug,
+						]
+					);
+					$notification->recipients->attach( $reviewerMember );
+					$notification->send();
+				}
+			}
+			catch ( \Exception ) {}
+
+			/* PM to the reviewer — own try/catch. */
+			try
+			{
+				if ( $reviewerMember && $reviewerMember->member_id )
+				{
+					$dealerMember = \IPS\Member::load( (int) $this->dealer->dealer_id );
+					$sender       = $dealerMember->member_id ? $dealerMember : \IPS\Member::loggedIn();
+					if ( \IPS\core\Messenger\Conversation::memberCanReceiveNewMessage( $reviewerMember, $sender ) )
 					{
-						$notification = new \IPS\Notification(
-							\IPS\Application::load( 'gddealer' ),
-							'dealer_responded',
-							$reviewerMember,
-							[ $reviewerMember ],
-							[
-								'dealer_name' => $dealerName,
-								'dealer_slug' => $slug,
-							]
+						$conversation = \IPS\core\Messenger\Conversation::createItem( $sender, \IPS\Request::i()->ipAddress(), \IPS\DateTime::create() );
+						$conversation->title    = $dealerName . ' responded to your review';
+						$conversation->to_count = 1;
+						$conversation->save();
+
+						$commentClass = $conversation::$commentClass;
+						$post = $commentClass::create(
+							$conversation,
+							$dealerName . ' has posted a public response to your review on GunRack.deals. View it here: ' . $profileUrl,
+							TRUE, NULL, NULL, $sender, \IPS\DateTime::create()
 						);
-						$notification->recipients->attach( $reviewerMember );
-						$notification->send();
+
+						$conversation->first_msg_id = $post->id;
+						$conversation->save();
+						$conversation->authorize( [ $sender->member_id, $reviewerMember->member_id ] );
+						$post->sendNotifications();
 					}
-					catch ( \Exception ) {}
-
-					try
-					{
-						$dealerMember = \IPS\Member::load( (int) $this->dealer->dealer_id );
-						$sender       = $dealerMember->member_id ? $dealerMember : \IPS\Member::loggedIn();
-						if ( \IPS\core\Messenger\Conversation::memberCanReceiveNewMessage( $reviewerMember, $sender ) )
-						{
-							$conversation = \IPS\core\Messenger\Conversation::createItem( $sender, \IPS\Request::i()->ipAddress(), \IPS\DateTime::create() );
-							$conversation->title    = $dealerName . ' responded to your review';
-							$conversation->to_count = 1;
-							$conversation->save();
-
-							$commentClass = $conversation::$commentClass;
-							$post = $commentClass::create(
-								$conversation,
-								$dealerName . ' has posted a public response to your review on GunRack.deals. View it here: ' . $profileUrl,
-								TRUE, NULL, NULL, $sender, \IPS\DateTime::create()
-							);
-
-							$conversation->first_msg_id = $post->id;
-							$conversation->save();
-							$conversation->authorize( [ $sender->member_id, $reviewerMember->member_id ] );
-							$post->sendNotifications();
-						}
-					}
-					catch ( \Exception ) {}
 				}
 			}
 			catch ( \Exception ) {}
@@ -1214,21 +1230,25 @@ class _dashboard extends \IPS\Dispatcher\Controller
 		}
 		catch ( \Exception ) {}
 
-		/* Email, IPS notification, and PM to the customer about the dispute. */
+		/* Side-effects to the customer — each channel in its own independent
+		   try/catch so a failure in one does not suppress the others. */
 		if ( (int) ( $review['member_id'] ?? 0 ) > 0 )
 		{
+			$customer     = NULL;
+			$slug         = (string) ( $this->dealer->dealer_slug ?? '' );
+			$respondUrl   = (string) \IPS\Http\Url::internal(
+				'app=gddealer&module=dealers&controller=profile&dealer_slug=' . urlencode( $slug ) . '&dispute=' . $id
+			);
+			$dealerName   = (string) $this->dealer->dealer_name;
+			$contactEmail = (string) ( \IPS\Settings::i()->gddealer_help_contact ?: 'dealers@gunrack.deals' );
+
+			try { $customer = \IPS\Member::load( (int) $review['member_id'] ); } catch ( \Exception ) {}
+
+			/* Email to the customer. */
 			try
 			{
-				$customer = \IPS\Member::load( (int) $review['member_id'] );
-				if ( $customer->member_id )
+				if ( $customer && $customer->member_id )
 				{
-					$slug       = (string) ( $this->dealer->dealer_slug ?? '' );
-					$respondUrl = (string) \IPS\Http\Url::internal(
-						'app=gddealer&module=dealers&controller=profile&dealer_slug=' . urlencode( $slug ) . '&dispute=' . $id
-					);
-					$dealerName = (string) $this->dealer->dealer_name;
-
-					$contactEmail = (string) ( \IPS\Settings::i()->gddealer_help_contact ?: 'dealers@gunrack.deals' );
 					\IPS\Email::buildFromTemplate( 'gddealer', 'disputeNotify', [
 						'name'          => $customer->name,
 						'dealer_name'   => $dealerName,
@@ -1237,50 +1257,58 @@ class _dashboard extends \IPS\Dispatcher\Controller
 						'respond_url'   => $respondUrl,
 						'contact_email' => $contactEmail,
 					], \IPS\Email::TYPE_TRANSACTIONAL )->send( $customer );
+				}
+			}
+			catch ( \Exception ) {}
 
-					try
+			/* IPS inline notification to the customer. */
+			try
+			{
+				if ( $customer && $customer->member_id )
+				{
+					$notification = new \IPS\Notification(
+						\IPS\Application::load( 'gddealer' ),
+						'review_disputed',
+						$customer,
+						[ $customer ],
+						[
+							'dealer_name' => $dealerName,
+							'dealer_slug' => $slug,
+							'review_id'   => $id,
+						]
+					);
+					$notification->recipients->attach( $customer );
+					$notification->send();
+				}
+			}
+			catch ( \Exception ) {}
+
+			/* PM to the customer. */
+			try
+			{
+				if ( $customer && $customer->member_id )
+				{
+					$dealerMember = \IPS\Member::load( (int) $this->dealer->dealer_id );
+					$sender       = $dealerMember->member_id ? $dealerMember : \IPS\Member::loggedIn();
+					if ( \IPS\core\Messenger\Conversation::memberCanReceiveNewMessage( $customer, $sender ) )
 					{
-						$notification = new \IPS\Notification(
-							\IPS\Application::load( 'gddealer' ),
-							'review_disputed',
-							$customer,
-							[ $customer ],
-							[
-								'dealer_name' => $dealerName,
-								'dealer_slug' => $slug,
-								'review_id'   => $id,
-							]
+						$conversation = \IPS\core\Messenger\Conversation::createItem( $sender, \IPS\Request::i()->ipAddress(), \IPS\DateTime::create() );
+						$conversation->title    = $dealerName . ' has disputed your review';
+						$conversation->to_count = 1;
+						$conversation->save();
+
+						$commentClass = $conversation::$commentClass;
+						$post = $commentClass::create(
+							$conversation,
+							"Hi,\n\n" . $dealerName . " has contested the review you left on GunRack.deals and provided the following evidence:\n\n" . $reason . "\n\nYou have 30 days to respond. Visit the dealer profile to submit your response:\n\n" . $respondUrl,
+							TRUE, NULL, NULL, $sender, \IPS\DateTime::create()
 						);
-						$notification->recipients->attach( $customer );
-						$notification->send();
+
+						$conversation->first_msg_id = $post->id;
+						$conversation->save();
+						$conversation->authorize( [ $sender->member_id, $customer->member_id ] );
+						$post->sendNotifications();
 					}
-					catch ( \Exception ) {}
-
-					try
-					{
-						$dealerMember = \IPS\Member::load( (int) $this->dealer->dealer_id );
-						$sender       = $dealerMember->member_id ? $dealerMember : \IPS\Member::loggedIn();
-						if ( \IPS\core\Messenger\Conversation::memberCanReceiveNewMessage( $customer, $sender ) )
-						{
-							$conversation = \IPS\core\Messenger\Conversation::createItem( $sender, \IPS\Request::i()->ipAddress(), \IPS\DateTime::create() );
-							$conversation->title    = $dealerName . ' has disputed your review';
-							$conversation->to_count = 1;
-							$conversation->save();
-
-							$commentClass = $conversation::$commentClass;
-							$post = $commentClass::create(
-								$conversation,
-								"Hi,\n\n" . $dealerName . " has contested the review you left on GunRack.deals and provided the following evidence:\n\n" . $reason . "\n\nYou have 30 days to respond. Visit the dealer profile to submit your response:\n\n" . $respondUrl,
-								TRUE, NULL, NULL, $sender, \IPS\DateTime::create()
-							);
-
-							$conversation->first_msg_id = $post->id;
-							$conversation->save();
-							$conversation->authorize( [ $sender->member_id, $customer->member_id ] );
-							$post->sendNotifications();
-						}
-					}
-					catch ( \Exception ) {}
 				}
 			}
 			catch ( \Exception ) {}
