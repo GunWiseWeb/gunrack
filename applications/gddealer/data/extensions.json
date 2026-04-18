@@ -1,0 +1,16 @@
+{
+	"core": {
+		"ContentRouter": [
+			"DealerFollow"
+		],
+		"Notifications": [
+			"DealerNotifications"
+		],
+		"EmailTemplates": [
+			"DealerEmails"
+		],
+		"FrontNavigation": [
+			"DealerNav"
+		]
+	}
+}

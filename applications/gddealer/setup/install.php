@@ -2543,7 +2543,9 @@ foreach ( $notificationDefaults as $key => $data )
 	catch ( \Exception ) {}
 }
 
-/* Force furl + applications cache rebuild so new routes/templates appear
-   without a manual cache flush. */
+/* Force furl + applications + extensions cache rebuild so new routes,
+   templates, and extension classes (notifications, email templates, etc.)
+   appear without a manual cache flush. */
 unset( \IPS\Data\Store::i()->furl_configuration );
 unset( \IPS\Data\Store::i()->applications );
+unset( \IPS\Data\Store::i()->extensions );
