@@ -1987,43 +1987,59 @@ TEMPLATE_EOT,
 				</div>
 				{{else}}
 					{{foreach $reviews as $r}}
-					<div style="padding:18px;border-bottom:1px solid var(--i-border-color,#f0f0f0)">
-						<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;margin-bottom:10px">
-							<div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center">
-								<span style="font-size:0.8em;font-weight:700;color:{$r['avg_color']};background:{$r['avg_color']}18;padding:2px 8px;border-radius:12px">{$r['avg_overall']} / 5</span>
-								<span style="font-size:0.82em;color:#555">
-									<span style="color:#f59e0b">{$r['pricing_stars']}</span> Pricing
+					<div style="padding:20px;border-bottom:1px solid var(--i-border-color,#f0f0f0)">
+
+						<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+							<div style="display:flex;align-items:center;gap:10px">
+								<span class="ipsUserPhoto ipsUserPhoto--small">
+									<img src="{$r['reviewer_avatar']}" alt="" loading="lazy">
 								</span>
-								<span style="font-size:0.82em;color:#555">
-									<span style="color:#f59e0b">{$r['shipping_stars']}</span> Shipping
-								</span>
-								<span style="font-size:0.82em;color:#555">
-									<span style="color:#f59e0b">{$r['service_stars']}</span> Service
-								</span>
+								<div>
+									<div style="font-weight:700;font-size:0.9em">{$r['reviewer_name']}</div>
+									<div style="font-size:0.75em;color:#9ca3af">{$r['created_at_formatted']}</div>
+								</div>
 							</div>
-							<span style="font-size:0.8em;color:#999">{$r['created_at']}</span>
+							<div style="background:{$r['avg_color']}18;border:1px solid {$r['avg_color']}40;border-radius:20px;padding:4px 12px;display:flex;align-items:center;gap:6px">
+								<span style="color:{$r['avg_color']};font-weight:800;font-size:1em">{$r['avg_score']}</span>
+								<span style="color:#9ca3af;font-size:0.75em">/ 5</span>
+							</div>
 						</div>
+
+						<div style="display:flex;gap:16px;margin-bottom:12px;flex-wrap:wrap">
+							<div style="display:flex;align-items:center;gap:4px">
+								<span style="font-size:0.75em;color:#6b7280;font-weight:600;text-transform:uppercase;letter-spacing:0.04em">Pricing</span>
+								<span style="color:#f59e0b;font-size:0.9em">{$r['stars_pricing']}</span>
+							</div>
+							<div style="display:flex;align-items:center;gap:4px">
+								<span style="font-size:0.75em;color:#6b7280;font-weight:600;text-transform:uppercase;letter-spacing:0.04em">Shipping</span>
+								<span style="color:#f59e0b;font-size:0.9em">{$r['stars_shipping']}</span>
+							</div>
+							<div style="display:flex;align-items:center;gap:4px">
+								<span style="font-size:0.75em;color:#6b7280;font-weight:600;text-transform:uppercase;letter-spacing:0.04em">Service</span>
+								<span style="color:#f59e0b;font-size:0.9em">{$r['stars_service']}</span>
+							</div>
+						</div>
+
 						{{if $r['review_body']}}
-						<p style="margin:0 0 10px;line-height:1.6">{$r['review_body']}</p>
+						<p style="margin:0 0 12px;line-height:1.6;color:#374151">{$r['review_body']}</p>
 						{{endif}}
-						{{if $r['is_under_review']}}
-						<div style="font-size:0.85em;margin-top:8px;padding:8px 12px;background:#fff8f0;border-left:3px solid #f59e0b;color:#92400e;border-radius:0 4px 4px 0">
-							This review is currently under admin review.
+
+						{{if $r['dispute_status'] === 'pending_customer' or $r['dispute_status'] === 'pending_admin'}}
+						<div style="background:#fef9c3;border:1px solid #fde047;border-radius:6px;padding:8px 12px;font-size:0.82em;color:#854d0e;margin-bottom:8px">
+							⚠ This review is currently under admin review.
 						</div>
 						{{endif}}
-						{{if $r['dispute_status'] === 'dismissed'}}
-						<div style="font-size:0.85em;margin-top:8px;padding:8px 12px;background:#f1f5f9;border-left:3px solid #64748b;color:#334155;border-radius:0 4px 4px 0">
-							Dealer's contest of this review was dismissed by admin.
-						</div>
-						{{endif}}
+
 						{{if $r['dealer_response']}}
-						<div style="background:var(--i-background,#f8f9fa);border-left:3px solid #2563eb;padding:12px 16px;border-radius:0 6px 6px 0;margin-top:10px">
-							<div style="font-size:0.78em;color:#2563eb;font-weight:700;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.05em">
+						<div style="background:#f0f7ff;border-left:3px solid var(--gd-primary,#2563eb);padding:12px 16px;border-radius:0 6px 6px 0;margin-top:8px">
+							<div style="font-size:0.75em;color:var(--gd-primary,#2563eb);font-weight:700;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.05em">
 								<i class="fa-solid fa-reply" aria-hidden="true"></i> Dealer Response
+								<span style="color:#9ca3af;font-weight:400;text-transform:none;margin-left:6px">{$r['response_at']}</span>
 							</div>
-							<p style="margin:0;font-size:0.9em;line-height:1.5">{$r['dealer_response']}</p>
+							<p style="margin:0;font-size:0.9em;line-height:1.5;color:#374151">{$r['dealer_response']}</p>
 						</div>
 						{{endif}}
+
 					</div>
 					{{endforeach}}
 				{{endif}}

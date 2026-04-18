@@ -206,20 +206,50 @@ class _profile extends \IPS\Dispatcher\Controller
 				'created_at DESC', [ 0, 50 ]
 			) as $r )
 			{
-				$reviewAvg = ( (int) $r['rating_pricing'] + (int) $r['rating_shipping'] + (int) $r['rating_service'] ) / 3;
+				$pricing  = max( 0, min( 5, (int) $r['rating_pricing'] ) );
+				$shipping = max( 0, min( 5, (int) $r['rating_shipping'] ) );
+				$service  = max( 0, min( 5, (int) $r['rating_service'] ) );
+				$avg      = round( ( $pricing + $shipping + $service ) / 3, 1 );
+
+				$reviewerName   = 'Anonymous';
+				$reviewerAvatar = '';
+				if ( (int) ( $r['member_id'] ?? 0 ) > 0 )
+				{
+					try
+					{
+						$rm = \IPS\Member::load( (int) $r['member_id'] );
+						if ( $rm->member_id )
+						{
+							$reviewerName   = (string) $rm->name;
+							$reviewerAvatar = (string) ( $rm->get_photo( true, false ) ?? '' );
+						}
+					}
+					catch ( \Exception ) {}
+				}
+
+				$createdAt  = (string) $r['created_at'];
+				$responseAt = (string) ( $r['response_at'] ?? '' );
+
 				$reviews[] = [
-					'id'              => (int) $r['id'],
-					'member_id'       => (int) ( $r['member_id'] ?? 0 ),
-					'rating_pricing'  => (int) $r['rating_pricing'],
-					'rating_shipping' => (int) $r['rating_shipping'],
-					'rating_service'  => (int) $r['rating_service'],
-					'review_body'     => (string) ( $r['review_body'] ?? '' ),
-					'dealer_response' => (string) ( $r['dealer_response'] ?? '' ),
-					'created_at'      => (string) $r['created_at'],
-					'dispute_status'  => (string) ( $r['dispute_status'] ?? 'none' ),
-					'dispute_outcome' => (string) ( $r['dispute_outcome'] ?? '' ),
-					'avg_color'       => self::ratingColor( (float) $reviewAvg ),
-					'avg_overall'     => round( $reviewAvg, 1 ),
+					'id'                   => (int) $r['id'],
+					'member_id'            => (int) ( $r['member_id'] ?? 0 ),
+					'rating_pricing'       => $pricing,
+					'rating_shipping'      => $shipping,
+					'rating_service'       => $service,
+					'review_body'          => (string) ( $r['review_body'] ?? '' ),
+					'dealer_response'      => (string) ( $r['dealer_response'] ?? '' ),
+					'created_at'           => $createdAt,
+					'created_at_formatted' => $createdAt ? date( 'M j, Y', strtotime( $createdAt ) ) : '',
+					'response_at'          => $responseAt ? date( 'M j, Y', strtotime( $responseAt ) ) : '',
+					'dispute_status'       => (string) ( $r['dispute_status'] ?? 'none' ),
+					'dispute_outcome'      => (string) ( $r['dispute_outcome'] ?? '' ),
+					'avg_score'            => $avg,
+					'avg_color'            => self::ratingColor( (float) $avg ),
+					'reviewer_name'        => $reviewerName,
+					'reviewer_avatar'      => $reviewerAvatar,
+					'stars_pricing'        => str_repeat( '★', $pricing ) . str_repeat( '☆', 5 - $pricing ),
+					'stars_shipping'       => str_repeat( '★', $shipping ) . str_repeat( '☆', 5 - $shipping ),
+					'stars_service'        => str_repeat( '★', $service ) . str_repeat( '☆', 5 - $service ),
 				];
 			}
 		}
@@ -366,15 +396,6 @@ class _profile extends \IPS\Dispatcher\Controller
 		$stats['pct_pricing']  = $stats['avg_pricing']  > 0 ? (int) round( ( $stats['avg_pricing']  / 5 ) * 100 ) : 0;
 		$stats['pct_shipping'] = $stats['avg_shipping'] > 0 ? (int) round( ( $stats['avg_shipping'] / 5 ) * 100 ) : 0;
 		$stats['pct_service']  = $stats['avg_service']  > 0 ? (int) round( ( $stats['avg_service']  / 5 ) * 100 ) : 0;
-
-		foreach ( $reviews as &$rRef )
-		{
-			$rRef['pricing_stars']  = str_repeat( '★', max( 0, min( 5, (int) $rRef['rating_pricing'] ) ) );
-			$rRef['shipping_stars'] = str_repeat( '★', max( 0, min( 5, (int) $rRef['rating_shipping'] ) ) );
-			$rRef['service_stars']  = str_repeat( '★', max( 0, min( 5, (int) $rRef['rating_service'] ) ) );
-			$rRef['is_under_review'] = in_array( $rRef['dispute_status'], [ 'pending_customer', 'pending_admin' ], true );
-		}
-		unset( $rRef );
 
 		$csrfKey = (string) \IPS\Session::i()->csrfKey;
 
