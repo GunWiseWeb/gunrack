@@ -194,7 +194,7 @@ TEMPLATE_EOT,
 		'location'      => 'admin',
 		'group'         => 'dealers',
 		'template_name' => 'dealerDetail',
-		'template_data' => '$dealer, $logs, $listings, $backUrl, $editUrl, $importUrl, $suspendUrl, $invoiceUrl, $disputeSuspendUrl',
+		'template_data' => '$dealer, $logs, $listings, $backUrl, $editUrl, $importUrl, $suspendUrl, $invoiceUrl, $disputeSuspendUrl, $reviews',
 		'template_content' => <<<'TEMPLATE_EOT'
 <div class="ipsBox ipsPull">
 	<div class="ipsBox_body">
@@ -345,6 +345,151 @@ TEMPLATE_EOT,
 				{{endforeach}}
 				{{if count( $listings ) === 0}}
 				<tr><td colspan="5" style="text-align:center;color:#999;padding:24px">No listings.</td></tr>
+				{{endif}}
+			</tbody>
+		</table>
+
+		<div style="padding:12px 20px;font-weight:700;font-size:0.9em;text-transform:uppercase;letter-spacing:0.05em;color:#666;border-bottom:1px solid var(--i-border-color,#e0e0e0);border-top:1px solid var(--i-border-color,#e0e0e0)">Recent Reviews</div>
+		<table class="ipsTable ipsTable_zebra" style="width:100%">
+			<thead>
+				<tr><th>Reviewer</th><th>Pricing</th><th>Shipping</th><th>Service</th><th>Status</th><th>Posted</th><th style="text-align:right">Actions</th></tr>
+			</thead>
+			<tbody>
+				{{foreach $reviews as $r}}
+				<tr>
+					<td><strong>{$r['member_name']}</strong></td>
+					<td>{$r['rating_pricing']} / 5</td>
+					<td>{$r['rating_shipping']} / 5</td>
+					<td>{$r['rating_service']} / 5</td>
+					<td>
+						{{if $r['dispute_status'] === 'none'}}
+							<span class="ipsBadge ipsBadge--neutral">Live</span>
+						{{elseif $r['dispute_status'] === 'pending_customer'}}
+							<span class="ipsBadge ipsBadge--warning">Pending Customer</span>
+						{{elseif $r['dispute_status'] === 'pending_admin'}}
+							<span class="ipsBadge ipsBadge--warning">Pending Admin</span>
+						{{elseif $r['dispute_status'] === 'resolved_dealer'}}
+							<span class="ipsBadge ipsBadge--positive">Upheld</span>
+						{{elseif $r['dispute_status'] === 'dismissed'}}
+							<span class="ipsBadge ipsBadge--neutral">Dismissed</span>
+						{{else}}
+							<span class="ipsBadge ipsBadge--neutral">{$r['dispute_status']}</span>
+						{{endif}}
+					</td>
+					<td>{$r['created_at']}</td>
+					<td style="text-align:right">
+						<a href="{$r['delete_url']}" class="ipsButton ipsButton--negative ipsButton--tiny"
+						   data-confirm data-confirmMessage="Are you sure you want to delete this review? This cannot be undone.">
+							<i class="fa-solid fa-trash" aria-hidden="true"></i>
+						</a>
+					</td>
+				</tr>
+				{{if $r['review_body']}}
+				<tr><td colspan="7" style="color:#555;background:#fafafa"><em>{$r['review_body']}</em></td></tr>
+				{{endif}}
+				{{endforeach}}
+				{{if count( $reviews ) === 0}}
+				<tr><td colspan="7" style="text-align:center;color:#999;padding:24px">No reviews yet.</td></tr>
+				{{endif}}
+			</tbody>
+		</table>
+
+	</div>
+</div>
+TEMPLATE_EOT,
+	],
+
+	/* ===== ADMIN: allReviews ===== */
+	[
+		'set_id'        => 1,
+		'app'           => 'gddealer',
+		'location'      => 'admin',
+		'group'         => 'dealers',
+		'template_name' => 'allReviews',
+		'template_data' => '$rows, $dealerOptions, $filterStatus, $filterDealer, $formUrl',
+		'template_content' => <<<'TEMPLATE_EOT'
+<div class="ipsBox ipsPull">
+	<div class="ipsBox_body">
+
+		<div style="padding:16px 20px;border-bottom:1px solid var(--i-border-color,#e0e0e0)">
+			<form method="get" action="{$formUrl}" style="display:flex;flex-wrap:wrap;gap:12px;align-items:end">
+				<input type="hidden" name="app" value="gddealer">
+				<input type="hidden" name="module" value="dealers">
+				<input type="hidden" name="controller" value="dealers">
+				<input type="hidden" name="do" value="reviews">
+				<div>
+					<label style="display:block;font-size:0.8em;color:#666;margin-bottom:4px">Dealer</label>
+					<select name="dealer_id">
+						{{foreach $dealerOptions as $did => $dname}}
+							<option value="{$did}" {{if $did === $filterDealer}}selected{{endif}}>{$dname}</option>
+						{{endforeach}}
+					</select>
+				</div>
+				<div>
+					<label style="display:block;font-size:0.8em;color:#666;margin-bottom:4px">Status</label>
+					<select name="status">
+						<option value="" {{if $filterStatus === ''}}selected{{endif}}>All statuses</option>
+						<option value="none" {{if $filterStatus === 'none'}}selected{{endif}}>Live</option>
+						<option value="pending_customer" {{if $filterStatus === 'pending_customer'}}selected{{endif}}>Pending Customer</option>
+						<option value="pending_admin" {{if $filterStatus === 'pending_admin'}}selected{{endif}}>Pending Admin</option>
+						<option value="resolved_dealer" {{if $filterStatus === 'resolved_dealer'}}selected{{endif}}>Upheld</option>
+						<option value="dismissed" {{if $filterStatus === 'dismissed'}}selected{{endif}}>Dismissed</option>
+					</select>
+				</div>
+				<button type="submit" class="ipsButton ipsButton--primary ipsButton--small">Filter</button>
+			</form>
+		</div>
+
+		<table class="ipsTable ipsTable_zebra" style="width:100%">
+			<thead>
+				<tr>
+					<th>Dealer</th>
+					<th>Reviewer</th>
+					<th>Pricing</th>
+					<th>Shipping</th>
+					<th>Service</th>
+					<th>Status</th>
+					<th>Posted</th>
+					<th style="text-align:right">Actions</th>
+				</tr>
+			</thead>
+			<tbody>
+				{{foreach $rows as $r}}
+				<tr>
+					<td><strong>{$r['dealer_name']}</strong></td>
+					<td>{$r['member_name']}</td>
+					<td>{$r['rating_pricing']} / 5</td>
+					<td>{$r['rating_shipping']} / 5</td>
+					<td>{$r['rating_service']} / 5</td>
+					<td>
+						{{if $r['dispute_status'] === 'none'}}
+							<span class="ipsBadge ipsBadge--neutral">Live</span>
+						{{elseif $r['dispute_status'] === 'pending_customer'}}
+							<span class="ipsBadge ipsBadge--warning">Pending Customer</span>
+						{{elseif $r['dispute_status'] === 'pending_admin'}}
+							<span class="ipsBadge ipsBadge--warning">Pending Admin</span>
+						{{elseif $r['dispute_status'] === 'resolved_dealer'}}
+							<span class="ipsBadge ipsBadge--positive">Upheld</span>
+						{{elseif $r['dispute_status'] === 'dismissed'}}
+							<span class="ipsBadge ipsBadge--neutral">Dismissed</span>
+						{{else}}
+							<span class="ipsBadge ipsBadge--neutral">{$r['dispute_status']}</span>
+						{{endif}}
+					</td>
+					<td>{$r['created_at']}</td>
+					<td style="text-align:right">
+						<a href="{$r['delete_url']}" class="ipsButton ipsButton--negative ipsButton--tiny"
+						   data-confirm data-confirmMessage="Are you sure you want to delete this review? This cannot be undone.">
+							<i class="fa-solid fa-trash" aria-hidden="true"></i>
+						</a>
+					</td>
+				</tr>
+				{{if $r['review_body']}}
+				<tr><td colspan="8" style="color:#555;background:#fafafa"><em>{$r['review_body']}</em></td></tr>
+				{{endif}}
+				{{endforeach}}
+				{{if count( $rows ) === 0}}
+				<tr><td colspan="8" style="text-align:center;color:#999;padding:24px">No reviews match the current filter.</td></tr>
 				{{endif}}
 			</tbody>
 		</table>

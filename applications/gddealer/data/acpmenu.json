@@ -30,6 +30,12 @@
 			"do": "disputes",
 			"restriction": "dealer_manage"
 		},
+		"reviews": {
+			"tab": "gddealer",
+			"controller": "dealers",
+			"do": "reviews",
+			"restriction": "dealer_manage"
+		},
 		"settings": {
 			"tab": "gddealer",
 			"controller": "settings",

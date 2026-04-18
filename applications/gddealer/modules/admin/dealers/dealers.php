@@ -193,9 +193,44 @@ class _dealers extends \IPS\Dispatcher\Controller
 		$suspendUrl = (string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dealers&do=toggleSuspend&id=' . (int) $dealer->dealer_id )->csrf();
 		$disputeSuspendUrl = (string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dealers&do=toggleDisputeSuspend&id=' . (int) $dealer->dealer_id )->csrf();
 
+		$reviews = [];
+		try
+		{
+			foreach ( \IPS\Db::i()->select( '*', 'gd_dealer_ratings',
+				[ 'dealer_id=?', (int) $dealer->dealer_id ],
+				'created_at DESC', [ 0, 20 ]
+			) as $r )
+			{
+				$memberName = '';
+				try
+				{
+					$m = \IPS\Member::load( (int) $r['member_id'] );
+					if ( $m->member_id ) { $memberName = (string) $m->name; }
+				}
+				catch ( \Exception ) {}
+
+				$reviews[] = [
+					'id'              => (int) $r['id'],
+					'member_id'       => (int) $r['member_id'],
+					'member_name'     => $memberName,
+					'rating_pricing'  => (int) $r['rating_pricing'],
+					'rating_shipping' => (int) $r['rating_shipping'],
+					'rating_service'  => (int) $r['rating_service'],
+					'review_body'     => (string) ( $r['review_body'] ?? '' ),
+					'dealer_response' => (string) ( $r['dealer_response'] ?? '' ),
+					'dispute_status'  => (string) ( $r['dispute_status'] ?? 'none' ),
+					'created_at'      => (string) $r['created_at'],
+					'delete_url'      => (string) \IPS\Http\Url::internal(
+						'app=gddealer&module=dealers&controller=dealers&do=deleteReview&id=' . (int) $r['id']
+					)->csrf(),
+				];
+			}
+		}
+		catch ( \Exception ) {}
+
 		\IPS\Output::i()->title  = $dealerData['dealer_name'];
 		\IPS\Output::i()->output = \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'admin' )->dealerDetail(
-			$dealerData, $logs, $listings, $backUrl, $editUrl, $importUrl, $suspendUrl, $invoiceUrl, $disputeSuspendUrl
+			$dealerData, $logs, $listings, $backUrl, $editUrl, $importUrl, $suspendUrl, $invoiceUrl, $disputeSuspendUrl, $reviews
 		);
 	}
 
@@ -591,12 +626,23 @@ class _dealers extends \IPS\Dispatcher\Controller
 		\IPS\Session::i()->csrfCheck();
 		$id = (int) \IPS\Request::i()->id;
 
-		$dealerId = 0;
+		$review = null;
 		try
 		{
-			$dealerId = (int) \IPS\Db::i()->select( 'dealer_id', 'gd_dealer_ratings', [ 'id=?', $id ] )->first();
+			$review = \IPS\Db::i()->select( '*', 'gd_dealer_ratings', [ 'id=?', $id ] )->first();
 		}
 		catch ( \Exception ) {}
+
+		$dealerId   = (int) ( $review['dealer_id'] ?? 0 );
+		$dealerName = '';
+		if ( $dealerId > 0 )
+		{
+			try
+			{
+				$dealerName = (string) \IPS\Db::i()->select( 'dealer_name', 'gd_dealer_feed_config', [ 'dealer_id=?', $dealerId ] )->first();
+			}
+			catch ( \Exception ) {}
+		}
 
 		try
 		{
@@ -636,6 +682,26 @@ class _dealers extends \IPS\Dispatcher\Controller
 			catch ( \Exception ) {}
 		}
 
+		/* PM the reviewer notifying them of the outcome. */
+		if ( $review && (int) ( $review['member_id'] ?? 0 ) > 0 )
+		{
+			try
+			{
+				$reviewerMember = \IPS\Member::load( (int) $review['member_id'] );
+				if ( $reviewerMember->member_id && !(int) ( $reviewerMember->members_disable_pm ?? 0 ) )
+				{
+					\IPS\core\Messenger\Conversation::createItem(
+						\IPS\Member::loggedIn(),
+						[ $reviewerMember ],
+						'GunRack.deals — Review Dispute Resolved',
+						'Your review on ' . $dealerName . ' was contested and after reviewing the evidence, admin has ruled in the dealer\'s favor. The review will remain visible but no longer affects their rating average.',
+						FALSE
+					);
+				}
+			}
+			catch ( \Exception ) {}
+		}
+
 		\IPS\Output::i()->redirect(
 			\IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dealers&do=disputes' ),
 			'gddealer_dispute_upheld'
@@ -651,13 +717,23 @@ class _dealers extends \IPS\Dispatcher\Controller
 		\IPS\Session::i()->csrfCheck();
 		$id = (int) \IPS\Request::i()->id;
 
-		$dealerId = 0;
+		$review = null;
 		try
 		{
-			$row = \IPS\Db::i()->select( 'dealer_id', 'gd_dealer_ratings', [ 'id=?', $id ] )->first();
-			$dealerId = (int) $row;
+			$review = \IPS\Db::i()->select( '*', 'gd_dealer_ratings', [ 'id=?', $id ] )->first();
 		}
 		catch ( \Exception ) {}
+
+		$dealerId   = (int) ( $review['dealer_id'] ?? 0 );
+		$dealerName = '';
+		if ( $dealerId > 0 )
+		{
+			try
+			{
+				$dealerName = (string) \IPS\Db::i()->select( 'dealer_name', 'gd_dealer_feed_config', [ 'dealer_id=?', $dealerId ] )->first();
+			}
+			catch ( \Exception ) {}
+		}
 
 		try
 		{
@@ -693,6 +769,26 @@ class _dealers extends \IPS\Dispatcher\Controller
 					);
 					$notification->recipients->attach( $dealerMember );
 					$notification->send();
+				}
+			}
+			catch ( \Exception ) {}
+		}
+
+		/* PM the reviewer notifying them of the outcome. */
+		if ( $review && (int) ( $review['member_id'] ?? 0 ) > 0 )
+		{
+			try
+			{
+				$reviewerMember = \IPS\Member::load( (int) $review['member_id'] );
+				if ( $reviewerMember->member_id && !(int) ( $reviewerMember->members_disable_pm ?? 0 ) )
+				{
+					\IPS\core\Messenger\Conversation::createItem(
+						\IPS\Member::loggedIn(),
+						[ $reviewerMember ],
+						'GunRack.deals — Review Dispute Resolved',
+						'Your review on ' . $dealerName . ' was contested but after reviewing the evidence, admin has decided the review stands as-is.',
+						FALSE
+					);
 				}
 			}
 			catch ( \Exception ) {}
@@ -800,6 +896,115 @@ class _dealers extends \IPS\Dispatcher\Controller
 		\IPS\Output::i()->redirect(
 			\IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dealers&do=view&id=' . (int) $dealer->dealer_id ),
 			$msg
+		);
+	}
+
+	/**
+	 * Delete a single review. Redirects back to the dealer detail page
+	 * on success; to the dealer list on lookup failure.
+	 */
+	protected function deleteReview(): void
+	{
+		\IPS\Session::i()->csrfCheck();
+		$id = (int) ( \IPS\Request::i()->id ?? 0 );
+
+		try
+		{
+			$review = \IPS\Db::i()->select( '*', 'gd_dealer_ratings', [ 'id=?', $id ] )->first();
+			\IPS\Db::i()->delete( 'gd_dealer_ratings', [ 'id=?', $id ] );
+			$msg      = 'gddealer_review_deleted';
+			$redirect = \IPS\Http\Url::internal(
+				'app=gddealer&module=dealers&controller=dealers&do=view&id=' . (int) $review['dealer_id']
+			);
+		}
+		catch ( \Exception )
+		{
+			$msg      = 'gddealer_action_failed';
+			$redirect = \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dealers' );
+		}
+
+		\IPS\Output::i()->redirect( $redirect, $msg );
+	}
+
+	/**
+	 * Standalone ACP page listing ALL reviews across every dealer with
+	 * filters for status and dealer. Admins can delete any review from
+	 * here without navigating to the dealer detail page.
+	 */
+	protected function reviews()
+	{
+		$filterStatus = (string) ( \IPS\Request::i()->status ?? '' );
+		$filterDealer = (int) ( \IPS\Request::i()->dealer_id ?? 0 );
+
+		$where = [];
+		if ( $filterStatus !== '' && in_array( $filterStatus, [ 'none', 'pending_customer', 'pending_admin', 'resolved_dealer', 'dismissed' ], TRUE ) )
+		{
+			$where[] = [ 'dispute_status=?', $filterStatus ];
+		}
+		if ( $filterDealer > 0 )
+		{
+			$where[] = [ 'dealer_id=?', $filterDealer ];
+		}
+
+		$dealerOptions = [ 0 => 'All dealers' ];
+		try
+		{
+			foreach ( \IPS\Db::i()->select( 'dealer_id, dealer_name', 'gd_dealer_feed_config', null, 'dealer_name ASC' ) as $d )
+			{
+				$dealerOptions[ (int) $d['dealer_id'] ] = (string) $d['dealer_name'];
+			}
+		}
+		catch ( \Exception ) {}
+
+		$rows = [];
+		try
+		{
+			$q = \IPS\Db::i()->select( '*', 'gd_dealer_ratings',
+				$where ?: null,
+				'created_at DESC',
+				[ 0, 200 ]
+			);
+			foreach ( $q as $r )
+			{
+				$dealerName = '';
+				try
+				{
+					$dealerName = (string) \IPS\Db::i()->select( 'dealer_name', 'gd_dealer_feed_config', [ 'dealer_id=?', (int) $r['dealer_id'] ] )->first();
+				}
+				catch ( \Exception ) {}
+
+				$memberName = '';
+				try
+				{
+					$m = \IPS\Member::load( (int) $r['member_id'] );
+					if ( $m->member_id ) { $memberName = (string) $m->name; }
+				}
+				catch ( \Exception ) {}
+
+				$rows[] = [
+					'id'              => (int) $r['id'],
+					'dealer_id'       => (int) $r['dealer_id'],
+					'dealer_name'     => $dealerName,
+					'member_name'     => $memberName,
+					'rating_pricing'  => (int) $r['rating_pricing'],
+					'rating_shipping' => (int) $r['rating_shipping'],
+					'rating_service'  => (int) $r['rating_service'],
+					'review_body'     => (string) ( $r['review_body'] ?? '' ),
+					'dispute_status'  => (string) ( $r['dispute_status'] ?? 'none' ),
+					'created_at'      => (string) $r['created_at'],
+					'delete_url'      => (string) \IPS\Http\Url::internal(
+						'app=gddealer&module=dealers&controller=dealers&do=deleteReview&id=' . (int) $r['id']
+					)->csrf(),
+				];
+			}
+		}
+		catch ( \Exception ) {}
+
+		$formUrl = (string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dealers&do=reviews' );
+
+		\IPS\Output::i()->title  = \IPS\Member::loggedIn()->language()->addToStack( 'gddealer_all_reviews_title' );
+		\IPS\Output::i()->output = \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'admin' )->allReviews(
+			$rows, $dealerOptions, $filterStatus, $filterDealer, $formUrl
 		);
 	}
 }

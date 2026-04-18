@@ -161,6 +161,28 @@ class DealerNotifications
 					);
 				},
 			],
+			'dealer_responded' => [
+				'default'          => [ 'inline', 'email' ],
+				'disabled'         => [],
+				'title'            => 'gddealer_notif_dealer_responded_title',
+				'text'             => 'gddealer_notif_dealer_responded_text',
+				'icon'             => 'fa-solid fa-reply',
+				'url'              => function( $data )
+				{
+					$slug = (string) ( $data['dealer_slug'] ?? '' );
+					return \IPS\Http\Url::internal(
+						'app=gddealer&module=dealers&controller=profile&dealer_slug=' . urlencode( $slug )
+					);
+				},
+				'title_callback'   => function( $data )
+				{
+					return ( $data['dealer_name'] ?? 'A dealer' ) . ' responded to your review';
+				},
+				'content_callback' => function( $data )
+				{
+					return 'The dealer has posted a public response to your review. Click to view it.';
+				},
+			],
 		];
 	}
 }

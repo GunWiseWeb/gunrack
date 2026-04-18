@@ -1027,6 +1027,56 @@ class _dashboard extends \IPS\Dispatcher\Controller
 				);
 			}
 			catch ( \Exception ) {}
+
+			/* PM + IPS notification to the reviewer so they know the dealer replied. */
+			try
+			{
+				$review = \IPS\Db::i()->select( '*', 'gd_dealer_ratings', [ 'id=?', $id ] )->first();
+				$reviewerMember = \IPS\Member::load( (int) $review['member_id'] );
+
+				if ( $reviewerMember->member_id )
+				{
+					$dealerName = (string) $this->dealer->dealer_name;
+					$slug       = (string) ( $this->dealer->dealer_slug ?? '' );
+					$profileUrl = (string) \IPS\Http\Url::internal(
+						'app=gddealer&module=dealers&controller=profile&dealer_slug=' . urlencode( $slug )
+					);
+
+					if ( !(int) ( $reviewerMember->members_disable_pm ?? 0 ) )
+					{
+						try
+						{
+							$dealerMember = \IPS\Member::load( (int) $this->dealer->dealer_id );
+							\IPS\core\Messenger\Conversation::createItem(
+								$dealerMember->member_id ? $dealerMember : \IPS\Member::loggedIn(),
+								[ $reviewerMember ],
+								$dealerName . ' responded to your review',
+								$dealerName . ' has posted a public response to your review on GunRack.deals. View it here: ' . $profileUrl,
+								FALSE
+							);
+						}
+						catch ( \Exception ) {}
+					}
+
+					try
+					{
+						$notification = new \IPS\Notification(
+							\IPS\Application::load( 'gddealer' ),
+							'dealer_responded',
+							$reviewerMember,
+							[ $reviewerMember ],
+							[
+								'dealer_name' => $dealerName,
+								'dealer_slug' => $slug,
+							]
+						);
+						$notification->recipients->attach( $reviewerMember );
+						$notification->send();
+					}
+					catch ( \Exception ) {}
+				}
+			}
+			catch ( \Exception ) {}
 		}
 
 		\IPS\Output::i()->redirect(
@@ -1147,7 +1197,7 @@ class _dashboard extends \IPS\Dispatcher\Controller
 		}
 		catch ( \Exception ) {}
 
-		/* Notify the customer via transactional email and IPS notification. */
+		/* Notify the customer via transactional email, IPS notification, and PM. */
 		if ( (int) ( $review['member_id'] ?? 0 ) > 0 )
 		{
 			try
@@ -1159,9 +1209,11 @@ class _dashboard extends \IPS\Dispatcher\Controller
 					$respondUrl = (string) \IPS\Http\Url::internal(
 						'app=gddealer&module=dealers&controller=profile&dealer_slug=' . urlencode( $slug ) . '&dispute=' . $id
 					);
+					$dealerName = (string) $this->dealer->dealer_name;
+
 					\IPS\Email::buildFromTemplate( 'gddealer', 'disputeNotify', [
 						'name'        => $customer->name,
-						'dealer_name' => (string) $this->dealer->dealer_name,
+						'dealer_name' => $dealerName,
 						'reason'      => $reason,
 						'deadline'    => date( 'F j, Y', strtotime( $deadline ) ),
 						'respond_url' => $respondUrl,
@@ -1173,12 +1225,28 @@ class _dashboard extends \IPS\Dispatcher\Controller
 						$customer,
 						[ $customer ],
 						[
-							'dealer_name' => (string) $this->dealer->dealer_name,
+							'dealer_name' => $dealerName,
 							'respond_url' => $respondUrl,
 						]
 					);
 					$notification->recipients->attach( $customer );
 					$notification->send();
+
+					if ( !(int) ( $customer->members_disable_pm ?? 0 ) )
+					{
+						try
+						{
+							$dealerMember = \IPS\Member::load( (int) $this->dealer->dealer_id );
+							\IPS\core\Messenger\Conversation::createItem(
+								$dealerMember->member_id ? $dealerMember : \IPS\Member::loggedIn(),
+								[ $customer ],
+								$dealerName . ' has disputed your review',
+								"Hi,\n\n" . $dealerName . " has contested the review you left on GunRack.deals and provided the following evidence:\n\n" . $reason . "\n\nYou have 30 days to respond. Visit the dealer profile to submit your response:\n\n" . $respondUrl,
+								FALSE
+							);
+						}
+						catch ( \Exception ) {}
+					}
 				}
 			}
 			catch ( \Exception ) {}

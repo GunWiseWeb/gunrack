@@ -299,5 +299,13 @@
     <word key="gddealer_notif_dispute_upheld_text"><![CDATA[An admin has upheld your review contest. The review no longer affects your rating.]]></word>
     <word key="gddealer_notif_dispute_dismissed_title"><![CDATA[Your Contest Was Dismissed]]></word>
     <word key="gddealer_notif_dispute_dismissed_text"><![CDATA[An admin has dismissed your review contest. The review remains visible.]]></word>
+    <word key="gddealer_notif_dealer_responded_title"><![CDATA[Dealer Responded to Your Review]]></word>
+    <word key="gddealer_notif_dealer_responded_text"><![CDATA[The dealer has posted a public response to your review.]]></word>
+    <word key="gddealer_review_deleted"><![CDATA[Review deleted successfully.]]></word>
+    <word key="gddealer_action_failed"><![CDATA[Action failed. The review could not be found.]]></word>
+    <word key="gddealer_pm_response_title"><![CDATA[%s responded to your review]]></word>
+    <word key="gddealer_pm_response_body"><![CDATA[%s has posted a public response to your review on GunRack.deals. View it here: %s]]></word>
+    <word key="gddealer_all_reviews_title"><![CDATA[All Reviews]]></word>
+    <word key="menu__gddealer_dealers_reviews"><![CDATA[All Reviews]]></word>
   </app>
 </language>
