@@ -594,6 +594,7 @@ class _dealers extends \IPS\Dispatcher\Controller
 					'dispute_evidence'      => (string) ( $r['dispute_evidence'] ?? '' ),
 					'dispute_at'            => (string) ( $r['dispute_at'] ?? '' ),
 					'dispute_deadline'      => ( $r['dispute_deadline'] ?? '' ) !== '' ? date( 'F j, Y', strtotime( (string) $r['dispute_deadline'] ) ) : '',
+					'days_remaining'        => ( $r['dispute_deadline'] ?? '' ) !== '' ? max( 0, (int) ceil( ( strtotime( (string) $r['dispute_deadline'] ) - time() ) / 86400 ) ) : 0,
 					'customer_response'     => (string) ( $r['customer_response'] ?? '' ),
 					'customer_evidence'     => (string) ( $r['customer_evidence'] ?? '' ),
 					'customer_responded_at' => (string) ( $r['customer_responded_at'] ?? '' ),
@@ -920,12 +921,14 @@ class _dealers extends \IPS\Dispatcher\Controller
 					$respondUrl = (string) \IPS\Http\Url::internal(
 						'app=gddealer&module=dealers&controller=profile&dealer_slug=' . urlencode( $slug ) . '&dispute=' . $id
 					);
+					$contactEmail = (string) ( \IPS\Settings::i()->gddealer_help_contact ?: 'dealers@gunrack.deals' );
 					\IPS\Email::buildFromTemplate( 'gddealer', 'disputeNotify', [
-						'name'        => $customer->name,
-						'dealer_name' => $dealerName,
-						'reason'      => (string) ( $row['dispute_reason'] ?? '' ) . ( $adminNote !== '' ? "\n\n[Admin note: {$adminNote}]" : '' ),
-						'deadline'    => date( 'F j, Y', strtotime( $deadline ) ),
-						'respond_url' => $respondUrl,
+						'name'          => $customer->name,
+						'dealer_name'   => $dealerName,
+						'reason'        => (string) ( $row['dispute_reason'] ?? '' ) . ( $adminNote !== '' ? "\n\n[Admin note: {$adminNote}]" : '' ),
+						'deadline'      => date( 'F j, Y', strtotime( $deadline ) ),
+						'respond_url'   => $respondUrl,
+						'contact_email' => $contactEmail,
 					], \IPS\Email::TYPE_TRANSACTIONAL )->send( $customer );
 				}
 			}

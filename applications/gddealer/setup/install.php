@@ -626,9 +626,9 @@ TEMPLATE_EOT,
 					<div style="font-size:0.8em;color:#999;text-align:right">
 						Review: {$r['created_at']}<br>
 						{{if $r['dispute_status'] === 'pending_customer'}}
-							<span class="ipsBadge ipsBadge--warning">Awaiting customer (deadline {$r['dispute_deadline']})</span>
+							<span class="ipsBadge ipsBadge--warning">Awaiting customer &mdash; {$r['days_remaining']} days left (deadline {$r['dispute_deadline']})</span>
 						{{elseif $r['dispute_status'] === 'pending_admin'}}
-							<span class="ipsBadge ipsBadge--style1">Awaiting admin decision</span>
+							<span class="ipsBadge ipsBadge--style1">Awaiting admin decision (disputed {$r['dispute_at']})</span>
 						{{endif}}
 					</div>
 				</div>
@@ -2169,9 +2169,14 @@ TEMPLATE_EOT,
 						<p style="margin:0 0 12px;line-height:1.6;color:#374151">{$r['review_body']}</p>
 						{{endif}}
 
-						{{if $r['dispute_status'] === 'pending_customer' or $r['dispute_status'] === 'pending_admin'}}
+						{{if $r['is_own_review'] and $r['dispute_status'] === 'pending_customer'}}
+						<div style="background:#fef2f2;border:1px solid #fca5a5;border-radius:6px;padding:12px 16px;font-size:0.85em;color:#991b1b;margin-bottom:8px">
+							<strong>Action Required:</strong> The dealer has contested this review. You must respond or the dispute will be resolved in their favor.
+							{{if $r['dispute_respond_url']}}<a href="{$r['dispute_respond_url']}" style="color:#dc2626;font-weight:700;margin-left:6px">Respond Now &rarr;</a>{{endif}}
+						</div>
+						{{elseif $r['dispute_status'] === 'pending_customer' or $r['dispute_status'] === 'pending_admin'}}
 						<div style="background:#fef9c3;border:1px solid #fde047;border-radius:6px;padding:8px 12px;font-size:0.82em;color:#854d0e;margin-bottom:8px">
-							⚠ This review is currently under admin review.
+							This review is currently under dispute review.
 						</div>
 						{{endif}}
 

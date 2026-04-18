@@ -37,8 +37,8 @@ class DealerEmails
 				'body'    => "Hi {name},\n\nYour dealer account on GunRack.deals has been set up.\n\nYour API Key: {api_key}\n\nYour Public Profile: {profile_url}\n\nShare this link with your customers so they can find your listings and leave reviews.\n\nNext steps:\n1. Log in and go to your Dealer Dashboard\n2. Click Feed Settings and enter your product feed URL\n3. Run your first import to start appearing in price comparisons\n\nNeed help? Visit your Help & Setup tab or contact us at {contact_email}.\n\nThanks,\nThe GunRack.deals Team",
 			],
 			'disputeNotify' => [
-				'subject' => '{dealer_name} has contested your review on GunRack.deals',
-				'body'    => "Hi {name},\n\n{dealer_name} has contested the review you left and provided evidence.\n\nTheir reason: {reason}\n\nYou have until {deadline} to respond with your own evidence, or the dispute will be automatically resolved in the dealer's favor.\n\nRespond here: {respond_url}\n\nIf you do not respond within 30 days your review will be marked as resolved.\n\nGunRack.deals Team",
+				'subject' => 'ACTION REQUIRED: {dealer_name} has contested your review on GunRack.deals',
+				'body'    => "Hi {name},\n\n{dealer_name} has filed a formal contest against the review you left on GunRack.deals.\n\nDealer's reason for contest:\n{reason}\n\nIMPORTANT: You must respond by {deadline} or the contest will be automatically resolved in the dealer's favor and your review will no longer count toward their rating.\n\nTo submit your response and any supporting evidence (order numbers, receipts, screenshots), click the link below:\n\n{respond_url}\n\nIf you have questions, contact us at {contact_email}.\n\nGunRack.deals Team",
 			],
 			'disputeAdminNotify' => [
 				'subject' => 'Dealer dispute ready for admin review — GunRack.deals',
@@ -50,7 +50,7 @@ class DealerEmails
 			],
 			'disputeAutoResolved' => [
 				'subject' => 'Your review dispute has been auto-resolved — GunRack.deals',
-				'body'    => "Hi {name},\n\nThe 30-day response window for the contested review on GunRack.deals has passed without a response.\n\nThe dispute has been automatically resolved in the dealer's favor. The review will no longer affect their rating average.\n\nGunRack.deals Team",
+				'body'    => "Hi {name},\n\nThe 30-day response window for the contest filed by {dealer_name} on your review has passed without a response.\n\nThe dispute has been automatically resolved in the dealer's favor. Your review will no longer affect their rating average.\n\nIf you believe this was in error, contact us at {contact_email}.\n\nGunRack.deals Team",
 			],
 			'disputeUpheld' => [
 				'subject' => 'Your review contest has been upheld — GunRack.deals',

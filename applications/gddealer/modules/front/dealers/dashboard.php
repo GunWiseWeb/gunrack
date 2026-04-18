@@ -1228,12 +1228,14 @@ class _dashboard extends \IPS\Dispatcher\Controller
 					);
 					$dealerName = (string) $this->dealer->dealer_name;
 
+					$contactEmail = (string) ( \IPS\Settings::i()->gddealer_help_contact ?: 'dealers@gunrack.deals' );
 					\IPS\Email::buildFromTemplate( 'gddealer', 'disputeNotify', [
-						'name'        => $customer->name,
-						'dealer_name' => $dealerName,
-						'reason'      => $reason,
-						'deadline'    => date( 'F j, Y', strtotime( $deadline ) ),
-						'respond_url' => $respondUrl,
+						'name'          => $customer->name,
+						'dealer_name'   => $dealerName,
+						'reason'        => $reason,
+						'deadline'      => date( 'F j, Y', strtotime( $deadline ) ),
+						'respond_url'   => $respondUrl,
+						'contact_email' => $contactEmail,
 					], \IPS\Email::TYPE_TRANSACTIONAL )->send( $customer );
 
 					try

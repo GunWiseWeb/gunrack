@@ -230,9 +230,20 @@ class _profile extends \IPS\Dispatcher\Controller
 				$createdAt  = (string) $r['created_at'];
 				$responseAt = (string) ( $r['response_at'] ?? '' );
 
+				$reviewMemberId = (int) ( $r['member_id'] ?? 0 );
+				$isOwnReview    = $member->member_id && $reviewMemberId === (int) $member->member_id;
+
+				$disputeRespondUrl = '';
+				if ( $isOwnReview && (string) ( $r['dispute_status'] ?? '' ) === 'pending_customer' )
+				{
+					$disputeRespondUrl = (string) \IPS\Http\Url::internal(
+						'app=gddealer&module=dealers&controller=profile&dealer_slug=' . urlencode( $slug ) . '&dispute=' . (int) $r['id']
+					);
+				}
+
 				$reviews[] = [
 					'id'                   => (int) $r['id'],
-					'member_id'            => (int) ( $r['member_id'] ?? 0 ),
+					'member_id'            => $reviewMemberId,
 					'rating_pricing'       => $pricing,
 					'rating_shipping'      => $shipping,
 					'rating_service'       => $service,
@@ -250,6 +261,8 @@ class _profile extends \IPS\Dispatcher\Controller
 					'stars_pricing'        => str_repeat( '★', $pricing ) . str_repeat( '☆', 5 - $pricing ),
 					'stars_shipping'       => str_repeat( '★', $shipping ) . str_repeat( '☆', 5 - $shipping ),
 					'stars_service'        => str_repeat( '★', $service ) . str_repeat( '☆', 5 - $service ),
+					'is_own_review'        => $isOwnReview,
+					'dispute_respond_url'  => $disputeRespondUrl,
 				];
 			}
 		}

@@ -66,6 +66,13 @@ class _ResolveExpiredDisputes extends \IPS\Task
 			}
 
 			$memberId = (int) ( $row['member_id'] ?? 0 );
+			$dealerName = '';
+			try
+			{
+				$dealerName = (string) \IPS\Db::i()->select( 'dealer_name', 'gd_dealer_feed_config', [ 'dealer_id=?', (int) $row['dealer_id'] ] )->first();
+			}
+			catch ( \Exception ) {}
+
 			if ( $memberId > 0 )
 			{
 				try
@@ -75,6 +82,7 @@ class _ResolveExpiredDisputes extends \IPS\Task
 					{
 						\IPS\Email::buildFromTemplate( 'gddealer', 'disputeAutoResolved', [
 							'name'          => $member->name,
+							'dealer_name'   => $dealerName,
 							'contact_email' => $contactEmail,
 						], \IPS\Email::TYPE_TRANSACTIONAL )->send( $member );
 					}
