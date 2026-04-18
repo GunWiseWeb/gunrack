@@ -4,7 +4,7 @@ How to add a new version to the `gddealer` IPS application so existing installs 
 
 ## How IPS upgrades work
 
-On upgrade IPS compares the `app_long_version` integer stored in `core_applications` against each entry in `data/versions.json`. For every entry whose integer is greater than the stored value, IPS runs:
+On upgrade IPS compares the version integer stored in `core_applications.app_long_version` (DB column) against each entry in `data/versions.json`. For every entry whose integer is greater than the stored value, IPS runs:
 
 1. `setup/upg_XXXXX/queries.json` — structured `IPS\Db` helper calls (addColumn, addIndex, createTable, etc.). Each entry supports `"silence_errors": true` so operations that are already applied (e.g. column already exists) do not abort the upgrade.
 2. `setup/upg_XXXXX/upgrade.php` — a class `upgrade extends _upgrade` with one or more `stepN()` methods for data migrations. IPS calls `step1()`, `step2()` in order; each must return `TRUE` to continue.
@@ -36,13 +36,10 @@ Fresh installs skip all upg_ scripts and run `setup/install.php` which seeds eve
    ```
 4. Create `setup/upg_10002/upgrade.php` with any data backfill. Follow the class pattern used in `upg_10001/upgrade.php` (`_upgrade` + `upgrade` alias, `stepN(): bool` methods).
 5. Create `setup/upg_10002/index.html` (blank).
-6. Bump `data/application.json`:
-   ```json
-   "app_version": 10002,
-   "app_version_human": "1.0.2"
-   ```
-7. Mirror the new columns/tables into `data/schema.json` so fresh installs get them via `setup/install.php`.
-8. Rebuild the tar with `php build-gddealer.php` and push.
+6. Mirror the new columns/tables into `data/schema.json` so fresh installs get them via `setup/install.php`.
+7. Rebuild the tar with `php build-gddealer.php` and push.
+
+**Do NOT add version fields to `data/application.json`.** IPS 5 reads version data exclusively from `data/versions.json`. See Common mistakes below.
 
 ## Rules for queries.json
 
@@ -52,10 +49,10 @@ Fresh installs skip all upg_ scripts and run `setup/install.php` which seeds eve
 
 ## Common mistakes
 
-- **versions.json key/value direction:** Keys are the human-readable version string (e.g. `"1.0.2"`), values are the integer (e.g. `10002`). NOT the other way around. IPS iterates keys as display labels and compares values against the stored `app_version` integer.
-- **application.json field names:** The integer version is `app_version` (e.g. `10002`). The human string is `app_version_human` (e.g. `"1.0.2"`). There is no `app_long_version` field in IPS 5 — that key does not exist and will be ignored.
-- **Always update both files together:** When bumping a version, update both `data/versions.json` (add the new mapping) and `data/application.json` (bump `app_version` and `app_version_human`). If they're out of sync, IPS won't detect the upgrade.
-- **Integer vs string types matter:** `app_version` must be a bare integer in JSON (`10002`), not a quoted string (`"10002"`). `app_version_human` must be a quoted string (`"1.0.2"`), not a number.
+- **Do NOT put version fields in application.json** — IPS reads version exclusively from versions.json. Adding `app_version` or `app_version_human` to application.json causes "Unknown column" DB errors on upgrade.
+- **versions.json key/value direction:** Keys are the human-readable version string (e.g. `"1.0.2"`), values are the integer (e.g. `10002`). NOT the other way around. IPS iterates keys as display labels and compares values against the stored version integer.
+- **Integer vs string types matter in versions.json:** Values must be bare integers (`10002`), not quoted strings (`"10002"`). Keys must be quoted strings (`"1.0.2"`), which JSON requires for object keys anyway.
+- **Highest integer in versions.json wins:** That entry is treated as the current version and triggers all `upg_XXXXX` scripts whose integer is between the stored DB value and the new highest.
 
 ## Current version history
 

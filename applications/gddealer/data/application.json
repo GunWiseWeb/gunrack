@@ -2,8 +2,6 @@
 	"app_directory": "gddealer",
 	"app_author": "GunRack",
 	"application_title": "GD Dealer Manager",
-	"app_version": 10001,
-	"app_version_human": "1.0.1",
 	"app_website": "https://gunrack.deals",
 	"app_update_check": ""
 }
