@@ -593,7 +593,7 @@ class _dealers extends \IPS\Dispatcher\Controller
 					'dispute_reason'        => (string) ( $r['dispute_reason'] ?? '' ),
 					'dispute_evidence'      => (string) ( $r['dispute_evidence'] ?? '' ),
 					'dispute_at'            => (string) ( $r['dispute_at'] ?? '' ),
-					'dispute_deadline'      => (string) ( $r['dispute_deadline'] ?? '' ),
+					'dispute_deadline'      => ( $r['dispute_deadline'] ?? '' ) !== '' ? date( 'F j, Y', strtotime( (string) $r['dispute_deadline'] ) ) : '',
 					'customer_response'     => (string) ( $r['customer_response'] ?? '' ),
 					'customer_evidence'     => (string) ( $r['customer_evidence'] ?? '' ),
 					'customer_responded_at' => (string) ( $r['customer_responded_at'] ?? '' ),
@@ -655,6 +655,7 @@ class _dealers extends \IPS\Dispatcher\Controller
 		}
 		catch ( \Exception ) {}
 
+		/* Email the dealer that their contest was upheld. */
 		if ( $dealerId > 0 )
 		{
 			try
@@ -665,38 +666,24 @@ class _dealers extends \IPS\Dispatcher\Controller
 					\IPS\Email::buildFromTemplate( 'gddealer', 'disputeUpheld', [
 						'name' => $dealerMember->name,
 					], \IPS\Email::TYPE_TRANSACTIONAL )->send( $dealerMember );
-
-					$notification = new \IPS\Notification(
-						\IPS\Application::load( 'gddealer' ),
-						'dispute_upheld',
-						$dealerMember,
-						[ $dealerMember ],
-						[
-							'dealer_name' => (string) $dealerMember->name,
-						]
-					);
-					$notification->recipients->attach( $dealerMember );
-					$notification->send();
 				}
 			}
 			catch ( \Exception ) {}
 		}
 
-		/* PM the reviewer notifying them of the outcome. */
+		/* Email the reviewer notifying them of the outcome. */
 		if ( $review && (int) ( $review['member_id'] ?? 0 ) > 0 )
 		{
 			try
 			{
 				$reviewerMember = \IPS\Member::load( (int) $review['member_id'] );
-				if ( $reviewerMember->member_id && !(int) ( $reviewerMember->members_disable_pm ?? 0 ) )
+				if ( $reviewerMember->member_id )
 				{
-					\IPS\core\Messenger\Conversation::createItem(
-						\IPS\Member::loggedIn(),
-						[ $reviewerMember ],
-						'GunRack.deals — Review Dispute Resolved',
-						'Your review on ' . $dealerName . ' was contested and after reviewing the evidence, admin has ruled in the dealer\'s favor. The review will remain visible but no longer affects their rating average.',
-						FALSE
-					);
+					\IPS\Email::buildFromTemplate( 'gddealer', 'disputeOutcome', [
+						'name'        => $reviewerMember->name,
+						'dealer_name' => $dealerName,
+						'outcome'     => 'After reviewing the evidence, admin has ruled in the dealer\'s favor. The review will remain visible but no longer affects their rating average.',
+					], \IPS\Email::TYPE_TRANSACTIONAL )->send( $reviewerMember );
 				}
 			}
 			catch ( \Exception ) {}
@@ -710,7 +697,7 @@ class _dealers extends \IPS\Dispatcher\Controller
 
 	/**
 	 * Dismiss the dealer's contest. Review stands; dealer cannot re-dispute.
-	 * Dealer receives a notification.
+	 * Dealer receives an email notification.
 	 */
 	protected function dismissDispute()
 	{
@@ -746,7 +733,7 @@ class _dealers extends \IPS\Dispatcher\Controller
 		}
 		catch ( \Exception ) {}
 
-		/* Notify the dealer that their contest was dismissed. */
+		/* Email the dealer that their contest was dismissed. */
 		if ( $dealerId > 0 )
 		{
 			try
@@ -757,38 +744,24 @@ class _dealers extends \IPS\Dispatcher\Controller
 					\IPS\Email::buildFromTemplate( 'gddealer', 'disputeDismissed', [
 						'name' => $dealerMember->name,
 					], \IPS\Email::TYPE_TRANSACTIONAL )->send( $dealerMember );
-
-					$notification = new \IPS\Notification(
-						\IPS\Application::load( 'gddealer' ),
-						'dispute_dismissed',
-						$dealerMember,
-						[ $dealerMember ],
-						[
-							'dealer_name' => (string) $dealerMember->name,
-						]
-					);
-					$notification->recipients->attach( $dealerMember );
-					$notification->send();
 				}
 			}
 			catch ( \Exception ) {}
 		}
 
-		/* PM the reviewer notifying them of the outcome. */
+		/* Email the reviewer notifying them of the outcome. */
 		if ( $review && (int) ( $review['member_id'] ?? 0 ) > 0 )
 		{
 			try
 			{
 				$reviewerMember = \IPS\Member::load( (int) $review['member_id'] );
-				if ( $reviewerMember->member_id && !(int) ( $reviewerMember->members_disable_pm ?? 0 ) )
+				if ( $reviewerMember->member_id )
 				{
-					\IPS\core\Messenger\Conversation::createItem(
-						\IPS\Member::loggedIn(),
-						[ $reviewerMember ],
-						'GunRack.deals — Review Dispute Resolved',
-						'Your review on ' . $dealerName . ' was contested but after reviewing the evidence, admin has decided the review stands as-is.',
-						FALSE
-					);
+					\IPS\Email::buildFromTemplate( 'gddealer', 'disputeOutcome', [
+						'name'        => $reviewerMember->name,
+						'dealer_name' => $dealerName,
+						'outcome'     => 'The dealer contested your review but after reviewing the evidence, admin has decided the review stands as-is.',
+					], \IPS\Email::TYPE_TRANSACTIONAL )->send( $reviewerMember );
 				}
 			}
 			catch ( \Exception ) {}

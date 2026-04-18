@@ -285,12 +285,14 @@ class _profile extends \IPS\Dispatcher\Controller
 					[ 'id=? AND dealer_id=? AND member_id=? AND dispute_status=?',
 						$disputeId, $dealerId, (int) $member->member_id, 'pending_customer' ]
 				)->first();
+				$deadlineRaw = (string) ( $cd['dispute_deadline'] ?? '' );
 				$customerDispute = [
-					'id'               => (int) $cd['id'],
-					'dispute_reason'   => (string) ( $cd['dispute_reason'] ?? '' ),
-					'dispute_evidence' => (string) ( $cd['dispute_evidence'] ?? '' ),
-					'dispute_deadline' => (string) ( $cd['dispute_deadline'] ?? '' ),
-					'respond_url'      => (string) \IPS\Http\Url::internal(
+					'id'                 => (int) $cd['id'],
+					'dispute_reason'     => (string) ( $cd['dispute_reason'] ?? '' ),
+					'dispute_evidence'   => (string) ( $cd['dispute_evidence'] ?? '' ),
+					'dispute_deadline'   => $deadlineRaw,
+					'deadline_formatted' => $deadlineRaw !== '' ? date( 'F j, Y', strtotime( $deadlineRaw ) ) : '',
+					'respond_url'        => (string) \IPS\Http\Url::internal(
 						'app=gddealer&module=dealers&controller=profile&do=disputeRespond&dealer_slug=' . urlencode( $slug ) . '&id=' . (int) $cd['id']
 					)->csrf(),
 				];
@@ -522,26 +524,20 @@ class _profile extends \IPS\Dispatcher\Controller
 		}
 		catch ( \Exception ) {}
 
+		/* Email the dealer about the new review. */
 		try
 		{
 			$dealerMember = \IPS\Member::load( $dealerId );
 			if ( $dealerMember->member_id )
 			{
-				$notification = new \IPS\Notification(
-					\IPS\Application::load( 'gddealer' ),
-					'new_dealer_review',
-					$dealerMember,
-					[ $dealerMember ],
-					[
-						'reviewer_name' => (string) $member->name,
-						'dealer_name'   => (string) $dealerRow['dealer_name'],
-						'review_url'    => (string) \IPS\Http\Url::internal(
-							'app=gddealer&module=dealers&controller=dashboard&do=reviews'
-						),
-					]
-				);
-				$notification->recipients->attach( $dealerMember );
-				$notification->send();
+				\IPS\Email::buildFromTemplate( 'gddealer', 'newDealerReview', [
+					'name'          => $dealerMember->name,
+					'reviewer_name' => (string) $member->name,
+					'dealer_name'   => (string) $dealerRow['dealer_name'],
+					'review_url'    => (string) \IPS\Http\Url::internal(
+						'app=gddealer&module=dealers&controller=dashboard&do=reviews'
+					),
+				], \IPS\Email::TYPE_TRANSACTIONAL )->send( $dealerMember );
 			}
 		}
 		catch ( \Exception ) {}
@@ -623,14 +619,13 @@ class _profile extends \IPS\Dispatcher\Controller
 		}
 		catch ( \Exception ) {}
 
-		/* Notify admins via email and IPS notification so they can resolve the dispute. */
+		/* Email admins so they can resolve the dispute. */
 		try
 		{
 			$adminUrl = (string) \IPS\Http\Url::internal(
 				'app=gddealer&module=dealers&controller=dealers&do=disputes',
 				'admin'
 			);
-			$dealerName = (string) ( $dealerRow['dealer_name'] ?? '' );
 
 			foreach ( \IPS\Db::i()->select( '*', 'core_members',
 				[ \IPS\Db::i()->in( 'member_group_id', [ 4 ] ) ],
@@ -645,20 +640,6 @@ class _profile extends \IPS\Dispatcher\Controller
 						\IPS\Email::buildFromTemplate( 'gddealer', 'disputeAdminNotify', [
 							'admin_url' => $adminUrl,
 						], \IPS\Email::TYPE_TRANSACTIONAL )->send( $admin );
-
-						$notification = new \IPS\Notification(
-							\IPS\Application::load( 'gddealer' ),
-							'dispute_admin_review',
-							$admin,
-							[ $admin ],
-							[
-								'dealer_name'   => $dealerName,
-								'reviewer_name' => (string) $member->name,
-								'admin_url'     => $adminUrl,
-							]
-						);
-						$notification->recipients->attach( $admin );
-						$notification->send();
 					}
 				}
 				catch ( \Exception ) {}

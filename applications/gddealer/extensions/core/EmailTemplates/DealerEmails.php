@@ -52,6 +52,22 @@ class DealerEmails
 				'subject' => 'Your review dispute has been auto-resolved — GunRack.deals',
 				'body'    => "Hi {name},\n\nThe 30-day response window for the contested review on GunRack.deals has passed without a response.\n\nThe dispute has been automatically resolved in the dealer's favor. The review will no longer affect their rating average.\n\nGunRack.deals Team",
 			],
+			'disputeUpheld' => [
+				'subject' => 'Your review contest has been upheld — GunRack.deals',
+				'body'    => "Hi {name},\n\nAfter reviewing the evidence submitted by both parties, admin has ruled in your favor.\n\nThe customer review will remain visible but no longer affects your rating average.\n\nGunRack.deals Team",
+			],
+			'disputeOutcome' => [
+				'subject' => 'Review dispute resolved — GunRack.deals',
+				'body'    => "Hi {name},\n\nA review dispute on {dealer_name} has been resolved.\n\n{outcome}\n\nThis decision is final.\n\nGunRack.deals Team",
+			],
+			'dealerResponded' => [
+				'subject' => '{dealer_name} responded to your review on GunRack.deals',
+				'body'    => "Hi {name},\n\n{dealer_name} has posted a public response to your review.\n\nTheir response:\n{response}\n\nView your review: {profile_url}\n\nGunRack.deals Team",
+			],
+			'newDealerReview' => [
+				'subject' => 'New review on your GunRack.deals dealer profile',
+				'body'    => "Hi {name},\n\n{reviewer_name} left a review on your {dealer_name} profile.\n\nView your reviews: {review_url}\n\nGunRack.deals Team",
+			],
 		];
 	}
 }

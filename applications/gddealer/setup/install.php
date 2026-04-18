@@ -1995,7 +1995,7 @@ TEMPLATE_EOT,
 		<h2 style="margin:0 0 8px;font-size:1.05em;font-weight:700;color:#92400e">{$dealer['dealer_name']} has contested your review</h2>
 		<p style="margin:0 0 12px;font-size:0.9em;color:#78350f">
 			The dealer has submitted a contest against the review you left.
-			{{if $customerDispute['dispute_deadline']}}You have until <strong>{$customerDispute['dispute_deadline']}</strong> to respond, or the contest will be automatically resolved in the dealer's favor.{{endif}}
+			{{if $customerDispute['deadline_formatted']}}You have until <strong>{$customerDispute['deadline_formatted']}</strong> to respond, or the contest will be automatically resolved in the dealer's favor.{{endif}}
 		</p>
 		{{if $customerDispute['dispute_reason']}}
 		<div style="background:#fff;border-left:3px solid #f59e0b;padding:10px 14px;margin-bottom:12px;border-radius:0 4px 4px 0">

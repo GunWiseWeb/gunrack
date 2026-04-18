@@ -250,6 +250,10 @@
     <word key="gddealer_email_disputeAdminNotify"><![CDATA[Review Contest — Admin Notification]]></word>
     <word key="gddealer_email_disputeDismissed"><![CDATA[Review Contest — Dealer Dismissal Notification]]></word>
     <word key="gddealer_email_disputeAutoResolved"><![CDATA[Review Contest — Customer Auto-Resolved Notification]]></word>
+    <word key="gddealer_email_disputeUpheld"><![CDATA[Review Contest — Dealer Upheld Notification]]></word>
+    <word key="gddealer_email_disputeOutcome"><![CDATA[Review Dispute — Reviewer Outcome Notification]]></word>
+    <word key="gddealer_email_dealerResponded"><![CDATA[Dealer Responded to Review]]></word>
+    <word key="gddealer_email_newDealerReview"><![CDATA[New Dealer Review Notification]]></word>
     <word key="gddealer_settings_guidelines"><![CDATA[Review & Dispute Guidelines]]></word>
     <word key="gddealer_guidelines_buyer_title"><![CDATA[Buyer Guidelines Title]]></word>
     <word key="gddealer_guidelines_buyer_body"><![CDATA[Buyer Guidelines Content]]></word>
