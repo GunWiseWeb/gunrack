@@ -110,3 +110,4 @@ Fresh installs skip all upg_ scripts and run `setup/install.php` which seeds eve
 - `10000` — 1.0.0 — Initial install baseline.
 - `10001` — 1.0.1 — Added `dealer_slug`, trial/billing fields, dashboard prefs, full review dispute workflow columns on `gd_dealer_ratings`, and new `gd_dealer_dispute_counts` table. Backfills slugs for any dealer rows that predate the column. Seeds `dashboardCustomize`, `dealerRegister`, and `dealerDirectory` front templates via `setup/templates_10001.php`.
 - `10002` — 1.0.2 — Re-runs the `templates_10001.php` seeder to recover any install that upgraded to 10001 before template seeding was wired in. No schema changes.
+- `10003` — 1.0.3 — Fixed `rate()` in `modules/front/dealers/profile.php` inserting a non-existent `disputed` column into `gd_dealer_ratings`. Replaced with `dispute_status => 'none'`. Code-only fix, no schema or data migration.

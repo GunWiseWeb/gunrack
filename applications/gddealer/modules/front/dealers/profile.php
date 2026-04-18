@@ -495,7 +495,7 @@ class _profile extends \IPS\Dispatcher\Controller
 					'review_body'     => $body !== '' ? $body : null,
 					'created_at'      => date( 'Y-m-d H:i:s' ),
 					'status'          => 'approved',
-					'disputed'        => 0,
+					'dispute_status'  => 'none',
 				]);
 			}
 		}
