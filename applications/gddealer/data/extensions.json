@@ -1,16 +1,16 @@
 {
 	"core": {
 		"ContentRouter": [
-			"DealerFollow"
+			"IPS\\gddealer\\extensions\\core\\ContentRouter\\DealerFollow"
 		],
 		"Notifications": [
-			"DealerNotifications"
+			"IPS\\gddealer\\extensions\\core\\Notifications\\DealerNotifications"
 		],
 		"EmailTemplates": [
-			"DealerEmails"
+			"IPS\\gddealer\\extensions\\core\\EmailTemplates\\DealerEmails"
 		],
 		"FrontNavigation": [
-			"DealerNav"
+			"IPS\\gddealer\\extensions\\core\\FrontNavigation\\DealerNav"
 		]
 	}
 }
