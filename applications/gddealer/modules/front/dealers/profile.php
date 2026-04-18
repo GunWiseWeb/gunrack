@@ -522,6 +522,30 @@ class _profile extends \IPS\Dispatcher\Controller
 		}
 		catch ( \Exception ) {}
 
+		try
+		{
+			$dealerMember = \IPS\Member::load( $dealerId );
+			if ( $dealerMember->member_id )
+			{
+				$notification = new \IPS\Notification(
+					\IPS\Application::load( 'gddealer' ),
+					'new_dealer_review',
+					$dealerMember,
+					[ $dealerMember ],
+					[
+						'reviewer_name' => (string) $member->name,
+						'dealer_name'   => (string) $dealerRow['dealer_name'],
+						'review_url'    => (string) \IPS\Http\Url::internal(
+							'app=gddealer&module=dealers&controller=dashboard&do=reviews'
+						),
+					]
+				);
+				$notification->recipients->attach( $dealerMember );
+				$notification->send();
+			}
+		}
+		catch ( \Exception ) {}
+
 		\IPS\Output::i()->redirect( $profileUrl, 'gddealer_profile_rating_saved' );
 	}
 

@@ -899,6 +899,16 @@ class _dashboard extends \IPS\Dispatcher\Controller
 	protected function reviews(): void
 	{
 		$dealerId = (int) $this->dealer->dealer_id;
+
+		try
+		{
+			\IPS\Db::i()->update( 'gd_dealer_feed_config',
+				[ 'last_review_check' => date( 'Y-m-d H:i:s' ) ],
+				[ 'dealer_id=?', $dealerId ]
+			);
+		}
+		catch ( \Exception ) {}
+
 		$rows = [];
 		$avgPricing = 0.0;
 		$avgShipping = 0.0;
@@ -1190,6 +1200,17 @@ class _dashboard extends \IPS\Dispatcher\Controller
 		}
 		catch ( \Exception ) {}
 
+		$lastVisit  = (string) ( $d->last_review_check ?? '2000-01-01 00:00:00' );
+		$newReviews = 0;
+		try
+		{
+			$newReviews = (int) \IPS\Db::i()->select( 'COUNT(*)', 'gd_dealer_ratings', [
+				'dealer_id=? AND created_at>? AND status=?',
+				(int) $d->dealer_id, $lastVisit, 'approved'
+			] )->first();
+		}
+		catch ( \Exception ) {}
+
 		return [
 			'dealer_id'             => (int) $d->dealer_id,
 			'dealer_name'           => (string) $d->dealer_name,
@@ -1209,6 +1230,7 @@ class _dashboard extends \IPS\Dispatcher\Controller
 			'avatar_url'            => $avatarUrl,
 			'cover_photo_url'       => $coverPhotoUrl,
 			'cover_offset'          => $coverOffset,
+			'new_reviews'           => $newReviews,
 		];
 	}
 

@@ -287,5 +287,9 @@
     <word key="gddealer_followed"><![CDATA[You are now following this dealer.]]></word>
     <word key="gddealer_unfollowed"><![CDATA[You have unfollowed this dealer.]]></word>
     <word key="gddealer_follow_area_dealer"><![CDATA[Dealers]]></word>
+    <word key="gddealer_notif_new_review_title"><![CDATA[New Dealer Review]]></word>
+    <word key="gddealer_notif_new_review_text"><![CDATA[%s left a review on your dealer profile.]]></word>
+    <word key="gddealer_notif_dispute_title"><![CDATA[Review Dispute Update]]></word>
+    <word key="gddealer_notif_dispute_text"><![CDATA[There is an update on a review dispute.]]></word>
   </app>
 </language>
