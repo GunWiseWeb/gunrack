@@ -54,6 +54,13 @@ class _upgrade
 
 		return TRUE;
 	}
+
+	public function step2(): bool
+	{
+		require \IPS\ROOT_PATH . '/applications/gddealer/setup/templates_10001.php';
+
+		return TRUE;
+	}
 }
 
 class upgrade extends _upgrade {}
