@@ -549,13 +549,17 @@ class _profile extends \IPS\Dispatcher\Controller
 
 		/* Email to the dealer — own try/catch so a template failure cannot
 		   swallow the inline notification below. */
+		$isUpdate       = ( $existing > 0 );
+		$emailTemplate  = $isUpdate ? 'updatedDealerReview' : 'newDealerReview';
+		$notificationKey = $isUpdate ? 'updated_dealer_review' : 'new_dealer_review';
+
 		$dealerMember = NULL;
 		try
 		{
 			$dealerMember = \IPS\Member::load( $dealerId );
 			if ( $dealerMember->member_id )
 			{
-				\IPS\Email::buildFromTemplate( 'gddealer', 'newDealerReview', [
+				\IPS\Email::buildFromTemplate( 'gddealer', $emailTemplate, [
 					'name'          => $dealerMember->name,
 					'reviewer_name' => (string) $member->name,
 					'dealer_name'   => (string) $dealerRow['dealer_name'],
@@ -576,7 +580,7 @@ class _profile extends \IPS\Dispatcher\Controller
 			{
 				$notification = new \IPS\Notification(
 					\IPS\Application::load( 'gddealer' ),
-					'new_dealer_review',
+					$notificationKey,
 					$dealerMember,
 					[ $dealerMember ],
 					[

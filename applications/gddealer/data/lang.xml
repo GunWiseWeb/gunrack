@@ -307,6 +307,8 @@
     <word key="gddealer_notif_dealer_responded_text"><![CDATA[The dealer has posted a public response to your review.]]></word>
     <word key="gddealer_notif_new_review"><![CDATA[New Dealer Review]]></word>
     <word key="gddealer_notif_new_review_desc"><![CDATA[When someone leaves a review on your dealer profile]]></word>
+    <word key="gddealer_notif_updated_review"><![CDATA[Updated Dealer Review]]></word>
+    <word key="gddealer_notif_updated_review_desc"><![CDATA[When someone updates a review they previously left on your dealer profile]]></word>
     <word key="gddealer_notif_review_disputed"><![CDATA[Review Disputed]]></word>
     <word key="gddealer_notif_review_disputed_desc"><![CDATA[When a dealer contests a review you left]]></word>
     <word key="gddealer_notif_dispute_admin_review"><![CDATA[Dispute Needs Admin Review]]></word>
@@ -320,12 +322,14 @@
     <word key="notifications__gddealer_DealerNotifications"><![CDATA[Dealer Notifications]]></word>
     <word key="notifications__gddealer_DealerNotifications_desc"><![CDATA[Notifications related to dealer reviews and disputes]]></word>
     <word key="mailsub__gddealer_notification_new_dealer_review"><![CDATA[New review on your dealer profile]]></word>
+    <word key="mailsub__gddealer_notification_updated_dealer_review"><![CDATA[A review on your dealer profile was updated]]></word>
     <word key="mailsub__gddealer_notification_review_disputed"><![CDATA[Your review has been disputed]]></word>
     <word key="mailsub__gddealer_notification_dealer_responded"><![CDATA[A dealer responded to your review]]></word>
     <word key="mailsub__gddealer_notification_dispute_admin_review"><![CDATA[Dealer dispute needs your review]]></word>
     <word key="mailsub__gddealer_notification_dispute_upheld"><![CDATA[Your review dispute was upheld]]></word>
     <word key="mailsub__gddealer_notification_dispute_dismissed"><![CDATA[Your review dispute was dismissed]]></word>
     <word key="mailani__gddealer_notification_new_dealer_review"><![CDATA[{member} left a review on your dealer profile. Log in to view and respond.]]></word>
+    <word key="mailani__gddealer_notification_updated_dealer_review"><![CDATA[{member} updated their review on your dealer profile. Log in to view the changes.]]></word>
     <word key="mailani__gddealer_notification_review_disputed"><![CDATA[{member} has disputed your review. You have 30 days to respond.]]></word>
     <word key="mailani__gddealer_notification_dealer_responded"><![CDATA[A dealer has responded to your review publicly.]]></word>
     <word key="mailani__gddealer_notification_dispute_admin_review"><![CDATA[A dealer dispute is awaiting your admin decision.]]></word>

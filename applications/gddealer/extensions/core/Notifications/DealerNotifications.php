@@ -35,6 +35,15 @@ class DealerNotifications extends NotificationsAbstract
 				'default'           => [ 'inline', 'email' ],
 				'disabled'          => [],
 			],
+			'updated_dealer_review' => [
+				'type'              => 'standard',
+				'notificationTypes' => [ 'updated_dealer_review' ],
+				'title'             => 'gddealer_notif_updated_review',
+				'showTitle'         => true,
+				'description'       => 'gddealer_notif_updated_review_desc',
+				'default'           => [ 'inline', 'email' ],
+				'disabled'          => [],
+			],
 			'review_disputed' => [
 				'type'              => 'standard',
 				'notificationTypes' => [ 'review_disputed' ],
@@ -90,6 +99,17 @@ class DealerNotifications extends NotificationsAbstract
 			'title'   => ( $extra['reviewer_name'] ?? 'A member' ) . ' left a review on your dealer profile',
 			'url'     => \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dashboard&do=reviews' ),
 			'content' => 'Visit your dashboard to view the review and post a response.',
+			'author'  => NULL,
+		];
+	}
+
+	public function parse_updated_dealer_review( Inline $notification, bool $htmlEscape = TRUE ): array
+	{
+		$extra = $notification->extra ?: [];
+		return [
+			'title'   => ( $extra['reviewer_name'] ?? 'A member' ) . ' updated their review on your dealer profile',
+			'url'     => \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dashboard&do=reviews' ),
+			'content' => 'A reviewer has updated their ratings or comments. Visit your dashboard to see the changes.',
 			'author'  => NULL,
 		];
 	}

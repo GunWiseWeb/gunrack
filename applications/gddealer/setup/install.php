@@ -2523,6 +2523,7 @@ catch ( \Exception ) {}
    to re-run: duplicate notification_key inserts are swallowed. */
 $notificationDefaults = [
 	'new_dealer_review'    => [ 'default' => 'inline,email', 'disabled' => '' ],
+	'updated_dealer_review' => [ 'default' => 'inline,email', 'disabled' => '' ],
 	'review_disputed'      => [ 'default' => 'inline,email', 'disabled' => '' ],
 	'dealer_responded'     => [ 'default' => 'inline',       'disabled' => '' ],
 	'dispute_admin_review' => [ 'default' => 'inline,email', 'disabled' => '' ],

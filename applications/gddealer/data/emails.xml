@@ -7,6 +7,12 @@
 		<template_content_plaintext><![CDATA[Hi {$params['name']}, {$params['reviewer_name']} left a review. View it here: {$params['review_url']}]]></template_content_plaintext>
 	</template>
 	<template>
+		<template_name>updatedDealerReview</template_name>
+		<template_data></template_data>
+		<template_content_html><![CDATA[<p>Hi {$params['name']},</p><p>{$params['reviewer_name']} has updated their review on your dealer profile.<br><a href="{$params['review_url']}">View your reviews</a></p>]]></template_content_html>
+		<template_content_plaintext><![CDATA[Hi {$params['name']}, {$params['reviewer_name']} updated their review. View it here: {$params['review_url']}]]></template_content_plaintext>
+	</template>
+	<template>
 		<template_name>dealerWelcome</template_name>
 		<template_data></template_data>
 		<template_content_html><![CDATA[<p>Hi {$params['name']},</p><p>Welcome to GunRack.deals as a dealer!</p>]]></template_content_html>
