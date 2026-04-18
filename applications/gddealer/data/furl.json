@@ -1,6 +1,14 @@
 {
 	"topLevel": "dealers",
 	"pages": {
+		"dealers_directory": {
+			"friendly": "",
+			"real": "app=gddealer&module=dealers&controller=directory"
+		},
+		"dealers_directory_browse": {
+			"friendly": "browse",
+			"real": "app=gddealer&module=dealers&controller=directory"
+		},
 		"dealers_dashboard": {
 			"friendly": "dashboard",
 			"real": "app=gddealer&module=dealers&controller=dashboard"

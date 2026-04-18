@@ -7,7 +7,7 @@
 	},
 	"front": {
 		"dealers": {
-			"default_controller": "dashboard",
+			"default_controller": "directory",
 			"protected": false
 		}
 	}

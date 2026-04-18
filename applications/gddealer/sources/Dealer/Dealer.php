@@ -27,6 +27,10 @@ class _Dealer extends \IPS\Patterns\ActiveRecord
 	public static string $databasePrefix   = '';
 	public static string $databaseColumnId = 'dealer_id';
 
+	public static string $application = 'gddealer';
+	public static string $module      = 'dealers';
+	public static string $controller  = 'directory';
+
 	const TIER_BASIC      = 'basic';
 	const TIER_PRO        = 'pro';
 	const TIER_ENTERPRISE = 'enterprise';
@@ -228,6 +232,18 @@ class _Dealer extends \IPS\Patterns\ActiveRecord
 			: [];
 
 		return !empty( array_intersect( $groupIds, $others ) );
+	}
+
+	public function url(): \IPS\Http\Url
+	{
+		return \IPS\Http\Url::internal(
+			'app=gddealer&module=dealers&controller=profile&dealer_slug=' . urlencode( (string) $this->dealer_slug )
+		);
+	}
+
+	public function get__title(): string
+	{
+		return (string) $this->dealer_name;
 	}
 }
 

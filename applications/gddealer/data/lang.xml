@@ -283,5 +283,9 @@
     <word key="gddealer_enterprise_badge_color"><![CDATA[Enterprise Tier Badge Color]]></word>
     <word key="gddealer_settings_quicklinks"><![CDATA[Overview Quick Links]]></word>
     <word key="gddealer_quicklinks_json"><![CDATA[Quick Links (JSON)]]></word>
+    <word key="gddealer_directory_title"><![CDATA[Dealer Directory]]></word>
+    <word key="gddealer_followed"><![CDATA[You are now following this dealer.]]></word>
+    <word key="gddealer_unfollowed"><![CDATA[You have unfollowed this dealer.]]></word>
+    <word key="gddealer_follow_area_dealer"><![CDATA[Dealers]]></word>
   </app>
 </language>

@@ -2089,6 +2089,131 @@ TEMPLATE_EOT,
 </div>
 TEMPLATE_EOT,
 	],
+
+	/* ===== FRONT: dealerDirectory ===== */
+	[
+		'set_id'        => 1,
+		'app'           => 'gddealer',
+		'location'      => 'front',
+		'group'         => 'dealers',
+		'template_name' => 'dealerDirectory',
+		'template_data' => '$dealers, $total, $page, $perPage, $pagination, $tier, $sort, $search, $loggedIn, $joinUrl, $directoryUrl',
+		'template_content' => <<<'TEMPLATE_EOT'
+<div style="max-width:1400px;margin:0 auto;padding:0 24px;box-sizing:border-box">
+
+	<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--i-border-color,#e0e0e0)">
+		<div>
+			<h1 style="margin:0 0 4px;font-size:1.6em;font-weight:800">{lang="gddealer_directory_title"}</h1>
+			<p style="margin:0;color:#666;font-size:0.9em">{$total} active dealers on GunRack.deals</p>
+		</div>
+		<a href="{$joinUrl}" class="ipsButton ipsButton--primary">
+			<i class="fa-solid fa-store" aria-hidden="true"></i>
+			<span>Become a Dealer</span>
+		</a>
+	</div>
+
+	<div style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:16px;margin-bottom:24px">
+		<form method="get" action="{$directoryUrl}" style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end">
+			<div style="flex:1 1 200px">
+				<label style="display:block;font-size:0.8em;font-weight:600;color:#666;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.05em">Search</label>
+				<input type="text" name="search" value="{$search}" placeholder="Search dealers..." class="ipsInput ipsInput--text" style="width:100%;box-sizing:border-box">
+			</div>
+			<div style="flex:0 1 160px">
+				<label style="display:block;font-size:0.8em;font-weight:600;color:#666;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.05em">Tier</label>
+				<select name="tier" class="ipsInput ipsInput--select" style="width:100%">
+					<option value="">All Tiers</option>
+					<option value="founding" {{if $tier === 'founding'}}selected{{endif}}>Founding</option>
+					<option value="enterprise" {{if $tier === 'enterprise'}}selected{{endif}}>Enterprise</option>
+					<option value="pro" {{if $tier === 'pro'}}selected{{endif}}>Pro</option>
+					<option value="basic" {{if $tier === 'basic'}}selected{{endif}}>Basic</option>
+				</select>
+			</div>
+			<div style="flex:0 1 160px">
+				<label style="display:block;font-size:0.8em;font-weight:600;color:#666;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.05em">Sort By</label>
+				<select name="sort" class="ipsInput ipsInput--select" style="width:100%">
+					<option value="rating" {{if $sort === 'rating'}}selected{{endif}}>Highest Rated</option>
+					<option value="listings" {{if $sort === 'listings'}}selected{{endif}}>Most Listings</option>
+					<option value="newest" {{if $sort === 'newest'}}selected{{endif}}>Newest</option>
+					<option value="alpha" {{if $sort === 'alpha'}}selected{{endif}}>A&ndash;Z</option>
+				</select>
+			</div>
+			<div>
+				<button type="submit" class="ipsButton ipsButton--primary">
+					<i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+					<span>Filter</span>
+				</button>
+				{{if $search || $tier}}
+				<a href="{$directoryUrl}" class="ipsButton ipsButton--normal" style="margin-left:8px">Clear</a>
+				{{endif}}
+			</div>
+		</form>
+	</div>
+
+	{{if count($dealers) === 0}}
+	<div style="text-align:center;padding:64px 24px;color:#9ca3af">
+		<i class="fa-solid fa-store-slash" style="font-size:3em;margin-bottom:16px;display:block" aria-hidden="true"></i>
+		<h3 style="margin:0 0 8px;color:#374151">No dealers found</h3>
+		<p style="margin:0">Try adjusting your filters or search terms.</p>
+	</div>
+	{{else}}
+	<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px;margin-bottom:32px">
+		{{foreach $dealers as $d}}
+		<div style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;transition:box-shadow 0.2s">
+
+			<div style="padding:20px;display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--i-border-color,#f0f0f0)">
+				<a href="{$d['profile_url']}" style="flex-shrink:0">
+					<span class="ipsUserPhoto ipsUserPhoto--medium">
+						<img src="{$d['avatar']}" alt="" loading="lazy">
+					</span>
+				</a>
+				<div style="flex:1;min-width:0">
+					<a href="{$d['profile_url']}" style="text-decoration:none;color:inherit">
+						<h3 style="margin:0 0 4px;font-size:1em;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{$d['dealer_name']}</h3>
+					</a>
+					<span style="background:{$d['tier_color']};color:#fff;padding:2px 8px;border-radius:20px;font-size:0.72em;font-weight:700;text-transform:uppercase;letter-spacing:0.04em">{$d['tier_label']}</span>
+				</div>
+				<div style="text-align:center;flex-shrink:0">
+					<div style="font-size:1.4em;font-weight:800;color:{$d['rating_color']};line-height:1">{$d['avg_overall']}</div>
+					<div style="font-size:0.7em;color:#9ca3af">/ 5</div>
+				</div>
+			</div>
+
+			<div style="display:flex;padding:12px 20px;gap:0;border-bottom:1px solid var(--i-border-color,#f0f0f0)">
+				<div style="flex:1;text-align:center">
+					<div style="font-size:1.1em;font-weight:700">{$d['listing_count']}</div>
+					<div style="font-size:0.72em;color:#9ca3af;text-transform:uppercase;letter-spacing:0.04em">Listings</div>
+				</div>
+				<div style="flex:1;text-align:center;border-left:1px solid var(--i-border-color,#f0f0f0)">
+					<div style="font-size:1.1em;font-weight:700">{$d['total_reviews']}</div>
+					<div style="font-size:0.72em;color:#9ca3af;text-transform:uppercase;letter-spacing:0.04em">Reviews</div>
+				</div>
+				<div style="flex:1;text-align:center;border-left:1px solid var(--i-border-color,#f0f0f0)">
+					<div style="font-size:0.85em;font-weight:600">{$d['member_since']}</div>
+					<div style="font-size:0.72em;color:#9ca3af;text-transform:uppercase;letter-spacing:0.04em">Member Since</div>
+				</div>
+			</div>
+
+			<div style="padding:12px 16px;display:flex;gap:8px;margin-top:auto">
+				<a href="{$d['profile_url']}" class="ipsButton ipsButton--primary ipsButton--small" style="flex:1;text-align:center;justify-content:center">
+					<i class="fa-solid fa-store" aria-hidden="true"></i>
+					<span>View Profile</span>
+				</a>
+				{{if $loggedIn}}
+				<a href="{$d['follow_url']}" class="ipsButton ipsButton--small {{if $d['is_following']}}ipsButton--primary{{else}}ipsButton--normal{{endif}}" title="{{if $d['is_following']}}Unfollow{{else}}Follow{{endif}} this dealer">
+					<i class="fa-solid {{if $d['is_following']}}fa-bell-slash{{else}}fa-bell{{endif}}" aria-hidden="true"></i>
+				</a>
+				{{endif}}
+			</div>
+		</div>
+		{{endforeach}}
+	</div>
+
+	{$pagination|raw}
+	{{endif}}
+
+</div>
+TEMPLATE_EOT,
+	],
 ];
 
 foreach ( $gddealerTemplates as $tpl )
