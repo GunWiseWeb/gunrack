@@ -323,5 +323,7 @@
     <word key="gddealer_pm_response_body"><![CDATA[%s has posted a public response to your review on GunRack.deals. View it here: %s]]></word>
     <word key="gddealer_all_reviews_title"><![CDATA[All Reviews]]></word>
     <word key="menu__gddealer_dealers_reviews"><![CDATA[All Reviews]]></word>
+    <word key="gddealer_review_updated"><![CDATA[Your review has been updated.]]></word>
+    <word key="gddealer_cannot_edit_disputed"><![CDATA[You cannot edit a review that is currently under dispute.]]></word>
   </app>
 </language>

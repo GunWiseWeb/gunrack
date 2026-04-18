@@ -232,12 +232,21 @@ class _profile extends \IPS\Dispatcher\Controller
 
 				$reviewMemberId = (int) ( $r['member_id'] ?? 0 );
 				$isOwnReview    = $member->member_id && $reviewMemberId === (int) $member->member_id;
+				$rowDisputeStatus = (string) ( $r['dispute_status'] ?? 'none' );
 
 				$disputeRespondUrl = '';
-				if ( $isOwnReview && (string) ( $r['dispute_status'] ?? '' ) === 'pending_customer' )
+				if ( $isOwnReview && $rowDisputeStatus === 'pending_customer' )
 				{
 					$disputeRespondUrl = (string) \IPS\Http\Url::internal(
 						'app=gddealer&module=dealers&controller=profile&dealer_slug=' . urlencode( $slug ) . '&dispute=' . (int) $r['id']
+					);
+				}
+
+				$editReviewUrl = '';
+				if ( $isOwnReview && $rowDisputeStatus === 'none' )
+				{
+					$editReviewUrl = (string) \IPS\Http\Url::internal(
+						'app=gddealer&module=dealers&controller=profile&do=editReview&dealer_slug=' . urlencode( $slug ) . '&id=' . (int) $r['id']
 					);
 				}
 
@@ -252,7 +261,7 @@ class _profile extends \IPS\Dispatcher\Controller
 					'created_at'           => $createdAt,
 					'created_at_formatted' => $createdAt ? date( 'M j, Y', strtotime( $createdAt ) ) : '',
 					'response_at'          => $responseAt ? date( 'M j, Y', strtotime( $responseAt ) ) : '',
-					'dispute_status'       => (string) ( $r['dispute_status'] ?? 'none' ),
+					'dispute_status'       => $rowDisputeStatus,
 					'dispute_outcome'      => (string) ( $r['dispute_outcome'] ?? '' ),
 					'avg_score'            => $avg,
 					'avg_color'            => self::ratingColor( (float) $avg ),
@@ -263,6 +272,7 @@ class _profile extends \IPS\Dispatcher\Controller
 					'stars_service'        => str_repeat( '★', $service ) . str_repeat( '☆', 5 - $service ),
 					'is_own_review'        => $isOwnReview,
 					'dispute_respond_url'  => $disputeRespondUrl,
+					'edit_review_url'      => $editReviewUrl,
 				];
 			}
 		}
@@ -697,6 +707,88 @@ class _profile extends \IPS\Dispatcher\Controller
 		catch ( \Exception ) {}
 
 		\IPS\Output::i()->redirect( $profileUrl, 'gddealer_profile_dispute_response_saved' );
+	}
+
+	/**
+	 * GET — render an edit form; POST — save updated ratings/body.
+	 * Only the review author may edit, and only while the review is not
+	 * under active dispute (pending_customer or pending_admin).
+	 */
+	protected function editReview(): void
+	{
+		$member = \IPS\Member::loggedIn();
+		if ( !$member->member_id )
+		{
+			\IPS\Output::i()->error( 'node_error', '2GDD300/10', 403 );
+			return;
+		}
+
+		$id   = (int) ( \IPS\Request::i()->id ?? 0 );
+		$slug = trim( (string) ( \IPS\Request::i()->dealer_slug ?? '' ) );
+
+		try
+		{
+			$review = \IPS\Db::i()->select( '*', 'gd_dealer_ratings',
+				[ 'id=? AND member_id=?', $id, (int) $member->member_id ]
+			)->first();
+		}
+		catch ( \Exception )
+		{
+			\IPS\Output::i()->error( 'node_error', '2GDD300/11', 404 );
+			return;
+		}
+
+		$profileUrl = (string) \IPS\Http\Url::internal(
+			'app=gddealer&module=dealers&controller=profile&dealer_slug=' . urlencode( $slug )
+		);
+
+		if ( in_array( (string) ( $review['dispute_status'] ?? '' ), [ 'pending_customer', 'pending_admin' ], TRUE ) )
+		{
+			\IPS\Output::i()->redirect( $profileUrl, 'gddealer_cannot_edit_disputed' );
+			return;
+		}
+
+		if ( \IPS\Request::i()->requestMethod() === 'POST' )
+		{
+			\IPS\Session::i()->csrfCheck();
+
+			$pricing  = max( 1, min( 5, (int) ( \IPS\Request::i()->rating_pricing  ?? 0 ) ) );
+			$shipping = max( 1, min( 5, (int) ( \IPS\Request::i()->rating_shipping ?? 0 ) ) );
+			$service  = max( 1, min( 5, (int) ( \IPS\Request::i()->rating_service  ?? 0 ) ) );
+			$body     = trim( (string) ( \IPS\Request::i()->review_body ?? '' ) );
+
+			try
+			{
+				\IPS\Db::i()->update( 'gd_dealer_ratings', [
+					'rating_pricing'  => $pricing,
+					'rating_shipping' => $shipping,
+					'rating_service'  => $service,
+					'review_body'     => $body !== '' ? $body : null,
+				], [ 'id=? AND member_id=?', $id, (int) $member->member_id ] );
+			}
+			catch ( \Exception ) {}
+
+			\IPS\Output::i()->redirect( $profileUrl, 'gddealer_review_updated' );
+			return;
+		}
+
+		$reviewData = [
+			'id'              => (int) $review['id'],
+			'rating_pricing'  => (int) $review['rating_pricing'],
+			'rating_shipping' => (int) $review['rating_shipping'],
+			'rating_service'  => (int) $review['rating_service'],
+			'review_body'     => (string) ( $review['review_body'] ?? '' ),
+		];
+
+		$editUrl = (string) \IPS\Http\Url::internal(
+			'app=gddealer&module=dealers&controller=profile&do=editReview&dealer_slug=' . urlencode( $slug ) . '&id=' . $id
+		)->csrf();
+
+		$csrfKey = (string) \IPS\Session::i()->csrfKey;
+
+		\IPS\Output::i()->title  = 'Edit Your Review';
+		\IPS\Output::i()->output = $this->themeVars() . \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )
+			->editReview( $reviewData, $editUrl, $profileUrl, $csrfKey );
 	}
 }
 

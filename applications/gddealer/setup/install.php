@@ -2190,6 +2190,14 @@ TEMPLATE_EOT,
 						</div>
 						{{endif}}
 
+						{{if $r['edit_review_url']}}
+						<div style="margin-top:10px">
+							<a href="{$r['edit_review_url']}" style="font-size:0.82em;color:var(--gd-primary,#2563eb);font-weight:600">
+								<i class="fa-solid fa-pen-to-square" aria-hidden="true"></i> Edit your review
+							</a>
+						</div>
+						{{endif}}
+
 					</div>
 					{{endforeach}}
 				{{endif}}
@@ -2201,6 +2209,71 @@ TEMPLATE_EOT,
 TEMPLATE_EOT,
 	],
 
+
+	/* ===== FRONT: editReview ===== */
+	[
+		'set_id'        => 1,
+		'app'           => 'gddealer',
+		'location'      => 'front',
+		'group'         => 'dealers',
+		'template_name' => 'editReview',
+		'template_data' => '$review, $editUrl, $cancelUrl, $csrfKey',
+		'template_content' => <<<'TEMPLATE_EOT'
+<div style="max-width:700px;margin:0 auto;padding:24px 16px">
+	<div class="ipsBox">
+		<h2 class="ipsBox__header" style="margin:0;padding:14px 18px;border-bottom:1px solid var(--i-border-color,#f0f0f0);font-size:1em;font-weight:700">Edit Your Review</h2>
+		<div style="padding:24px">
+			<form method="post" action="{$editUrl}">
+				<input type="hidden" name="csrfKey" value="{$csrfKey}">
+
+				<div style="display:flex;gap:20px;margin-bottom:20px;flex-wrap:wrap">
+					<div style="flex:1 1 140px">
+						<label style="display:block;font-size:0.85em;font-weight:600;margin-bottom:6px">Pricing Accuracy</label>
+						<select name="rating_pricing" class="ipsInput ipsInput--select" required>
+							<option value="5" {{if $review['rating_pricing'] === 5}}selected{{endif}}>★★★★★ Excellent</option>
+							<option value="4" {{if $review['rating_pricing'] === 4}}selected{{endif}}>★★★★☆ Good</option>
+							<option value="3" {{if $review['rating_pricing'] === 3}}selected{{endif}}>★★★☆☆ Average</option>
+							<option value="2" {{if $review['rating_pricing'] === 2}}selected{{endif}}>★★☆☆☆ Poor</option>
+							<option value="1" {{if $review['rating_pricing'] === 1}}selected{{endif}}>★☆☆☆☆ Terrible</option>
+						</select>
+					</div>
+					<div style="flex:1 1 140px">
+						<label style="display:block;font-size:0.85em;font-weight:600;margin-bottom:6px">Shipping Speed</label>
+						<select name="rating_shipping" class="ipsInput ipsInput--select" required>
+							<option value="5" {{if $review['rating_shipping'] === 5}}selected{{endif}}>★★★★★ Excellent</option>
+							<option value="4" {{if $review['rating_shipping'] === 4}}selected{{endif}}>★★★★☆ Good</option>
+							<option value="3" {{if $review['rating_shipping'] === 3}}selected{{endif}}>★★★☆☆ Average</option>
+							<option value="2" {{if $review['rating_shipping'] === 2}}selected{{endif}}>★★☆☆☆ Poor</option>
+							<option value="1" {{if $review['rating_shipping'] === 1}}selected{{endif}}>★☆☆☆☆ Terrible</option>
+						</select>
+					</div>
+					<div style="flex:1 1 140px">
+						<label style="display:block;font-size:0.85em;font-weight:600;margin-bottom:6px">Customer Service</label>
+						<select name="rating_service" class="ipsInput ipsInput--select" required>
+							<option value="5" {{if $review['rating_service'] === 5}}selected{{endif}}>★★★★★ Excellent</option>
+							<option value="4" {{if $review['rating_service'] === 4}}selected{{endif}}>★★★★☆ Good</option>
+							<option value="3" {{if $review['rating_service'] === 3}}selected{{endif}}>★★★☆☆ Average</option>
+							<option value="2" {{if $review['rating_service'] === 2}}selected{{endif}}>★★☆☆☆ Poor</option>
+							<option value="1" {{if $review['rating_service'] === 1}}selected{{endif}}>★☆☆☆☆ Terrible</option>
+						</select>
+					</div>
+				</div>
+
+				<div style="margin-bottom:20px">
+					<label style="display:block;font-size:0.85em;font-weight:600;margin-bottom:6px">Your Review</label>
+					<textarea name="review_body" rows="5" class="ipsInput ipsInput--text" style="width:100%;box-sizing:border-box;border:1px solid var(--i-border-color,#ccc);border-radius:4px;padding:8px;font-size:0.9em">{$review['review_body']}</textarea>
+				</div>
+
+				<div style="display:flex;gap:8px">
+					<button type="submit" class="ipsButton ipsButton--primary">Save Changes</button>
+					<a href="{$cancelUrl}" class="ipsButton ipsButton--normal">Cancel</a>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+TEMPLATE_EOT,
+	],
 
 	/* ===== FRONT: reviewGuidelines ===== */
 	[
