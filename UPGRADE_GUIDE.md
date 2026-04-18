@@ -104,6 +104,8 @@ Fresh installs skip all upg_ scripts and run `setup/install.php` which seeds eve
   - Must have `class upgrade extends _upgrade {}` as the final line.
   - Include `use function defined;` after the namespace declaration.
 - **Bump versions.json for every change** — every time ANY change is made to the plugin, add a new version entry to `data/versions.json` and create a corresponding `setup/upg_XXXXX/` directory (even if `queries.json` is `[]` and `step1()` is a no-op).
+- **extensions.json values must be fully qualified class names** — e.g. `"IPS\\gddealer\\extensions\\core\\Notifications\\DealerNotifications"`, NOT just `"DealerNotifications"`. IPS calls `class_exists()` on the value and short names always return false.
+- **Never call `\IPS\Member::load()` inside `parse_*()` notification methods** — if the member doesn't exist it throws `OutOfRangeException` which IPS catches silently and hides the entire notification. Use `NULL` for `author` or wrap in try/catch returning `NULL` on failure.
 
 ## Current version history
 
@@ -123,3 +125,4 @@ Fresh installs skip all upg_ scripts and run `setup/install.php` which seeds eve
 - `10013` — 1.0.13 — Added `data/extensions.json` enumerating the four gddealer `core` extensions (`ContentRouter` → DealerFollow, `Notifications` → DealerNotifications, `EmailTemplates` → DealerEmails, `FrontNavigation` → DealerNav) so IPS registers them via the explicit registry instead of relying on a filesystem scan alone. `upg_10013/upgrade.php` unsets `\IPS\Data\Store::i()->extensions` and `applications` so upgraded installs immediately re-scan and pick up the Notifications extension (fixes `$app->extensions('core','Notifications')` returning empty on installs that cached the extension list before the registry existed). `setup/install.php` also clears the extensions cache on fresh install. No schema changes.
 - `10014` — 1.0.14 — Fixed `data/extensions.json` to use fully qualified class names (e.g. `IPS\gddealer\extensions\core\Notifications\DealerNotifications`) instead of short names. Clears extension cache on upgrade. No schema changes.
 - `10015` — 1.0.15 — Fixed `data/extensions.json` structure: per-type values are now objects keyed by short class name mapping to the FQCN string (e.g. `"DealerNotifications": "IPS\\gddealer\\extensions\\core\\Notifications\\DealerNotifications"`), not plain arrays of FQCN strings. Clears extension cache on upgrade. No schema changes.
+- `10016` — 1.0.16 — Fixed all `parse_*()` methods in `DealerNotifications.php` to set `'author' => NULL` instead of calling `\IPS\Member::load()`. `Member::load()` throws `OutOfRangeException` on invalid member IDs which IPS catches silently, hiding the entire notification. Removed unused `IPS\Member` import. No schema changes.

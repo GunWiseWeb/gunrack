@@ -11,7 +11,6 @@
 namespace IPS\gddealer\extensions\core\Notifications;
 
 use IPS\Extensions\NotificationsAbstract;
-use IPS\Member;
 use IPS\Notification\Inline;
 use function defined;
 
@@ -90,7 +89,7 @@ class DealerNotifications extends NotificationsAbstract
 			'title'   => ( $extra['reviewer_name'] ?? 'A member' ) . ' left a review on your dealer profile',
 			'url'     => \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dashboard&do=reviews' ),
 			'content' => 'Visit your dashboard to view the review and post a response.',
-			'author'  => \IPS\Member::load( $extra['reviewer_id'] ?? 0 ),
+			'author'  => NULL,
 		];
 	}
 
@@ -106,6 +105,7 @@ class DealerNotifications extends NotificationsAbstract
 			'title'   => ( $extra['dealer_name'] ?? 'A dealer' ) . ' has disputed your review',
 			'url'     => $url,
 			'content' => 'You have 30 days to respond or the dispute will be resolved automatically.',
+			'author'  => NULL,
 		];
 	}
 
@@ -116,6 +116,7 @@ class DealerNotifications extends NotificationsAbstract
 			'title'   => 'A review dispute is ready for admin review',
 			'url'     => \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dealers&do=disputes', 'admin' ),
 			'content' => ( $extra['reviewer_name'] ?? 'A customer' ) . ' responded to a dispute on ' . ( $extra['dealer_name'] ?? 'a dealer' ) . '. Admin action required.',
+			'author'  => NULL,
 		];
 	}
 
@@ -125,6 +126,7 @@ class DealerNotifications extends NotificationsAbstract
 			'title'   => 'Your review contest was upheld',
 			'url'     => \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dashboard&do=reviews' ),
 			'content' => 'An admin has ruled in your favor. The review no longer affects your rating average.',
+			'author'  => NULL,
 		];
 	}
 
@@ -134,6 +136,7 @@ class DealerNotifications extends NotificationsAbstract
 			'title'   => 'Your review contest was dismissed',
 			'url'     => \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dashboard&do=reviews' ),
 			'content' => 'An admin has dismissed your contest. The review remains visible.',
+			'author'  => NULL,
 		];
 	}
 
@@ -145,6 +148,7 @@ class DealerNotifications extends NotificationsAbstract
 			'title'   => ( $extra['dealer_name'] ?? 'A dealer' ) . ' responded to your review',
 			'url'     => \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=profile&dealer_slug=' . urlencode( $slug ) ),
 			'content' => 'The dealer has posted a public response to your review. Click to view it.',
+			'author'  => NULL,
 		];
 	}
 }
