@@ -2517,6 +2517,32 @@ try
 }
 catch ( \Exception ) {}
 
+/* Seed notification defaults for gddealer notification types so IPS
+   knows which methods (inline/email) are enabled by default for every
+   notification type the DealerNotifications extension registers. Safe
+   to re-run: duplicate notification_key inserts are swallowed. */
+$notificationDefaults = [
+	'new_dealer_review'    => [ 'default' => 'inline,email', 'disabled' => '' ],
+	'review_disputed'      => [ 'default' => 'inline,email', 'disabled' => '' ],
+	'dealer_responded'     => [ 'default' => 'inline',       'disabled' => '' ],
+	'dispute_admin_review' => [ 'default' => 'inline,email', 'disabled' => '' ],
+	'dispute_upheld'       => [ 'default' => 'inline,email', 'disabled' => '' ],
+	'dispute_dismissed'    => [ 'default' => 'inline,email', 'disabled' => '' ],
+];
+
+foreach ( $notificationDefaults as $key => $data )
+{
+	try
+	{
+		\IPS\Db::i()->insert( 'core_notification_defaults', [
+			'notification_key' => $key,
+			'default'          => $data['default'],
+			'disabled'         => $data['disabled'],
+		] );
+	}
+	catch ( \Exception ) {}
+}
+
 /* Force furl + applications cache rebuild so new routes/templates appear
    without a manual cache flush. */
 unset( \IPS\Data\Store::i()->furl_configuration );
