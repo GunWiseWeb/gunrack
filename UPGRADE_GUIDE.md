@@ -17,9 +17,9 @@ Fresh installs skip all upg_ scripts and run `setup/install.php` which seeds eve
 2. Add the mapping to `data/versions.json`:
    ```json
    {
-     "10000": "1.0.0",
-     "10001": "1.0.1",
-     "10002": "1.0.2"
+     "1.0.0": 10000,
+     "1.0.1": 10001,
+     "1.0.2": 10002
    }
    ```
 3. Create `setup/upg_10002/queries.json` with the DDL. Example:
@@ -38,8 +38,8 @@ Fresh installs skip all upg_ scripts and run `setup/install.php` which seeds eve
 5. Create `setup/upg_10002/index.html` (blank).
 6. Bump `data/application.json`:
    ```json
-   "app_version": "1.0.2",
-   "app_long_version": 10002
+   "app_version": 10002,
+   "app_version_human": "1.0.2"
    ```
 7. Mirror the new columns/tables into `data/schema.json` so fresh installs get them via `setup/install.php`.
 8. Rebuild the tar with `php build-gddealer.php` and push.
@@ -49,6 +49,13 @@ Fresh installs skip all upg_ scripts and run `setup/install.php` which seeds eve
 - Use `addColumn` / `addIndex` / `createTable` helpers — not raw SQL strings. IPS schema helpers call `CREATE IF NOT EXISTS` internally where applicable.
 - Always set `"silence_errors": true` so re-running is idempotent.
 - Never `DROP` or rename columns in `queries.json`. Handle those in `upgrade.php` inside try/catch so failures don't abort.
+
+## Common mistakes
+
+- **versions.json key/value direction:** Keys are the human-readable version string (e.g. `"1.0.2"`), values are the integer (e.g. `10002`). NOT the other way around. IPS iterates keys as display labels and compares values against the stored `app_version` integer.
+- **application.json field names:** The integer version is `app_version` (e.g. `10002`). The human string is `app_version_human` (e.g. `"1.0.2"`). There is no `app_long_version` field in IPS 5 — that key does not exist and will be ignored.
+- **Always update both files together:** When bumping a version, update both `data/versions.json` (add the new mapping) and `data/application.json` (bump `app_version` and `app_version_human`). If they're out of sync, IPS won't detect the upgrade.
+- **Integer vs string types matter:** `app_version` must be a bare integer in JSON (`10002`), not a quoted string (`"10002"`). `app_version_human` must be a quoted string (`"1.0.2"`), not a number.
 
 ## Current version history
 
