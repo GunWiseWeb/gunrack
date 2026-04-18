@@ -11,6 +11,7 @@
 namespace IPS\gddealer\extensions\core\Notifications;
 
 use IPS\Extensions\NotificationsAbstract;
+use IPS\Member;
 use IPS\Notification\Inline;
 use function defined;
 
