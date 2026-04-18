@@ -2544,9 +2544,67 @@ foreach ( $notificationDefaults as $key => $data )
 	catch ( \Exception ) {}
 }
 
-/* Force furl + applications + extensions cache rebuild so new routes,
-   templates, and extension classes (notifications, email templates, etc.)
-   appear without a manual cache flush. */
+/* Safety-net email template seeding — parse data/emails.xml directly and
+   insert any template that isn't already present. IPS's own email template
+   loader from emails.xml has been observed to silently no-op on some
+   installs, so we force the rows ourselves rather than trusting it. Each
+   insert is in its own try/catch; a minimal-column fallback handles
+   schema variants that don't have template_key/parent/edited/pinned. */
+$emailsXmlPath = __DIR__ . '/../data/emails.xml';
+if ( file_exists( $emailsXmlPath ) )
+{
+	$prev = libxml_disable_entity_loader( TRUE );
+	$xml  = @simplexml_load_file( $emailsXmlPath );
+	libxml_disable_entity_loader( $prev );
+
+	if ( $xml instanceof \SimpleXMLElement )
+	{
+		foreach ( $xml->template as $t )
+		{
+			$templateName = trim( (string) $t->template_name );
+			if ( $templateName === '' ) { continue; }
+
+			try
+			{
+				$exists = (int) \IPS\Db::i()->select( 'COUNT(*)', 'core_email_templates',
+					[ 'template_app=? AND template_name=?', 'gddealer', $templateName ]
+				)->first();
+
+				if ( $exists > 0 ) { continue; }
+
+				\IPS\Db::i()->insert( 'core_email_templates', [
+					'template_app'               => 'gddealer',
+					'template_name'              => $templateName,
+					'template_data'              => (string) $t->template_data,
+					'template_content_html'      => (string) $t->template_content_html,
+					'template_content_plaintext' => (string) $t->template_content_plaintext,
+					'template_key'               => md5( 'gddealer;' . $templateName ),
+					'template_parent'            => 0,
+					'template_edited'            => 0,
+					'template_pinned'            => 0,
+				] );
+			}
+			catch ( \Exception )
+			{
+				try
+				{
+					\IPS\Db::i()->insert( 'core_email_templates', [
+						'template_app'               => 'gddealer',
+						'template_name'              => $templateName,
+						'template_content_html'      => (string) $t->template_content_html,
+						'template_content_plaintext' => (string) $t->template_content_plaintext,
+					] );
+				}
+				catch ( \Exception ) {}
+			}
+		}
+	}
+}
+
+/* Force furl + applications + extensions + email-template cache rebuild
+   so new routes, templates, and extension classes appear without a manual
+   cache flush. */
 unset( \IPS\Data\Store::i()->furl_configuration );
 unset( \IPS\Data\Store::i()->applications );
 unset( \IPS\Data\Store::i()->extensions );
+try { unset( \IPS\Data\Store::i()->emailTemplates ); } catch ( \Exception ) {}
