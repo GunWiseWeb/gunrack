@@ -220,8 +220,17 @@ class _profile extends \IPS\Dispatcher\Controller
 						$rm = \IPS\Member::load( (int) $r['member_id'] );
 						if ( $rm->member_id )
 						{
-							$reviewerName   = (string) $rm->name;
-							$reviewerAvatar = (string) ( $rm->get_photo( true, false ) ?? '' );
+							$reviewerName = (string) $rm->name;
+
+							/* Only surface the avatar URL if the member uploaded a
+							   real photo. IPS's default letter/gravatar fallback
+							   is replaced by the template's gradient+initial
+							   circle, which looks cleaner in the new card. */
+							$photoType = (string) ( $rm->pp_photo_type ?? '' );
+							if ( $photoType === 'custom' )
+							{
+								$reviewerAvatar = (string) ( $rm->get_photo( true, false ) ?? '' );
+							}
 						}
 					}
 					catch ( \Exception ) {}
@@ -258,6 +267,7 @@ class _profile extends \IPS\Dispatcher\Controller
 					'rating_service'       => $service,
 					'review_body'          => (string) ( $r['review_body'] ?? '' ),
 					'dealer_response'      => (string) ( $r['dealer_response'] ?? '' ),
+					'dealer_name'          => (string) ( $dealerRow['dealer_name'] ?? '' ),
 					'created_at'           => $createdAt,
 					'created_at_formatted' => $createdAt ? date( 'M j, Y', strtotime( $createdAt ) ) : '',
 					'response_at'          => $responseAt ? date( 'M j, Y', strtotime( $responseAt ) ) : '',
