@@ -3153,7 +3153,7 @@ $gddealerTemplates[] = [
 	'template_name' => 'supportList',
 	'template_data' => '$tickets, $subNav',
 	'template_content' => <<<'TEMPLATE_EOT'
-<div class="gdDealerWrapper" style="max-width:960px;margin:0 auto">
+<div>
 <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:20px;padding-bottom:14px;border-bottom:0.5px solid #e5e7eb;flex-wrap:wrap">
 	<div style="display:flex;gap:4px;flex-wrap:wrap">
 		<a href="{$subNav['open_url']}" style="padding:8px 14px;font-size:13px;font-weight:500;text-decoration:none;border-radius:8px;{{if $subNav['active'] === 'open'}}background:#1e3a5f;color:#fff{{else}}color:#475569{{endif}}">
@@ -3227,7 +3227,7 @@ $gddealerTemplates[] = [
 	'template_name' => 'supportNew',
 	'template_data' => '$departments, $canSetUrgent, $bodyEditorHtml, $csrfKey, $submitUrl, $cancelUrl',
 	'template_content' => <<<'TEMPLATE_EOT'
-<div class="gdDealerWrapper" style="max-width:800px;margin:0 auto">
+<div>
 <div style="margin-bottom:14px">
 	<a href="{$cancelUrl}" style="font-size:13px;color:#64748b;text-decoration:none">&larr; All tickets</a>
 </div>
@@ -3285,7 +3285,7 @@ $gddealerTemplates[] = [
 	'template_name' => 'supportView',
 	'template_data' => '$ticket, $ticketBody, $ticketAttachments, $replies, $replyEditorHtml, $csrfKey, $replyUrl, $closeUrl, $backUrl, $canReply, $canClose, $events, $newTicketUrl',
 	'template_content' => <<<'TEMPLATE_EOT'
-<div class="gdDealerWrapper" style="max-width:800px;margin:0 auto">
+<div>
 <div style="margin-bottom:14px">
 	<a href="{$backUrl}" style="font-size:13px;color:#64748b;text-decoration:none">&larr; All tickets</a>
 </div>
