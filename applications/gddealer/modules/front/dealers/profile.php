@@ -200,12 +200,84 @@ class _profile extends \IPS\Dispatcher\Controller
 
 		/* Reviews list — all approved rows. Dispute status is surfaced per
 		   row so the template can render the appropriate badge. */
+
+		/* Read filter params from URL with safe defaults. */
+		$sortKey = (string) ( \IPS\Request::i()->sort  ?? 'newest' );
+		$starKey = (string) ( \IPS\Request::i()->stars ?? 'all' );
+
+		$validSorts = [ 'newest', 'oldest', 'highest', 'lowest' ];
+		if ( !in_array( $sortKey, $validSorts, TRUE ) ) { $sortKey = 'newest'; }
+
+		$validStars = [ 'all', '5', '4', '3', '2', '1' ];
+		if ( !in_array( $starKey, $validStars, TRUE ) ) { $starKey = 'all'; }
+
+		/* Build WHERE clause as a single SQL string + bound params. */
+		$whereSql    = 'dealer_id=? AND status=?';
+		$whereParams = [ $dealerId, 'approved' ];
+
+		if ( $starKey !== 'all' )
+		{
+			$star = (int) $starKey;
+			if ( $star === 5 )
+			{
+				$whereSql     .= ' AND ((rating_pricing + rating_shipping + rating_service) / 3) >= ?';
+				$whereParams[] = 4.5;
+			}
+			elseif ( $star === 1 )
+			{
+				$whereSql     .= ' AND ((rating_pricing + rating_shipping + rating_service) / 3) < ?';
+				$whereParams[] = 1.5;
+			}
+			else
+			{
+				$whereSql     .= ' AND ((rating_pricing + rating_shipping + rating_service) / 3) >= ? AND ((rating_pricing + rating_shipping + rating_service) / 3) < ?';
+				$whereParams[] = $star - 0.5;
+				$whereParams[] = $star + 0.5;
+			}
+		}
+
+		$whereArg = array_merge( [ $whereSql ], $whereParams );
+
+		$orderBy = match ( $sortKey ) {
+			'oldest'  => 'created_at ASC',
+			'highest' => '((rating_pricing + rating_shipping + rating_service) / 3) DESC, created_at DESC',
+			'lowest'  => '((rating_pricing + rating_shipping + rating_service) / 3) ASC, created_at DESC',
+			default   => 'created_at DESC',
+		};
+
+		/* Per-star counts for the filter dropdown. */
+		$starCounts = [ 'all' => 0, '5' => 0, '4' => 0, '3' => 0, '2' => 0, '1' => 0 ];
+		try
+		{
+			$starCounts['all'] = (int) \IPS\Db::i()->select( 'COUNT(*)', 'gd_dealer_ratings',
+				[ 'dealer_id=? AND status=?', $dealerId, 'approved' ]
+			)->first();
+
+			$starCounts['5'] = (int) \IPS\Db::i()->select( 'COUNT(*)', 'gd_dealer_ratings',
+				[ 'dealer_id=? AND status=? AND ((rating_pricing + rating_shipping + rating_service) / 3) >= ?',
+					$dealerId, 'approved', 4.5 ]
+			)->first();
+
+			$starCounts['1'] = (int) \IPS\Db::i()->select( 'COUNT(*)', 'gd_dealer_ratings',
+				[ 'dealer_id=? AND status=? AND ((rating_pricing + rating_shipping + rating_service) / 3) < ?',
+					$dealerId, 'approved', 1.5 ]
+			)->first();
+
+			foreach ( [ 4, 3, 2 ] as $s )
+			{
+				$starCounts[ (string) $s ] = (int) \IPS\Db::i()->select( 'COUNT(*)', 'gd_dealer_ratings',
+					[ 'dealer_id=? AND status=? AND ((rating_pricing + rating_shipping + rating_service) / 3) >= ? AND ((rating_pricing + rating_shipping + rating_service) / 3) < ?',
+						$dealerId, 'approved', $s - 0.5, $s + 0.5 ]
+				)->first();
+			}
+		}
+		catch ( \Exception ) {}
+
 		$reviews = [];
 		try
 		{
 			foreach ( \IPS\Db::i()->select( '*', 'gd_dealer_ratings',
-				[ 'dealer_id=? AND status=?', $dealerId, 'approved' ],
-				'created_at DESC', [ 0, 50 ]
+				$whereArg, $orderBy, [ 0, 50 ]
 			) as $r )
 			{
 				$pricing  = max( 0, min( 5, (int) $r['rating_pricing'] ) );
@@ -525,9 +597,15 @@ class _profile extends \IPS\Dispatcher\Controller
 
 		$csrfKey = (string) \IPS\Session::i()->csrfKey;
 
+		$filterBaseUrl = (string) \IPS\Http\Url::internal(
+			'app=gddealer&module=dealers&controller=profile&dealer_slug=' . urlencode( $slug )
+		);
+
+		$totalInFilter = (int) ( $starCounts[ $starKey ] ?? $starCounts['all'] );
+
 		\IPS\Output::i()->title  = $dealer['dealer_name'];
 		\IPS\Output::i()->output = $this->themeVars() . \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )
-			->dealerProfile( $dealer, $stats, $reviews, $canRate, $alreadyRated, $loginRequired, $rateUrl, $csrfKey, $loginUrl, $customerDispute, $guidelinesUrl, $reviewBodyEditorHtml );
+			->dealerProfile( $dealer, $stats, $reviews, $canRate, $alreadyRated, $loginRequired, $rateUrl, $csrfKey, $loginUrl, $customerDispute, $guidelinesUrl, $reviewBodyEditorHtml, $sortKey, $starKey, $starCounts, $filterBaseUrl, $totalInFilter );
 	}
 
 	/**
