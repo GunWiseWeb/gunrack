@@ -515,7 +515,7 @@ class _profile extends \IPS\Dispatcher\Controller
 
 		if ( $pricing < 1 || $shipping < 1 || $service < 1 )
 		{
-			\IPS\Output::i()->redirect( $profileUrl, 'gddealer_profile_rating_invalid' );
+			\IPS\Output::i()->redirect( $profileUrl );
 			return;
 		}
 
@@ -577,7 +577,7 @@ class _profile extends \IPS\Dispatcher\Controller
 		}
 		catch ( \Exception ) {}
 
-		\IPS\Output::i()->redirect( $profileUrl, 'gddealer_profile_rating_saved' );
+		\IPS\Output::i()->redirect( $profileUrl );
 	}
 
 	/**
@@ -639,7 +639,7 @@ class _profile extends \IPS\Dispatcher\Controller
 
 		if ( $response === '' )
 		{
-			\IPS\Output::i()->redirect( $profileUrl, 'gddealer_profile_dispute_response_required' );
+			\IPS\Output::i()->redirect( $profileUrl );
 			return;
 		}
 
@@ -752,7 +752,7 @@ class _profile extends \IPS\Dispatcher\Controller
 		}
 		catch ( \Exception ) {}
 
-		\IPS\Output::i()->redirect( $profileUrl, 'gddealer_profile_dispute_response_saved' );
+		\IPS\Output::i()->redirect( $profileUrl );
 	}
 
 	/**
@@ -790,7 +790,7 @@ class _profile extends \IPS\Dispatcher\Controller
 
 		if ( in_array( (string) ( $review['dispute_status'] ?? '' ), [ 'pending_customer', 'pending_admin' ], TRUE ) )
 		{
-			\IPS\Output::i()->redirect( $profileUrl, 'gddealer_cannot_edit_disputed' );
+			\IPS\Output::i()->redirect( $profileUrl );
 			return;
 		}
 
@@ -865,7 +865,7 @@ class _profile extends \IPS\Dispatcher\Controller
 			}
 			catch ( \Exception ) {}
 
-			\IPS\Output::i()->redirect( $profileUrl, 'gddealer_review_updated' );
+			\IPS\Output::i()->redirect( $profileUrl );
 			return;
 		}
 
