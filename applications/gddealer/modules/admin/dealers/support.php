@@ -297,6 +297,20 @@ class _support extends \IPS\Dispatcher\Controller
 			'editor_support_admin_reply_' . $ticketId
 		);
 
+		$noteEditor = new \IPS\Helpers\Form\Editor(
+			'gddealer_support_admin_note',
+			'',
+			FALSE,
+			[
+				'app'         => 'gddealer',
+				'key'         => 'Responses',
+				'autoSaveKey' => 'gddealer-support-admin-note-' . $ticketId,
+				'attachIds'   => [ $ticketId, 12 ],
+			],
+			NULL, NULL, NULL,
+			'editor_support_admin_note_' . $ticketId
+		);
+
 		$ticket = null;
 		try
 		{
@@ -365,18 +379,25 @@ class _support extends \IPS\Dispatcher\Controller
 
 				$replyTs = strtotime( (string) $r['created_at'] );
 
+				$isNote = (bool) $r['is_hidden_note'];
 				$replies[] = [
-					'id'          => (int) $r['id'],
-					'author_name' => $authorName,
-					'role'        => (string) $r['role'],
-					'role_label'  => $r['role'] === 'admin' ? 'Staff' : 'Dealer',
-					'role_bg'     => $r['role'] === 'admin' ? '#dbeafe' : '#f3f4f6',
-					'role_color'  => $r['role'] === 'admin' ? '#1e40af' : '#374151',
-					'body'        => $parsedBody,
-					'created_at'  => $replyTs
+					'id'             => (int) $r['id'],
+					'author_name'    => $authorName,
+					'role'           => (string) $r['role'],
+					'role_label'     => $isNote
+						? 'Staff note'
+						: ( $r['role'] === 'admin' ? 'Staff' : 'Dealer' ),
+					'role_bg'        => $isNote
+						? '#fef3c7'
+						: ( $r['role'] === 'admin' ? '#dbeafe' : '#f3f4f6' ),
+					'role_color'     => $isNote
+						? '#854d0e'
+						: ( $r['role'] === 'admin' ? '#1e40af' : '#374151' ),
+					'body'           => $parsedBody,
+					'created_at'     => $replyTs
 						? (string) \IPS\DateTime::ts( $replyTs )->localeDate() . ' ' . date( 'H:i', $replyTs )
 						: (string) $r['created_at'],
-					'is_hidden'   => (bool) $r['is_hidden_note'],
+					'is_hidden_note' => $isNote,
 				];
 			}
 		}
@@ -396,6 +417,8 @@ class _support extends \IPS\Dispatcher\Controller
 		$baseQS = [ 'id' => $ticketId ];
 		$replyUrl          = (string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=support&do=reply', 'admin' )
 			->setQueryString( $baseQS )->csrf();
+		$addNoteUrl        = (string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=support&do=addNote', 'admin' )
+			->setQueryString( $baseQS )->csrf();
 		$updateStatusUrl   = (string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=support&do=updateStatus', 'admin' )
 			->setQueryString( $baseQS )->csrf();
 		$updatePriorityUrl = (string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=support&do=updatePriority', 'admin' )
@@ -407,6 +430,7 @@ class _support extends \IPS\Dispatcher\Controller
 		$backUrl           = (string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=support&do=tickets', 'admin' );
 
 		$replyEditorHtml = (string) $replyEditor;
+		$noteEditorHtml  = (string) $noteEditor;
 
 		$createdTs = strtotime( (string) $ticket['created_at'] );
 		$assigneeName = '';
@@ -451,7 +475,7 @@ class _support extends \IPS\Dispatcher\Controller
 		\IPS\Output::i()->output = \IPS\Theme::i()->getTemplate( 'dealers' )->supportTicketView(
 			$ticketDisplay, $parsedTicketBody, $ticketAttachments, $replies, $replyEditorHtml,
 			$replyUrl, $updateStatusUrl, $updatePriorityUrl, $assignUrl, $deleteUrl, $backUrl,
-			$events
+			$events, $noteEditorHtml, $addNoteUrl
 		);
 	}
 
@@ -627,6 +651,107 @@ class _support extends \IPS\Dispatcher\Controller
 		\IPS\Output::i()->redirect(
 			\IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=support&do=view&id=' . $ticketId, 'admin' ),
 			'Reply posted.'
+		);
+	}
+
+	protected function addNote(): void
+	{
+		\IPS\Dispatcher::i()->checkAcpPermission( 'dealer_manage' );
+		\IPS\Session::i()->csrfCheck();
+
+		$ticketId = (int) ( \IPS\Request::i()->id ?? 0 );
+		$me       = \IPS\Member::loggedIn();
+
+		$ticket = null;
+		try
+		{
+			$ticket = \IPS\Db::i()->select( '*', 'gd_dealer_support_tickets', [ 'id=?', $ticketId ] )->first();
+		}
+		catch ( \Exception ) {}
+
+		if ( !$ticket )
+		{
+			\IPS\Output::i()->error( 'Ticket not found.', '2GDD500/3', 404 );
+			return;
+		}
+
+		new \IPS\Helpers\Form\Editor(
+			'gddealer_support_admin_note',
+			'',
+			FALSE,
+			[
+				'app'         => 'gddealer',
+				'key'         => 'Responses',
+				'autoSaveKey' => 'gddealer-support-admin-note-' . $ticketId,
+				'attachIds'   => [ $ticketId, 12 ],
+			],
+			NULL, NULL, NULL,
+			'editor_support_admin_note_' . $ticketId
+		);
+
+		$noteRaw = (string) ( \IPS\Request::i()->gddealer_support_admin_note ?? '' );
+		if ( trim( $noteRaw ) === '' )
+		{
+			\IPS\Output::i()->redirect(
+				\IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=support&do=view&id=' . $ticketId, 'admin' )
+			);
+			return;
+		}
+
+		$body = '';
+		try
+		{
+			$body = \IPS\Text\Parser::parseStatic( $noteRaw, [ $ticketId, 12 ], $me, 'gddealer_Responses' );
+		}
+		catch ( \Exception ) { $body = $noteRaw; }
+
+		$now = date( 'Y-m-d H:i:s' );
+
+		try
+		{
+			\IPS\Db::i()->insert( 'gd_dealer_support_replies', [
+				'ticket_id'      => $ticketId,
+				'member_id'      => (int) $me->member_id,
+				'role'           => 'admin',
+				'body'           => $body,
+				'is_hidden_note' => 1,
+				'created_at'     => $now,
+			] );
+		}
+		catch ( \Exception ) {}
+
+		/* Bump updated_at only. Do NOT touch status or last_reply_* — internal
+		   notes are not visible to the dealer and must not affect which side
+		   is shown as the last replier or the ticket's workflow state. */
+		try
+		{
+			\IPS\Db::i()->update( 'gd_dealer_support_tickets', [
+				'updated_at' => $now,
+			], [ 'id=?', $ticketId ] );
+		}
+		catch ( \Exception ) {}
+
+		try
+		{
+			\IPS\File::claimAttachments(
+				'gddealer-support-admin-note-' . $ticketId,
+				$ticketId,
+				12
+			);
+		}
+		catch ( \Exception ) {}
+
+		try
+		{
+			EventLogger::log(
+				$ticketId, 'admin_note_added', 'admin', (int) $me->member_id, null
+			);
+		}
+		catch ( \Exception ) {}
+
+		\IPS\Output::i()->redirect(
+			\IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=support&do=view&id=' . $ticketId, 'admin' ),
+			'Note added.'
 		);
 	}
 

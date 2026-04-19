@@ -2977,7 +2977,7 @@ $gddealerTemplates[] = [
 	'location'      => 'admin',
 	'group'         => 'dealers',
 	'template_name' => 'supportTicketView',
-	'template_data' => '$ticket, $ticket_body, $ticket_attachments, $replies, $reply_editor_html, $reply_url, $update_status_url, $update_priority_url, $assign_url, $delete_url, $back_url, $events',
+	'template_data' => '$ticket, $ticket_body, $ticket_attachments, $replies, $reply_editor_html, $reply_url, $update_status_url, $update_priority_url, $assign_url, $delete_url, $back_url, $events, $note_editor_html, $add_note_url',
 	'template_content' => <<<'TEMPLATE_EOT'
 <div class="ipsBox ipsPull">
 <div class="ipsBox_body ipsPad">
@@ -3007,31 +3007,52 @@ $gddealerTemplates[] = [
 		</div>
 	</div>
 	{{if count($replies) > 0}}
-	<h3 style="font-size:1em;font-weight:700;margin:0 0 12px">Replies</h3>
+	<h3 id="replies" style="font-size:1em;font-weight:700;margin:0 0 12px">Replies</h3>
 	{{foreach $replies as $r}}
+	{{if $r['is_hidden_note']}}
+	<div style="background:#fffbeb;border:1px solid #fcd34d;border-left:3px solid #f59e0b;border-radius:8px;margin-bottom:10px">
+		<div style="padding:8px 14px;background:#fef3c7;border-bottom:1px solid #fde68a;display:flex;align-items:center;gap:8px;font-size:0.85em">
+			<span style="background:{$r['role_bg']};color:{$r['role_color']};padding:1px 8px;border-radius:10px;font-weight:600;font-size:0.8em"><i class="fa-solid fa-lock" aria-hidden="true"></i> {$r['role_label']}</span>
+			<span style="font-weight:600">{$r['author_name']}</span>
+			<span style="color:#6b7280">&middot; {$r['created_at']}</span>
+		</div>
+		<div style="padding:12px 14px">{$r['body']|raw}</div>
+	</div>
+	{{else}}
 	<div style="border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;margin-bottom:10px;border-left:3px solid {$r['role_color']}">
 		<div style="padding:8px 14px;background:#f8fafc;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;gap:8px;font-size:0.85em">
 			<span style="background:{$r['role_bg']};color:{$r['role_color']};padding:1px 8px;border-radius:10px;font-weight:600;font-size:0.8em">{$r['role_label']}</span>
 			<span style="font-weight:600">{$r['author_name']}</span>
 			<span style="color:#6b7280">&middot; {$r['created_at']}</span>
-			{{if $r['is_hidden']}}<span style="background:#fef3c7;color:#854d0e;padding:1px 6px;border-radius:10px;font-size:0.75em;font-weight:600">Internal</span>{{endif}}
 		</div>
 		<div style="padding:12px 14px">{$r['body']|raw}</div>
 	</div>
+	{{endif}}
 	{{endforeach}}
 	{{endif}}
-	<div style="border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;margin-top:20px">
-		<div style="padding:16px 20px">
-			{{if $ticket['status'] === 'closed'}}
-			<div style="background:#fffbeb;border:1px solid #fbbf24;border-radius:6px;padding:10px 14px;margin-bottom:14px;font-size:0.88em;color:#92400e">This ticket is <strong>closed</strong>. Replying will reopen it and notify the dealer.</div>
-			{{endif}}
-			{{if $ticket['status'] === 'resolved'}}
-			<div style="background:#eff6ff;border:1px solid #60a5fa;border-radius:6px;padding:10px 14px;margin-bottom:14px;font-size:0.88em;color:#1e40af">This ticket is <strong>resolved</strong>. Replying will reopen it and notify the dealer.</div>
-			{{endif}}
-			<h3 style="margin:0 0 12px;font-size:1em;font-weight:700">Post Reply</h3>
+	<div style="margin-top:20px">
+		{{if $ticket['status'] === 'closed'}}
+		<div style="background:#fffbeb;border:1px solid #fbbf24;border-radius:6px;padding:10px 14px;margin-bottom:14px;font-size:0.88em;color:#92400e"><strong>This ticket is closed.</strong> Replying will reopen it and notify the dealer. Notes don't reopen or notify.</div>
+		{{endif}}
+		{{if $ticket['status'] === 'resolved'}}
+		<div style="background:#eff6ff;border:1px solid #60a5fa;border-radius:6px;padding:10px 14px;margin-bottom:14px;font-size:0.88em;color:#1e40af"><strong>This ticket is resolved.</strong> Replying will reopen it and notify the dealer. Notes don't reopen or notify.</div>
+		{{endif}}
+		<div style="display:flex;gap:4px;border-bottom:1px solid #e5e7eb;margin-bottom:-1px">
+			<button type="button" id="gd-tab-btn-reply" onclick="document.getElementById('gd-tab-reply').style.display='block';document.getElementById('gd-tab-note').style.display='none';this.style.background='#fff';this.style.borderBottomColor='#fff';var o=document.getElementById('gd-tab-btn-note');o.style.background='transparent';o.style.borderBottomColor='#e5e7eb';" style="padding:10px 18px;background:#fff;border:1px solid #e5e7eb;border-bottom:1px solid #fff;border-radius:8px 8px 0 0;font-size:13px;font-weight:500;color:#111827;cursor:pointer;position:relative;bottom:-1px"><i class="fa-solid fa-reply" aria-hidden="true"></i> Reply to dealer</button>
+			<button type="button" id="gd-tab-btn-note" onclick="document.getElementById('gd-tab-reply').style.display='none';document.getElementById('gd-tab-note').style.display='block';this.style.background='#fff';this.style.borderBottomColor='#fff';var o=document.getElementById('gd-tab-btn-reply');o.style.background='transparent';o.style.borderBottomColor='#e5e7eb';" style="padding:10px 18px;background:transparent;border:1px solid #e5e7eb;border-bottom:1px solid #e5e7eb;border-radius:8px 8px 0 0;font-size:13px;font-weight:500;color:#854d0e;cursor:pointer;position:relative;bottom:-1px"><i class="fa-solid fa-note-sticky" aria-hidden="true"></i> Internal note</button>
+		</div>
+		<div id="gd-tab-reply" style="display:block;padding:20px;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 8px 8px;background:#fff">
+			<p style="font-size:12px;color:#6b7280;margin:0 0 10px">Visible to dealer. Sends email + bell + PM notification.</p>
 			<form method="post" action="{$reply_url}">
 				<div style="margin-bottom:12px">{$reply_editor_html|raw}</div>
 				<button type="submit" class="ipsButton ipsButton--primary ipsButton--small">Send Reply</button>
+			</form>
+		</div>
+		<div id="gd-tab-note" style="display:none;padding:20px;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 8px 8px;background:#fffbeb">
+			<p style="font-size:12px;color:#854d0e;margin:0 0 10px"><i class="fa-solid fa-lock" aria-hidden="true"></i> Internal only — dealer never sees this. No notifications sent.</p>
+			<form method="post" action="{$add_note_url}">
+				<div style="margin-bottom:12px">{$note_editor_html|raw}</div>
+				<button type="submit" class="ipsButton ipsButton--small" style="background:#854d0e;color:#fff;border-color:#854d0e">Save Note</button>
 			</form>
 		</div>
 	</div>

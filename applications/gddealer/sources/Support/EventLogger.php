@@ -99,6 +99,7 @@ class _EventLogger
 			'dealer_replied'   => 'replied',
 			'admin_replied'    => 'replied',
 			'admin_reopened'   => 'reopened the ticket with a reply',
+			'admin_note_added' => 'added an internal note',
 			'ticket_closed'    => 'closed the ticket',
 			'status_changed'   => sprintf(
 				'changed status from %s to %s',
