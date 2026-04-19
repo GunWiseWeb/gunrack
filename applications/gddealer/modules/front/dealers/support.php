@@ -23,7 +23,12 @@ if ( !defined( '\IPS\SUITE_UNIQUE_KEY' ) )
 
 class _support extends \IPS\Dispatcher\Controller
 {
+	use \IPS\gddealer\Traits\DealerShellTrait;
+
 	public static bool $csrfProtected = TRUE;
+
+	/** Current dealer loaded from the logged-in member (required by trait) */
+	protected ?Dealer $dealer = null;
 
 	public function execute(): void
 	{
@@ -33,6 +38,22 @@ class _support extends \IPS\Dispatcher\Controller
 			\IPS\Output::i()->error( 'node_error', '2GDD400/1', 403 );
 			return;
 		}
+
+		try
+		{
+			$this->dealer = Dealer::load( (int) $member->member_id );
+		}
+		catch ( \OutOfRangeException )
+		{
+			$this->dealer = null;
+		}
+
+		if ( $this->dealer === null )
+		{
+			\IPS\Output::i()->error( 'node_error', '2GDD400/6', 403 );
+			return;
+		}
+
 		parent::execute();
 	}
 
@@ -108,9 +129,8 @@ class _support extends \IPS\Dispatcher\Controller
 			'app=gddealer&module=dealers&controller=support&do=new'
 		);
 
-		\IPS\Output::i()->title  = 'Support Tickets';
-		\IPS\Output::i()->output = \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )
-			->supportList( $tickets, $counts, $statusFilter, $statusOptions, $newUrl );
+		$this->output( 'support', (string) \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )
+			->supportList( $tickets, $counts, $statusFilter, $statusOptions, $newUrl ) );
 	}
 
 	protected function new(): void
@@ -338,9 +358,8 @@ class _support extends \IPS\Dispatcher\Controller
 			'app=gddealer&module=dealers&controller=support'
 		);
 
-		\IPS\Output::i()->title  = 'New Support Ticket';
-		\IPS\Output::i()->output = \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )
-			->supportNew( $departments, $isEnterprise, $bodyEditorHtml, $csrfKey, $submitUrl, $backUrl );
+		$this->output( 'support', (string) \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )
+			->supportNew( $departments, $isEnterprise, $bodyEditorHtml, $csrfKey, $submitUrl, $backUrl ) );
 	}
 
 	protected function view(): void
@@ -670,9 +689,8 @@ class _support extends \IPS\Dispatcher\Controller
 			'app=gddealer&module=dealers&controller=support&do=new'
 		);
 
-		\IPS\Output::i()->title  = (string) $ticket['subject'];
-		\IPS\Output::i()->output = \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )
-			->supportView( $ticketData, $replies, $replyEditorHtml, $csrfKey, $replyUrl, $closeUrl, $backUrl, $canClose, EventLogger::getEvents( $ticketId ), $newTicketUrl );
+		$this->output( 'support', (string) \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )
+			->supportView( $ticketData, $replies, $replyEditorHtml, $csrfKey, $replyUrl, $closeUrl, $backUrl, $canClose, EventLogger::getEvents( $ticketId ), $newTicketUrl ) );
 	}
 
 	protected function close(): void
