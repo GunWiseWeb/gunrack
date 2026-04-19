@@ -92,21 +92,37 @@ class _support extends \IPS\Dispatcher\Controller
 				'updated_at DESC', [ 0, 50 ]
 			) as $t )
 			{
+				$deptName = '';
+				try
+				{
+					$deptName = (string) \IPS\Db::i()->select( 'name', 'gd_dealer_support_departments',
+						[ 'id=?', (int) $t['department_id'] ]
+					)->first();
+				}
+				catch ( \Exception ) {}
+
+				$createdTs = strtotime( (string) $t['created_at'] );
+				$updatedTs = strtotime( (string) $t['updated_at'] );
+
 				$tickets[] = [
-					'id'              => (int) $t['id'],
-					'subject'         => (string) $t['subject'],
-					'status'          => (string) $t['status'],
-					'status_label'    => self::statusLabel( (string) $t['status'] ),
-					'status_bg'       => self::statusBg( (string) $t['status'] ),
-					'status_color'    => self::statusColor( (string) $t['status'] ),
-					'priority'        => (string) $t['priority'],
-					'priority_color'  => self::priorityColor( (string) $t['priority'] ),
-					'created_at'      => (string) $t['created_at'],
-					'updated_at'      => (string) $t['updated_at'],
-					'last_reply_role' => (string) ( $t['last_reply_role'] ?? '' ),
-					'view_url'        => (string) \IPS\Http\Url::internal(
+					'id'                  => (int) $t['id'],
+					'subject'             => (string) $t['subject'],
+					'department_name'     => $deptName,
+					'status'              => (string) $t['status'],
+					'status_label'        => self::statusLabel( (string) $t['status'] ),
+					'status_bg'           => self::statusBg( (string) $t['status'] ),
+					'status_color'        => self::statusColor( (string) $t['status'] ),
+					'priority'            => (string) $t['priority'],
+					'priority_label'      => ucfirst( (string) $t['priority'] ),
+					'priority_bg'         => self::priorityBg( (string) $t['priority'] ),
+					'priority_color'      => self::priorityColor( (string) $t['priority'] ),
+					'last_reply_role'     => (string) ( $t['last_reply_role'] ?? '' ),
+					'created_at_short'    => $createdTs ? (string) \IPS\DateTime::ts( $createdTs )->localeDate() : (string) $t['created_at'],
+					'updated_at_relative' => $updatedTs ? (string) \IPS\DateTime::ts( $updatedTs )->relative() : (string) $t['updated_at'],
+					'view_url'            => (string) \IPS\Http\Url::internal(
 						'app=gddealer&module=dealers&controller=support&do=view&id=' . (int) $t['id']
 					),
+					'needs_attention'     => ( (string) $t['status'] ) === 'pending_customer',
 				];
 			}
 		}
@@ -758,8 +774,8 @@ class _support extends \IPS\Dispatcher\Controller
 	{
 		return match( $s ) {
 			'open'              => 'Open',
-			'pending_staff'     => 'Awaiting Staff',
-			'pending_customer'  => 'Awaiting You',
+			'pending_staff'     => 'Awaiting staff',
+			'pending_customer'  => 'Awaiting your reply',
 			'resolved'          => 'Resolved',
 			'closed'            => 'Closed',
 			default             => ucfirst( str_replace( '_', ' ', $s ) ),
@@ -769,11 +785,11 @@ class _support extends \IPS\Dispatcher\Controller
 	private static function statusBg( string $s ): string
 	{
 		return match( $s ) {
+			'pending_staff'     => '#dbeafe',
 			'open'              => '#dbeafe',
-			'pending_staff'     => '#fef3c7',
-			'pending_customer'  => '#fce7f3',
+			'pending_customer'  => '#fef3c7',
 			'resolved'          => '#dcfce7',
-			'closed'            => '#f3f4f6',
+			'closed'            => '#f1f5f9',
 			default             => '#f3f4f6',
 		};
 	}
@@ -781,23 +797,34 @@ class _support extends \IPS\Dispatcher\Controller
 	private static function statusColor( string $s ): string
 	{
 		return match( $s ) {
-			'open'              => '#1d4ed8',
-			'pending_staff'     => '#92400e',
-			'pending_customer'  => '#9d174d',
+			'pending_staff'     => '#1e40af',
+			'open'              => '#1e40af',
+			'pending_customer'  => '#854d0e',
 			'resolved'          => '#166534',
-			'closed'            => '#374151',
+			'closed'            => '#334155',
 			default             => '#374151',
+		};
+	}
+
+	private static function priorityBg( string $p ): string
+	{
+		return match( $p ) {
+			'urgent' => '#fee2e2',
+			'high'   => '#fef3c7',
+			'normal' => '#f3f4f6',
+			'low'    => '#f9fafb',
+			default  => '#f3f4f6',
 		};
 	}
 
 	private static function priorityColor( string $p ): string
 	{
 		return match( $p ) {
-			'urgent' => '#dc2626',
-			'high'   => '#ea580c',
-			'normal' => '#2563eb',
+			'urgent' => '#991b1b',
+			'high'   => '#854d0e',
+			'normal' => '#374151',
 			'low'    => '#6b7280',
-			default  => '#6b7280',
+			default  => '#374151',
 		};
 	}
 }

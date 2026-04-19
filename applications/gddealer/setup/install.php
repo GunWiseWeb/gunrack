@@ -3151,45 +3151,69 @@ $gddealerTemplates[] = [
 	'location'      => 'front',
 	'group'         => 'dealers',
 	'template_name' => 'supportList',
-	'template_data' => '$tickets, $sub_nav',
+	'template_data' => '$tickets, $subNav',
 	'template_content' => <<<'TEMPLATE_EOT'
 <div class="gdDealerWrapper" style="max-width:960px;margin:0 auto">
-<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;border-bottom:1px solid #e5e7eb;padding-bottom:12px">
-	<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
-		<a href="{$sub_nav['open_url']}" style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:6px;font-size:0.9em;font-weight:600;text-decoration:none;{expression="$sub_nav['active'] === 'open' ? 'background:#1e3a5f;color:#fff' : 'background:transparent;color:#475569'"}">Open <span style="background:{expression="$sub_nav['active'] === 'open' ? 'rgba(255,255,255,0.25)' : '#e5e7eb'"};padding:1px 7px;border-radius:10px;font-size:0.85em">{expression="number_format($sub_nav['open_count'])"}</span></a>
-		<a href="{$sub_nav['closed_url']}" style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:6px;font-size:0.9em;font-weight:600;text-decoration:none;{expression="$sub_nav['active'] === 'closed' ? 'background:#1e3a5f;color:#fff' : 'background:transparent;color:#475569'"}">Closed <span style="background:{expression="$sub_nav['active'] === 'closed' ? 'rgba(255,255,255,0.25)' : '#e5e7eb'"};padding:1px 7px;border-radius:10px;font-size:0.85em">{expression="number_format($sub_nav['closed_count'])"}</span></a>
-		<a href="{$sub_nav['all_url']}" style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:6px;font-size:0.9em;font-weight:600;text-decoration:none;{expression="$sub_nav['active'] === 'all' ? 'background:#1e3a5f;color:#fff' : 'background:transparent;color:#475569'"}">All</a>
+<div style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:20px;padding-bottom:14px;border-bottom:0.5px solid #e5e7eb;flex-wrap:wrap">
+	<div style="display:flex;gap:4px;flex-wrap:wrap">
+		<a href="{$subNav['open_url']}" style="padding:8px 14px;font-size:13px;font-weight:500;text-decoration:none;border-radius:8px;{{if $subNav['active'] === 'open'}}background:#1e3a5f;color:#fff{{else}}color:#475569{{endif}}">
+			Open tickets
+			{{if $subNav['open_count'] > 0}}
+			<span style="display:inline-block;margin-left:6px;padding:1px 7px;{{if $subNav['active'] === 'open'}}background:rgba(255,255,255,0.18);color:#fff{{else}}background:#f1f5f9;color:#475569{{endif}};border-radius:10px;font-size:11px;font-weight:500">{$subNav['open_count']}</span>
+			{{endif}}
+		</a>
+		<a href="{$subNav['closed_url']}" style="padding:8px 14px;font-size:13px;font-weight:500;text-decoration:none;border-radius:8px;{{if $subNav['active'] === 'closed'}}background:#1e3a5f;color:#fff{{else}}color:#475569{{endif}}">
+			Closed
+			{{if $subNav['closed_count'] > 0}}
+			<span style="display:inline-block;margin-left:6px;padding:1px 7px;{{if $subNav['active'] === 'closed'}}background:rgba(255,255,255,0.18);color:#fff{{else}}background:#f1f5f9;color:#475569{{endif}};border-radius:10px;font-size:11px;font-weight:500">{$subNav['closed_count']}</span>
+			{{endif}}
+		</a>
+		<a href="{$subNav['all_url']}" style="padding:8px 14px;font-size:13px;font-weight:500;text-decoration:none;border-radius:8px;{{if $subNav['active'] === 'all'}}background:#1e3a5f;color:#fff{{else}}color:#475569{{endif}}">
+			All tickets
+		</a>
 	</div>
-	<a href="{$sub_nav['new_url']}" style="display:inline-flex;align-items:center;gap:5px;padding:6px 16px;border-radius:6px;font-size:0.9em;font-weight:600;text-decoration:none;background:#16a34a;color:#fff"><i class="fa-solid fa-plus" aria-hidden="true"></i> New Ticket</a>
+	<a href="{$subNav['new_url']}" style="padding:9px 18px;background:#16a34a;color:#fff;font-size:13px;font-weight:500;border-radius:8px;text-decoration:none;white-space:nowrap">
+		+ New ticket
+	</a>
 </div>
-{{if count($tickets) > 0}}
-<div class="ipsBox" style="border-radius:8px;overflow:hidden">
-	<div class="gdTableWrap">
-	<table class="ipsTable ipsTable--responsive" style="width:100%">
-		<thead>
-			<tr style="background:#f8fafc">
-				<th style="padding:10px 14px;font-size:0.8em;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.05em">Subject</th>
-				<th style="padding:10px 14px;font-size:0.8em;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.05em">Status</th>
-				<th style="padding:10px 14px;font-size:0.8em;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.05em">Priority</th>
-				<th style="padding:10px 14px;font-size:0.8em;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.05em">Updated</th>
-			</tr>
-		</thead>
-		<tbody>
-			{{foreach $tickets as $t}}
-			<tr style="border-bottom:1px solid #f0f0f0">
-				<td style="padding:12px 14px"><a href="{$t['view_url']}" style="font-weight:600;color:#1d4ed8;text-decoration:none">{$t['subject']}</a></td>
-				<td style="padding:12px 14px"><span style="background:{$t['status_bg']};color:{$t['status_color']};padding:2px 10px;border-radius:20px;font-size:0.8em;font-weight:600;white-space:nowrap">{$t['status_label']}</span></td>
-				<td style="padding:12px 14px"><span style="color:{$t['priority_color']};font-weight:600;font-size:0.85em">{expression="ucfirst($t['priority'])"}</span></td>
-				<td style="padding:12px 14px;font-size:0.85em;color:#6b7280">{$t['updated_at']}</td>
-			</tr>
-			{{endforeach}}
-		</tbody>
-	</table>
+{{if count($tickets) === 0}}
+<div style="background:#fff;border:0.5px solid #e5e7eb;border-radius:12px;padding:60px 40px;text-align:center">
+	<div style="font-size:15px;color:#111827;font-weight:500;margin-bottom:8px">
+		{{if $subNav['active'] === 'open'}}No open tickets{{elseif $subNav['active'] === 'closed'}}No closed tickets{{else}}No tickets yet{{endif}}
 	</div>
+	<div style="font-size:13px;color:#64748b;margin-bottom:20px">Need help? Open a ticket and we'll get back to you.</div>
+	<a href="{$subNav['new_url']}" style="display:inline-block;padding:10px 20px;background:#16a34a;color:#fff;font-size:13px;font-weight:500;border-radius:8px;text-decoration:none">Open a new ticket</a>
 </div>
 {{else}}
-<div class="ipsBox" style="border-radius:8px;padding:40px;text-align:center">
-	<p style="color:#6b7280;font-size:0.95em;margin:0">No support tickets found. Need help? <a href="{$sub_nav['new_url']}" style="color:#2563eb;font-weight:600">Open a new ticket</a>.</p>
+<div style="display:flex;flex-direction:column;gap:10px">
+	{{foreach $tickets as $t}}
+	<a href="{$t['view_url']}" style="display:block;text-decoration:none;color:inherit;background:#fff;border:0.5px solid #e5e7eb;border-radius:12px;padding:18px 22px;{{if $t['needs_attention']}}border-left:3px solid #f59e0b{{endif}}">
+		<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:10px">
+			<div style="flex:1;min-width:0">
+				<div style="font-size:15px;font-weight:500;color:#111827;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{$t['subject']}</div>
+				<div style="font-size:12px;color:#64748b">
+					{{if $t['department_name']}}{$t['department_name']} &middot; {{endif}}Opened {$t['created_at_short']}
+				</div>
+			</div>
+			<div style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end">
+				<span style="padding:3px 10px;border-radius:12px;font-size:11px;font-weight:500;background:{$t['status_bg']};color:{$t['status_color']};white-space:nowrap">{$t['status_label']}</span>
+				{{if $t['priority'] !== 'normal'}}
+				<span style="padding:3px 10px;border-radius:12px;font-size:11px;font-weight:500;background:{$t['priority_bg']};color:{$t['priority_color']};white-space:nowrap">{$t['priority_label']}</span>
+				{{endif}}
+			</div>
+		</div>
+		<div style="display:flex;align-items:center;gap:8px;font-size:12px;color:#94a3b8;padding-top:10px;border-top:0.5px solid #f1f5f9">
+			<span>Updated {$t['updated_at_relative']}</span>
+			{{if $t['last_reply_role'] === 'admin'}}
+			<span>&middot;</span>
+			<span style="color:#1e40af">Staff last replied</span>
+			{{elseif $t['last_reply_role'] === 'dealer'}}
+			<span>&middot;</span>
+			<span>You last replied</span>
+			{{endif}}
+		</div>
+	</a>
+	{{endforeach}}
 </div>
 {{endif}}
 </div>
