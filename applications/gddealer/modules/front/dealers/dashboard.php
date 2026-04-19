@@ -1722,6 +1722,11 @@ class _dashboard extends \IPS\Dispatcher\Controller
 		];
 	}
 
+	protected function supportUrl(): string
+	{
+		return (string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=support' );
+	}
+
 	/**
 	 * Admin-configurable theme variables injected at the top of every
 	 * dealer page. CSS rules target the gdDealerWrapper / gdDealerTabs /
@@ -1767,12 +1772,15 @@ class _dashboard extends \IPS\Dispatcher\Controller
 	 */
 	protected function output( string $activeTab, string $body ): void
 	{
+		$canSupport = Dealer::canAccessSupport( \IPS\Member::loggedIn() );
 		\IPS\Output::i()->title  = \IPS\Member::loggedIn()->language()->addToStack( 'gddealer_frontend_dashboard_title' );
 		\IPS\Output::i()->output = $this->themeVars() . \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )->dealerShell(
 			$this->dealerSummary(),
 			$activeTab,
 			$this->tabUrls(),
-			$body
+			$body,
+			$canSupport,
+			$canSupport ? $this->supportUrl() : ''
 		);
 	}
 }

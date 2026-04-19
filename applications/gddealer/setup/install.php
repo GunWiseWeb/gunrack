@@ -873,7 +873,7 @@ TEMPLATE_EOT,
 		'location'      => 'front',
 		'group'         => 'dealers',
 		'template_name' => 'dealerShell',
-		'template_data' => '$dealer, $activeTab, $tabUrls, $body',
+		'template_data' => '$dealer, $activeTab, $tabUrls, $body, $can_access_support, $support_url',
 		'template_content' => <<<'TEMPLATE_EOT'
 <style>
 @media (max-width: 768px) {
@@ -951,6 +951,9 @@ TEMPLATE_EOT,
 			<a href="{$tabUrls['analytics']}" class="ipsTabs__tab {expression="$activeTab === 'analytics' ? 'ipsTabs__activeTab' : ''"}" role="tab" aria-selected="{expression="$activeTab === 'analytics' ? 'true' : 'false'"}" style="padding:12px 20px;text-decoration:none;font-weight:600;color:{expression="$activeTab === 'analytics' ? '#2563eb' : '#475569'"};border-bottom:2px solid {expression="$activeTab === 'analytics' ? '#2563eb' : 'transparent'"};white-space:nowrap">{lang="gddealer_front_tab_analytics"}</a>
 			<a href="{$tabUrls['reviews']}" class="ipsTabs__tab {expression="$activeTab === 'reviews' ? 'ipsTabs__activeTab' : ''"}" role="tab" aria-selected="{expression="$activeTab === 'reviews' ? 'true' : 'false'"}" style="padding:12px 20px;text-decoration:none;font-weight:600;color:{expression="$activeTab === 'reviews' ? '#2563eb' : '#475569'"};border-bottom:2px solid {expression="$activeTab === 'reviews' ? '#2563eb' : 'transparent'"};white-space:nowrap">{lang="gddealer_front_tab_reviews"}{{if $dealer['new_reviews'] > 0}} <span style="background:#dc2626;color:#fff;border-radius:10px;padding:1px 6px;font-size:0.7em;font-weight:700;margin-left:4px">{$dealer['new_reviews']}</span>{{endif}}</a>
 			<a href="{$tabUrls['help']}" class="ipsTabs__tab {expression="$activeTab === 'help' ? 'ipsTabs__activeTab' : ''"}" role="tab" aria-selected="{expression="$activeTab === 'help' ? 'true' : 'false'"}" style="padding:12px 20px;text-decoration:none;font-weight:600;color:{expression="$activeTab === 'help' ? '#2563eb' : '#475569'"};border-bottom:2px solid {expression="$activeTab === 'help' ? '#2563eb' : 'transparent'"};white-space:nowrap">{lang="gddealer_front_tab_help"}</a>
+			{{if $can_access_support}}
+			<a href="{$support_url}" class="ipsTabs__tab {expression="$activeTab === 'support' ? 'ipsTabs__activeTab' : ''"}" role="tab" aria-selected="{expression="$activeTab === 'support' ? 'true' : 'false'"}" style="padding:12px 20px;text-decoration:none;font-weight:600;color:{expression="$activeTab === 'support' ? '#2563eb' : '#475569'"};border-bottom:2px solid {expression="$activeTab === 'support' ? '#2563eb' : 'transparent'"};white-space:nowrap">{lang="gddealer_support_nav"}</a>
+			{{endif}}
 		</div>
 	</i-tabs>
 	<div id="elDealerTabs_content" class="ipsTabs__panels ipsTabs__panels--profile" style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-top:none;border-radius:0 0 8px 8px;padding:24px">
@@ -2870,6 +2873,178 @@ if ( file_exists( $emailsXmlPath ) )
 		}
 	}
 }
+
+/* ===== FRONT: supportList ===== */
+$gddealerTemplates[] = [
+	'set_id'        => 1,
+	'app'           => 'gddealer',
+	'location'      => 'front',
+	'group'         => 'dealers',
+	'template_name' => 'supportList',
+	'template_data' => '$tickets, $counts, $status_filter, $status_options, $new_url',
+	'template_content' => <<<'TEMPLATE_EOT'
+<div class="gdDealerWrapper" style="max-width:960px;margin:0 auto">
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+	<h2 style="margin:0;font-size:1.3em;font-weight:700">{lang="gddealer_support_title"}</h2>
+	<a href="{$new_url}" class="ipsButton ipsButton--primary ipsButton--small"><i class="fa-solid fa-plus" aria-hidden="true"></i> {lang="gddealer_support_new"}</a>
+</div>
+<div style="margin-bottom:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+	<label style="font-size:0.85em;font-weight:600;color:#475569">Filter:</label>
+	<select onchange="window.location.href=this.value" style="padding:6px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:0.9em;background:#fff">
+		<option value="{$status_options['all']}" {expression="$status_filter === 'all' ? 'selected' : ''"}>All ({expression="number_format($counts['all'])"})</option>
+		<option value="{$status_options['open']}" {expression="$status_filter === 'open' ? 'selected' : ''"}>Open ({expression="number_format($counts['open'])"})</option>
+		<option value="{$status_options['pending_staff']}" {expression="$status_filter === 'pending_staff' ? 'selected' : ''"}>Awaiting Staff ({expression="number_format($counts['pending_staff'])"})</option>
+		<option value="{$status_options['pending_customer']}" {expression="$status_filter === 'pending_customer' ? 'selected' : ''"}>Awaiting You ({expression="number_format($counts['pending_customer'])"})</option>
+		<option value="{$status_options['resolved']}" {expression="$status_filter === 'resolved' ? 'selected' : ''"}>Resolved ({expression="number_format($counts['resolved'])"})</option>
+		<option value="{$status_options['closed']}" {expression="$status_filter === 'closed' ? 'selected' : ''"}>Closed ({expression="number_format($counts['closed'])"})</option>
+	</select>
+</div>
+{{if count($tickets) > 0}}
+<div class="ipsBox" style="border-radius:8px;overflow:hidden">
+	<div class="gdTableWrap">
+	<table class="ipsTable ipsTable--responsive" style="width:100%">
+		<thead>
+			<tr style="background:#f8fafc">
+				<th style="padding:10px 14px;font-size:0.8em;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.05em">Subject</th>
+				<th style="padding:10px 14px;font-size:0.8em;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.05em">Status</th>
+				<th style="padding:10px 14px;font-size:0.8em;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.05em">Priority</th>
+				<th style="padding:10px 14px;font-size:0.8em;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.05em">Updated</th>
+			</tr>
+		</thead>
+		<tbody>
+			{{foreach $tickets as $t}}
+			<tr style="border-bottom:1px solid #f0f0f0">
+				<td style="padding:12px 14px"><a href="{$t['view_url']}" style="font-weight:600;color:#1d4ed8;text-decoration:none">{$t['subject']}</a></td>
+				<td style="padding:12px 14px"><span style="background:{$t['status_bg']};color:{$t['status_color']};padding:2px 10px;border-radius:20px;font-size:0.8em;font-weight:600;white-space:nowrap">{$t['status_label']}</span></td>
+				<td style="padding:12px 14px"><span style="color:{$t['priority_color']};font-weight:600;font-size:0.85em">{expression="ucfirst($t['priority'])"}</span></td>
+				<td style="padding:12px 14px;font-size:0.85em;color:#6b7280">{$t['updated_at']}</td>
+			</tr>
+			{{endforeach}}
+		</tbody>
+	</table>
+	</div>
+</div>
+{{else}}
+<div class="ipsBox" style="border-radius:8px;padding:40px;text-align:center">
+	<p style="color:#6b7280;font-size:0.95em;margin:0">No support tickets found. Need help? <a href="{$new_url}" style="color:#2563eb;font-weight:600">Open a new ticket</a>.</p>
+</div>
+{{endif}}
+</div>
+TEMPLATE_EOT,
+];
+
+/* ===== FRONT: supportNew ===== */
+$gddealerTemplates[] = [
+	'set_id'        => 1,
+	'app'           => 'gddealer',
+	'location'      => 'front',
+	'group'         => 'dealers',
+	'template_name' => 'supportNew',
+	'template_data' => '$departments, $is_enterprise, $body_editor_html, $csrf_key, $submit_url, $back_url',
+	'template_content' => <<<'TEMPLATE_EOT'
+<div class="gdDealerWrapper" style="max-width:720px;margin:0 auto">
+<div style="margin-bottom:16px"><a href="{$back_url}" style="color:#2563eb;font-size:0.9em;text-decoration:none">&larr; Back to tickets</a></div>
+<h2 style="margin:0 0 20px;font-size:1.3em;font-weight:700">{lang="gddealer_support_new"}</h2>
+<form method="post" action="{$submit_url}" class="ipsForm">
+	<input type="hidden" name="csrfKey" value="{$csrf_key}">
+	<div style="margin-bottom:16px">
+		<label style="display:block;font-weight:600;margin-bottom:6px;font-size:0.9em">{lang="gddealer_support_subject"}</label>
+		<input type="text" name="support_subject" value="" required style="width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:0.95em;box-sizing:border-box">
+	</div>
+	<div style="display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap">
+		<div style="flex:1;min-width:200px">
+			<label style="display:block;font-weight:600;margin-bottom:6px;font-size:0.9em">{lang="gddealer_support_department"}</label>
+			<select name="support_department" style="width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:0.95em;background:#fff">
+				{{foreach $departments as $dept}}
+				<option value="{$dept['id']}">{$dept['name']}</option>
+				{{endforeach}}
+			</select>
+		</div>
+		<div style="flex:1;min-width:200px">
+			<label style="display:block;font-weight:600;margin-bottom:6px;font-size:0.9em">{lang="gddealer_support_priority"}</label>
+			<select name="support_priority" style="width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:0.95em;background:#fff">
+				<option value="low">Low</option>
+				<option value="normal" selected>Normal</option>
+				<option value="high">High</option>
+				{{if $is_enterprise}}<option value="urgent">Urgent</option>{{endif}}
+			</select>
+		</div>
+	</div>
+	<div style="margin-bottom:20px">
+		<label style="display:block;font-weight:600;margin-bottom:6px;font-size:0.9em">{lang="gddealer_support_body"}</label>
+		{$body_editor_html|raw}
+	</div>
+	<div style="display:flex;gap:10px">
+		<button type="submit" class="ipsButton ipsButton--primary">{lang="gddealer_support_new"}</button>
+		<a href="{$back_url}" class="ipsButton ipsButton--inherit">Cancel</a>
+	</div>
+</form>
+</div>
+TEMPLATE_EOT,
+];
+
+/* ===== FRONT: supportView ===== */
+$gddealerTemplates[] = [
+	'set_id'        => 1,
+	'app'           => 'gddealer',
+	'location'      => 'front',
+	'group'         => 'dealers',
+	'template_name' => 'supportView',
+	'template_data' => '$ticket, $replies, $reply_editor_html, $csrf_key, $reply_url, $close_url, $back_url, $can_close',
+	'template_content' => <<<'TEMPLATE_EOT'
+<div class="gdDealerWrapper" style="max-width:800px;margin:0 auto">
+<div style="margin-bottom:16px"><a href="{$back_url}" style="color:#2563eb;font-size:0.9em;text-decoration:none">&larr; Back to tickets</a></div>
+<div class="ipsBox" style="border-radius:8px;margin-bottom:20px">
+	<div style="padding:16px 20px;border-bottom:1px solid #f0f0f0;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">
+		<div style="flex:1;min-width:200px">
+			<h2 style="margin:0 0 6px;font-size:1.2em;font-weight:700">{$ticket['subject']}</h2>
+			<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:0.85em;color:#6b7280">
+				<span style="background:{$ticket['status_bg']};color:{$ticket['status_color']};padding:2px 10px;border-radius:20px;font-weight:600;font-size:0.9em">{$ticket['status_label']}</span>
+				<span style="color:{$ticket['priority_color']};font-weight:600">{expression="ucfirst($ticket['priority'])"} priority</span>
+				{{if $ticket['department']}}<span>&middot; {$ticket['department']}</span>{{endif}}
+				<span>&middot; Opened {$ticket['created_at']}</span>
+			</div>
+		</div>
+		{{if $can_close}}
+		<a href="{$close_url}" class="ipsButton ipsButton--inherit ipsButton--small" onclick="return confirm('Close this ticket?')">Close Ticket</a>
+		{{endif}}
+	</div>
+	<div style="padding:16px 20px">
+		{$ticket['body']|raw}
+	</div>
+</div>
+{{if count($replies) > 0}}
+<h3 style="font-size:1em;font-weight:700;margin:0 0 12px;color:#374151">Replies</h3>
+{{foreach $replies as $r}}
+<div class="ipsBox" style="border-radius:8px;margin-bottom:12px;border-left:3px solid {$r['role_bg']}">
+	<div style="padding:10px 16px;background:#f8fafc;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:0.85em">
+		<span style="background:{$r['role_bg']};color:#fff;padding:1px 8px;border-radius:12px;font-weight:600;font-size:0.85em">{$r['role_label']}</span>
+		<span style="font-weight:600">{$r['member_name']}</span>
+		<span style="color:#6b7280">&middot; {$r['created_at']}</span>
+	</div>
+	<div style="padding:14px 16px">
+		{$r['body']|raw}
+	</div>
+</div>
+{{endforeach}}
+{{endif}}
+{{if $ticket['status'] !== 'closed'}}
+<div class="ipsBox" style="border-radius:8px;margin-top:20px">
+	<div style="padding:16px 20px">
+		<h3 style="margin:0 0 12px;font-size:1em;font-weight:700">{lang="gddealer_support_reply"}</h3>
+		<form method="post" action="{$reply_url}">
+			<input type="hidden" name="csrfKey" value="{$csrf_key}">
+			<div style="margin-bottom:14px">
+				{$reply_editor_html|raw}
+			</div>
+			<button type="submit" class="ipsButton ipsButton--primary">{lang="gddealer_support_reply"}</button>
+		</form>
+	</div>
+</div>
+{{endif}}
+</div>
+TEMPLATE_EOT,
+];
 
 /* Force furl + applications + extensions + email-template cache rebuild
    so new routes, templates, and extension classes appear without a manual

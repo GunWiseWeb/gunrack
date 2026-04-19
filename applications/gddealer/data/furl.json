@@ -29,6 +29,14 @@
 			"friendly": "review-guidelines",
 			"real": "app=gddealer&module=dealers&controller=profile&do=guidelines"
 		},
+		"dealers_support": {
+			"friendly": "support",
+			"real": "app=gddealer&module=dealers&controller=support"
+		},
+		"dealers_support_action": {
+			"friendly": "support/{@do}",
+			"real": "app=gddealer&module=dealers&controller=support"
+		},
 		"dealers_profile": {
 			"friendly": "profile/{@dealer_slug}",
 			"real": "app=gddealer&module=dealers&controller=profile"

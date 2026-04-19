@@ -363,5 +363,13 @@
     <word key="gddealer_dispute_count_reset"><![CDATA[Dispute count reset to 0 for this month.]]></word>
     <word key="gddealer_disputes_granted"><![CDATA[Bonus disputes granted.]]></word>
     <word key="menu__gddealer_dealers_disputeCounts"><![CDATA[Dispute Counts]]></word>
+    <word key="gddealer_support_nav"><![CDATA[Support]]></word>
+    <word key="gddealer_support_title"><![CDATA[Support Tickets]]></word>
+    <word key="gddealer_support_new"><![CDATA[Open New Ticket]]></word>
+    <word key="gddealer_support_body"><![CDATA[Describe your issue]]></word>
+    <word key="gddealer_support_reply"><![CDATA[Post Reply]]></word>
+    <word key="gddealer_support_subject"><![CDATA[Subject]]></word>
+    <word key="gddealer_support_department"><![CDATA[Department]]></word>
+    <word key="gddealer_support_priority"><![CDATA[Priority]]></word>
   </app>
 </language>
