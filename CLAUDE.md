@@ -165,6 +165,23 @@ These were learned by comparing against a working IPS v5 plugin. They apply to e
 24. **Notifications must be registered in three places** — a new IPS bell-notification key needs all of: (1) registration in `extensions/core/Notifications/<NotificationsExtension>.php` under `configurationOptions()` AND a matching `parse_<key>()` method, (2) seeding in `core_notification_defaults` via both `setup/install.php` AND `setup/upg_XXXXX/upgrade.php` for existing installs, (3) language strings for `<app>_notif_<key>` and `<app>_notif_<key>_desc` in `data/lang.xml`. Missing any of the three causes silent notification failures where the code appears to succeed but no bell ever appears.
 25. **Email and bell notifications must be in independent `try/catch` blocks** — never nest an email send and a bell notification send in the same `try/catch`. If the email throws (template missing, SES failure, transient error), the shared catch swallows the exception and the notification is never sent. Always use two adjacent, completely independent `try/catch` blocks so a failure in one channel cannot suppress the other. When adding a new action that modifies reviews, disputes, or any user-visible state, audit every code path that can reach that state — not just the primary action. Edits typically go through a separate action (e.g. `editReview()`) that needs its own email + notification pair.
 26. **Test the production deploy path, not just the repo state** — every completed feature must be verified by: (a) extracting the built tar to confirm all expected files are present, (b) running the IPS upgrade against a DB state that matches production, (c) spot-checking that new template content actually landed in `core_theme_templates` and not just in `setup/install.php`, (d) testing the user-facing flow in a browser with a non-admin account. "The code looks right in the repo" is not the bar. "The feature works on a clean IPS install after deploying the tar" is the bar.
+27. **Every `setup/upg_XXXXX/upgrade.php` MUST be wrapped in `class _upgrade`** — IPS's upgrade runner instantiates `\IPS\<app>\setup\upg_XXXXX\Upgrade` (the class alias) and calls `step1()`, `step2()`, ... on it. A file that defines bare `function step1()` at namespace level without the class wrapper throws `"Class ... could not be loaded. Ensure it is in the correct namespace."` Required shape, matching rule #2's underscore/alias pattern:
+    ```php
+    namespace IPS\<app>\setup\upg_XXXXX;
+    class _upgrade
+    {
+        public function step1(): bool
+        {
+            /* re-seed templates if applicable — upgrade.php alone doesn't
+               trigger templates_XXXXX.php, you must require_once it. */
+            require_once \IPS\ROOT_PATH . '/applications/<app>/setup/templates_XXXXX.php';
+            /* cache clears at end */
+            return TRUE;
+        }
+    }
+    class upgrade extends _upgrade {}
+    ```
+    Every step must return `TRUE` to advance; returning anything else tells IPS to re-run the same step. Pre-build verification: `grep -c "class _upgrade" setup/upg_XXXXX/upgrade.php` must return `1`. If the upgrade exists solely to re-seed templates, it still needs the class wrapper AND the `require_once 'templates_XXXXX.php'` — without the require, the seed never runs even when the class loads correctly. Reference: `upg_10047`, `upg_10048`, `upg_10050`.
 
 ## Full specification
 Read `GunRack_Spec_v2.9.16.md` for complete specs on all 12 plugins, database schemas, acceptance criteria, server setup (Appendix B), security requirements (Appendix C), and Phase 2 roadmap (Section 19).
