@@ -2082,7 +2082,7 @@ TEMPLATE_EOT,
 		'location'      => 'front',
 		'group'         => 'dealers',
 		'template_name' => 'dealerProfile',
-		'template_data' => '$dealer, $stats, $reviews, $canRate, $alreadyRated, $loginRequired, $rateUrl, $csrfKey, $loginUrl, $customerDispute, $guidelinesUrl, $reviewBodyEditorHtml, $sort_key, $star_key, $star_counts, $filter_base_url, $total_in_filter',
+		'template_data' => '$dealer, $stats, $reviews, $canRate, $alreadyRated, $loginRequired, $rateUrl, $csrfKey, $loginUrl, $customerDispute, $guidelinesUrl, $reviewBodyEditorHtml, $sort_key, $star_key, $star_counts, $star_options, $sort_options, $clear_filters_url, $total_in_filter',
 		'template_content' => <<<'TEMPLATE_EOT'
 <style>
 #ipsLayout_mainArea { max-width: 100% !important; }
@@ -2349,21 +2349,21 @@ TEMPLATE_EOT,
 					<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
 						<label style="font-size:12px;color:#6b7280;font-weight:500">Filter:</label>
 						<select onchange="window.location.href = this.value" style="padding:6px 28px 6px 10px;font-size:13px;border:1px solid #d1d5db;border-radius:6px;background:#fff;color:#111827;cursor:pointer">
-							<option value="{$filter_base_url}?sort={$sort_key}&stars=all" {{if $star_key === 'all'}}selected{{endif}}>All ratings ({$star_counts['all']})</option>
-							<option value="{$filter_base_url}?sort={$sort_key}&stars=5" {{if $star_key === '5'}}selected{{endif}}>&#9733;&#9733;&#9733;&#9733;&#9733; 5 stars ({$star_counts['5']})</option>
-							<option value="{$filter_base_url}?sort={$sort_key}&stars=4" {{if $star_key === '4'}}selected{{endif}}>&#9733;&#9733;&#9733;&#9733;&#9734; 4 stars ({$star_counts['4']})</option>
-							<option value="{$filter_base_url}?sort={$sort_key}&stars=3" {{if $star_key === '3'}}selected{{endif}}>&#9733;&#9733;&#9733;&#9734;&#9734; 3 stars ({$star_counts['3']})</option>
-							<option value="{$filter_base_url}?sort={$sort_key}&stars=2" {{if $star_key === '2'}}selected{{endif}}>&#9733;&#9733;&#9734;&#9734;&#9734; 2 stars ({$star_counts['2']})</option>
-							<option value="{$filter_base_url}?sort={$sort_key}&stars=1" {{if $star_key === '1'}}selected{{endif}}>&#9733;&#9734;&#9734;&#9734;&#9734; 1 star ({$star_counts['1']})</option>
+							<option value="{$star_options['all']}" {{if $star_key === 'all'}}selected{{endif}}>All ratings ({$star_counts['all']})</option>
+							<option value="{$star_options['5']}" {{if $star_key === '5'}}selected{{endif}}>&#9733;&#9733;&#9733;&#9733;&#9733; 5 stars ({$star_counts['5']})</option>
+							<option value="{$star_options['4']}" {{if $star_key === '4'}}selected{{endif}}>&#9733;&#9733;&#9733;&#9733;&#9734; 4 stars ({$star_counts['4']})</option>
+							<option value="{$star_options['3']}" {{if $star_key === '3'}}selected{{endif}}>&#9733;&#9733;&#9733;&#9734;&#9734; 3 stars ({$star_counts['3']})</option>
+							<option value="{$star_options['2']}" {{if $star_key === '2'}}selected{{endif}}>&#9733;&#9733;&#9734;&#9734;&#9734; 2 stars ({$star_counts['2']})</option>
+							<option value="{$star_options['1']}" {{if $star_key === '1'}}selected{{endif}}>&#9733;&#9734;&#9734;&#9734;&#9734; 1 star ({$star_counts['1']})</option>
 						</select>
 					</div>
 					<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
 						<label style="font-size:12px;color:#6b7280;font-weight:500">Sort by:</label>
 						<select onchange="window.location.href = this.value" style="padding:6px 28px 6px 10px;font-size:13px;border:1px solid #d1d5db;border-radius:6px;background:#fff;color:#111827;cursor:pointer">
-							<option value="{$filter_base_url}?sort=newest&stars={$star_key}" {{if $sort_key === 'newest'}}selected{{endif}}>Newest first</option>
-							<option value="{$filter_base_url}?sort=oldest&stars={$star_key}" {{if $sort_key === 'oldest'}}selected{{endif}}>Oldest first</option>
-							<option value="{$filter_base_url}?sort=highest&stars={$star_key}" {{if $sort_key === 'highest'}}selected{{endif}}>Highest rated</option>
-							<option value="{$filter_base_url}?sort=lowest&stars={$star_key}" {{if $sort_key === 'lowest'}}selected{{endif}}>Lowest rated</option>
+							<option value="{$sort_options['newest']}" {{if $sort_key === 'newest'}}selected{{endif}}>Newest first</option>
+							<option value="{$sort_options['oldest']}" {{if $sort_key === 'oldest'}}selected{{endif}}>Oldest first</option>
+							<option value="{$sort_options['highest']}" {{if $sort_key === 'highest'}}selected{{endif}}>Highest rated</option>
+							<option value="{$sort_options['lowest']}" {{if $sort_key === 'lowest'}}selected{{endif}}>Lowest rated</option>
 						</select>
 					</div>
 				</div>
@@ -2372,7 +2372,7 @@ TEMPLATE_EOT,
 				{{if count($reviews) === 0 && $stats['total'] > 0}}
 				<div style="padding:32px;text-align:center;color:#6b7280;background:#f9fafb;border-radius:8px;border:0.5px solid #e5e7eb">
 					<p style="margin:0 0 8px;font-size:14px">No reviews match these filters.</p>
-					<a href="{$filter_base_url}?sort=newest&stars=all" style="font-size:13px;color:#2563eb;text-decoration:none;font-weight:500">Clear filters &rarr;</a>
+					<a href="{$clear_filters_url}" style="font-size:13px;color:#2563eb;text-decoration:none;font-weight:500">Clear filters &rarr;</a>
 				</div>
 				{{elseif count($reviews) === 0}}
 				<div style="background:#fff;border:0.5px solid #e5e7eb;border-radius:12px;padding:40px 24px;text-align:center;color:#9ca3af">

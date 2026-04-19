@@ -597,15 +597,29 @@ class _profile extends \IPS\Dispatcher\Controller
 
 		$csrfKey = (string) \IPS\Session::i()->csrfKey;
 
-		$filterBaseUrl = (string) \IPS\Http\Url::internal(
+		$baseUrl = \IPS\Http\Url::internal(
 			'app=gddealer&module=dealers&controller=profile&dealer_slug=' . urlencode( $slug )
 		);
+
+		$starOptions = [];
+		foreach ( [ 'all', '5', '4', '3', '2', '1' ] as $s )
+		{
+			$starOptions[ $s ] = (string) $baseUrl->setQueryString( [ 'sort' => $sortKey, 'stars' => $s ] );
+		}
+
+		$sortOptions = [];
+		foreach ( [ 'newest', 'oldest', 'highest', 'lowest' ] as $sort )
+		{
+			$sortOptions[ $sort ] = (string) $baseUrl->setQueryString( [ 'sort' => $sort, 'stars' => $starKey ] );
+		}
+
+		$clearFiltersUrl = (string) $baseUrl->setQueryString( [ 'sort' => 'newest', 'stars' => 'all' ] );
 
 		$totalInFilter = (int) ( $starCounts[ $starKey ] ?? $starCounts['all'] );
 
 		\IPS\Output::i()->title  = $dealer['dealer_name'];
 		\IPS\Output::i()->output = $this->themeVars() . \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )
-			->dealerProfile( $dealer, $stats, $reviews, $canRate, $alreadyRated, $loginRequired, $rateUrl, $csrfKey, $loginUrl, $customerDispute, $guidelinesUrl, $reviewBodyEditorHtml, $sortKey, $starKey, $starCounts, $filterBaseUrl, $totalInFilter );
+			->dealerProfile( $dealer, $stats, $reviews, $canRate, $alreadyRated, $loginRequired, $rateUrl, $csrfKey, $loginUrl, $customerDispute, $guidelinesUrl, $reviewBodyEditorHtml, $sortKey, $starKey, $starCounts, $starOptions, $sortOptions, $clearFiltersUrl, $totalInFilter );
 	}
 
 	/**
