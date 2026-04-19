@@ -666,9 +666,13 @@ class _support extends \IPS\Dispatcher\Controller
 
 		$canClose = !in_array( (string) $ticket['status'], [ 'closed' ], TRUE );
 
+		$newTicketUrl = (string) \IPS\Http\Url::internal(
+			'app=gddealer&module=dealers&controller=support&do=new'
+		);
+
 		\IPS\Output::i()->title  = (string) $ticket['subject'];
 		\IPS\Output::i()->output = \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )
-			->supportView( $ticketData, $replies, $replyEditorHtml, $csrfKey, $replyUrl, $closeUrl, $backUrl, $canClose, EventLogger::getEvents( $ticketId ) );
+			->supportView( $ticketData, $replies, $replyEditorHtml, $csrfKey, $replyUrl, $closeUrl, $backUrl, $canClose, EventLogger::getEvents( $ticketId ), $newTicketUrl );
 	}
 
 	protected function close(): void

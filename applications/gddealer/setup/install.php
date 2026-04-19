@@ -3020,9 +3020,14 @@ $gddealerTemplates[] = [
 	</div>
 	{{endforeach}}
 	{{endif}}
-	{{if $ticket['can_reply']}}
 	<div style="border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;margin-top:20px">
 		<div style="padding:16px 20px">
+			{{if $ticket['status'] === 'closed'}}
+			<div style="background:#fffbeb;border:1px solid #fbbf24;border-radius:6px;padding:10px 14px;margin-bottom:14px;font-size:0.88em;color:#92400e">This ticket is <strong>closed</strong>. Replying will reopen it and notify the dealer.</div>
+			{{endif}}
+			{{if $ticket['status'] === 'resolved'}}
+			<div style="background:#eff6ff;border:1px solid #60a5fa;border-radius:6px;padding:10px 14px;margin-bottom:14px;font-size:0.88em;color:#1e40af">This ticket is <strong>resolved</strong>. Replying will reopen it and notify the dealer.</div>
+			{{endif}}
 			<h3 style="margin:0 0 12px;font-size:1em;font-weight:700">Post Reply</h3>
 			<form method="post" action="{$reply_url}">
 				<div style="margin-bottom:12px">{$reply_editor_html|raw}</div>
@@ -3030,7 +3035,6 @@ $gddealerTemplates[] = [
 			</form>
 		</div>
 	</div>
-	{{endif}}
 </div>
 <aside style="flex:0 0 260px;min-width:240px">
 	<div style="border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;margin-bottom:16px">
@@ -3214,7 +3218,7 @@ $gddealerTemplates[] = [
 	'location'      => 'front',
 	'group'         => 'dealers',
 	'template_name' => 'supportView',
-	'template_data' => '$ticket, $replies, $reply_editor_html, $csrf_key, $reply_url, $close_url, $back_url, $can_close, $events',
+	'template_data' => '$ticket, $replies, $reply_editor_html, $csrf_key, $reply_url, $close_url, $back_url, $can_close, $events, $new_ticket_url',
 	'template_content' => <<<'TEMPLATE_EOT'
 <div class="gdDealerWrapper" style="max-width:800px;margin:0 auto">
 <div style="margin-bottom:16px"><a href="{$back_url}" style="color:#2563eb;font-size:0.9em;text-decoration:none">&larr; Back to tickets</a></div>
@@ -3264,6 +3268,11 @@ $gddealerTemplates[] = [
 			<button type="submit" class="ipsButton ipsButton--primary">{lang="gddealer_support_reply"}</button>
 		</form>
 	</div>
+</div>
+{{else}}
+<div class="ipsBox" style="border-radius:8px;margin-top:20px;text-align:center;padding:24px 20px">
+	<p style="color:#6b7280;margin:0 0 10px;font-size:0.95em">This ticket is closed. To continue the conversation, please open a new ticket.</p>
+	<a href="{$new_ticket_url}" class="ipsButton ipsButton--primary ipsButton--small">Open a New Ticket</a>
 </div>
 {{endif}}
 {{if count($events) > 0}}

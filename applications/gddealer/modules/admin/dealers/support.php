@@ -442,7 +442,7 @@ class _support extends \IPS\Dispatcher\Controller
 			'department_name' => $deptName,
 			'assignee_name'   => $assigneeName,
 			'assignee_id'     => (int) ( $ticket['assigned_to'] ?? 0 ),
-			'can_reply'       => (string) $ticket['status'] !== 'closed',
+			'can_reply'       => true,
 		];
 
 		$events = EventLogger::getEvents( $ticketId );
