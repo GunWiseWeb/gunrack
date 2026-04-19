@@ -29,7 +29,7 @@ if ( !defined( '\IPS\SUITE_UNIQUE_KEY' ) )
 }
 
 $editReviewContent = <<<'TEMPLATE_EOT'
-<div class="gdDealerWrapper" style="max-width:720px;margin:0 auto;padding:32px 16px">
+<div class="gdDealerWrapper" style="width:100%;max-width:720px;margin:0 auto;padding:32px 16px;box-sizing:border-box">
 	<div style="background:#ffffff;border:0.5px solid #e5e7eb;border-radius:12px;overflow:hidden">
 
 		<div style="padding:18px 24px;border-bottom:0.5px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between;background:#fafafa">
