@@ -62,19 +62,26 @@ class _support extends \IPS\Dispatcher\Controller
 		$member   = \IPS\Member::loggedIn();
 		$dealerId = (int) $member->member_id;
 
-		$statusFilter = (string) ( \IPS\Request::i()->status ?? 'all' );
-		$validStatuses = [ 'all', 'open', 'pending_staff', 'pending_customer', 'resolved', 'closed' ];
-		if ( !in_array( $statusFilter, $validStatuses, TRUE ) )
+		$filter = (string) ( \IPS\Request::i()->filter ?? 'open' );
+		if ( !in_array( $filter, [ 'open', 'closed', 'all' ], TRUE ) )
 		{
-			$statusFilter = 'all';
+			$filter = 'open';
 		}
 
 		$whereSql    = 'dealer_id=?';
 		$whereParams = [ $dealerId ];
-		if ( $statusFilter !== 'all' )
+		if ( $filter === 'open' )
 		{
-			$whereSql     .= ' AND status=?';
-			$whereParams[] = $statusFilter;
+			$whereSql     .= ' AND status IN (?, ?, ?)';
+			$whereParams[] = 'open';
+			$whereParams[] = 'pending_staff';
+			$whereParams[] = 'pending_customer';
+		}
+		elseif ( $filter === 'closed' )
+		{
+			$whereSql     .= ' AND status IN (?, ?)';
+			$whereParams[] = 'resolved';
+			$whereParams[] = 'closed';
 		}
 
 		$tickets = [];
@@ -105,32 +112,37 @@ class _support extends \IPS\Dispatcher\Controller
 		}
 		catch ( \Exception ) {}
 
-		$counts = [ 'all' => 0, 'open' => 0, 'pending_staff' => 0, 'pending_customer' => 0, 'resolved' => 0, 'closed' => 0 ];
+		$openCount   = 0;
+		$closedCount = 0;
 		try
 		{
-			$counts['all'] = (int) \IPS\Db::i()->select( 'COUNT(*)', 'gd_dealer_support_tickets',
-				[ 'dealer_id=?', $dealerId ] )->first();
-			foreach ( [ 'open', 'pending_staff', 'pending_customer', 'resolved', 'closed' ] as $s )
-			{
-				$counts[ $s ] = (int) \IPS\Db::i()->select( 'COUNT(*)', 'gd_dealer_support_tickets',
-					[ 'dealer_id=? AND status=?', $dealerId, $s ] )->first();
-			}
+			$openCount = (int) \IPS\Db::i()->select( 'COUNT(*)', 'gd_dealer_support_tickets',
+				[ 'dealer_id=? AND status IN (?, ?, ?)', $dealerId, 'open', 'pending_staff', 'pending_customer' ]
+			)->first();
+		}
+		catch ( \Exception ) {}
+		try
+		{
+			$closedCount = (int) \IPS\Db::i()->select( 'COUNT(*)', 'gd_dealer_support_tickets',
+				[ 'dealer_id=? AND status IN (?, ?)', $dealerId, 'resolved', 'closed' ]
+			)->first();
 		}
 		catch ( \Exception ) {}
 
 		$baseUrl = \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=support' );
-		$statusOptions = [];
-		foreach ( $validStatuses as $s )
-		{
-			$statusOptions[ $s ] = (string) $baseUrl->setQueryString( [ 'status' => $s ] );
-		}
 
-		$newUrl = (string) \IPS\Http\Url::internal(
-			'app=gddealer&module=dealers&controller=support&do=new'
-		);
+		$subNav = [
+			'active'       => $filter,
+			'open_url'     => (string) $baseUrl->setQueryString( [ 'filter' => 'open' ] ),
+			'closed_url'   => (string) $baseUrl->setQueryString( [ 'filter' => 'closed' ] ),
+			'all_url'      => (string) $baseUrl->setQueryString( [ 'filter' => 'all' ] ),
+			'new_url'      => (string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=support&do=new' ),
+			'open_count'   => $openCount,
+			'closed_count' => $closedCount,
+		];
 
 		$this->output( 'support', (string) \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )
-			->supportList( $tickets, $counts, $statusFilter, $statusOptions, $newUrl ) );
+			->supportList( $tickets, $subNav ) );
 	}
 
 	protected function new(): void

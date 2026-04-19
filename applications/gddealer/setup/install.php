@@ -3151,23 +3151,16 @@ $gddealerTemplates[] = [
 	'location'      => 'front',
 	'group'         => 'dealers',
 	'template_name' => 'supportList',
-	'template_data' => '$tickets, $counts, $status_filter, $status_options, $new_url',
+	'template_data' => '$tickets, $sub_nav',
 	'template_content' => <<<'TEMPLATE_EOT'
 <div class="gdDealerWrapper" style="max-width:960px;margin:0 auto">
-<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
-	<h2 style="margin:0;font-size:1.3em;font-weight:700">{lang="gddealer_support_title"}</h2>
-	<a href="{$new_url}" class="ipsButton ipsButton--primary ipsButton--small"><i class="fa-solid fa-plus" aria-hidden="true"></i> {lang="gddealer_support_new"}</a>
-</div>
-<div style="margin-bottom:16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-	<label style="font-size:0.85em;font-weight:600;color:#475569">Filter:</label>
-	<select onchange="window.location.href=this.value" style="padding:6px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:0.9em;background:#fff">
-		<option value="{$status_options['all']}" {expression="$status_filter === 'all' ? 'selected' : ''"}>All ({expression="number_format($counts['all'])"})</option>
-		<option value="{$status_options['open']}" {expression="$status_filter === 'open' ? 'selected' : ''"}>Open ({expression="number_format($counts['open'])"})</option>
-		<option value="{$status_options['pending_staff']}" {expression="$status_filter === 'pending_staff' ? 'selected' : ''"}>Awaiting Staff ({expression="number_format($counts['pending_staff'])"})</option>
-		<option value="{$status_options['pending_customer']}" {expression="$status_filter === 'pending_customer' ? 'selected' : ''"}>Awaiting You ({expression="number_format($counts['pending_customer'])"})</option>
-		<option value="{$status_options['resolved']}" {expression="$status_filter === 'resolved' ? 'selected' : ''"}>Resolved ({expression="number_format($counts['resolved'])"})</option>
-		<option value="{$status_options['closed']}" {expression="$status_filter === 'closed' ? 'selected' : ''"}>Closed ({expression="number_format($counts['closed'])"})</option>
-	</select>
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px;border-bottom:1px solid #e5e7eb;padding-bottom:12px">
+	<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">
+		<a href="{$sub_nav['open_url']}" style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:6px;font-size:0.9em;font-weight:600;text-decoration:none;{expression="$sub_nav['active'] === 'open' ? 'background:#1e3a5f;color:#fff' : 'background:transparent;color:#475569'"}">Open <span style="background:{expression="$sub_nav['active'] === 'open' ? 'rgba(255,255,255,0.25)' : '#e5e7eb'"};padding:1px 7px;border-radius:10px;font-size:0.85em">{expression="number_format($sub_nav['open_count'])"}</span></a>
+		<a href="{$sub_nav['closed_url']}" style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:6px;font-size:0.9em;font-weight:600;text-decoration:none;{expression="$sub_nav['active'] === 'closed' ? 'background:#1e3a5f;color:#fff' : 'background:transparent;color:#475569'"}">Closed <span style="background:{expression="$sub_nav['active'] === 'closed' ? 'rgba(255,255,255,0.25)' : '#e5e7eb'"};padding:1px 7px;border-radius:10px;font-size:0.85em">{expression="number_format($sub_nav['closed_count'])"}</span></a>
+		<a href="{$sub_nav['all_url']}" style="display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:6px;font-size:0.9em;font-weight:600;text-decoration:none;{expression="$sub_nav['active'] === 'all' ? 'background:#1e3a5f;color:#fff' : 'background:transparent;color:#475569'"}">All</a>
+	</div>
+	<a href="{$sub_nav['new_url']}" style="display:inline-flex;align-items:center;gap:5px;padding:6px 16px;border-radius:6px;font-size:0.9em;font-weight:600;text-decoration:none;background:#16a34a;color:#fff"><i class="fa-solid fa-plus" aria-hidden="true"></i> New Ticket</a>
 </div>
 {{if count($tickets) > 0}}
 <div class="ipsBox" style="border-radius:8px;overflow:hidden">
@@ -3196,7 +3189,7 @@ $gddealerTemplates[] = [
 </div>
 {{else}}
 <div class="ipsBox" style="border-radius:8px;padding:40px;text-align:center">
-	<p style="color:#6b7280;font-size:0.95em;margin:0">No support tickets found. Need help? <a href="{$new_url}" style="color:#2563eb;font-weight:600">Open a new ticket</a>.</p>
+	<p style="color:#6b7280;font-size:0.95em;margin:0">No support tickets found. Need help? <a href="{$sub_nav['new_url']}" style="color:#2563eb;font-weight:600">Open a new ticket</a>.</p>
 </div>
 {{endif}}
 </div>
