@@ -1,16 +1,15 @@
 <?php
 /**
- * @brief       GD Dealer Manager — Front Navigation Extension
- * @package     IPS Community Suite
- * @subpackage  GD Dealer Manager
- * @since       16 Apr 2026
+ * @brief  GD Dealer Manager — FrontNavigation extension
  *
- * Adds a "Dealer Dashboard" link to the user dropdown menu for
- * members in the configured Dealers group.
+ * Adds an optional menu item that links to the Dealer Dashboard.
+ * Visible only to members who are active dealers.
  */
 
 namespace IPS\gddealer\extensions\core\FrontNavigation;
 
+use IPS\Http\Url;
+use IPS\Member;
 use function defined;
 
 if ( !defined( '\IPS\SUITE_UNIQUE_KEY' ) )
@@ -21,40 +20,49 @@ if ( !defined( '\IPS\SUITE_UNIQUE_KEY' ) )
 
 class DealerNav extends \IPS\core\FrontNavigation\FrontNavigationAbstract
 {
-	public static function configuration(): array
+	/**
+	 * The label that appears in the AdminCP "Create menu item" type dropdown.
+	 */
+	public static function typeTitle(): string
+	{
+		return Member::loggedIn()->language()->addToStack( 'gddealer_nav_dashboard' );
+	}
+
+	/**
+	 * Configuration form for this menu type. We have no custom config —
+	 * return empty defaults so the form has something to render.
+	 */
+	public static function configuration( array $existingConfiguration, ?int $id = NULL ): array
 	{
 		return [];
 	}
 
-	public static function title(): string
+	/**
+	 * Display label of the rendered menu item.
+	 */
+	public function title(): string
 	{
-		return \IPS\Member::loggedIn()->language()->addToStack( 'gddealer_nav_dashboard' );
+		return Member::loggedIn()->language()->addToStack( 'gddealer_nav_dashboard' );
 	}
 
-	public static function link(): ?\IPS\Http\Url
+	/**
+	 * URL the menu item links to.
+	 */
+	public function link(): Url|string|null
 	{
-		return \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dashboard', 'front', 'dealers_dashboard' );
+		return Url::internal( 'app=gddealer&module=dealers&controller=dashboard', 'front', 'dealers_dashboard' );
 	}
 
-	public static function showLink(): bool
+	/**
+	 * Whether this menu item should appear "active" on the current page.
+	 */
+	public function active(): bool
 	{
-		$member = \IPS\Member::loggedIn();
-		if ( !$member->member_id )
-		{
-			return false;
-		}
-
-		if ( \IPS\gddealer\Dealer\Dealer::isDealerMember( $member ) )
-		{
-			return true;
-		}
-
-		/* Fallback — check if member has a row in gd_dealer_feed_config */
 		try
 		{
-			$count = (int) \IPS\Db::i()->select( 'COUNT(*)', 'gd_dealer_feed_config',
-				[ 'dealer_id=? AND active=?', (int) $member->member_id, 1 ] )->first();
-			return $count > 0;
+			return \IPS\Dispatcher::hasInstance()
+				&& \IPS\Dispatcher::i()->application
+				&& \IPS\Dispatcher::i()->application->directory === 'gddealer';
 		}
 		catch ( \Exception )
 		{
@@ -62,13 +70,39 @@ class DealerNav extends \IPS\core\FrontNavigation\FrontNavigationAbstract
 		}
 	}
 
-	public static function permissionCheck( \IPS\Member $member ): bool
+	/**
+	 * Visibility rule. IPS calls this per-request to decide whether to
+	 * render the menu item for the current member. Hide it for members
+	 * who aren't dealers.
+	 */
+	public function canView(): bool
 	{
-		return static::showLink();
-	}
+		$member = Member::loggedIn();
+		if ( !$member->member_id )
+		{
+			return false;
+		}
 
-	public function children( bool $noStore = false ): ?array
-	{
-		return null;
+		try
+		{
+			if ( class_exists( '\\IPS\\gddealer\\Dealer\\Dealer' )
+				&& \IPS\gddealer\Dealer\Dealer::isDealerMember( $member ) )
+			{
+				return true;
+			}
+		}
+		catch ( \Exception ) {}
+
+		try
+		{
+			$count = (int) \IPS\Db::i()->select( 'COUNT(*)', 'gd_dealer_feed_config',
+				[ 'dealer_id=? AND active=?', (int) $member->member_id, 1 ]
+			)->first();
+			return $count > 0;
+		}
+		catch ( \Exception )
+		{
+			return false;
+		}
 	}
 }
