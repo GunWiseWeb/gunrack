@@ -234,6 +234,54 @@ class _Dealer extends \IPS\Patterns\ActiveRecord
 		return !empty( array_intersect( $groupIds, $others ) );
 	}
 
+	/**
+	 * Fetch the active subscription tier for a member's dealer record.
+	 * Returns 'basic' if no active dealer record is found. Looks up
+	 * gd_dealer_feed_config by dealer_id (which equals member_id for
+	 * the primary contact account).
+	 */
+	public static function getTier( \IPS\Member $member ): string
+	{
+		if ( !$member->member_id )
+		{
+			return 'basic';
+		}
+
+		try
+		{
+			$tier = \IPS\Db::i()->select( 'subscription_tier', 'gd_dealer_feed_config',
+				[ 'dealer_id=? AND active=?', (int) $member->member_id, 1 ]
+			)->first();
+			return (string) ( $tier ?: 'basic' );
+		}
+		catch ( \Exception )
+		{
+			return 'basic';
+		}
+	}
+
+	/**
+	 * Whether a member may access the support ticket system.
+	 * Available to pro, enterprise, and founding tiers only.
+	 */
+	public static function canAccessSupport( \IPS\Member $member ): bool
+	{
+		if ( !$member->member_id )
+		{
+			return false;
+		}
+		return in_array( static::getTier( $member ), [ 'pro', 'enterprise', 'founding' ], true );
+	}
+
+	/**
+	 * Default ticket priority for a member based on tier.
+	 * Enterprise defaults to 'high', everyone else to 'normal'.
+	 */
+	public static function defaultTicketPriority( \IPS\Member $member ): string
+	{
+		return static::getTier( $member ) === 'enterprise' ? 'high' : 'normal';
+	}
+
 	public function url(): \IPS\Http\Url
 	{
 		return \IPS\Http\Url::internal(
