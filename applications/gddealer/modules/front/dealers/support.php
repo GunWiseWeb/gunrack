@@ -104,6 +104,15 @@ class _support extends \IPS\Dispatcher\Controller
 				$createdTs = strtotime( (string) $t['created_at'] );
 				$updatedTs = strtotime( (string) $t['updated_at'] );
 
+				$iconMap = [
+					'open'             => [ 'glyph' => '!', 'bg' => '#dbeafe', 'color' => '#1e40af' ],
+					'pending_staff'    => [ 'glyph' => '!', 'bg' => '#dbeafe', 'color' => '#1e40af' ],
+					'pending_customer' => [ 'glyph' => '!', 'bg' => '#fef3c7', 'color' => '#854d0e' ],
+					'resolved'         => [ 'glyph' => "\xE2\x9C\x93", 'bg' => '#dcfce7', 'color' => '#166534' ],
+					'closed'           => [ 'glyph' => "\xE2\x9C\x93", 'bg' => '#f1f5f9', 'color' => '#64748b' ],
+				];
+				$icon = $iconMap[ (string) $t['status'] ] ?? [ 'glyph' => "\xE2\x80\xA2", 'bg' => '#f1f5f9', 'color' => '#64748b' ];
+
 				$tickets[] = [
 					'id'                  => (int) $t['id'],
 					'subject'             => (string) $t['subject'],
@@ -123,6 +132,9 @@ class _support extends \IPS\Dispatcher\Controller
 						'app=gddealer&module=dealers&controller=support&do=view&id=' . (int) $t['id']
 					),
 					'needs_attention'     => ( (string) $t['status'] ) === 'pending_customer',
+					'icon_glyph'          => $icon['glyph'],
+					'icon_bg'             => $icon['bg'],
+					'icon_color'          => $icon['color'],
 				];
 			}
 		}

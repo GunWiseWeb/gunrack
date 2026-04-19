@@ -3185,31 +3185,29 @@ $gddealerTemplates[] = [
 	<a href="{$subNav['new_url']}" style="display:inline-block;padding:10px 20px;background:#16a34a;color:#fff;font-size:13px;font-weight:500;border-radius:8px;text-decoration:none">Open a new ticket</a>
 </div>
 {{else}}
-<div style="display:flex;flex-direction:column;gap:10px">
+<div style="background:#fff;border:0.5px solid #e5e7eb;border-radius:12px;overflow:hidden">
+	<div style="display:grid;grid-template-columns:52px 1fr 110px 110px 140px;gap:14px;align-items:center;padding:12px 18px;background:#1e3a5f;color:#fff">
+		<div></div>
+		<div style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;font-weight:600">Subject</div>
+		<div style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;font-weight:600">Status</div>
+		<div style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;font-weight:600">Priority</div>
+		<div style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;font-weight:600">Updated</div>
+	</div>
 	{{foreach $tickets as $t}}
-	<a href="{$t['view_url']}" style="display:block;text-decoration:none;color:inherit;background:#fff;border:0.5px solid #e5e7eb;border-radius:12px;padding:18px 22px;{{if $t['needs_attention']}}border-left:3px solid #f59e0b{{endif}}">
-		<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:10px">
-			<div style="flex:1;min-width:0">
-				<div style="font-size:15px;font-weight:500;color:#111827;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{$t['subject']}</div>
-				<div style="font-size:12px;color:#64748b">
-					{{if $t['department_name']}}{$t['department_name']} &middot; {{endif}}Opened {$t['created_at_short']}
-				</div>
-			</div>
-			<div style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end">
-				<span style="padding:3px 10px;border-radius:12px;font-size:11px;font-weight:500;background:{$t['status_bg']};color:{$t['status_color']};white-space:nowrap">{$t['status_label']}</span>
-				{{if $t['priority'] !== 'normal'}}
-				<span style="padding:3px 10px;border-radius:12px;font-size:11px;font-weight:500;background:{$t['priority_bg']};color:{$t['priority_color']};white-space:nowrap">{$t['priority_label']}</span>
-				{{endif}}
-			</div>
+	<a href="{$t['view_url']}" style="display:grid;grid-template-columns:52px 1fr 110px 110px 140px;gap:14px;align-items:center;padding:14px 18px;text-decoration:none;color:inherit;border-bottom:0.5px solid #f1f5f9;{{if $t['needs_attention']}}border-left:3px solid #f59e0b;padding-left:15px{{endif}}">
+		<div style="width:36px;height:36px;background:{$t['icon_bg']};border-radius:10px;display:flex;align-items:center;justify-content:center;color:{$t['icon_color']};font-weight:600;font-size:15px">{$t['icon_glyph']}</div>
+		<div style="min-width:0">
+			<div style="font-size:14px;font-weight:500;color:#111827;margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{$t['subject']}</div>
+			<div style="font-size:12px;color:#94a3b8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{if $t['department_name']}}{$t['department_name']} &middot; {{endif}}#{$t['id']}</div>
 		</div>
-		<div style="display:flex;align-items:center;gap:8px;font-size:12px;color:#94a3b8;padding-top:10px;border-top:0.5px solid #f1f5f9">
-			<span>Updated {$t['updated_at_relative']}</span>
+		<div><span style="display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:500;background:{$t['status_bg']};color:{$t['status_color']};white-space:nowrap">{$t['status_label']}</span></div>
+		<div>{{if $t['priority'] !== 'normal'}}<span style="display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:500;background:{$t['priority_bg']};color:{$t['priority_color']};white-space:nowrap">{$t['priority_label']}</span>{{else}}<span style="font-size:12px;color:#94a3b8">Normal</span>{{endif}}</div>
+		<div style="font-size:12px;color:#64748b">
+			<div>{$t['updated_at_relative']}</div>
 			{{if $t['last_reply_role'] === 'admin'}}
-			<span>&middot;</span>
-			<span style="color:#1e40af">Staff last replied</span>
+			<div style="font-size:11px;color:#1e40af;font-weight:500;margin-top:2px">Staff replied</div>
 			{{elseif $t['last_reply_role'] === 'dealer'}}
-			<span>&middot;</span>
-			<span>You last replied</span>
+			<div style="font-size:11px;color:#94a3b8;margin-top:2px">You replied</div>
 			{{endif}}
 		</div>
 	</a>
