@@ -100,7 +100,7 @@ class _unmatched extends \IPS\Dispatcher\Controller
 
 	/**
 	 * Add an unmatched UPC to the master catalog with placeholder values.
-	 * Admin can then open gdcatalog to flesh out the details.
+	 * Admin can then open the catalog to flesh out the details.
 	 */
 	protected function addToCatalog()
 	{

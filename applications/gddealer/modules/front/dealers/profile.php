@@ -511,47 +511,19 @@ class _profile extends \IPS\Dispatcher\Controller
 
 		try
 		{
-			$existing = (int) \IPS\Db::i()->select( 'id', 'gd_dealer_ratings',
-				[ 'dealer_id=? AND member_id=?', $dealerId, (int) $member->member_id ] )->first();
-		}
-		catch ( \Exception )
-		{
-			$existing = 0;
-		}
-
-		try
-		{
-			if ( $existing > 0 )
-			{
-				\IPS\Db::i()->update( 'gd_dealer_ratings', [
-					'rating_pricing'  => $pricing,
-					'rating_shipping' => $shipping,
-					'rating_service'  => $service,
-					'review_body'     => $body !== '' ? $body : null,
-				], [ 'id=?', $existing ] );
-			}
-			else
-			{
-				\IPS\Db::i()->insert( 'gd_dealer_ratings', [
-					'dealer_id'       => $dealerId,
-					'member_id'       => (int) $member->member_id,
-					'rating_pricing'  => $pricing,
-					'rating_shipping' => $shipping,
-					'rating_service'  => $service,
-					'review_body'     => $body !== '' ? $body : null,
-					'created_at'      => date( 'Y-m-d H:i:s' ),
-					'status'          => 'approved',
-					'dispute_status'  => 'none',
-				]);
-			}
+			\IPS\Db::i()->insert( 'gd_dealer_ratings', [
+				'dealer_id'       => $dealerId,
+				'member_id'       => (int) $member->member_id,
+				'rating_pricing'  => $pricing,
+				'rating_shipping' => $shipping,
+				'rating_service'  => $service,
+				'review_body'     => $body !== '' ? $body : null,
+				'created_at'      => date( 'Y-m-d H:i:s' ),
+				'status'          => 'approved',
+				'dispute_status'  => 'none',
+			]);
 		}
 		catch ( \Exception ) {}
-
-		/* Email to the dealer — own try/catch so a template failure cannot
-		   swallow the inline notification below. */
-		$isUpdate       = ( $existing > 0 );
-		$emailTemplate  = $isUpdate ? 'updatedDealerReview' : 'newDealerReview';
-		$notificationKey = $isUpdate ? 'updated_dealer_review' : 'new_dealer_review';
 
 		$dealerMember = NULL;
 		try
@@ -559,7 +531,7 @@ class _profile extends \IPS\Dispatcher\Controller
 			$dealerMember = \IPS\Member::load( $dealerId );
 			if ( $dealerMember->member_id )
 			{
-				\IPS\Email::buildFromTemplate( 'gddealer', $emailTemplate, [
+				\IPS\Email::buildFromTemplate( 'gddealer', 'newDealerReview', [
 					'name'          => $dealerMember->name,
 					'reviewer_name' => (string) $member->name,
 					'dealer_name'   => (string) $dealerRow['dealer_name'],
@@ -580,7 +552,7 @@ class _profile extends \IPS\Dispatcher\Controller
 			{
 				$notification = new \IPS\Notification(
 					\IPS\Application::load( 'gddealer' ),
-					$notificationKey,
+					'new_dealer_review',
 					$dealerMember,
 					[ $dealerMember ],
 					[
@@ -788,6 +760,57 @@ class _profile extends \IPS\Dispatcher\Controller
 					'rating_service'  => $service,
 					'review_body'     => $body !== '' ? $body : null,
 				], [ 'id=? AND member_id=?', $id, (int) $member->member_id ] );
+			}
+			catch ( \Exception ) {}
+
+			$dealerId = (int) $review['dealer_id'];
+			try
+			{
+				$dealerRow = \IPS\Db::i()->select( '*', 'gd_dealer_feed_config',
+					[ 'dealer_id=?', $dealerId ] )->first();
+			}
+			catch ( \Exception )
+			{
+				$dealerRow = NULL;
+			}
+
+			$dealerMember = NULL;
+			try
+			{
+				$dealerMember = \IPS\Member::load( $dealerId );
+				if ( $dealerMember->member_id && $dealerRow )
+				{
+					\IPS\Email::buildFromTemplate( 'gddealer', 'updatedDealerReview', [
+						'name'          => $dealerMember->name,
+						'reviewer_name' => (string) $member->name,
+						'dealer_name'   => (string) $dealerRow['dealer_name'],
+						'review_url'    => (string) \IPS\Http\Url::internal(
+							'app=gddealer&module=dealers&controller=dashboard&do=reviews'
+						),
+					], \IPS\Email::TYPE_TRANSACTIONAL )->send( $dealerMember );
+				}
+			}
+			catch ( \Exception ) {}
+
+			try
+			{
+				$dealerMember = $dealerMember ?? \IPS\Member::load( $dealerId );
+				if ( $dealerMember && $dealerMember->member_id && $dealerRow )
+				{
+					$notification = new \IPS\Notification(
+						\IPS\Application::load( 'gddealer' ),
+						'updated_dealer_review',
+						$dealerMember,
+						[ $dealerMember ],
+						[
+							'reviewer_id'   => (int) $member->member_id,
+							'reviewer_name' => (string) $member->name,
+							'dealer_name'   => (string) $dealerRow['dealer_name'],
+						]
+					);
+					$notification->recipients->attach( $dealerMember );
+					$notification->send();
+				}
 			}
 			catch ( \Exception ) {}
 
