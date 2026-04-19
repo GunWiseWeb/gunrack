@@ -89,6 +89,15 @@ class DealerNotifications extends NotificationsAbstract
 				'default'           => [ 'inline' ],
 				'disabled'          => [],
 			],
+			'dispute_customer_responded' => [
+				'type'              => 'standard',
+				'notificationTypes' => [ 'dispute_customer_responded' ],
+				'title'             => 'gddealer_notif_dispute_customer_responded',
+				'showTitle'         => true,
+				'description'       => 'gddealer_notif_dispute_customer_responded_desc',
+				'default'           => [ 'inline', 'email' ],
+				'disabled'          => [],
+			],
 		];
 	}
 
@@ -169,6 +178,22 @@ class DealerNotifications extends NotificationsAbstract
 			'title'   => ( $extra['dealer_name'] ?? 'A dealer' ) . ' responded to your review',
 			'url'     => \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=profile&dealer_slug=' . urlencode( $slug ) ),
 			'content' => 'The dealer has posted a public response to your review. Click to view it.',
+			'author'  => NULL,
+		];
+	}
+
+	public function parse_dispute_customer_responded( Inline $notification, bool $htmlEscape = TRUE ): array
+	{
+		$extra = $notification->extra ?: [];
+		$slug  = (string) ( $extra['dealer_slug'] ?? '' );
+		$id    = (int) ( $extra['review_id'] ?? 0 );
+		$url   = $id > 0
+			? \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=profile&dealer_slug=' . urlencode( $slug ) . '&dispute=' . $id )
+			: \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dashboard&do=reviews' );
+		return [
+			'title'   => ( $extra['reviewer_name'] ?? 'A customer' ) . ' responded to your dispute',
+			'url'     => $url,
+			'content' => 'The customer has submitted their evidence. An admin will review and decide.',
 			'author'  => NULL,
 		];
 	}

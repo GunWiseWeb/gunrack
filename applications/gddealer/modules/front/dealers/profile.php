@@ -701,6 +701,47 @@ class _profile extends \IPS\Dispatcher\Controller
 		}
 		catch ( \Exception ) {}
 
+		/* Email + IPS notification to the dealer so they know the customer responded. */
+		$dealerMember = NULL;
+		try
+		{
+			$dealerMember = \IPS\Member::load( $dealerId );
+			if ( $dealerMember->member_id )
+			{
+				\IPS\Email::buildFromTemplate( 'gddealer', 'disputeCustomerResponded', [
+					'name'          => (string) $dealerMember->name,
+					'reviewer_name' => (string) $member->name,
+					'dealer_name'   => (string) ( $dealerRow['dealer_name'] ?? '' ),
+					'review_url'    => (string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dashboard&do=reviews' ),
+				], \IPS\Email::TYPE_TRANSACTIONAL )->send( $dealerMember );
+			}
+		}
+		catch ( \Exception ) {}
+
+		try
+		{
+			$dealerMember = $dealerMember ?? \IPS\Member::load( $dealerId );
+			if ( $dealerMember && $dealerMember->member_id )
+			{
+				$notification = new \IPS\Notification(
+					\IPS\Application::load( 'gddealer' ),
+					'dispute_customer_responded',
+					$dealerMember,
+					[ $dealerMember ],
+					[
+						'reviewer_id'   => (int) $member->member_id,
+						'reviewer_name' => (string) $member->name,
+						'dealer_name'   => (string) ( $dealerRow['dealer_name'] ?? '' ),
+						'dealer_slug'   => (string) $slug,
+						'review_id'     => (int) $id,
+					]
+				);
+				$notification->recipients->attach( $dealerMember );
+				$notification->send();
+			}
+		}
+		catch ( \Exception ) {}
+
 		\IPS\Output::i()->redirect( $profileUrl, 'gddealer_profile_dispute_response_saved' );
 	}
 

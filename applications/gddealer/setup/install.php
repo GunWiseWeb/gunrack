@@ -2529,6 +2529,7 @@ $notificationDefaults = [
 	'dispute_admin_review' => [ 'default' => 'inline,email', 'disabled' => '' ],
 	'dispute_upheld'       => [ 'default' => 'inline,email', 'disabled' => '' ],
 	'dispute_dismissed'    => [ 'default' => 'inline,email', 'disabled' => '' ],
+	'dispute_customer_responded' => [ 'default' => 'inline,email', 'disabled' => '' ],
 ];
 
 foreach ( $notificationDefaults as $key => $data )
