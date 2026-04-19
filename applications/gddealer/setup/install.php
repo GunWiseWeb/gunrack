@@ -1849,9 +1849,26 @@ TEMPLATE_EOT,
 			{{endif}}
 
 			{{if $r['dealer_response']}}
-				<div style="background:#f0f7ff;border-left:3px solid #2563eb;padding:12px 16px;border-radius:0 6px 6px 0;margin-top:8px">
-					<div style="font-size:0.8em;color:#2563eb;font-weight:700;margin-bottom:4px">Your Response &mdash; {$r['response_at']}</div>
-					<p style="margin:0;font-size:0.9em">{$r['dealer_response']}</p>
+				<div data-resp="{$r['id']}" style="background:#f0f7ff;border-left:3px solid #2563eb;padding:12px 16px;border-radius:0 6px 6px 0;margin-top:8px">
+					<div class="gd-resp-head" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;gap:8px;flex-wrap:wrap">
+						<div style="font-size:0.8em;color:#2563eb;font-weight:700">Your response &mdash; {$r['response_at']}</div>
+						<div class="gd-resp-actions" style="display:flex;gap:8px;align-items:center">
+							<a href="#" onclick="var w=this.closest('div[data-resp]');w.querySelector('.gd-resp-text').style.display='none';w.querySelector('.gd-resp-actions').style.display='none';w.querySelector('.gd-resp-edit').style.display='block';return false" style="font-size:0.75em;color:#2563eb;font-weight:600;text-decoration:none">Edit</a>
+							<form method="post" action="{$r['delete_response_url']}" style="display:inline;margin:0" onsubmit="return confirm('Delete your response?')">
+								<input type="hidden" name="csrfKey" value="{$csrfKey}">
+								<button type="submit" style="background:none;border:none;padding:0;font-size:0.75em;color:#dc2626;font-weight:600;cursor:pointer">Delete</button>
+							</form>
+						</div>
+					</div>
+					<p class="gd-resp-text" style="margin:0;font-size:0.9em">{$r['dealer_response']}</p>
+					<form class="gd-resp-edit" method="post" action="{$r['respond_url']}" style="display:none;margin-top:8px">
+						<input type="hidden" name="csrfKey" value="{$csrfKey}">
+						<textarea name="response" rows="3" required style="width:100%;border:1px solid #d1d5db;border-radius:4px;padding:8px;font-size:0.9em;box-sizing:border-box">{$r['dealer_response']}</textarea>
+						<div style="display:flex;gap:6px;margin-top:8px">
+							<button type="submit" class="ipsButton ipsButton--primary ipsButton--small">Save changes</button>
+							<button type="button" onclick="var w=this.closest('div[data-resp]');w.querySelector('.gd-resp-text').style.display='block';w.querySelector('.gd-resp-actions').style.display='flex';w.querySelector('.gd-resp-edit').style.display='none';return false" class="ipsButton ipsButton--normal ipsButton--small">Cancel</button>
+						</div>
+					</form>
 				</div>
 			{{endif}}
 

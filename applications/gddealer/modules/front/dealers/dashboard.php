@@ -923,6 +923,14 @@ class _dashboard extends \IPS\Dispatcher\Controller
 			) as $r )
 			{
 				$reviewAvg = ( (int) $r['rating_pricing'] + (int) $r['rating_shipping'] + (int) $r['rating_service'] ) / 3;
+
+				/* Timestamps stored as server-local Y-m-d H:i:s DATETIME.
+				   strtotime() returns a Unix timestamp; \IPS\DateTime::ts()
+				   then renders it in the viewing member's timezone. */
+				$createdTs  = $r['created_at'] ? strtotime( (string) $r['created_at'] ) : 0;
+				$responseTs = $r['response_at'] ? strtotime( (string) $r['response_at'] ) : 0;
+				$deadlineTs = $r['dispute_deadline'] ? strtotime( (string) $r['dispute_deadline'] ) : 0;
+
 				$rows[] = [
 					'id'               => (int) $r['id'],
 					'member_id'        => (int) $r['member_id'],
@@ -931,15 +939,24 @@ class _dashboard extends \IPS\Dispatcher\Controller
 					'rating_service'   => (int) $r['rating_service'],
 					'review_body'      => (string) ( $r['review_body'] ?? '' ),
 					'dealer_response'  => (string) ( $r['dealer_response'] ?? '' ),
-					'response_at'      => (string) ( $r['response_at'] ?? '' ),
-					'created_at'       => (string) $r['created_at'],
+					'response_at'      => $responseTs
+						? (string) \IPS\DateTime::ts( $responseTs )->localeDate() . ' · ' . (string) \IPS\DateTime::ts( $responseTs )->localeTime()
+						: '',
+					'created_at'       => $createdTs
+						? (string) \IPS\DateTime::ts( $createdTs )->localeDate()
+						: '',
 					'dispute_status'   => (string) ( $r['dispute_status'] ?? 'none' ),
 					'dispute_outcome'  => (string) ( $r['dispute_outcome'] ?? '' ),
-					'dispute_deadline' => (string) ( $r['dispute_deadline'] ?? '' ),
+					'dispute_deadline' => $deadlineTs
+						? (string) \IPS\DateTime::ts( $deadlineTs )->localeDate()
+						: '',
 					'avg_color'        => self::ratingColor( (float) $reviewAvg ),
 					'avg_overall'      => round( $reviewAvg, 1 ),
 					'respond_url'      => (string) \IPS\Http\Url::internal(
 						'app=gddealer&module=dealers&controller=dashboard&do=respond&id=' . (int) $r['id']
+					)->csrf(),
+					'delete_response_url' => (string) \IPS\Http\Url::internal(
+						'app=gddealer&module=dealers&controller=dashboard&do=deleteResponse&id=' . (int) $r['id']
 					)->csrf(),
 					'dispute_url'      => (string) \IPS\Http\Url::internal(
 						'app=gddealer&module=dealers&controller=dashboard&do=dispute&id=' . (int) $r['id']
@@ -1119,6 +1136,29 @@ class _dashboard extends \IPS\Dispatcher\Controller
 		\IPS\Output::i()->redirect(
 			\IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dashboard&do=reviews' ),
 			'gddealer_front_response_saved'
+		);
+	}
+
+	/** Remove a dealer response. Dealer-scoped; CSRF-protected. */
+	protected function deleteResponse(): void
+	{
+		\IPS\Session::i()->csrfCheck();
+		$id = (int) ( \IPS\Request::i()->id ?? 0 );
+
+		if ( $id > 0 )
+		{
+			try
+			{
+				\IPS\Db::i()->update( 'gd_dealer_ratings',
+					[ 'dealer_response' => NULL, 'response_at' => NULL ],
+					[ 'id=? AND dealer_id=?', $id, (int) $this->dealer->dealer_id ]
+				);
+			}
+			catch ( \Exception ) {}
+		}
+
+		\IPS\Output::i()->redirect(
+			\IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dashboard&do=reviews' )
 		);
 	}
 

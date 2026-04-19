@@ -236,8 +236,10 @@ class _profile extends \IPS\Dispatcher\Controller
 					catch ( \Exception ) {}
 				}
 
-				$createdAt  = (string) $r['created_at'];
-				$responseAt = (string) ( $r['response_at'] ?? '' );
+				$createdAt   = (string) $r['created_at'];
+				$responseAt  = (string) ( $r['response_at'] ?? '' );
+				$createdTs   = $createdAt !== '' ? strtotime( $createdAt ) : 0;
+				$responseTs  = $responseAt !== '' ? strtotime( $responseAt ) : 0;
 
 				$reviewMemberId = (int) ( $r['member_id'] ?? 0 );
 				$isOwnReview    = $member->member_id && $reviewMemberId === (int) $member->member_id;
@@ -269,8 +271,8 @@ class _profile extends \IPS\Dispatcher\Controller
 					'dealer_response'      => (string) ( $r['dealer_response'] ?? '' ),
 					'dealer_name'          => (string) ( $dealerRow['dealer_name'] ?? '' ),
 					'created_at'           => $createdAt,
-					'created_at_formatted' => $createdAt ? date( 'M j, Y', strtotime( $createdAt ) ) : '',
-					'response_at'          => $responseAt ? date( 'M j, Y', strtotime( $responseAt ) ) : '',
+					'created_at_formatted' => $createdTs ? (string) \IPS\DateTime::ts( $createdTs )->localeDate() : '',
+					'response_at'          => $responseTs ? (string) \IPS\DateTime::ts( $responseTs )->localeDate() : '',
 					'dispute_status'       => $rowDisputeStatus,
 					'dispute_outcome'      => (string) ( $r['dispute_outcome'] ?? '' ),
 					'avg_score'            => $avg,
