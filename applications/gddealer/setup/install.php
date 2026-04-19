@@ -1964,7 +1964,7 @@ TEMPLATE_EOT,
 		'location'      => 'front',
 		'group'         => 'dealers',
 		'template_name' => 'dealerProfile',
-		'template_data' => '$dealer, $stats, $reviews, $canRate, $alreadyRated, $loginRequired, $rateUrl, $csrfKey, $loginUrl, $customerDispute, $guidelinesUrl',
+		'template_data' => '$dealer, $stats, $reviews, $canRate, $alreadyRated, $loginRequired, $rateUrl, $csrfKey, $loginUrl, $customerDispute, $guidelinesUrl, $reviewBodyEditorHtml',
 		'template_content' => <<<'TEMPLATE_EOT'
 <style>
 #ipsLayout_mainArea { max-width: 100% !important; }
@@ -2169,7 +2169,7 @@ TEMPLATE_EOT,
 								</select>
 							</div>
 						</div>
-						<textarea name="review_body" rows="4" class="ipsInput ipsInput--text" style="width:100%;box-sizing:border-box;margin-bottom:12px;border:1px solid var(--i-border-color,#ccc);border-radius:4px;padding:8px;font-size:0.9em" placeholder="Share your experience (optional but helpful)..."></textarea>
+						<div style="margin-bottom:12px">{$reviewBodyEditorHtml|raw}</div>
 						<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
 							<span style="font-size:0.8em;color:#666">By submitting you agree to our <a href="{$guidelinesUrl}" style="color:#2563eb">review guidelines</a>.</span>
 							<button type="submit" class="ipsButton ipsButton--primary">Submit Review</button>
@@ -2343,7 +2343,7 @@ TEMPLATE_EOT,
 
 			<div style="margin-bottom:24px">
 				<label style="display:block;font-size:12px;font-weight:500;color:#374151;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em">Your review</label>
-				<textarea name="review_body" rows="6" style="width:100%;box-sizing:border-box;border:1px solid #d1d5db;border-radius:8px;padding:12px;font-size:14px;line-height:1.6;color:#111827;background:#fff;font-family:inherit;resize:vertical">{$review['review_body']}</textarea>
+				{$review['body_editor_html']|raw}
 				<p style="margin:6px 0 0;font-size:12px;color:#9ca3af">Be honest and constructive. Dealers may respond publicly.</p>
 			</div>
 

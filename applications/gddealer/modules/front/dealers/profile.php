@@ -307,6 +307,37 @@ class _profile extends \IPS\Dispatcher\Controller
 		$canRate       = $isActive && $member->member_id && !$alreadyRated && !$isOwnDealer;
 		$loginRequired = !$member->member_id;
 
+		/* Rich-text editor for the "Leave a Review" form. Only built when
+		   the viewer is actually allowed to rate — saves render cost for
+		   logged-out / already-rated visitors. attachIds=[0,1] is a
+		   placeholder; File::claimAttachments rewrites to the real review
+		   id after insert. autoSaveKey scoped per-member so each viewer
+		   has their own draft slot. */
+		$reviewBodyEditorHtml = '';
+		if ( $canRate )
+		{
+			try
+			{
+				$reviewEditor = new \IPS\Helpers\Form\Editor(
+					'review_body',
+					'',
+					FALSE,
+					[
+						'app'         => 'gddealer',
+						'key'         => 'Responses',
+						'autoSaveKey' => 'gddealer-review-new-' . (int) $member->member_id,
+						'attachIds'   => [ 0, 1 ],
+					],
+					NULL,
+					NULL,
+					NULL,
+					'editor_review_new_' . (int) $member->member_id
+				);
+				$reviewBodyEditorHtml = (string) $reviewEditor;
+			}
+			catch ( \Exception ) {}
+		}
+
 		/* If this visit is in response to a dispute notification ("You have
 		   been contested"), build the banner data and customer response
 		   form target. */
@@ -438,7 +469,7 @@ class _profile extends \IPS\Dispatcher\Controller
 
 		\IPS\Output::i()->title  = $dealer['dealer_name'];
 		\IPS\Output::i()->output = $this->themeVars() . \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )
-			->dealerProfile( $dealer, $stats, $reviews, $canRate, $alreadyRated, $loginRequired, $rateUrl, $csrfKey, $loginUrl, $customerDispute, $guidelinesUrl );
+			->dealerProfile( $dealer, $stats, $reviews, $canRate, $alreadyRated, $loginRequired, $rateUrl, $csrfKey, $loginUrl, $customerDispute, $guidelinesUrl, $reviewBodyEditorHtml );
 	}
 
 	/**
@@ -509,7 +540,7 @@ class _profile extends \IPS\Dispatcher\Controller
 		$pricing  = max( 1, min( 5, (int) ( \IPS\Request::i()->rating_pricing ?? 0 ) ) );
 		$shipping = max( 1, min( 5, (int) ( \IPS\Request::i()->rating_shipping ?? 0 ) ) );
 		$service  = max( 1, min( 5, (int) ( \IPS\Request::i()->rating_service ?? 0 ) ) );
-		$body     = trim( (string) ( \IPS\Request::i()->review_body ?? '' ) );
+		$bodyRaw  = (string) ( \IPS\Request::i()->review_body ?? '' );
 
 		$profileUrl = \IPS\Http\Url::internal(
 			'app=gddealer&module=dealers&controller=profile&dealer_slug=' . urlencode( $slug )
@@ -521,6 +552,9 @@ class _profile extends \IPS\Dispatcher\Controller
 			return;
 		}
 
+		/* Insert without body first so we have a review id for the
+		   attachIds pair, then parse + claim attachments + update. */
+		$newReviewId = 0;
 		try
 		{
 			\IPS\Db::i()->insert( 'gd_dealer_ratings', [
@@ -529,13 +563,54 @@ class _profile extends \IPS\Dispatcher\Controller
 				'rating_pricing'  => $pricing,
 				'rating_shipping' => $shipping,
 				'rating_service'  => $service,
-				'review_body'     => $body !== '' ? $body : null,
+				'review_body'     => null,
 				'created_at'      => date( 'Y-m-d H:i:s' ),
 				'status'          => 'approved',
 				'dispute_status'  => 'none',
 			]);
+			$newReviewId = (int) \IPS\Db::i()->insertId();
 		}
 		catch ( \Exception ) {}
+
+		$body = '';
+		if ( trim( $bodyRaw ) !== '' && $newReviewId > 0 )
+		{
+			try
+			{
+				$body = \IPS\Text\Parser::parseStatic(
+					$bodyRaw,
+					[ $newReviewId, 1 ],
+					\IPS\Member::loggedIn(),
+					'gddealer_Responses'
+				);
+			}
+			catch ( \Exception )
+			{
+				$body = $bodyRaw;
+			}
+		}
+
+		if ( $newReviewId > 0 && $body !== '' )
+		{
+			try
+			{
+				\IPS\Db::i()->update( 'gd_dealer_ratings',
+					[ 'review_body' => $body ],
+					[ 'id=?', $newReviewId ]
+				);
+			}
+			catch ( \Exception ) {}
+
+			try
+			{
+				\IPS\File::claimAttachments(
+					'gddealer-review-new-' . (int) $member->member_id,
+					$newReviewId,
+					1
+				);
+			}
+			catch ( \Exception ) {}
+		}
 
 		$dealerMember = NULL;
 		try
@@ -803,7 +878,25 @@ class _profile extends \IPS\Dispatcher\Controller
 			$pricing  = max( 1, min( 5, (int) ( \IPS\Request::i()->rating_pricing  ?? 0 ) ) );
 			$shipping = max( 1, min( 5, (int) ( \IPS\Request::i()->rating_shipping ?? 0 ) ) );
 			$service  = max( 1, min( 5, (int) ( \IPS\Request::i()->rating_service  ?? 0 ) ) );
-			$body     = trim( (string) ( \IPS\Request::i()->review_body ?? '' ) );
+			$bodyRaw  = (string) ( \IPS\Request::i()->review_body ?? '' );
+
+			$body = '';
+			if ( trim( $bodyRaw ) !== '' )
+			{
+				try
+				{
+					$body = \IPS\Text\Parser::parseStatic(
+						$bodyRaw,
+						[ $id, 1 ],
+						\IPS\Member::loggedIn(),
+						'gddealer_Responses'
+					);
+				}
+				catch ( \Exception )
+				{
+					$body = $bodyRaw;
+				}
+			}
 
 			try
 			{
@@ -813,6 +906,16 @@ class _profile extends \IPS\Dispatcher\Controller
 					'rating_service'  => $service,
 					'review_body'     => $body !== '' ? $body : null,
 				], [ 'id=? AND member_id=?', $id, (int) $member->member_id ] );
+			}
+			catch ( \Exception ) {}
+
+			try
+			{
+				\IPS\File::claimAttachments(
+					'gddealer-review-edit-' . (int) $id,
+					(int) $id,
+					1
+				);
 			}
 			catch ( \Exception ) {}
 
@@ -883,12 +986,35 @@ class _profile extends \IPS\Dispatcher\Controller
 		}
 		catch ( \Exception ) {}
 
+		$bodyEditorHtml = '';
+		try
+		{
+			$bodyEditor = new \IPS\Helpers\Form\Editor(
+				'review_body',
+				(string) ( $review['review_body'] ?? '' ),
+				FALSE,
+				[
+					'app'         => 'gddealer',
+					'key'         => 'Responses',
+					'autoSaveKey' => 'gddealer-review-edit-' . (int) $id,
+					'attachIds'   => [ (int) $id, 1 ],
+				],
+				NULL,
+				NULL,
+				NULL,
+				'editor_review_edit_' . (int) $id
+			);
+			$bodyEditorHtml = (string) $bodyEditor;
+		}
+		catch ( \Exception ) {}
+
 		$reviewData = [
 			'id'              => (int) $review['id'],
 			'rating_pricing'  => $pricingNow,
 			'rating_shipping' => $shippingNow,
 			'rating_service'  => $serviceNow,
 			'review_body'     => (string) ( $review['review_body'] ?? '' ),
+			'body_editor_html'=> $bodyEditorHtml,
 			'stars_pricing'   => str_repeat( '★', $pricingNow ) . str_repeat( '☆', 5 - $pricingNow ),
 			'stars_shipping'  => str_repeat( '★', $shippingNow ) . str_repeat( '☆', 5 - $shippingNow ),
 			'stars_service'   => str_repeat( '★', $serviceNow ) . str_repeat( '☆', 5 - $serviceNow ),
