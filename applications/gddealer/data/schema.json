@@ -1146,5 +1146,21 @@
 			"PRIMARY":         { "type": "primary", "name": "PRIMARY", "length": [null], "columns": ["id"] },
 			"uq_dealer_month": { "type": "unique", "name": "uq_dealer_month", "length": [null, null], "columns": ["dealer_id", "month_key"] }
 		}
+	},
+	"gd_dealer_dispute_events": {
+		"name": "gd_dealer_dispute_events",
+		"columns": {
+			"id":         { "name": "id",         "type": "INT",      "unsigned": true, "allow_null": false, "auto_increment": true },
+			"review_id":  { "name": "review_id",  "type": "INT",      "unsigned": true, "allow_null": false },
+			"event_type": { "name": "event_type", "type": "VARCHAR",  "length": 64, "allow_null": false },
+			"actor_id":   { "name": "actor_id",   "type": "BIGINT",   "unsigned": true, "allow_null": true, "default": null },
+			"actor_role": { "name": "actor_role", "type": "VARCHAR",  "length": 16, "allow_null": false, "default": "system" },
+			"note":       { "name": "note",       "type": "TEXT",     "allow_null": true, "default": null },
+			"created_at": { "name": "created_at", "type": "DATETIME", "allow_null": false }
+		},
+		"indexes": {
+			"PRIMARY":   { "type": "primary", "name": "PRIMARY",   "length": [null], "columns": ["id"] },
+			"review_id": { "type": "key",     "name": "review_id", "length": [null], "columns": ["review_id"] }
+		}
 	}
 }

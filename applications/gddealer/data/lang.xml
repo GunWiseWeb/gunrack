@@ -323,6 +323,8 @@
     <word key="gddealer_notif_dispute_customer_responded_desc"><![CDATA[When the customer submits their response/evidence to your dispute]]></word>
     <word key="gddealer_notif_dispute_outcome_reviewer"><![CDATA[Review Dispute Resolved]]></word>
     <word key="gddealer_notif_dispute_outcome_reviewer_desc"><![CDATA[When an admin resolves a dispute on one of your reviews]]></word>
+    <word key="gddealer_notif_dispute_edit_requested"><![CDATA[Admin requested update to your dispute response]]></word>
+    <word key="gddealer_notif_dispute_edit_requested_desc"><![CDATA[When an admin asks you to update your dispute response with more information]]></word>
     <word key="notifications__gddealer_DealerNotifications"><![CDATA[Dealer Notifications]]></word>
     <word key="notifications__gddealer_DealerNotifications_desc"><![CDATA[Notifications related to dealer reviews and disputes]]></word>
     <word key="mailsub__gddealer_notification_new_dealer_review"><![CDATA[New review on your dealer profile]]></word>

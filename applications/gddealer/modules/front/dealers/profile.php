@@ -13,6 +13,7 @@
 namespace IPS\gddealer\modules\front\dealers;
 
 use IPS\gddealer\Attachment\Helper as AttachHelper;
+use IPS\gddealer\Dispute\EventLogger;
 use function defined;
 
 if ( !defined( '\IPS\SUITE_UNIQUE_KEY' ) )
@@ -351,10 +352,12 @@ class _profile extends \IPS\Dispatcher\Controller
 				$deadlineRaw = (string) ( $cd['dispute_deadline'] ?? '' );
 
 				/* Two editors for the customer reply: customer_response
-				   (id2=5) and customer_evidence (id2=6). */
+				   (id2=5) and customer_evidence (id2=6). Pre-fill with
+				   existing values so when the customer revisits after an
+				   admin edit-request, their previous response isn't lost. */
 				$crEditor = new \IPS\Helpers\Form\Editor(
 					'gddealer_customer_response',
-					'',
+					(string) ( $cd['customer_response'] ?? '' ),
 					FALSE,
 					[
 						'app'         => 'gddealer',
@@ -371,7 +374,7 @@ class _profile extends \IPS\Dispatcher\Controller
 
 				$ceEditor = new \IPS\Helpers\Form\Editor(
 					'gddealer_customer_evidence',
-					'',
+					(string) ( $cd['customer_evidence'] ?? '' ),
 					FALSE,
 					[
 						'app'         => 'gddealer',
@@ -415,6 +418,7 @@ class _profile extends \IPS\Dispatcher\Controller
 					'dispute_evidence_attachments'            => $evidenceAtts,
 					'dispute_reason_has_unembedded_images'    => $reasonHasUnembedded,
 					'dispute_evidence_has_unembedded_images'  => $evidenceHasUnembedded,
+					'events'                                  => EventLogger::getEvents( (int) $cd['id'] ),
 				];
 			}
 			catch ( \Exception ) {}
@@ -877,6 +881,8 @@ class _profile extends \IPS\Dispatcher\Controller
 			], [ 'id=?', (int) $review['id'] ] );
 		}
 		catch ( \Exception ) {}
+
+		EventLogger::log( (int) $review['id'], 'customer_responded', 'customer', (int) $member->member_id, NULL );
 
 		/* Claim attachments uploaded via the two customer-side editors. */
 		try

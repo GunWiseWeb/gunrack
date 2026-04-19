@@ -107,6 +107,15 @@ class DealerNotifications extends NotificationsAbstract
 				'default'           => [ 'inline', 'email' ],
 				'disabled'          => [],
 			],
+			'dispute_edit_requested' => [
+				'type'              => 'standard',
+				'notificationTypes' => [ 'dispute_edit_requested' ],
+				'title'             => 'gddealer_notif_dispute_edit_requested',
+				'showTitle'         => true,
+				'description'       => 'gddealer_notif_dispute_edit_requested_desc',
+				'default'           => [ 'inline', 'email' ],
+				'disabled'          => [],
+			],
 		];
 	}
 
@@ -203,6 +212,22 @@ class DealerNotifications extends NotificationsAbstract
 			'title'   => ( $extra['reviewer_name'] ?? 'A customer' ) . ' responded to your dispute',
 			'url'     => $url,
 			'content' => 'The customer has submitted their evidence. An admin will review and decide.',
+			'author'  => NULL,
+		];
+	}
+
+	public function parse_dispute_edit_requested( Inline $notification, bool $htmlEscape = TRUE ): array
+	{
+		$extra = $notification->extra ?: [];
+		$slug  = (string) ( $extra['dealer_slug'] ?? '' );
+		$id    = (int) ( $extra['dispute_id'] ?? 0 );
+		$url   = $id > 0 && $slug !== ''
+			? \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=profile&dealer_slug=' . urlencode( $slug ) . '&dispute=' . $id )
+			: \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dashboard&do=reviews' );
+		return [
+			'title'   => 'Admin requested an update to your dispute response',
+			'url'     => $url,
+			'content' => 'An admin reviewed your response and asked for clarification. Click to update.',
 			'author'  => NULL,
 		];
 	}

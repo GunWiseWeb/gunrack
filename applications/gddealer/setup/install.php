@@ -808,6 +808,23 @@ TEMPLATE_EOT,
 					</details>
 				</div>
 				{{endif}}
+
+				{{if count($r['events']) > 0}}
+				<div style="margin-top:16px;border-top:1px solid #e5e7eb;padding-top:12px">
+					<div style="font-size:11px;color:#6b7280;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px">Dispute history</div>
+					{{foreach $r['events'] as $e}}
+					<div style="display:flex;gap:12px;margin-bottom:10px;font-size:13px;color:#374151">
+						<span style="color:#9ca3af;font-size:12px;flex-shrink:0;width:160px">{$e['when']}</span>
+						<div style="flex:1">
+							<strong style="text-transform:capitalize">{$e['actor_role']}</strong> {$e['verb']}
+							{{if $e['note']}}
+							<div style="font-size:12px;color:#4b5563;margin-top:4px;padding:8px 12px;background:#f9fafb;border-radius:6px;border-left:2px solid #d1d5db">{$e['note']}</div>
+							{{endif}}
+						</div>
+					</div>
+					{{endforeach}}
+				</div>
+				{{endif}}
 			</div>
 
 			{{if $r['dispute_status'] === 'resolved_dealer' || $r['dispute_status'] === 'dismissed'}}
@@ -1991,6 +2008,23 @@ TEMPLATE_EOT,
 				</div>
 			{{endif}}
 
+			{{if count($r['events']) > 0}}
+			<div style="margin-top:14px;border-top:1px solid var(--i-border-color,#e5e7eb);padding-top:12px">
+				<div style="font-size:11px;color:#6b7280;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px">Dispute history</div>
+				{{foreach $r['events'] as $e}}
+				<div style="display:flex;gap:12px;margin-bottom:8px;font-size:13px;color:#374151">
+					<span style="color:#9ca3af;font-size:12px;flex-shrink:0;width:160px">{$e['when']}</span>
+					<div style="flex:1">
+						<strong style="text-transform:capitalize">{$e['actor_role']}</strong> {$e['verb']}
+						{{if $e['note']}}
+						<div style="font-size:12px;color:#4b5563;margin-top:4px;padding:8px 12px;background:#f9fafb;border-radius:6px;border-left:2px solid #d1d5db">{$e['note']}</div>
+						{{endif}}
+					</div>
+				</div>
+				{{endforeach}}
+			</div>
+			{{endif}}
+
 			{{if $r['dispute_status'] === 'none'}}
 				{{if $r['dealer_response'] === ''}}
 				<details style="margin-top:8px">
@@ -2188,6 +2222,23 @@ TEMPLATE_EOT,
 			<div style="margin-bottom:8px">{$customerDispute['evidence_editor_html']|raw}</div>
 			<button type="submit" class="ipsButton ipsButton--primary">Submit My Response</button>
 		</form>
+
+		{{if count($customerDispute['events']) > 0}}
+		<div style="margin-top:18px;border-top:1px solid #fde68a;padding-top:12px">
+			<div style="font-size:11px;color:#78350f;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px">Dispute history</div>
+			{{foreach $customerDispute['events'] as $e}}
+			<div style="display:flex;gap:12px;margin-bottom:8px;font-size:13px;color:#374151">
+				<span style="color:#9ca3af;font-size:12px;flex-shrink:0;width:160px">{$e['when']}</span>
+				<div style="flex:1">
+					<strong style="text-transform:capitalize">{$e['actor_role']}</strong> {$e['verb']}
+					{{if $e['note']}}
+					<div style="font-size:12px;color:#4b5563;margin-top:4px;padding:8px 12px;background:#fff;border-radius:6px;border-left:2px solid #fcd34d">{$e['note']}</div>
+					{{endif}}
+				</div>
+			</div>
+			{{endforeach}}
+		</div>
+		{{endif}}
 	</div>
 	{{endif}}
 
@@ -2718,6 +2769,7 @@ $notificationDefaults = [
 	'dispute_dismissed'    => [ 'default' => 'inline,email', 'disabled' => '' ],
 	'dispute_customer_responded' => [ 'default' => 'inline,email', 'disabled' => '' ],
 	'dispute_outcome_reviewer'   => [ 'default' => 'inline,email', 'disabled' => '' ],
+	'dispute_edit_requested'     => [ 'default' => 'inline,email', 'disabled' => '' ],
 ];
 
 foreach ( $notificationDefaults as $key => $data )

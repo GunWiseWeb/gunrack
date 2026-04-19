@@ -19,6 +19,7 @@ namespace IPS\gddealer\modules\front\dealers;
 
 use IPS\gddealer\Attachment\Helper as AttachHelper;
 use IPS\gddealer\Dealer\Dealer;
+use IPS\gddealer\Dispute\EventLogger;
 use IPS\gddealer\Feed\Importer;
 use IPS\gddealer\Listing\Listing;
 use IPS\gddealer\Log\ImportLog;
@@ -1074,6 +1075,9 @@ class _dashboard extends \IPS\Dispatcher\Controller
 					foreach ( $atts as $a ) { if ( $a['is_image'] ) { $hasImg = true; break; } }
 					$rowRef[ $field . '_has_unembedded_images' ] = $hasImg && !preg_match( '/<img/i', (string) ( $rowRef[ $field ] ?? '' ) );
 				}
+				$rowRef['events'] = ( (string) ( $r['dispute_status'] ?? 'none' ) !== 'none' )
+					? EventLogger::getEvents( (int) $r['id'] )
+					: [];
 				unset( $rowRef );
 			}
 		}
@@ -1494,6 +1498,8 @@ class _dashboard extends \IPS\Dispatcher\Controller
 			], [ 'id=?', $id ] );
 		}
 		catch ( \Exception ) {}
+
+		EventLogger::log( $id, 'dispute_opened', 'dealer', (int) \IPS\Member::loggedIn()->member_id, $reason !== '' ? strip_tags( $reason ) : NULL );
 
 		/* Claim any editor attachments for each dispute field. Same
 		   autoSaveKey the editor was rendered with. */

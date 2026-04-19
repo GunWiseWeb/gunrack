@@ -13,6 +13,7 @@ namespace IPS\gddealer\modules\admin\dealers;
 
 use IPS\gddealer\Attachment\Helper as AttachHelper;
 use IPS\gddealer\Dealer\Dealer;
+use IPS\gddealer\Dispute\EventLogger;
 use IPS\gddealer\Feed\Importer;
 use IPS\gddealer\Listing\Listing;
 use IPS\gddealer\Log\ImportLog;
@@ -682,6 +683,7 @@ class _dealers extends \IPS\Dispatcher\Controller
 					foreach ( $atts as $a ) { if ( $a['is_image'] ) { $hasImg = true; break; } }
 					$rowRef[ $field . '_has_unembedded_images' ] = $hasImg && !preg_match( '/<img/i', (string) ( $rowRef[ $field ] ?? '' ) );
 				}
+				$rowRef['events'] = EventLogger::getEvents( (int) $r['id'] );
 				unset( $rowRef );
 			}
 		}
@@ -731,6 +733,8 @@ class _dealers extends \IPS\Dispatcher\Controller
 			], [ 'id=? AND ' . \IPS\Db::i()->in( 'dispute_status', [ 'pending_admin', 'pending_customer' ] ), $id ] );
 		}
 		catch ( \Exception ) {}
+
+		EventLogger::log( $id, 'admin_upheld', 'admin', (int) \IPS\Member::loggedIn()->member_id, NULL );
 
 		/* Side-effects to the dealer — email and IPS notification in
 		   independent try/catch blocks so one channel's failure cannot
@@ -887,6 +891,8 @@ class _dealers extends \IPS\Dispatcher\Controller
 		}
 		catch ( \Exception ) {}
 
+		EventLogger::log( $id, 'admin_dismissed', 'admin', (int) \IPS\Member::loggedIn()->member_id, NULL );
+
 		/* Side-effects to the dealer — email and IPS notification in
 		   independent try/catch blocks. */
 		if ( $dealerId > 0 )
@@ -1040,39 +1046,103 @@ class _dealers extends \IPS\Dispatcher\Controller
 		}
 		catch ( \Exception ) {}
 
-		/* Re-notify the customer. */
+		/* Dispute-history log entry — admin requested an update. */
+		EventLogger::log( $id, 'admin_edit_requested', 'admin', (int) \IPS\Member::loggedIn()->member_id, $adminNote !== '' ? $adminNote : NULL );
+
 		if ( (int) ( $row['member_id'] ?? 0 ) > 0 )
 		{
+			$customer = NULL;
+			try { $customer = \IPS\Member::load( (int) $row['member_id'] ); } catch ( \Exception ) {}
+
+			$slug = '';
 			try
 			{
-				$customer = \IPS\Member::load( (int) $row['member_id'] );
-				$slug = '';
-				try
-				{
-					$slug = (string) \IPS\Db::i()->select( 'dealer_slug', 'gd_dealer_feed_config', [ 'dealer_id=?', (int) $row['dealer_id'] ] )->first();
-				}
-				catch ( \Exception ) {}
-				$dealerName = '';
-				try
-				{
-					$dealerName = (string) \IPS\Db::i()->select( 'dealer_name', 'gd_dealer_feed_config', [ 'dealer_id=?', (int) $row['dealer_id'] ] )->first();
-				}
-				catch ( \Exception ) {}
+				$slug = (string) \IPS\Db::i()->select( 'dealer_slug', 'gd_dealer_feed_config', [ 'dealer_id=?', (int) $row['dealer_id'] ] )->first();
+			}
+			catch ( \Exception ) {}
 
-				if ( $customer->member_id && $slug !== '' )
+			$dealerName = '';
+			try
+			{
+				$dealerName = (string) \IPS\Db::i()->select( 'dealer_name', 'gd_dealer_feed_config', [ 'dealer_id=?', (int) $row['dealer_id'] ] )->first();
+			}
+			catch ( \Exception ) {}
+
+			$respondUrl = $slug !== ''
+				? (string) \IPS\Http\Url::internal(
+					'app=gddealer&module=dealers&controller=profile&dealer_slug=' . urlencode( $slug ) . '&dispute=' . $id
+				)
+				: (string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dashboard&do=reviews' );
+
+			/* Email to customer — independent try/catch. */
+			try
+			{
+				if ( $customer && $customer->member_id )
 				{
-					$respondUrl = (string) \IPS\Http\Url::internal(
-						'app=gddealer&module=dealers&controller=profile&dealer_slug=' . urlencode( $slug ) . '&dispute=' . $id
-					);
-					$contactEmail = (string) ( \IPS\Settings::i()->gddealer_help_contact ?: 'dealers@gunrack.deals' );
-					\IPS\Email::buildFromTemplate( 'gddealer', 'disputeNotify', [
-						'name'          => $customer->name,
-						'dealer_name'   => $dealerName,
-						'reason'        => (string) ( $row['dispute_reason'] ?? '' ) . ( $adminNote !== '' ? "\n\n[Admin note: {$adminNote}]" : '' ),
-						'deadline'      => date( 'F j, Y', strtotime( $deadline ) ),
-						'respond_url'   => $respondUrl,
-						'contact_email' => $contactEmail,
+					\IPS\Email::buildFromTemplate( 'gddealer', 'disputeEditRequested', [
+						'name'        => (string) $customer->name,
+						'dealer_name' => $dealerName,
+						'admin_note'  => $adminNote,
+						'deadline'    => date( 'F j, Y', strtotime( $deadline ) ),
+						'respond_url' => $respondUrl,
 					], \IPS\Email::TYPE_TRANSACTIONAL )->send( $customer );
+				}
+			}
+			catch ( \Exception ) {}
+
+			/* Bell notification — own try/catch, independent of email. */
+			try
+			{
+				if ( $customer && $customer->member_id )
+				{
+					$notification = new \IPS\Notification(
+						\IPS\Application::load( 'gddealer' ),
+						'dispute_edit_requested',
+						$customer,
+						[ $customer ],
+						[
+							'dealer_name' => $dealerName,
+							'dealer_slug' => $slug,
+							'dispute_id'  => (int) $id,
+							'admin_note'  => $adminNote,
+						]
+					);
+					$notification->recipients->attach( $customer );
+					$notification->send();
+				}
+			}
+			catch ( \Exception ) {}
+
+			/* Private message to customer — own try/catch. Mirrors dispute() PM. */
+			try
+			{
+				$sender = \IPS\Member::loggedIn();
+				if ( $customer && $customer->member_id && \IPS\core\Messenger\Conversation::memberCanReceiveNewMessage( $customer, $sender ) )
+				{
+					$bodyText = "An admin has reviewed your response to the dispute on " . $dealerName . " and asked for an update.\n\n";
+					if ( $adminNote !== '' )
+					{
+						$bodyText .= "Admin's note: " . $adminNote . "\n\n";
+					}
+					$bodyText .= "You have until " . date( 'F j, Y', strtotime( $deadline ) ) . " to update your response.\n\n";
+					$bodyText .= "Visit: " . $respondUrl;
+
+					$conversation = \IPS\core\Messenger\Conversation::createItem( $sender, \IPS\Request::i()->ipAddress(), \IPS\DateTime::create() );
+					$conversation->title    = 'Update requested on your dispute response — ' . $dealerName;
+					$conversation->to_count = 1;
+					$conversation->save();
+
+					$commentClass = $conversation::$commentClass;
+					$post = $commentClass::create(
+						$conversation,
+						$bodyText,
+						TRUE, NULL, NULL, $sender, \IPS\DateTime::create()
+					);
+
+					$conversation->first_msg_id = $post->id;
+					$conversation->save();
+					$conversation->authorize( [ $sender->member_id, $customer->member_id ] );
+					$post->sendNotifications();
 				}
 			}
 			catch ( \Exception ) {}
