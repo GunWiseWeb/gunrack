@@ -505,7 +505,7 @@ class _support extends \IPS\Dispatcher\Controller
 				{
 					\IPS\File::claimAttachments(
 						'gddealer-support-reply-' . $ticketId,
-						$replyId,
+						$ticketId,
 						11
 					);
 				}
