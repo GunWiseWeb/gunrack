@@ -471,11 +471,50 @@ class _support extends \IPS\Dispatcher\Controller
 
 		$events = EventLogger::getEvents( $ticketId );
 
+		$stockReplies = [];
+		try
+		{
+			foreach ( \IPS\Db::i()->select( '*', 'gd_dealer_support_stock_replies',
+				[ 'enabled=? AND (department_id IS NULL OR department_id=?)', 1, (int) $ticket['department_id'] ],
+				'position ASC'
+			) as $sr )
+			{
+				$stockReplies[] = [
+					'id'    => (int) $sr['id'],
+					'title' => (string) $sr['title'],
+					'body'  => (string) $sr['body'],
+				];
+			}
+		}
+		catch ( \Exception ) {}
+
+		$stockActions = [];
+		$applyActionBaseUrl = (string) \IPS\Http\Url::internal(
+			'app=gddealer&module=dealers&controller=support&do=applyStockAction', 'admin'
+		)->setQueryString( $baseQS )->csrf();
+		try
+		{
+			foreach ( \IPS\Db::i()->select( '*', 'gd_dealer_support_stock_actions',
+				[ 'enabled=? AND (department_id IS NULL OR department_id=?)', 1, (int) $ticket['department_id'] ],
+				'position ASC'
+			) as $sa )
+			{
+				$stockActions[] = [
+					'id'    => (int) $sa['id'],
+					'title' => (string) $sa['title'],
+					'url'   => (string) \IPS\Http\Url::internal(
+						'app=gddealer&module=dealers&controller=support&do=applyStockAction', 'admin'
+					)->setQueryString( [ 'id' => $ticketId, 'action_id' => (int) $sa['id'] ] )->csrf(),
+				];
+			}
+		}
+		catch ( \Exception ) {}
+
 		\IPS\Output::i()->title  = 'Ticket #' . $ticketId . ' — ' . $ticketDisplay['subject'];
 		\IPS\Output::i()->output = \IPS\Theme::i()->getTemplate( 'dealers' )->supportTicketView(
 			$ticketDisplay, $parsedTicketBody, $ticketAttachments, $replies, $replyEditorHtml,
 			$replyUrl, $updateStatusUrl, $updatePriorityUrl, $assignUrl, $deleteUrl, $backUrl,
-			$events, $noteEditorHtml, $addNoteUrl
+			$events, $noteEditorHtml, $addNoteUrl, $stockReplies, $stockActions
 		);
 	}
 
@@ -752,6 +791,240 @@ class _support extends \IPS\Dispatcher\Controller
 		\IPS\Output::i()->redirect(
 			\IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=support&do=view&id=' . $ticketId, 'admin' ),
 			'Note added.'
+		);
+	}
+
+	protected function applyStockAction(): void
+	{
+		\IPS\Dispatcher::i()->checkAcpPermission( 'dealer_manage' );
+		\IPS\Session::i()->csrfCheck();
+
+		$ticketId = (int) ( \IPS\Request::i()->id ?? 0 );
+		$actionId = (int) ( \IPS\Request::i()->action_id ?? 0 );
+		$me       = \IPS\Member::loggedIn();
+
+		$ticket = null;
+		try
+		{
+			$ticket = \IPS\Db::i()->select( '*', 'gd_dealer_support_tickets', [ 'id=?', $ticketId ] )->first();
+		}
+		catch ( \Exception ) {}
+
+		if ( !$ticket )
+		{
+			\IPS\Output::i()->error( 'Ticket not found.', '2GDD500/4', 404 );
+			return;
+		}
+
+		$action = null;
+		try
+		{
+			$action = \IPS\Db::i()->select( '*', 'gd_dealer_support_stock_actions', [ 'id=?', $actionId ] )->first();
+		}
+		catch ( \Exception ) {}
+
+		if ( !$action )
+		{
+			\IPS\Output::i()->redirect(
+				\IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=support&do=view&id=' . $ticketId, 'admin' ),
+				'Stock action not found.'
+			);
+			return;
+		}
+
+		$now           = date( 'Y-m-d H:i:s' );
+		$hasReply      = !empty( trim( (string) ( $action['reply_body'] ?? '' ) ) );
+		$hasStatus     = !empty( $action['new_status'] );
+		$hasPriority   = !empty( $action['new_priority'] );
+		$hasAssignee   = $action['new_assignee'] !== null && (string) $action['new_assignee'] !== '';
+		$currentStatus = (string) $ticket['status'];
+
+		if ( $hasReply )
+		{
+			$body = '';
+			try
+			{
+				$body = \IPS\Text\Parser::parseStatic(
+					(string) $action['reply_body'], [ $ticketId, 11 ], $me, 'gddealer_Responses'
+				);
+			}
+			catch ( \Exception ) { $body = (string) $action['reply_body']; }
+
+			try
+			{
+				\IPS\Db::i()->insert( 'gd_dealer_support_replies', [
+					'ticket_id'      => $ticketId,
+					'member_id'      => (int) $me->member_id,
+					'role'           => 'admin',
+					'body'           => $body,
+					'is_hidden_note' => 0,
+					'created_at'     => $now,
+				] );
+			}
+			catch ( \Exception ) {}
+
+			$newStatus = $hasStatus ? (string) $action['new_status'] : 'pending_customer';
+
+			try
+			{
+				\IPS\Db::i()->update( 'gd_dealer_support_tickets', [
+					'status'          => $newStatus,
+					'updated_at'      => $now,
+					'last_reply_at'   => $now,
+					'last_reply_by'   => (int) $me->member_id,
+					'last_reply_role' => 'admin',
+				], [ 'id=?', $ticketId ] );
+			}
+			catch ( \Exception ) {}
+
+			$dealer  = \IPS\Member::load( (int) $ticket['member_id'] );
+			$subject = (string) $ticket['subject'];
+			$ticketUrl = (string) \IPS\Http\Url::internal(
+				'app=gddealer&module=dealers&controller=support&do=view&id=' . $ticketId
+			);
+
+			if ( $dealer && $dealer->member_id )
+			{
+				try
+				{
+					$notification = new \IPS\Notification(
+						\IPS\Application::load( 'gddealer' ),
+						'support_reply_to_dealer',
+						$dealer,
+						[ $dealer ],
+						[
+							'ticket_id' => $ticketId,
+							'subject'   => $subject,
+						]
+					);
+					$notification->recipients->attach( $dealer );
+					$notification->send();
+				}
+				catch ( \Exception ) {}
+
+				try
+				{
+					\IPS\Email::buildFromTemplate( 'gddealer', 'supportReplyToDealer', [
+						'name'     => (string) $dealer->name,
+						'subject'  => $subject,
+						'view_url' => $ticketUrl,
+					], \IPS\Email::TYPE_TRANSACTIONAL )->send( $dealer );
+				}
+				catch ( \Exception ) {}
+			}
+
+			if ( $currentStatus !== $newStatus )
+			{
+				try
+				{
+					EventLogger::log(
+						$ticketId, 'status_changed', 'admin',
+						(int) $me->member_id, null, $currentStatus, $newStatus
+					);
+				}
+				catch ( \Exception ) {}
+			}
+			$currentStatus = $newStatus;
+
+			try
+			{
+				EventLogger::log(
+					$ticketId, 'admin_replied', 'admin', (int) $me->member_id, null
+				);
+			}
+			catch ( \Exception ) {}
+		}
+		elseif ( $hasStatus )
+		{
+			$newStatus = (string) $action['new_status'];
+			try
+			{
+				\IPS\Db::i()->update( 'gd_dealer_support_tickets', [
+					'status'     => $newStatus,
+					'updated_at' => $now,
+				], [ 'id=?', $ticketId ] );
+			}
+			catch ( \Exception ) {}
+
+			if ( $currentStatus !== $newStatus )
+			{
+				try
+				{
+					EventLogger::log(
+						$ticketId,
+						$newStatus === 'closed' ? 'ticket_closed' : 'status_changed',
+						'admin', (int) $me->member_id, null, $currentStatus, $newStatus
+					);
+				}
+				catch ( \Exception ) {}
+			}
+			$currentStatus = $newStatus;
+		}
+
+		if ( $hasPriority )
+		{
+			$currentPriority = (string) $ticket['priority'];
+			$newPriority     = (string) $action['new_priority'];
+
+			try
+			{
+				\IPS\Db::i()->update( 'gd_dealer_support_tickets', [
+					'priority'   => $newPriority,
+					'updated_at' => $now,
+				], [ 'id=?', $ticketId ] );
+			}
+			catch ( \Exception ) {}
+
+			if ( $currentPriority !== $newPriority )
+			{
+				try
+				{
+					EventLogger::log(
+						$ticketId, 'priority_changed', 'admin',
+						(int) $me->member_id, null, $currentPriority, $newPriority
+					);
+				}
+				catch ( \Exception ) {}
+			}
+		}
+
+		if ( $hasAssignee )
+		{
+			$newAssigneeId = (int) $action['new_assignee'];
+			$value = $newAssigneeId > 0 ? $newAssigneeId : null;
+
+			try
+			{
+				\IPS\Db::i()->update( 'gd_dealer_support_tickets', [
+					'assigned_to' => $value,
+					'updated_at'  => $now,
+				], [ 'id=?', $ticketId ] );
+			}
+			catch ( \Exception ) {}
+
+			try
+			{
+				EventLogger::log(
+					$ticketId,
+					$value === null ? 'unassigned' : 'assigned',
+					'admin', (int) $me->member_id, null
+				);
+			}
+			catch ( \Exception ) {}
+		}
+
+		try
+		{
+			EventLogger::log(
+				$ticketId, 'stock_action_applied', 'admin',
+				(int) $me->member_id, (string) $action['title']
+			);
+		}
+		catch ( \Exception ) {}
+
+		\IPS\Output::i()->redirect(
+			\IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=support&do=view&id=' . $ticketId, 'admin' ),
+			'Stock action applied: ' . (string) $action['title']
 		);
 	}
 

@@ -2977,7 +2977,7 @@ $gddealerTemplates[] = [
 	'location'      => 'admin',
 	'group'         => 'dealers',
 	'template_name' => 'supportTicketView',
-	'template_data' => '$ticket, $ticket_body, $ticket_attachments, $replies, $reply_editor_html, $reply_url, $update_status_url, $update_priority_url, $assign_url, $delete_url, $back_url, $events, $note_editor_html, $add_note_url',
+	'template_data' => '$ticket, $ticket_body, $ticket_attachments, $replies, $reply_editor_html, $reply_url, $update_status_url, $update_priority_url, $assign_url, $delete_url, $back_url, $events, $note_editor_html, $add_note_url, $stock_replies, $stock_actions',
 	'template_content' => <<<'TEMPLATE_EOT'
 <div class="ipsBox ipsPull">
 <div class="ipsBox_body ipsPad">
@@ -3043,6 +3043,17 @@ $gddealerTemplates[] = [
 		</div>
 		<div id="gd-tab-reply" style="display:block;padding:20px;border:1px solid #e5e7eb;border-top:none;border-radius:0 0 8px 8px;background:#fff">
 			<p style="font-size:12px;color:#6b7280;margin:0 0 10px">Visible to dealer. Sends email + bell + PM notification.</p>
+			{{if count($stock_replies) > 0}}
+			<div style="margin-bottom:10px">
+				<label style="font-size:12px;font-weight:600;color:#475569;margin-bottom:4px;display:block">Insert stock reply:</label>
+				<select id="gd-stock-reply-picker" onchange="if(this.value){var b=this.options[this.selectedIndex].getAttribute('data-body');try{var eds=document.querySelectorAll('[id^=editor_support_admin_reply_]');if(eds.length){var el=eds[0];if(el.ckeditorInstance){el.ckeditorInstance.model.change(function(w){var r=el.ckeditorInstance.model.document.getRoot();w.appendElement('paragraph',r);var vf=el.ckeditorInstance.data.processor.toView(b);var mf=el.ckeditorInstance.data.toModel(vf);w.insert(mf,r,'end');})}else if(typeof CKEDITOR!=='undefined'){for(var k in CKEDITOR.instances){if(k.indexOf('editor_support_admin_reply_')===0){CKEDITOR.instances[k].insertHtml(b);break}}}else{var ta=document.querySelector('textarea[name=gddealer_support_admin_reply]');if(ta)ta.value+=b}}}catch(e){var ta2=document.querySelector('textarea[name=gddealer_support_admin_reply]');if(ta2)ta2.value+=b}this.selectedIndex=0}" style="padding:5px 8px;border:1px solid #d1d5db;border-radius:4px;font-size:0.85em;width:100%">
+					<option value="">-- Select a stock reply --</option>
+					{{foreach $stock_replies as $sr}}
+					<option value="{$sr['id']}" data-body="{expression="htmlspecialchars($sr['body'], ENT_QUOTES)"}">{$sr['title']}</option>
+					{{endforeach}}
+				</select>
+			</div>
+			{{endif}}
 			<form method="post" action="{$reply_url}">
 				<div style="margin-bottom:12px">{$reply_editor_html|raw}</div>
 				<button type="submit" class="ipsButton ipsButton--primary ipsButton--small">Send Reply</button>
@@ -3100,6 +3111,16 @@ $gddealerTemplates[] = [
 			<a href="{$delete_url}" class="ipsButton ipsButton--negative ipsButton--verySmall" style="width:100%;text-align:center" onclick="return confirm('Delete this ticket and all replies? This cannot be undone.')">Delete Ticket</a>
 		</div>
 	</div>
+	{{if count($stock_actions) > 0}}
+	<div style="border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;margin-bottom:16px">
+		<h4 style="margin:0;padding:10px 14px;background:#f8fafc;border-bottom:1px solid #f0f0f0;font-size:0.82em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#475569">Quick Actions</h4>
+		<div style="padding:12px 14px;display:flex;flex-direction:column;gap:6px">
+			{{foreach $stock_actions as $sa}}
+			<a href="{$sa['url']}" class="ipsButton ipsButton--inherit ipsButton--verySmall" style="width:100%;text-align:center" onclick="return confirm('Apply action: {$sa['title']}?')">{$sa['title']}</a>
+			{{endforeach}}
+		</div>
+	</div>
+	{{endif}}
 </aside>
 </div>
 {{if count($events) > 0}}
@@ -3434,6 +3455,267 @@ $gddealerTemplates[] = [
 	</div>
 	<div style="margin-top:20px;display:flex;gap:10px">
 		<button type="submit" class="ipsButton ipsButton--primary">{{if $isEdit}}Save Changes{{else}}Create Department{{endif}}</button>
+		<a href="{$backUrl}" class="ipsButton ipsButton--light">Cancel</a>
+	</div>
+</form>
+</div>
+TEMPLATE_EOT,
+];
+
+/* ===== ADMIN: supportStockReplies ===== */
+$gddealerTemplates[] = [
+	'set_id'        => 1,
+	'app'           => 'gddealer',
+	'location'      => 'admin',
+	'group'         => 'dealers',
+	'template_name' => 'supportStockReplies',
+	'template_data' => '$rows, $addUrl',
+	'template_content' => <<<'TEMPLATE_EOT'
+<div class="ipsBox ipsPull">
+<div class="ipsBox_body ipsPad">
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+	<h1 class="ipsType_pageTitle" style="margin:0">Stock Replies</h1>
+	<a href="{$addUrl}" class="ipsButton ipsButton--primary ipsButton--small"><i class="fa-solid fa-plus" aria-hidden="true"></i> Add Stock Reply</a>
+</div>
+<p style="font-size:13px;color:#6b7280;margin:0 0 16px">Canned reply templates that staff can insert into ticket replies with one click.</p>
+{{if count($rows) > 0}}
+<table class="ipsTable ipsTable_zebra" style="width:100%">
+	<thead>
+		<tr>
+			<th style="width:30px"></th>
+			<th>Title</th>
+			<th>Department</th>
+			<th style="width:80px">Status</th>
+			<th style="width:180px">Actions</th>
+		</tr>
+	</thead>
+	<tbody>
+		{{foreach $rows as $r}}
+		<tr>
+			<td style="text-align:center;color:#9ca3af">
+				<a href="{$r['move_up_url']}" title="Move up" style="color:#6b7280;text-decoration:none">&uarr;</a>
+				<a href="{$r['move_down_url']}" title="Move down" style="color:#6b7280;text-decoration:none">&darr;</a>
+			</td>
+			<td><strong>{$r['title']}</strong></td>
+			<td style="font-size:0.9em;color:#6b7280">{$r['department_name']}</td>
+			<td>
+				{{if $r['enabled']}}
+				<span style="background:#dcfce7;color:#166534;padding:2px 10px;border-radius:12px;font-size:0.8em;font-weight:600">Enabled</span>
+				{{else}}
+				<span style="background:#f1f5f9;color:#64748b;padding:2px 10px;border-radius:12px;font-size:0.8em;font-weight:600">Disabled</span>
+				{{endif}}
+			</td>
+			<td style="font-size:0.85em">
+				<a href="{$r['edit_url']}" style="color:#2563eb;text-decoration:none;margin-right:8px">Edit</a>
+				<a href="{$r['toggle_url']}" style="color:#6b7280;text-decoration:none;margin-right:8px">{{if $r['enabled']}}Disable{{else}}Enable{{endif}}</a>
+				<a href="{$r['delete_url']}" style="color:#dc2626;text-decoration:none" onclick="return confirm('Delete this stock reply?')">Delete</a>
+			</td>
+		</tr>
+		{{endforeach}}
+	</tbody>
+</table>
+{{else}}
+<div style="text-align:center;padding:40px 20px;color:#6b7280">
+	<p>No stock replies yet. Create one to speed up ticket responses.</p>
+</div>
+{{endif}}
+</div>
+</div>
+TEMPLATE_EOT,
+];
+
+/* ===== ADMIN: supportStockReplyForm ===== */
+$gddealerTemplates[] = [
+	'set_id'        => 1,
+	'app'           => 'gddealer',
+	'location'      => 'admin',
+	'group'         => 'dealers',
+	'template_name' => 'supportStockReplyForm',
+	'template_data' => '$formData, $isEdit, $editorHtml, $departments, $submitUrl, $backUrl, $csrfKey',
+	'template_content' => <<<'TEMPLATE_EOT'
+<div class="ipsPad">
+<div style="margin-bottom:16px">
+	<a href="{$backUrl}" style="font-size:13px;color:#6b7280;text-decoration:none">&larr; Back to stock replies</a>
+</div>
+<h1 class="ipsType_pageTitle" style="margin:0 0 20px">{{if $isEdit}}Edit Stock Reply{{else}}Add Stock Reply{{endif}}</h1>
+<form method="post" action="{$submitUrl}" style="max-width:720px">
+	<input type="hidden" name="csrfKey" value="{$csrfKey}">
+	<div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:24px">
+		<div style="margin-bottom:18px">
+			<label style="display:block;font-size:13px;font-weight:500;color:#111827;margin-bottom:6px">Title <span style="color:#dc2626">*</span></label>
+			<input type="text" name="title" value="{$formData['title']}" required class="ipsInput ipsInput--text" style="width:100%" maxlength="255">
+			<p style="font-size:12px;color:#6b7280;margin:4px 0 0">Label shown in the stock reply picker on the ticket view.</p>
+		</div>
+		<div style="margin-bottom:18px">
+			<label style="display:block;font-size:13px;font-weight:500;color:#111827;margin-bottom:6px">Reply body</label>
+			{$editorHtml|raw}
+			<p style="font-size:12px;color:#6b7280;margin:4px 0 0">This content will be inserted into the reply editor when staff select this stock reply.</p>
+		</div>
+		<div style="margin-bottom:18px">
+			<label style="display:block;font-size:13px;font-weight:500;color:#111827;margin-bottom:6px">Department scope</label>
+			<select name="department_id" class="ipsInput ipsInput--select" style="width:100%">
+				{{foreach $departments as $dId => $dName}}
+				<option value="{$dId}" {expression="(int)$formData['department_id'] === (int)$dId ? 'selected' : ''"}>
+					{$dName}
+				</option>
+				{{endforeach}}
+			</select>
+			<p style="font-size:12px;color:#6b7280;margin:4px 0 0">Global replies appear on all tickets. Department-scoped replies only appear on tickets in that department.</p>
+		</div>
+		<div style="margin-bottom:4px">
+			<label style="display:inline-flex;align-items:center;gap:10px;font-size:13px;font-weight:500;color:#111827;cursor:pointer">
+				<input type="checkbox" name="enabled" value="1" {expression="$formData['enabled'] ? 'checked' : ''"}>
+				<span>Enabled</span>
+			</label>
+		</div>
+	</div>
+	<div style="margin-top:20px;display:flex;gap:10px">
+		<button type="submit" class="ipsButton ipsButton--primary">{{if $isEdit}}Save Changes{{else}}Create Stock Reply{{endif}}</button>
+		<a href="{$backUrl}" class="ipsButton ipsButton--light">Cancel</a>
+	</div>
+</form>
+</div>
+TEMPLATE_EOT,
+];
+
+/* ===== ADMIN: supportStockActions ===== */
+$gddealerTemplates[] = [
+	'set_id'        => 1,
+	'app'           => 'gddealer',
+	'location'      => 'admin',
+	'group'         => 'dealers',
+	'template_name' => 'supportStockActions',
+	'template_data' => '$rows, $addUrl',
+	'template_content' => <<<'TEMPLATE_EOT'
+<div class="ipsBox ipsPull">
+<div class="ipsBox_body ipsPad">
+<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+	<h1 class="ipsType_pageTitle" style="margin:0">Stock Actions</h1>
+	<a href="{$addUrl}" class="ipsButton ipsButton--primary ipsButton--small"><i class="fa-solid fa-plus" aria-hidden="true"></i> Add Stock Action</a>
+</div>
+<p style="font-size:13px;color:#6b7280;margin:0 0 16px">Multi-step ticket actions: auto-reply + change status/priority/assignee in one click.</p>
+{{if count($rows) > 0}}
+<table class="ipsTable ipsTable_zebra" style="width:100%">
+	<thead>
+		<tr>
+			<th style="width:30px"></th>
+			<th>Title</th>
+			<th>Effects</th>
+			<th>Department</th>
+			<th style="width:80px">Status</th>
+			<th style="width:180px">Actions</th>
+		</tr>
+	</thead>
+	<tbody>
+		{{foreach $rows as $r}}
+		<tr>
+			<td style="text-align:center;color:#9ca3af">
+				<a href="{$r['move_up_url']}" title="Move up" style="color:#6b7280;text-decoration:none">&uarr;</a>
+				<a href="{$r['move_down_url']}" title="Move down" style="color:#6b7280;text-decoration:none">&darr;</a>
+			</td>
+			<td><strong>{$r['title']}</strong></td>
+			<td style="font-size:0.85em;color:#4b5563">{$r['effects']}</td>
+			<td style="font-size:0.9em;color:#6b7280">{$r['department_name']}</td>
+			<td>
+				{{if $r['enabled']}}
+				<span style="background:#dcfce7;color:#166534;padding:2px 10px;border-radius:12px;font-size:0.8em;font-weight:600">Enabled</span>
+				{{else}}
+				<span style="background:#f1f5f9;color:#64748b;padding:2px 10px;border-radius:12px;font-size:0.8em;font-weight:600">Disabled</span>
+				{{endif}}
+			</td>
+			<td style="font-size:0.85em">
+				<a href="{$r['edit_url']}" style="color:#2563eb;text-decoration:none;margin-right:8px">Edit</a>
+				<a href="{$r['toggle_url']}" style="color:#6b7280;text-decoration:none;margin-right:8px">{{if $r['enabled']}}Disable{{else}}Enable{{endif}}</a>
+				<a href="{$r['delete_url']}" style="color:#dc2626;text-decoration:none" onclick="return confirm('Delete this stock action?')">Delete</a>
+			</td>
+		</tr>
+		{{endforeach}}
+	</tbody>
+</table>
+{{else}}
+<div style="text-align:center;padding:40px 20px;color:#6b7280">
+	<p>No stock actions yet. Create one to automate common ticket workflows.</p>
+</div>
+{{endif}}
+</div>
+</div>
+TEMPLATE_EOT,
+];
+
+/* ===== ADMIN: supportStockActionForm ===== */
+$gddealerTemplates[] = [
+	'set_id'        => 1,
+	'app'           => 'gddealer',
+	'location'      => 'admin',
+	'group'         => 'dealers',
+	'template_name' => 'supportStockActionForm',
+	'template_data' => '$formData, $isEdit, $editorHtml, $departments, $adminMembers, $submitUrl, $backUrl, $csrfKey',
+	'template_content' => <<<'TEMPLATE_EOT'
+<div class="ipsPad">
+<div style="margin-bottom:16px">
+	<a href="{$backUrl}" style="font-size:13px;color:#6b7280;text-decoration:none">&larr; Back to stock actions</a>
+</div>
+<h1 class="ipsType_pageTitle" style="margin:0 0 20px">{{if $isEdit}}Edit Stock Action{{else}}Add Stock Action{{endif}}</h1>
+<form method="post" action="{$submitUrl}" style="max-width:720px">
+	<input type="hidden" name="csrfKey" value="{$csrfKey}">
+	<div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:24px">
+		<div style="margin-bottom:18px">
+			<label style="display:block;font-size:13px;font-weight:500;color:#111827;margin-bottom:6px">Title <span style="color:#dc2626">*</span></label>
+			<input type="text" name="title" value="{$formData['title']}" required class="ipsInput ipsInput--text" style="width:100%" maxlength="255">
+			<p style="font-size:12px;color:#6b7280;margin:4px 0 0">Label shown in the stock action picker on the ticket view.</p>
+		</div>
+		<div style="margin-bottom:18px">
+			<label style="display:block;font-size:13px;font-weight:500;color:#111827;margin-bottom:6px">Auto-reply body (optional)</label>
+			{$editorHtml|raw}
+			<p style="font-size:12px;color:#6b7280;margin:4px 0 0">If provided, this reply will be posted to the ticket when the action runs. Dealer will be notified.</p>
+		</div>
+		<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:18px">
+			<div>
+				<label style="display:block;font-size:13px;font-weight:500;color:#111827;margin-bottom:6px">Set status to</label>
+				<select name="new_status" class="ipsInput ipsInput--select" style="width:100%">
+					<option value="" {expression="$formData['new_status'] === '' ? 'selected' : ''"}>No change</option>
+					<option value="open" {expression="$formData['new_status'] === 'open' ? 'selected' : ''"}>Open</option>
+					<option value="pending_staff" {expression="$formData['new_status'] === 'pending_staff' ? 'selected' : ''"}>Awaiting Staff</option>
+					<option value="pending_customer" {expression="$formData['new_status'] === 'pending_customer' ? 'selected' : ''"}>Awaiting Customer</option>
+					<option value="resolved" {expression="$formData['new_status'] === 'resolved' ? 'selected' : ''"}>Resolved</option>
+					<option value="closed" {expression="$formData['new_status'] === 'closed' ? 'selected' : ''"}>Closed</option>
+				</select>
+			</div>
+			<div>
+				<label style="display:block;font-size:13px;font-weight:500;color:#111827;margin-bottom:6px">Set priority to</label>
+				<select name="new_priority" class="ipsInput ipsInput--select" style="width:100%">
+					<option value="" {expression="$formData['new_priority'] === '' ? 'selected' : ''"}>No change</option>
+					<option value="low" {expression="$formData['new_priority'] === 'low' ? 'selected' : ''"}>Low</option>
+					<option value="normal" {expression="$formData['new_priority'] === 'normal' ? 'selected' : ''"}>Normal</option>
+					<option value="high" {expression="$formData['new_priority'] === 'high' ? 'selected' : ''"}>High</option>
+					<option value="urgent" {expression="$formData['new_priority'] === 'urgent' ? 'selected' : ''"}>Urgent</option>
+				</select>
+			</div>
+		</div>
+		<div style="margin-bottom:18px">
+			<label style="display:block;font-size:13px;font-weight:500;color:#111827;margin-bottom:6px">Assign to (member ID)</label>
+			<input type="text" name="new_assignee" value="{$formData['new_assignee']}" class="ipsInput ipsInput--text" style="width:100%" placeholder="Leave blank for no change, 0 to unassign">
+			<p style="font-size:12px;color:#6b7280;margin:4px 0 0">Enter a member ID or 0 to unassign. Leave blank to skip assignment changes.</p>
+		</div>
+		<div style="margin-bottom:18px">
+			<label style="display:block;font-size:13px;font-weight:500;color:#111827;margin-bottom:6px">Department scope</label>
+			<select name="department_id" class="ipsInput ipsInput--select" style="width:100%">
+				{{foreach $departments as $dId => $dName}}
+				<option value="{$dId}" {expression="(int)$formData['department_id'] === (int)$dId ? 'selected' : ''"}>
+					{$dName}
+				</option>
+				{{endforeach}}
+			</select>
+		</div>
+		<div style="margin-bottom:4px">
+			<label style="display:inline-flex;align-items:center;gap:10px;font-size:13px;font-weight:500;color:#111827;cursor:pointer">
+				<input type="checkbox" name="enabled" value="1" {expression="$formData['enabled'] ? 'checked' : ''"}>
+				<span>Enabled</span>
+			</label>
+		</div>
+	</div>
+	<div style="margin-top:20px;display:flex;gap:10px">
+		<button type="submit" class="ipsButton ipsButton--primary">{{if $isEdit}}Save Changes{{else}}Create Stock Action{{endif}}</button>
 		<a href="{$backUrl}" class="ipsButton ipsButton--light">Cancel</a>
 	</div>
 </form>

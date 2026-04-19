@@ -368,6 +368,10 @@
     <word key="gddealer_support_nav"><![CDATA[Support]]></word>
     <word key="gddealer_support_admin_reply"><![CDATA[Reply]]></word>
     <word key="gddealer_support_admin_note"><![CDATA[Internal note]]></word>
+    <word key="menu__gddealer_dealers_stockreplies"><![CDATA[Stock Replies]]></word>
+    <word key="menu__gddealer_dealers_stockactions"><![CDATA[Stock Actions]]></word>
+    <word key="gddealer_stock_reply_body"><![CDATA[Reply body]]></word>
+    <word key="gddealer_stock_action_body"><![CDATA[Action reply body]]></word>
     <word key="gddealer_support_title"><![CDATA[Support Tickets]]></word>
     <word key="gddealer_support_new"><![CDATA[Open New Ticket]]></word>
     <word key="gddealer_support_body"><![CDATA[Describe your issue]]></word>

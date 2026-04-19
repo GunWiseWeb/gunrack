@@ -109,6 +109,7 @@ class _EventLogger
 			'priority_changed' => sprintf( 'changed priority from %s to %s', $oldValue, $newValue ),
 			'assigned'         => 'assigned the ticket',
 			'unassigned'       => 'removed the assignment',
+			'stock_action_applied' => 'applied stock action',
 			default            => $eventType,
 		};
 	}

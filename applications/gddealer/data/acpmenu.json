@@ -54,6 +54,18 @@
 			"do": "",
 			"restriction": "dealer_manage"
 		},
+		"stockreplies": {
+			"tab": "gddealer",
+			"controller": "stockreplies",
+			"do": "",
+			"restriction": "dealer_manage"
+		},
+		"stockactions": {
+			"tab": "gddealer",
+			"controller": "stockactions",
+			"do": "",
+			"restriction": "dealer_manage"
+		},
 		"settings": {
 			"tab": "gddealer",
 			"controller": "settings",
