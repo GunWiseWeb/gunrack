@@ -658,17 +658,25 @@ TEMPLATE_EOT,
 		'template_name' => 'disputeQueue',
 		'template_data' => '$rows, $filterStatus, $counts, $baseUrl',
 		'template_content' => <<<'TEMPLATE_EOT'
+<style>
+details.gdDisputeCard > summary { list-style:none }
+details.gdDisputeCard > summary::-webkit-details-marker { display:none }
+details.gdDisputeCard > summary .gdChevron { transition:transform 0.2s }
+details.gdDisputeCard[open] > summary .gdChevron { transform:rotate(90deg) }
+</style>
 <div class="ipsBox">
 	<h2 class="ipsBox_title">{lang="gddealer_disputes_title"}</h2>
 	<div style="padding:16px">
 
-		<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">
-			<a href="{$baseUrl}&amp;status=active" class="ipsButton ipsButton--small {{if $filterStatus === 'active'}}ipsButton--primary{{else}}ipsButton--inherit{{endif}}">Active ({$counts['active']})</a>
-			<a href="{$baseUrl}&amp;status=pending_admin" class="ipsButton ipsButton--small {{if $filterStatus === 'pending_admin'}}ipsButton--primary{{else}}ipsButton--inherit{{endif}}">Awaiting Admin ({$counts['pending_admin']})</a>
-			<a href="{$baseUrl}&amp;status=pending_customer" class="ipsButton ipsButton--small {{if $filterStatus === 'pending_customer'}}ipsButton--primary{{else}}ipsButton--inherit{{endif}}">Awaiting Customer ({$counts['pending_customer']})</a>
-			<a href="{$baseUrl}&amp;status=resolved_dealer" class="ipsButton ipsButton--small {{if $filterStatus === 'resolved_dealer'}}ipsButton--primary{{else}}ipsButton--inherit{{endif}}">Upheld ({$counts['resolved_dealer']})</a>
-			<a href="{$baseUrl}&amp;status=dismissed" class="ipsButton ipsButton--small {{if $filterStatus === 'dismissed'}}ipsButton--primary{{else}}ipsButton--inherit{{endif}}">Dismissed ({$counts['dismissed']})</a>
-			<a href="{$baseUrl}&amp;status=all" class="ipsButton ipsButton--small {{if $filterStatus === 'all'}}ipsButton--primary{{else}}ipsButton--inherit{{endif}}">All ({$counts['all']})</a>
+		<div style="margin-bottom:16px">
+			<select id="gdDisputeFilter" onchange="window.location.href=this.value" style="padding:8px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:0.9em;background:#fff;cursor:pointer;min-width:240px">
+				<option value="{$baseUrl}&amp;status=active" {{if $filterStatus === 'active'}}selected{{endif}}>Active ({$counts['active']})</option>
+				<option value="{$baseUrl}&amp;status=pending_admin" {{if $filterStatus === 'pending_admin'}}selected{{endif}}>Awaiting Admin ({$counts['pending_admin']})</option>
+				<option value="{$baseUrl}&amp;status=pending_customer" {{if $filterStatus === 'pending_customer'}}selected{{endif}}>Awaiting Customer ({$counts['pending_customer']})</option>
+				<option value="{$baseUrl}&amp;status=resolved_dealer" {{if $filterStatus === 'resolved_dealer'}}selected{{endif}}>Upheld ({$counts['resolved_dealer']})</option>
+				<option value="{$baseUrl}&amp;status=dismissed" {{if $filterStatus === 'dismissed'}}selected{{endif}}>Dismissed ({$counts['dismissed']})</option>
+				<option value="{$baseUrl}&amp;status=all" {{if $filterStatus === 'all'}}selected{{endif}}>All ({$counts['all']})</option>
+			</select>
 		</div>
 
 		{{if count($rows) === 0}}
@@ -676,24 +684,16 @@ TEMPLATE_EOT,
 		{{else}}
 			{{foreach $rows as $r}}
 
-			{{if $r['dispute_status'] === 'resolved_dealer' || $r['dispute_status'] === 'dismissed'}}
-			<details style="margin-bottom:16px">
-				<summary style="cursor:pointer;background:#f3f4f6;border:1px solid #e0e0e0;border-radius:8px;padding:12px 16px;font-size:0.9em;list-style:none;display:flex;align-items:center;gap:8px">
-					<i class="fa-solid fa-chevron-right" style="font-size:0.7em;color:#999;transition:transform 0.2s" aria-hidden="true"></i>
+			<details class="gdDisputeCard" style="margin-bottom:16px" {{if $r['dispute_status'] === 'pending_admin'}}open{{endif}}>
+				<summary style="cursor:pointer;background:#fff;border:1px solid {$r['status_border']};border-radius:8px;padding:12px 16px;font-size:0.9em;display:flex;align-items:center;gap:8px">
+					<i class="fa-solid fa-chevron-right gdChevron" style="font-size:0.7em;color:#999" aria-hidden="true"></i>
 					<strong>{$r['dealer_name']}</strong>
 					<span style="color:#999;font-size:0.9em">vs {$r['member_name']}</span>
-					{{if $r['dispute_status'] === 'resolved_dealer'}}
-					<span class="ipsBadge ipsBadge--positive" style="margin-left:auto">Upheld</span>
-					{{else}}
-					<span class="ipsBadge ipsBadge--negative" style="margin-left:auto">Dismissed</span>
-					{{endif}}
-					<span style="color:#999;font-size:0.8em">{$r['dispute_resolved_at']}</span>
+					<span style="margin-left:auto;display:inline-block;padding:2px 10px;border-radius:9999px;font-size:0.8em;font-weight:600;background:{$r['status_bg']};color:{$r['status_color']}">{$r['status_label']}</span>
+					<span style="color:#999;font-size:0.8em">{$r['dispute_at_formatted']}</span>
 				</summary>
-			{{else}}
-			<div style="margin-bottom:16px">
-			{{endif}}
 
-				<div style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:20px;{{if $r['dispute_status'] === 'resolved_dealer' || $r['dispute_status'] === 'dismissed'}}margin-top:8px;border-top-left-radius:0;border-top-right-radius:0{{endif}}">
+				<div style="background:#fff;border:1px solid #e0e0e0;border-radius:0 0 8px 8px;border-top:0;padding:20px">
 				<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;flex-wrap:wrap;gap:8px">
 					<div>
 						<strong>{$r['dealer_name']}</strong>
@@ -827,11 +827,7 @@ TEMPLATE_EOT,
 				{{endif}}
 			</div>
 
-			{{if $r['dispute_status'] === 'resolved_dealer' || $r['dispute_status'] === 'dismissed'}}
 			</details>
-			{{else}}
-			</div>
-			{{endif}}
 
 			{{endforeach}}
 		{{endif}}

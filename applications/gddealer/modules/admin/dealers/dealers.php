@@ -665,6 +665,35 @@ class _dealers extends \IPS\Dispatcher\Controller
 					'request_edit_url'      => (string) \IPS\Http\Url::internal(
 						'app=gddealer&module=dealers&controller=dealers&do=requestEdit&id=' . (int) $r['id']
 					)->csrf(),
+					'status_label'          => match( (string) ( $r['dispute_status'] ?? '' ) ) {
+						'pending_admin'    => 'Awaiting Admin',
+						'pending_customer' => 'Awaiting Customer',
+						'resolved_dealer'  => 'Upheld',
+						'dismissed'        => 'Dismissed',
+						default            => ucfirst( str_replace( '_', ' ', (string) ( $r['dispute_status'] ?? '' ) ) ),
+					},
+					'status_bg'             => match( (string) ( $r['dispute_status'] ?? '' ) ) {
+						'pending_admin'    => '#dbeafe',
+						'pending_customer' => '#fef3c7',
+						'resolved_dealer'  => '#d1fae5',
+						'dismissed'        => '#fee2e2',
+						default            => '#f3f4f6',
+					},
+					'status_color'          => match( (string) ( $r['dispute_status'] ?? '' ) ) {
+						'pending_admin'    => '#1e40af',
+						'pending_customer' => '#92400e',
+						'resolved_dealer'  => '#065f46',
+						'dismissed'        => '#991b1b',
+						default            => '#374151',
+					},
+					'status_border'         => match( (string) ( $r['dispute_status'] ?? '' ) ) {
+						'pending_admin'    => '#93c5fd',
+						'pending_customer' => '#fcd34d',
+						'resolved_dealer'  => '#6ee7b7',
+						'dismissed'        => '#fca5a5',
+						default            => '#d1d5db',
+					},
+					'dispute_at_formatted'  => ( $r['dispute_at'] ?? '' ) !== '' ? date( 'M j, Y', strtotime( (string) $r['dispute_at'] ) ) : '',
 				];
 
 				$rowRef =& $rows[ count( $rows ) - 1 ];
@@ -1041,7 +1070,6 @@ class _dealers extends \IPS\Dispatcher\Controller
 			\IPS\Db::i()->update( 'gd_dealer_ratings', [
 				'dispute_status'   => 'pending_customer',
 				'dispute_deadline' => $deadline,
-				'dispute_reason'   => trim( (string) ( $row['dispute_reason'] ?? '' ) ) . ( $adminNote !== '' ? "\n\n[Admin note: {$adminNote}]" : '' ),
 			], [ 'id=?', $id ] );
 		}
 		catch ( \Exception ) {}
