@@ -2273,105 +2273,69 @@ TEMPLATE_EOT,
 		'location'      => 'front',
 		'group'         => 'dealers',
 		'template_name' => 'editReview',
-		'template_data' => '$dealer, $review, $editUrl, $cancelUrl, $csrfKey',
+		'template_data' => '$review, $editUrl, $cancelUrl, $csrfKey',
 		'template_content' => <<<'TEMPLATE_EOT'
-<div class="gdEditReviewWrap" style="--gd-card-bg:#ffffff;--gd-card-border:#e5e7eb;--gd-text-primary:#111827;--gd-text-secondary:#374151;--gd-muted:#6b7280;--gd-accent:var(--gd-primary,#2563eb);--gd-star:#f59e0b;--gd-warn-bg:#fef3c7;--gd-warn-border:#fcd34d;--gd-warn-text:#92400e;background:transparent;padding:24px 16px;max-width:760px;margin:0 auto">
+<div class="gdDealerWrapper" style="max-width:720px;margin:0 auto;padding:32px 16px">
+	<div style="background:#ffffff;border:0.5px solid #e5e7eb;border-radius:12px;overflow:hidden">
 
-	<div style="margin-bottom:16px">
-		<a href="{$cancelUrl}" style="font-size:0.85em;color:var(--gd-muted);text-decoration:none">
-			<i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Back to {$dealer['dealer_name']}
-		</a>
-	</div>
-
-	<div class="ipsBox" style="background:var(--gd-card-bg);border:1px solid var(--gd-card-border);border-radius:10px;overflow:hidden">
-
-		<div style="padding:20px 22px;border-bottom:1px solid var(--gd-card-border);display:flex;align-items:center;gap:14px">
-			{{if $dealer['avatar_url']}}
-			<span class="ipsUserPhoto ipsUserPhoto--medium" style="flex:0 0 auto">
-				<img src="{$dealer['avatar_url']}" alt="" loading="lazy" style="width:48px;height:48px;border-radius:50%">
-			</span>
-			{{endif}}
-			<div style="flex:1 1 auto;min-width:0">
-				<div style="font-size:0.78em;color:var(--gd-muted);text-transform:uppercase;letter-spacing:0.06em;font-weight:600;margin-bottom:3px">Editing your review</div>
-				<div style="font-size:1.15em;font-weight:700;color:var(--gd-text-primary);line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{$dealer['dealer_name']}</div>
+		<div style="padding:18px 24px;border-bottom:0.5px solid #e5e7eb;display:flex;align-items:center;justify-content:space-between;background:#fafafa">
+			<div>
+				<h2 style="margin:0;font-size:18px;font-weight:500;color:#111827">Edit your review</h2>
+				{{if $review['dealer_name']}}
+				<p style="margin:2px 0 0;font-size:13px;color:#6b7280">for {$review['dealer_name']}</p>
+				{{endif}}
 			</div>
+			<a href="{$cancelUrl}" style="font-size:13px;color:#6b7280;text-decoration:none">Cancel</a>
 		</div>
 
-		{{if $review['dispute_status'] === 'pending_customer' or $review['dispute_status'] === 'pending_admin'}}
-		<div style="margin:16px 22px 0;padding:12px 14px;background:var(--gd-warn-bg);border:1px solid var(--gd-warn-border);border-radius:8px;color:var(--gd-warn-text);font-size:0.88em">
-			<i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
-			This review is currently under dispute. Editing is locked until the dispute is resolved.
-		</div>
-		{{endif}}
+		<form method="post" action="{$editUrl}" style="padding:24px">
+			<input type="hidden" name="csrfKey" value="{$csrfKey}">
 
-		<div style="padding:18px 22px 10px">
-			<div style="font-size:0.78em;color:var(--gd-muted);text-transform:uppercase;letter-spacing:0.06em;font-weight:600;margin-bottom:10px">Current ratings</div>
-			<div style="display:flex;gap:18px;flex-wrap:wrap;margin-bottom:4px">
-				<div style="flex:1 1 140px">
-					<div style="font-size:0.72em;color:var(--gd-muted);font-weight:600;margin-bottom:2px">Pricing</div>
-					<div style="color:var(--gd-star);font-size:1em;letter-spacing:2px">{$review['stars_pricing']}</div>
+			<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:20px">
+				<div>
+					<label style="display:block;font-size:12px;font-weight:500;color:#374151;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em">Pricing accuracy</label>
+					<select name="rating_pricing" required style="width:100%;padding:10px 12px;font-size:14px;border:1px solid #d1d5db;border-radius:8px;background:#fff;color:#111827">
+						<option value="5" {{if $review['rating_pricing'] === 5}}selected{{endif}}>★★★★★ Excellent</option>
+						<option value="4" {{if $review['rating_pricing'] === 4}}selected{{endif}}>★★★★☆ Good</option>
+						<option value="3" {{if $review['rating_pricing'] === 3}}selected{{endif}}>★★★☆☆ Average</option>
+						<option value="2" {{if $review['rating_pricing'] === 2}}selected{{endif}}>★★☆☆☆ Poor</option>
+						<option value="1" {{if $review['rating_pricing'] === 1}}selected{{endif}}>★☆☆☆☆ Terrible</option>
+					</select>
 				</div>
-				<div style="flex:1 1 140px">
-					<div style="font-size:0.72em;color:var(--gd-muted);font-weight:600;margin-bottom:2px">Shipping</div>
-					<div style="color:var(--gd-star);font-size:1em;letter-spacing:2px">{$review['stars_shipping']}</div>
+				<div>
+					<label style="display:block;font-size:12px;font-weight:500;color:#374151;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em">Shipping speed</label>
+					<select name="rating_shipping" required style="width:100%;padding:10px 12px;font-size:14px;border:1px solid #d1d5db;border-radius:8px;background:#fff;color:#111827">
+						<option value="5" {{if $review['rating_shipping'] === 5}}selected{{endif}}>★★★★★ Excellent</option>
+						<option value="4" {{if $review['rating_shipping'] === 4}}selected{{endif}}>★★★★☆ Good</option>
+						<option value="3" {{if $review['rating_shipping'] === 3}}selected{{endif}}>★★★☆☆ Average</option>
+						<option value="2" {{if $review['rating_shipping'] === 2}}selected{{endif}}>★★☆☆☆ Poor</option>
+						<option value="1" {{if $review['rating_shipping'] === 1}}selected{{endif}}>★☆☆☆☆ Terrible</option>
+					</select>
 				</div>
-				<div style="flex:1 1 140px">
-					<div style="font-size:0.72em;color:var(--gd-muted);font-weight:600;margin-bottom:2px">Service</div>
-					<div style="color:var(--gd-star);font-size:1em;letter-spacing:2px">{$review['stars_service']}</div>
+				<div>
+					<label style="display:block;font-size:12px;font-weight:500;color:#374151;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em">Customer service</label>
+					<select name="rating_service" required style="width:100%;padding:10px 12px;font-size:14px;border:1px solid #d1d5db;border-radius:8px;background:#fff;color:#111827">
+						<option value="5" {{if $review['rating_service'] === 5}}selected{{endif}}>★★★★★ Excellent</option>
+						<option value="4" {{if $review['rating_service'] === 4}}selected{{endif}}>★★★★☆ Good</option>
+						<option value="3" {{if $review['rating_service'] === 3}}selected{{endif}}>★★★☆☆ Average</option>
+						<option value="2" {{if $review['rating_service'] === 2}}selected{{endif}}>★★☆☆☆ Poor</option>
+						<option value="1" {{if $review['rating_service'] === 1}}selected{{endif}}>★☆☆☆☆ Terrible</option>
+					</select>
 				</div>
 			</div>
-		</div>
 
-		<div style="padding:10px 22px 24px">
-			<form method="post" action="{$editUrl}">
-				<input type="hidden" name="csrfKey" value="{$csrfKey}">
+			<div style="margin-bottom:24px">
+				<label style="display:block;font-size:12px;font-weight:500;color:#374151;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.04em">Your review</label>
+				<textarea name="review_body" rows="6" style="width:100%;box-sizing:border-box;border:1px solid #d1d5db;border-radius:8px;padding:12px;font-size:14px;line-height:1.6;color:#111827;background:#fff;font-family:inherit;resize:vertical">{$review['review_body']}</textarea>
+				<p style="margin:6px 0 0;font-size:12px;color:#9ca3af">Be honest and constructive. Dealers may respond publicly.</p>
+			</div>
 
-				<div style="display:flex;gap:18px;margin-bottom:18px;flex-wrap:wrap">
-					<div style="flex:1 1 180px">
-						<label style="display:block;font-size:0.82em;font-weight:600;color:var(--gd-text-secondary);margin-bottom:6px">Pricing Accuracy</label>
-						<select name="rating_pricing" class="ipsInput ipsInput--select" required style="width:100%">
-							<option value="5" {{if $review['rating_pricing'] === 5}}selected{{endif}}>★★★★★ Excellent</option>
-							<option value="4" {{if $review['rating_pricing'] === 4}}selected{{endif}}>★★★★☆ Good</option>
-							<option value="3" {{if $review['rating_pricing'] === 3}}selected{{endif}}>★★★☆☆ Average</option>
-							<option value="2" {{if $review['rating_pricing'] === 2}}selected{{endif}}>★★☆☆☆ Poor</option>
-							<option value="1" {{if $review['rating_pricing'] === 1}}selected{{endif}}>★☆☆☆☆ Terrible</option>
-						</select>
-					</div>
-					<div style="flex:1 1 180px">
-						<label style="display:block;font-size:0.82em;font-weight:600;color:var(--gd-text-secondary);margin-bottom:6px">Shipping Speed</label>
-						<select name="rating_shipping" class="ipsInput ipsInput--select" required style="width:100%">
-							<option value="5" {{if $review['rating_shipping'] === 5}}selected{{endif}}>★★★★★ Excellent</option>
-							<option value="4" {{if $review['rating_shipping'] === 4}}selected{{endif}}>★★★★☆ Good</option>
-							<option value="3" {{if $review['rating_shipping'] === 3}}selected{{endif}}>★★★☆☆ Average</option>
-							<option value="2" {{if $review['rating_shipping'] === 2}}selected{{endif}}>★★☆☆☆ Poor</option>
-							<option value="1" {{if $review['rating_shipping'] === 1}}selected{{endif}}>★☆☆☆☆ Terrible</option>
-						</select>
-					</div>
-					<div style="flex:1 1 180px">
-						<label style="display:block;font-size:0.82em;font-weight:600;color:var(--gd-text-secondary);margin-bottom:6px">Customer Service</label>
-						<select name="rating_service" class="ipsInput ipsInput--select" required style="width:100%">
-							<option value="5" {{if $review['rating_service'] === 5}}selected{{endif}}>★★★★★ Excellent</option>
-							<option value="4" {{if $review['rating_service'] === 4}}selected{{endif}}>★★★★☆ Good</option>
-							<option value="3" {{if $review['rating_service'] === 3}}selected{{endif}}>★★★☆☆ Average</option>
-							<option value="2" {{if $review['rating_service'] === 2}}selected{{endif}}>★★☆☆☆ Poor</option>
-							<option value="1" {{if $review['rating_service'] === 1}}selected{{endif}}>★☆☆☆☆ Terrible</option>
-						</select>
-					</div>
-				</div>
+			<div style="display:flex;gap:10px;justify-content:flex-end;border-top:0.5px solid #e5e7eb;padding-top:18px;margin-top:8px">
+				<a href="{$cancelUrl}" style="display:inline-flex;align-items:center;padding:10px 18px;border-radius:8px;border:1px solid #d1d5db;color:#374151;text-decoration:none;font-size:14px;font-weight:500;background:#fff">Cancel</a>
+				<button type="submit" style="display:inline-flex;align-items:center;padding:10px 20px;border-radius:8px;border:1px solid #2563eb;background:#2563eb;color:#fff;font-size:14px;font-weight:500;cursor:pointer">Save changes</button>
+			</div>
+		</form>
 
-				<div style="margin-bottom:20px">
-					<label style="display:block;font-size:0.82em;font-weight:600;color:var(--gd-text-secondary);margin-bottom:6px">Your Review</label>
-					<textarea name="review_body" rows="6" class="ipsInput ipsInput--text" placeholder="Share your experience..." style="width:100%;box-sizing:border-box;border:1px solid var(--gd-card-border);border-radius:6px;padding:10px 12px;font-size:0.95em;line-height:1.5;color:var(--gd-text-primary);background:#fff;resize:vertical">{$review['review_body']}</textarea>
-				</div>
-
-				<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-					<button type="submit" class="ipsButton ipsButton--primary">
-						<i class="fa-solid fa-check" aria-hidden="true"></i> Save Changes
-					</button>
-					<a href="{$cancelUrl}" class="ipsButton ipsButton--normal">Cancel</a>
-				</div>
-			</form>
-		</div>
 	</div>
 </div>
 TEMPLATE_EOT,

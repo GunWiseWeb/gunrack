@@ -873,6 +873,14 @@ class _profile extends \IPS\Dispatcher\Controller
 		$shippingNow = max( 0, min( 5, (int) $review['rating_shipping'] ) );
 		$serviceNow  = max( 0, min( 5, (int) $review['rating_service'] ) );
 
+		$dealerId   = (int) $review['dealer_id'];
+		$dealerName = '';
+		try
+		{
+			$dealerName = (string) \IPS\Db::i()->select( 'dealer_name', 'gd_dealer_feed_config', [ 'dealer_id=?', $dealerId ] )->first();
+		}
+		catch ( \Exception ) {}
+
 		$reviewData = [
 			'id'              => (int) $review['id'],
 			'rating_pricing'  => $pricingNow,
@@ -883,32 +891,7 @@ class _profile extends \IPS\Dispatcher\Controller
 			'stars_shipping'  => str_repeat( '★', $shippingNow ) . str_repeat( '☆', 5 - $shippingNow ),
 			'stars_service'   => str_repeat( '★', $serviceNow ) . str_repeat( '☆', 5 - $serviceNow ),
 			'dispute_status'  => (string) ( $review['dispute_status'] ?? 'none' ),
-		];
-
-		$dealerId   = (int) $review['dealer_id'];
-		$dealerName = '';
-		$dealerAvatar = '';
-		try
-		{
-			$dealerRow  = \IPS\Db::i()->select( 'dealer_name', 'gd_dealer_feed_config', [ 'dealer_id=?', $dealerId ] )->first();
-			$dealerName = (string) $dealerRow;
-		}
-		catch ( \Exception ) {}
-		try
-		{
-			$dm = \IPS\Member::load( $dealerId );
-			if ( $dm->member_id )
-			{
-				$dealerAvatar = (string) ( $dm->get_photo( true, false ) ?? '' );
-			}
-		}
-		catch ( \Exception ) {}
-
-		$dealerCtx = [
-			'dealer_id'   => $dealerId,
-			'dealer_name' => $dealerName,
-			'avatar_url'  => $dealerAvatar,
-			'profile_url' => $profileUrl,
+			'dealer_name'     => $dealerName,
 		];
 
 		$editUrl = (string) \IPS\Http\Url::internal(
@@ -919,7 +902,7 @@ class _profile extends \IPS\Dispatcher\Controller
 
 		\IPS\Output::i()->title  = 'Edit Your Review';
 		\IPS\Output::i()->output = $this->themeVars() . \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )
-			->editReview( $dealerCtx, $reviewData, $editUrl, $profileUrl, $csrfKey );
+			->editReview( $reviewData, $editUrl, $profileUrl, $csrfKey );
 	}
 }
 
