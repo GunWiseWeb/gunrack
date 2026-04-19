@@ -42,6 +42,12 @@
 			"do": "disputeCounts",
 			"restriction": "dealer_manage"
 		},
+		"support": {
+			"tab": "gddealer",
+			"controller": "support",
+			"do": "",
+			"restriction": "dealer_manage"
+		},
 		"settings": {
 			"tab": "gddealer",
 			"controller": "settings",
