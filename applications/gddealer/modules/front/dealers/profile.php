@@ -12,6 +12,7 @@
 
 namespace IPS\gddealer\modules\front\dealers;
 
+use IPS\gddealer\Attachment\Helper as AttachHelper;
 use function defined;
 
 if ( !defined( '\IPS\SUITE_UNIQUE_KEY' ) )
@@ -385,10 +386,24 @@ class _profile extends \IPS\Dispatcher\Controller
 				);
 				$custEvidHtml = (string) $ceEditor;
 
+				$reasonRendered   = ( $cd['dispute_reason'] ?? '' ) !== '' ? \IPS\Text\Parser::parseStatic( (string) $cd['dispute_reason'], [ (int) $cd['id'], 3 ], NULL, 'gddealer_Responses' ) : '';
+				$evidenceRendered = ( $cd['dispute_evidence'] ?? '' ) !== '' ? \IPS\Text\Parser::parseStatic( (string) $cd['dispute_evidence'], [ (int) $cd['id'], 4 ], NULL, 'gddealer_Responses' ) : '';
+
+				$reasonAtts   = AttachHelper::getAttachments( (int) $cd['id'], 3 );
+				$evidenceAtts = AttachHelper::getAttachments( (int) $cd['id'], 4 );
+
+				$reasonHasUnembedded = false;
+				foreach ( $reasonAtts as $a ) { if ( $a['is_image'] ) { $reasonHasUnembedded = true; break; } }
+				$reasonHasUnembedded = $reasonHasUnembedded && !preg_match( '/<img/i', $reasonRendered );
+
+				$evidenceHasUnembedded = false;
+				foreach ( $evidenceAtts as $a ) { if ( $a['is_image'] ) { $evidenceHasUnembedded = true; break; } }
+				$evidenceHasUnembedded = $evidenceHasUnembedded && !preg_match( '/<img/i', $evidenceRendered );
+
 				$customerDispute = [
 					'id'                 => (int) $cd['id'],
-					'dispute_reason'     => ( $cd['dispute_reason'] ?? '' ) !== '' ? \IPS\Text\Parser::parseStatic( (string) $cd['dispute_reason'], [ (int) $cd['id'], 3 ], NULL, 'gddealer_Responses' ) : '',
-					'dispute_evidence'   => ( $cd['dispute_evidence'] ?? '' ) !== '' ? \IPS\Text\Parser::parseStatic( (string) $cd['dispute_evidence'], [ (int) $cd['id'], 4 ], NULL, 'gddealer_Responses' ) : '',
+					'dispute_reason'     => $reasonRendered,
+					'dispute_evidence'   => $evidenceRendered,
 					'dispute_deadline'   => $deadlineRaw,
 					'deadline_formatted' => $deadlineRaw !== '' ? date( 'F j, Y', strtotime( $deadlineRaw ) ) : '',
 					'respond_url'        => (string) \IPS\Http\Url::internal(
@@ -396,6 +411,10 @@ class _profile extends \IPS\Dispatcher\Controller
 					)->csrf(),
 					'response_editor_html' => $custRespHtml,
 					'evidence_editor_html' => $custEvidHtml,
+					'dispute_reason_attachments'              => $reasonAtts,
+					'dispute_evidence_attachments'            => $evidenceAtts,
+					'dispute_reason_has_unembedded_images'    => $reasonHasUnembedded,
+					'dispute_evidence_has_unembedded_images'  => $evidenceHasUnembedded,
 				];
 			}
 			catch ( \Exception ) {}

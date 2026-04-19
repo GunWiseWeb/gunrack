@@ -724,6 +724,14 @@ TEMPLATE_EOT,
 				<div style="background:#f9fafb;border:1px solid #e5e7eb;padding:12px;border-radius:4px;margin-bottom:12px">
 					<div style="font-size:0.75em;color:#666;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">Customer review</div>
 					<div style="margin:0;color:#333;font-size:0.9em">{$r['review_body']|raw}</div>
+					{{if count($r['review_body_attachments']) > 0}}
+					{{if $r['review_body_has_unembedded_images']}}<p style="font-size:12px;color:#9ca3af;margin:8px 0 4px">Attached images:</p>{{endif}}
+					<div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:8px">
+					{{foreach $r['review_body_attachments'] as $att}}
+					{{if $att['is_image']}}<a href="{$att['url']}" target="_blank" rel="noopener" style="display:block;border:1px solid #e5e7eb;border-radius:6px;overflow:hidden;background:#fff"><img src="{$att['thumb_url']}" alt="{$att['file_name']}" style="display:block;max-width:140px;max-height:140px;object-fit:cover" loading="lazy"></a>{{else}}<a href="{$att['url']}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border:1px solid #e5e7eb;border-radius:6px;background:#fff;color:#374151;text-decoration:none;font-size:13px"><i class="fa-solid fa-paperclip" aria-hidden="true"></i> {$att['file_name']}</a>{{endif}}
+					{{endforeach}}
+					</div>
+					{{endif}}
 				</div>
 				{{endif}}
 
@@ -736,8 +744,24 @@ TEMPLATE_EOT,
 				<div style="background:#fff8f0;border-left:3px solid #f59e0b;padding:10px 14px;border-radius:0 4px 4px 0;margin-bottom:12px;font-size:0.85em;color:#92400e">
 					<strong>Dealer contest ({$r['dispute_at']}):</strong>
 					<div style="margin-top:4px">{$r['dispute_reason']|raw}</div>
+					{{if count($r['dispute_reason_attachments']) > 0}}
+					{{if $r['dispute_reason_has_unembedded_images']}}<p style="font-size:12px;color:#9ca3af;margin:6px 0 4px">Attached images:</p>{{endif}}
+					<div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:8px">
+					{{foreach $r['dispute_reason_attachments'] as $att}}
+					{{if $att['is_image']}}<a href="{$att['url']}" target="_blank" rel="noopener" style="display:block;border:1px solid #e5e7eb;border-radius:6px;overflow:hidden;background:#fff"><img src="{$att['thumb_url']}" alt="{$att['file_name']}" style="display:block;max-width:140px;max-height:140px;object-fit:cover" loading="lazy"></a>{{else}}<a href="{$att['url']}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border:1px solid #e5e7eb;border-radius:6px;background:#fff;color:#374151;text-decoration:none;font-size:13px"><i class="fa-solid fa-paperclip" aria-hidden="true"></i> {$att['file_name']}</a>{{endif}}
+					{{endforeach}}
+					</div>
+					{{endif}}
 					{{if $r['dispute_evidence']}}
 					<div style="margin-top:8px"><strong>Evidence:</strong><div style="margin-top:4px">{$r['dispute_evidence']|raw}</div></div>
+					{{if count($r['dispute_evidence_attachments']) > 0}}
+					{{if $r['dispute_evidence_has_unembedded_images']}}<p style="font-size:12px;color:#9ca3af;margin:6px 0 4px">Attached images:</p>{{endif}}
+					<div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:8px">
+					{{foreach $r['dispute_evidence_attachments'] as $att}}
+					{{if $att['is_image']}}<a href="{$att['url']}" target="_blank" rel="noopener" style="display:block;border:1px solid #e5e7eb;border-radius:6px;overflow:hidden;background:#fff"><img src="{$att['thumb_url']}" alt="{$att['file_name']}" style="display:block;max-width:140px;max-height:140px;object-fit:cover" loading="lazy"></a>{{else}}<a href="{$att['url']}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border:1px solid #e5e7eb;border-radius:6px;background:#fff;color:#374151;text-decoration:none;font-size:13px"><i class="fa-solid fa-paperclip" aria-hidden="true"></i> {$att['file_name']}</a>{{endif}}
+					{{endforeach}}
+					</div>
+					{{endif}}
 					{{endif}}
 				</div>
 
@@ -745,8 +769,24 @@ TEMPLATE_EOT,
 				<div style="background:#ecfdf5;border-left:3px solid #10b981;padding:10px 14px;border-radius:0 4px 4px 0;margin-bottom:12px;font-size:0.85em;color:#065f46">
 					<strong>Customer response ({$r['customer_responded_at']}):</strong>
 					<div style="margin-top:4px">{$r['customer_response']|raw}</div>
+					{{if count($r['customer_response_attachments']) > 0}}
+					{{if $r['customer_response_has_unembedded_images']}}<p style="font-size:12px;color:#9ca3af;margin:6px 0 4px">Attached images:</p>{{endif}}
+					<div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:8px">
+					{{foreach $r['customer_response_attachments'] as $att}}
+					{{if $att['is_image']}}<a href="{$att['url']}" target="_blank" rel="noopener" style="display:block;border:1px solid #e5e7eb;border-radius:6px;overflow:hidden;background:#fff"><img src="{$att['thumb_url']}" alt="{$att['file_name']}" style="display:block;max-width:140px;max-height:140px;object-fit:cover" loading="lazy"></a>{{else}}<a href="{$att['url']}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border:1px solid #e5e7eb;border-radius:6px;background:#fff;color:#374151;text-decoration:none;font-size:13px"><i class="fa-solid fa-paperclip" aria-hidden="true"></i> {$att['file_name']}</a>{{endif}}
+					{{endforeach}}
+					</div>
+					{{endif}}
 					{{if $r['customer_evidence']}}
 					<div style="margin-top:8px"><strong>Evidence:</strong><div style="margin-top:4px">{$r['customer_evidence']|raw}</div></div>
+					{{if count($r['customer_evidence_attachments']) > 0}}
+					{{if $r['customer_evidence_has_unembedded_images']}}<p style="font-size:12px;color:#9ca3af;margin:6px 0 4px">Attached images:</p>{{endif}}
+					<div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:8px">
+					{{foreach $r['customer_evidence_attachments'] as $att}}
+					{{if $att['is_image']}}<a href="{$att['url']}" target="_blank" rel="noopener" style="display:block;border:1px solid #e5e7eb;border-radius:6px;overflow:hidden;background:#fff"><img src="{$att['thumb_url']}" alt="{$att['file_name']}" style="display:block;max-width:140px;max-height:140px;object-fit:cover" loading="lazy"></a>{{else}}<a href="{$att['url']}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border:1px solid #e5e7eb;border-radius:6px;background:#fff;color:#374151;text-decoration:none;font-size:13px"><i class="fa-solid fa-paperclip" aria-hidden="true"></i> {$att['file_name']}</a>{{endif}}
+					{{endforeach}}
+					</div>
+					{{endif}}
 					{{endif}}
 				</div>
 				{{else}}
@@ -1886,6 +1926,14 @@ TEMPLATE_EOT,
 
 			{{if $r['review_body']}}
 			<div style="margin:0 0 12px;color:#333">{$r['review_body']|raw}</div>
+			{{if count($r['review_body_attachments']) > 0}}
+			{{if $r['review_body_has_unembedded_images']}}<p style="font-size:12px;color:#9ca3af;margin:4px 0 4px">Attached images:</p>{{endif}}
+			<div style="margin-bottom:12px;display:flex;flex-wrap:wrap;gap:8px">
+			{{foreach $r['review_body_attachments'] as $att}}
+			{{if $att['is_image']}}<a href="{$att['url']}" target="_blank" rel="noopener" style="display:block;border:1px solid #e5e7eb;border-radius:6px;overflow:hidden;background:#fff"><img src="{$att['thumb_url']}" alt="{$att['file_name']}" style="display:block;max-width:120px;max-height:120px;object-fit:cover" loading="lazy"></a>{{else}}<a href="{$att['url']}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border:1px solid #e5e7eb;border-radius:6px;background:#fff;color:#374151;text-decoration:none;font-size:13px"><i class="fa-solid fa-paperclip" aria-hidden="true"></i> {$att['file_name']}</a>{{endif}}
+			{{endforeach}}
+			</div>
+			{{endif}}
 			{{endif}}
 
 			{{if $r['dealer_response']}}
@@ -2108,12 +2156,28 @@ TEMPLATE_EOT,
 		<div style="background:#fff;border-left:3px solid #f59e0b;padding:10px 14px;margin-bottom:12px;border-radius:0 4px 4px 0">
 			<div style="font-size:0.8em;font-weight:700;color:#92400e;margin-bottom:4px">Dealer's reason</div>
 			<div style="margin:0;font-size:0.9em;color:#333">{$customerDispute['dispute_reason']|raw}</div>
+			{{if count($customerDispute['dispute_reason_attachments']) > 0}}
+			{{if $customerDispute['dispute_reason_has_unembedded_images']}}<p style="font-size:12px;color:#9ca3af;margin:6px 0 4px">Attached images:</p>{{endif}}
+			<div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:8px">
+			{{foreach $customerDispute['dispute_reason_attachments'] as $att}}
+			{{if $att['is_image']}}<a href="{$att['url']}" target="_blank" rel="noopener" style="display:block;border:1px solid #e5e7eb;border-radius:6px;overflow:hidden;background:#fff"><img src="{$att['thumb_url']}" alt="{$att['file_name']}" style="display:block;max-width:120px;max-height:120px;object-fit:cover" loading="lazy"></a>{{else}}<a href="{$att['url']}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border:1px solid #e5e7eb;border-radius:6px;background:#fff;color:#374151;text-decoration:none;font-size:13px"><i class="fa-solid fa-paperclip" aria-hidden="true"></i> {$att['file_name']}</a>{{endif}}
+			{{endforeach}}
+			</div>
+			{{endif}}
 		</div>
 		{{endif}}
 		{{if $customerDispute['dispute_evidence']}}
 		<div style="background:#fff;border-left:3px solid #f59e0b;padding:10px 14px;margin-bottom:12px;border-radius:0 4px 4px 0">
 			<div style="font-size:0.8em;font-weight:700;color:#92400e;margin-bottom:4px">Dealer's evidence</div>
 			<div style="margin:0;font-size:0.9em;color:#333">{$customerDispute['dispute_evidence']|raw}</div>
+			{{if count($customerDispute['dispute_evidence_attachments']) > 0}}
+			{{if $customerDispute['dispute_evidence_has_unembedded_images']}}<p style="font-size:12px;color:#9ca3af;margin:6px 0 4px">Attached images:</p>{{endif}}
+			<div style="margin-top:6px;display:flex;flex-wrap:wrap;gap:8px">
+			{{foreach $customerDispute['dispute_evidence_attachments'] as $att}}
+			{{if $att['is_image']}}<a href="{$att['url']}" target="_blank" rel="noopener" style="display:block;border:1px solid #e5e7eb;border-radius:6px;overflow:hidden;background:#fff"><img src="{$att['thumb_url']}" alt="{$att['file_name']}" style="display:block;max-width:120px;max-height:120px;object-fit:cover" loading="lazy"></a>{{else}}<a href="{$att['url']}" target="_blank" rel="noopener" style="display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border:1px solid #e5e7eb;border-radius:6px;background:#fff;color:#374151;text-decoration:none;font-size:13px"><i class="fa-solid fa-paperclip" aria-hidden="true"></i> {$att['file_name']}</a>{{endif}}
+			{{endforeach}}
+			</div>
+			{{endif}}
 		</div>
 		{{endif}}
 		<form method="post" action="{$customerDispute['respond_url']}">

@@ -17,6 +17,7 @@
 
 namespace IPS\gddealer\modules\front\dealers;
 
+use IPS\gddealer\Attachment\Helper as AttachHelper;
 use IPS\gddealer\Dealer\Dealer;
 use IPS\gddealer\Feed\Importer;
 use IPS\gddealer\Listing\Listing;
@@ -1057,6 +1058,23 @@ class _dashboard extends \IPS\Dispatcher\Controller
 					'dispute_reason_editor_html'   => $disputeReasonEditorHtml,
 					'dispute_evidence_editor_html' => $disputeEvidenceEditorHtml,
 				];
+
+				$rowRef =& $rows[ count( $rows ) - 1 ];
+				$attFields = [ 'review_body' => 1 ];
+				if ( in_array( (string) ( $r['dispute_status'] ?? 'none' ), [ 'pending_admin', 'resolved_dealer', 'dismissed' ], TRUE ) )
+				{
+					$attFields['customer_response'] = 5;
+					$attFields['customer_evidence'] = 6;
+				}
+				foreach ( $attFields as $field => $hint )
+				{
+					$atts = AttachHelper::getAttachments( (int) $r['id'], $hint );
+					$rowRef[ $field . '_attachments' ] = $atts;
+					$hasImg = false;
+					foreach ( $atts as $a ) { if ( $a['is_image'] ) { $hasImg = true; break; } }
+					$rowRef[ $field . '_has_unembedded_images' ] = $hasImg && !preg_match( '/<img/i', (string) ( $rowRef[ $field ] ?? '' ) );
+				}
+				unset( $rowRef );
 			}
 		}
 		catch ( \Exception ) {}

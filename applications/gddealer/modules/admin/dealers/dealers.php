@@ -11,6 +11,7 @@
 
 namespace IPS\gddealer\modules\admin\dealers;
 
+use IPS\gddealer\Attachment\Helper as AttachHelper;
 use IPS\gddealer\Dealer\Dealer;
 use IPS\gddealer\Feed\Importer;
 use IPS\gddealer\Listing\Listing;
@@ -664,6 +665,24 @@ class _dealers extends \IPS\Dispatcher\Controller
 						'app=gddealer&module=dealers&controller=dealers&do=requestEdit&id=' . (int) $r['id']
 					)->csrf(),
 				];
+
+				$rowRef =& $rows[ count( $rows ) - 1 ];
+				$attFields = [
+					'review_body'      => 1,
+					'dispute_reason'   => 3,
+					'dispute_evidence' => 4,
+					'customer_response'=> 5,
+					'customer_evidence'=> 6,
+				];
+				foreach ( $attFields as $field => $hint )
+				{
+					$atts = AttachHelper::getAttachments( (int) $r['id'], $hint );
+					$rowRef[ $field . '_attachments' ] = $atts;
+					$hasImg = false;
+					foreach ( $atts as $a ) { if ( $a['is_image'] ) { $hasImg = true; break; } }
+					$rowRef[ $field . '_has_unembedded_images' ] = $hasImg && !preg_match( '/<img/i', (string) ( $rowRef[ $field ] ?? '' ) );
+				}
+				unset( $rowRef );
 			}
 		}
 		catch ( \Exception ) {}
