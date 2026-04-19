@@ -721,6 +721,27 @@ class _dealers extends \IPS\Dispatcher\Controller
 			{
 				if ( $reviewerMember && $reviewerMember->member_id )
 				{
+					$notification = new \IPS\Notification(
+						\IPS\Application::load( 'gddealer' ),
+						'dispute_outcome_reviewer',
+						$reviewerMember,
+						[ $reviewerMember ],
+						[
+							'dealer_name' => $dealerName,
+							'outcome'     => 'upheld',
+							'review_id'   => (int) $id,
+						]
+					);
+					$notification->recipients->attach( $reviewerMember );
+					$notification->send();
+				}
+			}
+			catch ( \Exception ) {}
+
+			try
+			{
+				if ( $reviewerMember && $reviewerMember->member_id )
+				{
 					$sender = \IPS\Member::loggedIn();
 					if ( \IPS\core\Messenger\Conversation::memberCanReceiveNewMessage( $reviewerMember, $sender ) )
 					{
@@ -846,6 +867,27 @@ class _dealers extends \IPS\Dispatcher\Controller
 						'dealer_name' => $dealerName,
 						'outcome'     => $outcomeText,
 					], \IPS\Email::TYPE_TRANSACTIONAL )->send( $reviewerMember );
+				}
+			}
+			catch ( \Exception ) {}
+
+			try
+			{
+				if ( $reviewerMember && $reviewerMember->member_id )
+				{
+					$notification = new \IPS\Notification(
+						\IPS\Application::load( 'gddealer' ),
+						'dispute_outcome_reviewer',
+						$reviewerMember,
+						[ $reviewerMember ],
+						[
+							'dealer_name' => $dealerName,
+							'outcome'     => 'dismissed',
+							'review_id'   => (int) $id,
+						]
+					);
+					$notification->recipients->attach( $reviewerMember );
+					$notification->send();
 				}
 			}
 			catch ( \Exception ) {}

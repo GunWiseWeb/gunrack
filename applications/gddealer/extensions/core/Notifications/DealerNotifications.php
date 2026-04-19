@@ -98,6 +98,15 @@ class DealerNotifications extends NotificationsAbstract
 				'default'           => [ 'inline', 'email' ],
 				'disabled'          => [],
 			],
+			'dispute_outcome_reviewer' => [
+				'type'              => 'standard',
+				'notificationTypes' => [ 'dispute_outcome_reviewer' ],
+				'title'             => 'gddealer_notif_dispute_outcome_reviewer',
+				'showTitle'         => true,
+				'description'       => 'gddealer_notif_dispute_outcome_reviewer_desc',
+				'default'           => [ 'inline', 'email' ],
+				'disabled'          => [],
+			],
 		];
 	}
 
@@ -194,6 +203,34 @@ class DealerNotifications extends NotificationsAbstract
 			'title'   => ( $extra['reviewer_name'] ?? 'A customer' ) . ' responded to your dispute',
 			'url'     => $url,
 			'content' => 'The customer has submitted their evidence. An admin will review and decide.',
+			'author'  => NULL,
+		];
+	}
+
+	public function parse_dispute_outcome_reviewer( Inline $notification, bool $htmlEscape = TRUE ): array
+	{
+		$extra   = $notification->extra ?: [];
+		$outcome = (string) ( $extra['outcome'] ?? 'resolved' );
+		$dealer  = (string) ( $extra['dealer_name'] ?? 'the dealer' );
+
+		$title = match ( $outcome )
+		{
+			'dismissed' => 'Your review on ' . $dealer . ' has been upheld',
+			'upheld'    => 'Your review dispute was resolved in ' . $dealer . '\'s favor',
+			default     => 'Your review dispute was resolved',
+		};
+
+		$content = match ( $outcome )
+		{
+			'dismissed' => 'Admin reviewed the evidence and your review stands. It remains visible and continues to affect the dealer\'s rating.',
+			'upheld'    => 'Admin ruled in the dealer\'s favor. Your review stays visible but no longer affects their rating.',
+			default     => 'The admin team has resolved your dispute. View your reviews for details.',
+		};
+
+		return [
+			'title'   => $title,
+			'url'     => \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dashboard&do=reviews' ),
+			'content' => $content,
 			'author'  => NULL,
 		];
 	}

@@ -321,6 +321,8 @@
     <word key="gddealer_notif_dealer_responded_desc"><![CDATA[When a dealer posts a public response to your review]]></word>
     <word key="gddealer_notif_dispute_customer_responded"><![CDATA[Customer Responded to Dispute]]></word>
     <word key="gddealer_notif_dispute_customer_responded_desc"><![CDATA[When the customer submits their response/evidence to your dispute]]></word>
+    <word key="gddealer_notif_dispute_outcome_reviewer"><![CDATA[Review Dispute Resolved]]></word>
+    <word key="gddealer_notif_dispute_outcome_reviewer_desc"><![CDATA[When an admin resolves a dispute on one of your reviews]]></word>
     <word key="notifications__gddealer_DealerNotifications"><![CDATA[Dealer Notifications]]></word>
     <word key="notifications__gddealer_DealerNotifications_desc"><![CDATA[Notifications related to dealer reviews and disputes]]></word>
     <word key="mailsub__gddealer_notification_new_dealer_review"><![CDATA[New review on your dealer profile]]></word>
@@ -331,6 +333,7 @@
     <word key="mailsub__gddealer_notification_dispute_upheld"><![CDATA[Your review dispute was upheld]]></word>
     <word key="mailsub__gddealer_notification_dispute_dismissed"><![CDATA[Your review dispute was dismissed]]></word>
     <word key="mailsub__gddealer_notification_dispute_customer_responded"><![CDATA[The customer responded to your dispute]]></word>
+    <word key="mailsub__gddealer_notification_dispute_outcome_reviewer"><![CDATA[Your review dispute has been resolved]]></word>
     <word key="mailani__gddealer_notification_new_dealer_review"><![CDATA[{member} left a review on your dealer profile. Log in to view and respond.]]></word>
     <word key="mailani__gddealer_notification_updated_dealer_review"><![CDATA[{member} updated their review on your dealer profile. Log in to view the changes.]]></word>
     <word key="mailani__gddealer_notification_review_disputed"><![CDATA[{member} has disputed your review. You have 30 days to respond.]]></word>
@@ -339,6 +342,7 @@
     <word key="mailani__gddealer_notification_dispute_upheld"><![CDATA[Admin has ruled in your favor. The review no longer affects your rating.]]></word>
     <word key="mailani__gddealer_notification_dispute_dismissed"><![CDATA[Admin has dismissed your dispute. The review stands as-is.]]></word>
     <word key="mailani__gddealer_notification_dispute_customer_responded"><![CDATA[{member} submitted their response to your dispute. An admin will review and decide.]]></word>
+    <word key="mailani__gddealer_notification_dispute_outcome_reviewer"><![CDATA[An admin has resolved a dispute on your review. Log in to view your reviews for details.]]></word>
     <word key="gddealer_review_deleted"><![CDATA[Review deleted successfully.]]></word>
     <word key="gddealer_action_failed"><![CDATA[Action failed. The review could not be found.]]></word>
     <word key="gddealer_pm_response_title"><![CDATA[%s responded to your review]]></word>
