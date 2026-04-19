@@ -36,6 +36,39 @@ class _upgrade
 
 		return TRUE;
 	}
+
+	/**
+	 * step2: Migrate existing plaintext content to basic HTML paragraphs.
+	 * Idempotent — rows already containing HTML (starting with '<') are skipped.
+	 */
+	public function step2(): bool
+	{
+		$columns = array(
+			'review_body',
+			'dealer_response',
+			'dispute_reason',
+			'dispute_evidence',
+			'customer_response',
+			'customer_evidence',
+		);
+
+		foreach ( $columns as $col )
+		{
+			try
+			{
+				\IPS\Db::i()->query(
+					"UPDATE `" . \IPS\Db::i()->prefix . "gd_dealer_ratings`
+					 SET `{$col}` = CONCAT( '<p>', REPLACE( REPLACE( `{$col}`, CHAR(13), '' ), CHAR(10), '</p><p>' ), '</p>' )
+					 WHERE `{$col}` IS NOT NULL
+					   AND `{$col}` != ''
+					   AND `{$col}` NOT LIKE '<%'"
+				);
+			}
+			catch ( \Exception ) {}
+		}
+
+		return TRUE;
+	}
 }
 
 class upgrade extends _upgrade {}
