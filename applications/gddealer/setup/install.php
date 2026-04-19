@@ -3295,6 +3295,131 @@ $gddealerTemplates[] = [
 TEMPLATE_EOT,
 ];
 
+/* ===== ADMIN: supportDepartments ===== */
+$gddealerTemplates[] = [
+	'set_id'        => 1,
+	'app'           => 'gddealer',
+	'location'      => 'admin',
+	'group'         => 'dealers',
+	'template_name' => 'supportDepartments',
+	'template_data' => '$departments, $addUrl',
+	'template_content' => <<<'TEMPLATE_EOT'
+<div class="ipsPad">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+	<h1 class="ipsType_pageTitle" style="margin:0">Support Departments</h1>
+	<a href="{$addUrl}" class="ipsButton ipsButton--primary"><i class="fa-solid fa-plus" aria-hidden="true"></i> Add Department</a>
+</div>
+{{if count($departments) === 0}}
+<div style="padding:40px;text-align:center;background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;color:#6b7280">
+	<p style="margin:0 0 12px;font-size:14px">No support departments configured.</p>
+	<a href="{$addUrl}" class="ipsButton ipsButton--primary ipsButton--small">Create the first department</a>
+</div>
+{{else}}
+<div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden">
+	<table style="width:100%;border-collapse:collapse">
+		<thead>
+			<tr style="background:#f9fafb;border-bottom:1px solid #e5e7eb">
+				<th style="text-align:left;padding:12px 16px;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;color:#6b7280;font-weight:500;width:40px">#</th>
+				<th style="text-align:left;padding:12px 16px;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;color:#6b7280;font-weight:500">Department</th>
+				<th style="text-align:left;padding:12px 16px;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;color:#6b7280;font-weight:500">Visibility</th>
+				<th style="text-align:left;padding:12px 16px;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;color:#6b7280;font-weight:500">Tickets</th>
+				<th style="text-align:left;padding:12px 16px;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;color:#6b7280;font-weight:500">Status</th>
+				<th style="text-align:right;padding:12px 16px;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;color:#6b7280;font-weight:500">Actions</th>
+			</tr>
+		</thead>
+		<tbody>
+			{{foreach $departments as $d}}
+			<tr style="border-bottom:1px solid #f3f4f6">
+				<td style="padding:14px 16px;color:#9ca3af;font-size:13px">{$d['position']}</td>
+				<td style="padding:14px 16px">
+					<div style="font-size:14px;font-weight:500;color:#111827">{$d['name']}</div>
+					{{if $d['description']}}<div style="font-size:12px;color:#6b7280;margin-top:2px">{$d['description']}</div>{{endif}}
+					{{if $d['email']}}<div style="font-size:11px;color:#9ca3af;margin-top:2px"><i class="fa-solid fa-envelope" aria-hidden="true"></i> {$d['email']}</div>{{endif}}
+				</td>
+				<td style="padding:14px 16px">
+					<span style="display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:500;background:{$d['visibility_bg']};color:{$d['visibility_color']}">{$d['visibility_label']}</span>
+				</td>
+				<td style="padding:14px 16px;font-size:13px;color:#374151">{$d['ticket_count']}</td>
+				<td style="padding:14px 16px">
+					<a href="{$d['toggle_url']}" style="font-size:12px;color:{{if $d['enabled']}}#16a34a{{else}}#9ca3af{{endif}};text-decoration:none">
+						<i class="fa-solid {{if $d['enabled']}}fa-circle-check{{else}}fa-circle-xmark{{endif}}" aria-hidden="true"></i>
+						{{if $d['enabled']}}Enabled{{else}}Disabled{{endif}}
+					</a>
+				</td>
+				<td style="padding:14px 16px;text-align:right;white-space:nowrap">
+					<a href="{$d['move_up_url']}" style="color:#6b7280;text-decoration:none;padding:4px 6px" title="Move up"><i class="fa-solid fa-arrow-up" aria-hidden="true"></i></a>
+					<a href="{$d['move_down_url']}" style="color:#6b7280;text-decoration:none;padding:4px 6px" title="Move down"><i class="fa-solid fa-arrow-down" aria-hidden="true"></i></a>
+					<a href="{$d['edit_url']}" style="color:#2563eb;text-decoration:none;padding:4px 10px;font-size:13px">Edit</a>
+					<a href="{$d['delete_url']}" style="color:#dc2626;text-decoration:none;padding:4px 10px;font-size:13px" onclick="return confirm('Delete this department? Only works if no tickets reference it.');">Delete</a>
+				</td>
+			</tr>
+			{{endforeach}}
+		</tbody>
+	</table>
+</div>
+{{endif}}
+</div>
+TEMPLATE_EOT,
+];
+
+/* ===== ADMIN: supportDepartmentForm ===== */
+$gddealerTemplates[] = [
+	'set_id'        => 1,
+	'app'           => 'gddealer',
+	'location'      => 'admin',
+	'group'         => 'dealers',
+	'template_name' => 'supportDepartmentForm',
+	'template_data' => '$formData, $isEdit, $submitUrl, $backUrl, $csrfKey',
+	'template_content' => <<<'TEMPLATE_EOT'
+<div class="ipsPad">
+<div style="margin-bottom:16px">
+	<a href="{$backUrl}" style="font-size:13px;color:#6b7280;text-decoration:none">&larr; Back to departments</a>
+</div>
+<h1 class="ipsType_pageTitle" style="margin:0 0 20px">{{if $isEdit}}Edit Department{{else}}Add Department{{endif}}</h1>
+<form method="post" action="{$submitUrl}" style="max-width:640px">
+	<input type="hidden" name="csrfKey" value="{$csrfKey}">
+	<div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:24px">
+		<div style="margin-bottom:18px">
+			<label style="display:block;font-size:13px;font-weight:500;color:#111827;margin-bottom:6px">Name <span style="color:#dc2626">*</span></label>
+			<input type="text" name="name" value="{$formData['name']}" required class="ipsInput ipsInput--text" style="width:100%" maxlength="128">
+			<p style="font-size:12px;color:#6b7280;margin:4px 0 0">Short label shown to dealers in the department dropdown.</p>
+		</div>
+		<div style="margin-bottom:18px">
+			<label style="display:block;font-size:13px;font-weight:500;color:#111827;margin-bottom:6px">Description</label>
+			<textarea name="description" rows="2" class="ipsInput ipsInput--text" style="width:100%;resize:vertical">{$formData['description']}</textarea>
+			<p style="font-size:12px;color:#6b7280;margin:4px 0 0">Optional helper text shown below the department name when dealers pick it.</p>
+		</div>
+		<div style="margin-bottom:18px">
+			<label style="display:block;font-size:13px;font-weight:500;color:#111827;margin-bottom:6px">Notification email</label>
+			<input type="email" name="email" value="{$formData['email']}" class="ipsInput ipsInput--text" style="width:100%" maxlength="255">
+			<p style="font-size:12px;color:#6b7280;margin:4px 0 0">Optional email that receives copies of new tickets in this department. Leave blank to use the default admin recipient list.</p>
+		</div>
+		<div style="margin-bottom:18px">
+			<label style="display:block;font-size:13px;font-weight:500;color:#111827;margin-bottom:6px">Visibility</label>
+			<select name="visibility" class="ipsInput ipsInput--select" style="width:100%">
+				<option value="public" {expression="$formData['visibility'] === 'public' ? 'selected' : ''"}>Public — all dealers regardless of tier</option>
+				<option value="pro" {expression="$formData['visibility'] === 'pro' ? 'selected' : ''"}>Pro+ — Pro, Founding, and Enterprise dealers</option>
+				<option value="enterprise" {expression="$formData['visibility'] === 'enterprise' ? 'selected' : ''"}>Enterprise only — Enterprise and Founding dealers</option>
+			</select>
+			<p style="font-size:12px;color:#6b7280;margin:4px 0 0">Which dealer tiers can submit tickets to this department.</p>
+		</div>
+		<div style="margin-bottom:4px">
+			<label style="display:inline-flex;align-items:center;gap:10px;font-size:13px;font-weight:500;color:#111827;cursor:pointer">
+				<input type="checkbox" name="enabled" value="1" {expression="$formData['enabled'] ? 'checked' : ''"}>
+				<span>Enabled</span>
+			</label>
+			<p style="font-size:12px;color:#6b7280;margin:4px 0 0 26px">Disabled departments are hidden from the new-ticket form but existing tickets stay accessible.</p>
+		</div>
+	</div>
+	<div style="margin-top:20px;display:flex;gap:10px">
+		<button type="submit" class="ipsButton ipsButton--primary">{{if $isEdit}}Save Changes{{else}}Create Department{{endif}}</button>
+		<a href="{$backUrl}" class="ipsButton ipsButton--light">Cancel</a>
+	</div>
+</form>
+</div>
+TEMPLATE_EOT,
+];
+
 /* Force furl + applications + extensions + email-template cache rebuild
    so new routes, templates, and extension classes appear without a manual
    cache flush. */

@@ -364,6 +364,7 @@
     <word key="gddealer_disputes_granted"><![CDATA[Bonus disputes granted.]]></word>
     <word key="menu__gddealer_dealers_disputeCounts"><![CDATA[Dispute Counts]]></word>
     <word key="menu__gddealer_dealers_support"><![CDATA[Support Tickets]]></word>
+    <word key="menu__gddealer_dealers_departments"><![CDATA[Support Departments]]></word>
     <word key="gddealer_support_nav"><![CDATA[Support]]></word>
     <word key="gddealer_support_admin_reply"><![CDATA[Reply]]></word>
     <word key="gddealer_support_title"><![CDATA[Support Tickets]]></word>

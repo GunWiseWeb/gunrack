@@ -48,6 +48,12 @@
 			"do": "",
 			"restriction": "dealer_manage"
 		},
+		"departments": {
+			"tab": "gddealer",
+			"controller": "departments",
+			"do": "",
+			"restriction": "dealer_manage"
+		},
 		"settings": {
 			"tab": "gddealer",
 			"controller": "settings",
