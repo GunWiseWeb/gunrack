@@ -988,6 +988,56 @@ class _dashboard extends \IPS\Dispatcher\Controller
 					catch ( \Exception ) {}
 				}
 
+				/* Dispute editors — only built for rows that can actually be
+				   disputed (status=none). Two editors per eligible row:
+				   reason (id2=3) and evidence (id2=4). */
+				$disputeReasonEditorHtml   = '';
+				$disputeEvidenceEditorHtml = '';
+				if ( (string) ( $r['dispute_status'] ?? 'none' ) === 'none' )
+				{
+					try
+					{
+						$rEditor = new \IPS\Helpers\Form\Editor(
+							'dispute_reason',
+							'',
+							FALSE,
+							[
+								'app'         => 'gddealer',
+								'key'         => 'Responses',
+								'autoSaveKey' => 'gddealer-dispute-reason-' . (int) $r['id'],
+								'attachIds'   => [ (int) $r['id'], 3 ],
+							],
+							NULL,
+							NULL,
+							NULL,
+							'editor_dispute_reason_' . (int) $r['id']
+						);
+						$disputeReasonEditorHtml = (string) $rEditor;
+					}
+					catch ( \Exception ) {}
+
+					try
+					{
+						$eEditor = new \IPS\Helpers\Form\Editor(
+							'dispute_evidence',
+							'',
+							FALSE,
+							[
+								'app'         => 'gddealer',
+								'key'         => 'Responses',
+								'autoSaveKey' => 'gddealer-dispute-evidence-' . (int) $r['id'],
+								'attachIds'   => [ (int) $r['id'], 4 ],
+							],
+							NULL,
+							NULL,
+							NULL,
+							'editor_dispute_evidence_' . (int) $r['id']
+						);
+						$disputeEvidenceEditorHtml = (string) $eEditor;
+					}
+					catch ( \Exception ) {}
+				}
+
 				$rows[] = [
 					'id'               => (int) $r['id'],
 					'member_id'        => (int) $r['member_id'],
@@ -1020,6 +1070,8 @@ class _dashboard extends \IPS\Dispatcher\Controller
 					)->csrf(),
 					'respond_editor_html' => $respondEditorHtml,
 					'edit_editor_html'    => $editEditorHtml,
+					'dispute_reason_editor_html'   => $disputeReasonEditorHtml,
+					'dispute_evidence_editor_html' => $disputeEvidenceEditorHtml,
 				];
 			}
 		}
@@ -1268,9 +1320,50 @@ class _dashboard extends \IPS\Dispatcher\Controller
 	{
 		\IPS\Session::i()->csrfCheck();
 
-		$id       = (int) ( \IPS\Request::i()->id ?? 0 );
-		$reason   = trim( (string) \IPS\Request::i()->dispute_reason );
-		$evidence = trim( (string) \IPS\Request::i()->dispute_evidence );
+		$id          = (int) ( \IPS\Request::i()->id ?? 0 );
+		$reasonRaw   = (string) \IPS\Request::i()->dispute_reason;
+		$evidenceRaw = (string) \IPS\Request::i()->dispute_evidence;
+
+		/* Both fields arrive as editor HTML — parse through IPS sanitizer
+		   (area='gddealer_Responses', attachIds tag the review + the
+		   specific field: 3=dispute_reason, 4=dispute_evidence). */
+		$reason = '';
+		if ( trim( $reasonRaw ) !== '' && $id > 0 )
+		{
+			try
+			{
+				$reason = \IPS\Text\Parser::parseStatic(
+					$reasonRaw,
+					[ $id, 3 ],
+					\IPS\Member::loggedIn(),
+					'gddealer_Responses'
+				);
+			}
+			catch ( \Exception )
+			{
+				$reason = $reasonRaw;
+			}
+		}
+		$reason = trim( $reason );
+
+		$evidence = '';
+		if ( trim( $evidenceRaw ) !== '' && $id > 0 )
+		{
+			try
+			{
+				$evidence = \IPS\Text\Parser::parseStatic(
+					$evidenceRaw,
+					[ $id, 4 ],
+					\IPS\Member::loggedIn(),
+					'gddealer_Responses'
+				);
+			}
+			catch ( \Exception )
+			{
+				$evidence = $evidenceRaw;
+			}
+		}
+		$evidence = trim( $evidence );
 		$tier     = (string) $this->dealer->subscription_tier;
 		$dealerId = (int) $this->dealer->dealer_id;
 
@@ -1338,6 +1431,28 @@ class _dashboard extends \IPS\Dispatcher\Controller
 				'dispute_at'       => date( 'Y-m-d H:i:s' ),
 				'dispute_deadline' => $deadline,
 			], [ 'id=?', $id ] );
+		}
+		catch ( \Exception ) {}
+
+		/* Claim any editor attachments for each dispute field. Same
+		   autoSaveKey the editor was rendered with. */
+		try
+		{
+			\IPS\File::claimAttachments(
+				'gddealer-dispute-reason-' . (int) $id,
+				(int) $id,
+				3
+			);
+		}
+		catch ( \Exception ) {}
+
+		try
+		{
+			\IPS\File::claimAttachments(
+				'gddealer-dispute-evidence-' . (int) $id,
+				(int) $id,
+				4
+			);
 		}
 		catch ( \Exception ) {}
 

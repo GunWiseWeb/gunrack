@@ -352,6 +352,53 @@ class _profile extends \IPS\Dispatcher\Controller
 						$disputeId, $dealerId, (int) $member->member_id, 'pending_customer' ]
 				)->first();
 				$deadlineRaw = (string) ( $cd['dispute_deadline'] ?? '' );
+
+				/* Two editors for the customer reply: customer_response
+				   (id2=5) and customer_evidence (id2=6). */
+				$custRespHtml = '';
+				$custEvidHtml = '';
+				try
+				{
+					$crEditor = new \IPS\Helpers\Form\Editor(
+						'customer_response',
+						'',
+						FALSE,
+						[
+							'app'         => 'gddealer',
+							'key'         => 'Responses',
+							'autoSaveKey' => 'gddealer-customer-response-' . (int) $cd['id'],
+							'attachIds'   => [ (int) $cd['id'], 5 ],
+						],
+						NULL,
+						NULL,
+						NULL,
+						'editor_customer_response_' . (int) $cd['id']
+					);
+					$custRespHtml = (string) $crEditor;
+				}
+				catch ( \Exception ) {}
+
+				try
+				{
+					$ceEditor = new \IPS\Helpers\Form\Editor(
+						'customer_evidence',
+						'',
+						FALSE,
+						[
+							'app'         => 'gddealer',
+							'key'         => 'Responses',
+							'autoSaveKey' => 'gddealer-customer-evidence-' . (int) $cd['id'],
+							'attachIds'   => [ (int) $cd['id'], 6 ],
+						],
+						NULL,
+						NULL,
+						NULL,
+						'editor_customer_evidence_' . (int) $cd['id']
+					);
+					$custEvidHtml = (string) $ceEditor;
+				}
+				catch ( \Exception ) {}
+
 				$customerDispute = [
 					'id'                 => (int) $cd['id'],
 					'dispute_reason'     => (string) ( $cd['dispute_reason'] ?? '' ),
@@ -361,6 +408,8 @@ class _profile extends \IPS\Dispatcher\Controller
 					'respond_url'        => (string) \IPS\Http\Url::internal(
 						'app=gddealer&module=dealers&controller=profile&do=disputeRespond&dealer_slug=' . urlencode( $slug ) . '&id=' . (int) $cd['id']
 					)->csrf(),
+					'response_editor_html' => $custRespHtml,
+					'evidence_editor_html' => $custEvidHtml,
 				];
 			}
 			catch ( \Exception ) {}
@@ -711,8 +760,48 @@ class _profile extends \IPS\Dispatcher\Controller
 			return;
 		}
 
-		$response = trim( (string) ( \IPS\Request::i()->customer_response ?? '' ) );
-		$evidence = trim( (string) ( \IPS\Request::i()->customer_evidence ?? '' ) );
+		$responseRaw = (string) ( \IPS\Request::i()->customer_response ?? '' );
+		$evidenceRaw = (string) ( \IPS\Request::i()->customer_evidence ?? '' );
+
+		/* Editor HTML → IPS sanitizer. attachIds=[id,5] for customer_response,
+		   [id,6] for customer_evidence. */
+		$response = '';
+		if ( trim( $responseRaw ) !== '' )
+		{
+			try
+			{
+				$response = \IPS\Text\Parser::parseStatic(
+					$responseRaw,
+					[ (int) $review['id'], 5 ],
+					\IPS\Member::loggedIn(),
+					'gddealer_Responses'
+				);
+			}
+			catch ( \Exception )
+			{
+				$response = $responseRaw;
+			}
+		}
+		$response = trim( $response );
+
+		$evidence = '';
+		if ( trim( $evidenceRaw ) !== '' )
+		{
+			try
+			{
+				$evidence = \IPS\Text\Parser::parseStatic(
+					$evidenceRaw,
+					[ (int) $review['id'], 6 ],
+					\IPS\Member::loggedIn(),
+					'gddealer_Responses'
+				);
+			}
+			catch ( \Exception )
+			{
+				$evidence = $evidenceRaw;
+			}
+		}
+		$evidence = trim( $evidence );
 
 		if ( $response === '' )
 		{
@@ -728,6 +817,27 @@ class _profile extends \IPS\Dispatcher\Controller
 				'customer_evidence'     => $evidence !== '' ? $evidence : null,
 				'customer_responded_at' => date( 'Y-m-d H:i:s' ),
 			], [ 'id=?', (int) $review['id'] ] );
+		}
+		catch ( \Exception ) {}
+
+		/* Claim attachments uploaded via the two customer-side editors. */
+		try
+		{
+			\IPS\File::claimAttachments(
+				'gddealer-customer-response-' . (int) $review['id'],
+				(int) $review['id'],
+				5
+			);
+		}
+		catch ( \Exception ) {}
+
+		try
+		{
+			\IPS\File::claimAttachments(
+				'gddealer-customer-evidence-' . (int) $review['id'],
+				(int) $review['id'],
+				6
+			);
 		}
 		catch ( \Exception ) {}
 

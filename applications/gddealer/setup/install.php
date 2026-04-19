@@ -1922,9 +1922,9 @@ TEMPLATE_EOT,
 						<input type="hidden" name="csrfKey" value="{$csrfKey}">
 						<p style="margin:0 0 8px;font-size:0.8em;color:#666">Read the <a href="{$data['guidelines_url']}" style="color:#2563eb" target="_blank">Dispute Guidelines</a> before contesting a review.</p>
 						<label style="display:block;font-size:0.8em;font-weight:600;margin-bottom:4px">Reason for contest</label>
-						<textarea name="dispute_reason" rows="3" required style="width:100%;border:1px solid var(--i-border-color,#ccc);border-radius:4px;padding:8px;font-size:0.9em;box-sizing:border-box;margin-bottom:8px" placeholder="Explain why this review should be removed (e.g. never purchased from us, fraudulent, violates terms)..."></textarea>
+						<div style="margin-bottom:8px">{$r['dispute_reason_editor_html']|raw}</div>
 						<label style="display:block;font-size:0.8em;font-weight:600;margin-bottom:4px">Supporting evidence (order numbers, screenshots, transaction IDs)</label>
-						<textarea name="dispute_evidence" rows="3" style="width:100%;border:1px solid var(--i-border-color,#ccc);border-radius:4px;padding:8px;font-size:0.9em;box-sizing:border-box" placeholder="Paste order numbers, links, or evidence that supports your contest..."></textarea>
+						<div>{$r['dispute_evidence_editor_html']|raw}</div>
 						<button type="submit" class="ipsButton ipsButton--negative ipsButton--small" style="margin-top:8px">Submit Contest</button>
 					</form>
 				</details>
@@ -1936,9 +1936,9 @@ TEMPLATE_EOT,
 							<input type="hidden" name="csrfKey" value="{$csrfKey}">
 							<p style="margin:0 0 8px;font-size:0.8em;color:#666">Read the <a href="{$data['guidelines_url']}" style="color:#2563eb" target="_blank">Dispute Guidelines</a> before contesting a review.</p>
 							<label style="display:block;font-size:0.8em;font-weight:600;margin-bottom:4px">Reason for contest</label>
-							<textarea name="dispute_reason" rows="3" required style="width:100%;border:1px solid var(--i-border-color,#ccc);border-radius:4px;padding:8px;font-size:0.9em;box-sizing:border-box;margin-bottom:8px" placeholder="Explain why this review should be removed (e.g. never purchased from us, fraudulent, violates terms)..."></textarea>
+							<div style="margin-bottom:8px">{$r['dispute_reason_editor_html']|raw}</div>
 							<label style="display:block;font-size:0.8em;font-weight:600;margin-bottom:4px">Supporting evidence (order numbers, screenshots, transaction IDs)</label>
-							<textarea name="dispute_evidence" rows="3" style="width:100%;border:1px solid var(--i-border-color,#ccc);border-radius:4px;padding:8px;font-size:0.9em;box-sizing:border-box" placeholder="Paste order numbers, links, or evidence that supports your contest..."></textarea>
+							<div>{$r['dispute_evidence_editor_html']|raw}</div>
 							<button type="submit" class="ipsButton ipsButton--negative ipsButton--small" style="margin-top:8px">Submit Contest</button>
 						</form>
 					</details>
@@ -2067,21 +2067,21 @@ TEMPLATE_EOT,
 		{{if $customerDispute['dispute_reason']}}
 		<div style="background:#fff;border-left:3px solid #f59e0b;padding:10px 14px;margin-bottom:12px;border-radius:0 4px 4px 0">
 			<div style="font-size:0.8em;font-weight:700;color:#92400e;margin-bottom:4px">Dealer's reason</div>
-			<p style="margin:0;font-size:0.9em;color:#333">{$customerDispute['dispute_reason']}</p>
+			<div style="margin:0;font-size:0.9em;color:#333">{$customerDispute['dispute_reason']|raw}</div>
 		</div>
 		{{endif}}
 		{{if $customerDispute['dispute_evidence']}}
 		<div style="background:#fff;border-left:3px solid #f59e0b;padding:10px 14px;margin-bottom:12px;border-radius:0 4px 4px 0">
 			<div style="font-size:0.8em;font-weight:700;color:#92400e;margin-bottom:4px">Dealer's evidence</div>
-			<p style="margin:0;font-size:0.9em;color:#333;white-space:pre-wrap">{$customerDispute['dispute_evidence']}</p>
+			<div style="margin:0;font-size:0.9em;color:#333">{$customerDispute['dispute_evidence']|raw}</div>
 		</div>
 		{{endif}}
 		<form method="post" action="{$customerDispute['respond_url']}">
 			<input type="hidden" name="csrfKey" value="{$csrfKey}">
 			<label style="display:block;font-size:0.85em;font-weight:600;margin-bottom:4px;color:#78350f">Your response</label>
-			<textarea name="customer_response" rows="4" required class="ipsInput ipsInput--text" style="width:100%;border:1px solid #f59e0b;border-radius:4px;padding:8px;font-size:0.9em;box-sizing:border-box;margin-bottom:8px" placeholder="Explain your side of the story. Admin will review both accounts."></textarea>
+			<div style="margin-bottom:8px">{$customerDispute['response_editor_html']|raw}</div>
 			<label style="display:block;font-size:0.85em;font-weight:600;margin-bottom:4px;color:#78350f">Supporting evidence (optional)</label>
-			<textarea name="customer_evidence" rows="3" class="ipsInput ipsInput--text" style="width:100%;border:1px solid #f59e0b;border-radius:4px;padding:8px;font-size:0.9em;box-sizing:border-box;margin-bottom:8px" placeholder="Paste order numbers, links, receipts, or other evidence that supports your review..."></textarea>
+			<div style="margin-bottom:8px">{$customerDispute['evidence_editor_html']|raw}</div>
 			<button type="submit" class="ipsButton ipsButton--primary">Submit My Response</button>
 		</form>
 	</div>
