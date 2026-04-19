@@ -3227,45 +3227,53 @@ $gddealerTemplates[] = [
 	'location'      => 'front',
 	'group'         => 'dealers',
 	'template_name' => 'supportNew',
-	'template_data' => '$departments, $is_enterprise, $body_editor_html, $csrf_key, $submit_url, $back_url',
+	'template_data' => '$departments, $canSetUrgent, $bodyEditorHtml, $csrfKey, $submitUrl, $cancelUrl',
 	'template_content' => <<<'TEMPLATE_EOT'
-<div class="gdDealerWrapper" style="max-width:720px;margin:0 auto">
-<div style="margin-bottom:16px"><a href="{$back_url}" style="color:#2563eb;font-size:0.9em;text-decoration:none">&larr; Back to tickets</a></div>
-<h2 style="margin:0 0 20px;font-size:1.3em;font-weight:700">{lang="gddealer_support_new"}</h2>
-<form method="post" action="{$submit_url}" class="ipsForm">
-	<input type="hidden" name="csrfKey" value="{$csrf_key}">
-	<div style="margin-bottom:16px">
-		<label style="display:block;font-weight:600;margin-bottom:6px;font-size:0.9em">{lang="gddealer_support_subject"}</label>
-		<input type="text" name="support_subject" value="" required style="width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:0.95em;box-sizing:border-box">
+<div class="gdDealerWrapper" style="max-width:800px;margin:0 auto">
+<div style="margin-bottom:14px">
+	<a href="{$cancelUrl}" style="font-size:13px;color:#64748b;text-decoration:none">&larr; All tickets</a>
+</div>
+<div style="background:#fff;border:0.5px solid #e5e7eb;border-radius:12px;padding:28px;max-width:780px">
+	<div style="margin-bottom:24px;padding-bottom:18px;border-bottom:0.5px solid #f1f5f9">
+		<h1 style="margin:0 0 6px;font-size:20px;font-weight:500;color:#111827">Open a new ticket</h1>
+		<p style="margin:0;font-size:13px;color:#64748b">Tell us what's going on and we'll respond as soon as we can.</p>
 	</div>
-	<div style="display:flex;gap:16px;margin-bottom:16px;flex-wrap:wrap">
-		<div style="flex:1;min-width:200px">
-			<label style="display:block;font-weight:600;margin-bottom:6px;font-size:0.9em">{lang="gddealer_support_department"}</label>
-			<select name="support_department" style="width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:0.95em;background:#fff">
-				{{foreach $departments as $dept}}
-				<option value="{$dept['id']}">{$dept['name']}</option>
-				{{endforeach}}
-			</select>
+	<form method="post" action="{$submitUrl}">
+		<input type="hidden" name="csrfKey" value="{$csrfKey}">
+		<div style="margin-bottom:20px">
+			<label style="display:block;font-size:13px;font-weight:500;color:#111827;margin-bottom:6px">Subject</label>
+			<input type="text" name="support_subject" required maxlength="160" placeholder="Brief summary of your question or issue" style="width:100%;padding:10px 12px;font-size:14px;border:0.5px solid #e5e7eb;border-radius:8px;background:#fff;color:#111827;box-sizing:border-box">
 		</div>
-		<div style="flex:1;min-width:200px">
-			<label style="display:block;font-weight:600;margin-bottom:6px;font-size:0.9em">{lang="gddealer_support_priority"}</label>
-			<select name="support_priority" style="width:100%;padding:8px 12px;border:1px solid #d1d5db;border-radius:6px;font-size:0.95em;background:#fff">
-				<option value="low">Low</option>
-				<option value="normal" selected>Normal</option>
-				<option value="high">High</option>
-				{{if $is_enterprise}}<option value="urgent">Urgent</option>{{endif}}
-			</select>
+		<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px">
+			<div>
+				<label style="display:block;font-size:13px;font-weight:500;color:#111827;margin-bottom:6px">Department</label>
+				<select name="support_department" style="width:100%;padding:10px 12px;font-size:14px;border:0.5px solid #e5e7eb;border-radius:8px;background:#fff;color:#111827;box-sizing:border-box">
+					{{foreach $departments as $dept}}
+					<option value="{$dept['id']}">{$dept['name']}</option>
+					{{endforeach}}
+				</select>
+			</div>
+			<div>
+				<label style="display:block;font-size:13px;font-weight:500;color:#111827;margin-bottom:6px">Priority</label>
+				<select name="support_priority" style="width:100%;padding:10px 12px;font-size:14px;border:0.5px solid #e5e7eb;border-radius:8px;background:#fff;color:#111827;box-sizing:border-box">
+					<option value="low">Low</option>
+					<option value="normal" selected>Normal</option>
+					<option value="high">High</option>
+					{{if $canSetUrgent}}<option value="urgent">Urgent</option>{{endif}}
+				</select>
+			</div>
 		</div>
-	</div>
-	<div style="margin-bottom:20px">
-		<label style="display:block;font-weight:600;margin-bottom:6px;font-size:0.9em">{lang="gddealer_support_body"}</label>
-		{$body_editor_html|raw}
-	</div>
-	<div style="display:flex;gap:10px">
-		<button type="submit" class="ipsButton ipsButton--primary">{lang="gddealer_support_new"}</button>
-		<a href="{$back_url}" class="ipsButton ipsButton--inherit">Cancel</a>
-	</div>
-</form>
+		<div style="margin-bottom:24px">
+			<label style="display:block;font-size:13px;font-weight:500;color:#111827;margin-bottom:6px">Message</label>
+			<div>{$bodyEditorHtml|raw}</div>
+			<p style="margin:6px 0 0;font-size:12px;color:#94a3b8">Include any relevant screenshots, links, or error messages.</p>
+		</div>
+		<div style="display:flex;gap:10px;align-items:center;padding-top:18px;border-top:0.5px solid #f1f5f9">
+			<button type="submit" style="padding:10px 22px;background:#16a34a;color:#fff;font-size:14px;font-weight:500;border:none;border-radius:8px;cursor:pointer">Submit ticket</button>
+			<a href="{$cancelUrl}" style="padding:10px 22px;background:transparent;color:#64748b;font-size:14px;font-weight:500;border:0.5px solid #e5e7eb;border-radius:8px;text-decoration:none">Cancel</a>
+		</div>
+	</form>
+</div>
 </div>
 TEMPLATE_EOT,
 ];

@@ -186,7 +186,7 @@ class _support extends \IPS\Dispatcher\Controller
 		}
 		catch ( \Exception ) {}
 
-		$isEnterprise = Dealer::getTier( $member ) === 'enterprise';
+		$canSetUrgent = in_array( Dealer::getTier( $member ), [ 'founding', 'enterprise' ], TRUE );
 
 		$bodyEditor = new \IPS\Helpers\Form\Editor(
 			'gddealer_support_body',
@@ -222,7 +222,7 @@ class _support extends \IPS\Dispatcher\Controller
 			}
 
 			$validPriorities = [ 'low', 'normal', 'high' ];
-			if ( $priority === 'urgent' && $isEnterprise )
+			if ( $priority === 'urgent' && $canSetUrgent )
 			{
 				$validPriorities[] = 'urgent';
 			}
@@ -382,12 +382,12 @@ class _support extends \IPS\Dispatcher\Controller
 		$submitUrl      = (string) \IPS\Http\Url::internal(
 			'app=gddealer&module=dealers&controller=support&do=new'
 		)->csrf();
-		$backUrl        = (string) \IPS\Http\Url::internal(
+		$cancelUrl      = (string) \IPS\Http\Url::internal(
 			'app=gddealer&module=dealers&controller=support'
 		);
 
 		$this->output( 'support', (string) \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )
-			->supportNew( $departments, $isEnterprise, $bodyEditorHtml, $csrfKey, $submitUrl, $backUrl ) );
+			->supportNew( $departments, $canSetUrgent, $bodyEditorHtml, $csrfKey, $submitUrl, $cancelUrl ) );
 	}
 
 	protected function view(): void
