@@ -3277,71 +3277,89 @@ $gddealerTemplates[] = [
 	'location'      => 'front',
 	'group'         => 'dealers',
 	'template_name' => 'supportView',
-	'template_data' => '$ticket, $replies, $reply_editor_html, $csrf_key, $reply_url, $close_url, $back_url, $can_close, $events, $new_ticket_url',
+	'template_data' => '$ticket, $ticketBody, $ticketAttachments, $replies, $replyEditorHtml, $csrfKey, $replyUrl, $closeUrl, $backUrl, $canReply, $canClose, $events, $newTicketUrl',
 	'template_content' => <<<'TEMPLATE_EOT'
 <div class="gdDealerWrapper" style="max-width:800px;margin:0 auto">
-<div style="margin-bottom:16px"><a href="{$back_url}" style="color:#2563eb;font-size:0.9em;text-decoration:none">&larr; Back to tickets</a></div>
-<div class="ipsBox" style="border-radius:8px;margin-bottom:20px">
-	<div style="padding:16px 20px;border-bottom:1px solid #f0f0f0;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap">
-		<div style="flex:1;min-width:200px">
-			<h2 style="margin:0 0 6px;font-size:1.2em;font-weight:700">{$ticket['subject']}</h2>
-			<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:0.85em;color:#6b7280">
-				<span style="background:{$ticket['status_bg']};color:{$ticket['status_color']};padding:2px 10px;border-radius:20px;font-weight:600;font-size:0.9em">{$ticket['status_label']}</span>
-				<span style="color:{$ticket['priority_color']};font-weight:600">{expression="ucfirst($ticket['priority'])"} priority</span>
-				{{if $ticket['department']}}<span>&middot; {$ticket['department']}</span>{{endif}}
-				<span>&middot; Opened {$ticket['created_at']}</span>
-			</div>
+<div style="margin-bottom:14px">
+	<a href="{$backUrl}" style="font-size:13px;color:#64748b;text-decoration:none">&larr; All tickets</a>
+</div>
+<div style="background:#fff;border:0.5px solid #e5e7eb;border-radius:12px;padding:24px;margin-bottom:12px">
+	<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:14px">
+		<h1 style="margin:0;font-size:20px;font-weight:500;color:#111827;line-height:1.4">{$ticket['subject']}</h1>
+		<div style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end">
+			<span style="padding:4px 12px;border-radius:12px;font-size:11px;font-weight:500;background:{$ticket['status_bg']};color:{$ticket['status_color']};white-space:nowrap">{$ticket['status_label']}</span>
+			{{if $ticket['priority'] !== 'normal'}}
+			<span style="padding:4px 12px;border-radius:12px;font-size:11px;font-weight:500;background:{$ticket['priority_bg']};color:{$ticket['priority_color']};white-space:nowrap">{$ticket['priority_label']}</span>
+			{{endif}}
 		</div>
-		{{if $can_close}}
-		<a href="{$close_url}" class="ipsButton ipsButton--inherit ipsButton--small" onclick="return confirm('Close this ticket?')">Close Ticket</a>
-		{{endif}}
 	</div>
-	<div style="padding:16px 20px">
-		{$ticket['body']|raw}
+	<div style="display:flex;gap:14px;font-size:12px;color:#64748b;flex-wrap:wrap">
+		<span>Ticket #{$ticket['id']}</span>
+		{{if $ticket['department_name']}}<span>&middot;</span><span>{$ticket['department_name']}</span>{{endif}}
+		<span>&middot;</span>
+		<span>Opened {$ticket['created_at']}</span>
 	</div>
+</div>
+<div style="background:#fff;border:0.5px solid #e5e7eb;border-radius:12px;padding:22px 24px;margin-bottom:20px;border-left:3px solid #16a34a">
+	<div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+		<span style="padding:3px 10px;border-radius:12px;font-size:11px;font-weight:500;background:#dcfce7;color:#166534">You</span>
+		<span style="font-size:12px;color:#94a3b8">{$ticket['created_at']}</span>
+	</div>
+	<div style="font-size:14px;color:#374151;line-height:1.65">{$ticketBody|raw}</div>
+	{{if count($ticketAttachments) > 0}}
+	<div style="margin-top:16px;padding-top:12px;border-top:0.5px solid #f1f5f9">
+		<div style="font-size:11px;text-transform:uppercase;letter-spacing:0.05em;color:#64748b;font-weight:500;margin-bottom:8px">Attachments</div>
+		<div style="display:flex;flex-wrap:wrap;gap:10px">
+			{{foreach $ticketAttachments as $att}}
+			<a href="{$att['url']}" style="display:inline-flex;align-items:center;gap:6px;padding:6px 12px;background:#f8fafc;border:0.5px solid #e5e7eb;border-radius:8px;font-size:13px;color:#1e3a5f;text-decoration:none">{$att['filename']}</a>
+			{{endforeach}}
+		</div>
+	</div>
+	{{endif}}
 </div>
 {{if count($replies) > 0}}
-<h3 style="font-size:1em;font-weight:700;margin:0 0 12px;color:#374151">Replies</h3>
-{{foreach $replies as $r}}
-<div class="ipsBox" style="border-radius:8px;margin-bottom:12px;border-left:3px solid {$r['role_bg']}">
-	<div style="padding:10px 16px;background:#f8fafc;border-bottom:1px solid #f0f0f0;display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:0.85em">
-		<span style="background:{$r['role_bg']};color:#fff;padding:1px 8px;border-radius:12px;font-weight:600;font-size:0.85em">{$r['role_label']}</span>
-		<span style="font-weight:600">{$r['member_name']}</span>
-		<span style="color:#6b7280">&middot; {$r['created_at']}</span>
-	</div>
-	<div style="padding:14px 16px">
-		{$r['body']|raw}
-	</div>
+<div style="font-size:11px;text-transform:uppercase;letter-spacing:0.05em;color:#64748b;font-weight:500;margin:0 0 10px 2px">
+	{expression="count($replies)"} {expression="count($replies) === 1 ? 'reply' : 'replies'"}
 </div>
-{{endforeach}}
-{{endif}}
-{{if $ticket['status'] !== 'closed'}}
-<div class="ipsBox" style="border-radius:8px;margin-top:20px">
-	<div style="padding:16px 20px">
-		<h3 style="margin:0 0 12px;font-size:1em;font-weight:700">{lang="gddealer_support_reply"}</h3>
-		<form method="post" action="{$reply_url}">
-			<input type="hidden" name="csrfKey" value="{$csrf_key}">
-			<div style="margin-bottom:14px">
-				{$reply_editor_html|raw}
-			</div>
-			<button type="submit" class="ipsButton ipsButton--primary">{lang="gddealer_support_reply"}</button>
-		</form>
+<div style="display:flex;flex-direction:column;gap:10px;margin-bottom:24px">
+	{{foreach $replies as $r}}
+	<div style="background:#fff;border:0.5px solid #e5e7eb;border-radius:12px;padding:20px 24px;border-left:3px solid {$r['role_border']}">
+		<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+			<span style="padding:3px 10px;border-radius:12px;font-size:11px;font-weight:500;background:{$r['role_bg']};color:{$r['role_color']}">{$r['role_label']}</span>
+			<strong style="font-size:13px;color:#111827;font-weight:500">{$r['author_name']}</strong>
+			<span style="font-size:12px;color:#94a3b8">{$r['created_at']}</span>
+		</div>
+		<div style="font-size:14px;color:#374151;line-height:1.65">{$r['body']|raw}</div>
 	</div>
+	{{endforeach}}
+</div>
+{{endif}}
+{{if $canReply}}
+<div style="background:#fff;border:0.5px solid #e5e7eb;border-radius:12px;padding:24px;margin-bottom:20px">
+	<h3 style="margin:0 0 14px;font-size:15px;font-weight:500;color:#111827">Your reply</h3>
+	<form method="post" action="{$replyUrl}">
+		<input type="hidden" name="csrfKey" value="{$csrfKey}">
+		<div style="margin-bottom:14px">{$replyEditorHtml|raw}</div>
+		<div style="display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap">
+			<button type="submit" style="padding:10px 22px;background:#16a34a;color:#fff;font-size:14px;font-weight:500;border:none;border-radius:8px;cursor:pointer">Post reply</button>
+			{{if $canClose}}
+			<a href="{$closeUrl}" style="font-size:13px;color:#64748b;text-decoration:none" onclick="return confirm('Close this ticket? You can always open a new one if you need more help.');">Close this ticket</a>
+			{{endif}}
+		</div>
+	</form>
 </div>
 {{else}}
-<div class="ipsBox" style="border-radius:8px;margin-top:20px;text-align:center;padding:24px 20px">
-	<p style="color:#6b7280;margin:0 0 10px;font-size:0.95em">This ticket is closed. To continue the conversation, please open a new ticket.</p>
-	<a href="{$new_ticket_url}" class="ipsButton ipsButton--primary ipsButton--small">Open a New Ticket</a>
+<div style="background:#f8fafc;border:0.5px solid #e5e7eb;border-radius:12px;padding:32px 24px;text-align:center;margin-bottom:20px">
+	<div style="font-size:14px;color:#64748b">This ticket is closed. <a href="{$newTicketUrl}" style="color:#16a34a;font-weight:500;text-decoration:none">Open a new ticket</a> to continue the conversation.</div>
 </div>
 {{endif}}
 {{if count($events) > 0}}
-<div style="margin-top:24px;border-top:1px solid #e5e7eb;padding-top:16px">
-	<div style="font-size:11px;color:#6b7280;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:12px">Ticket history</div>
+<div style="background:#fff;border:0.5px solid #e5e7eb;border-radius:12px;padding:20px 24px">
+	<div style="font-size:11px;text-transform:uppercase;letter-spacing:0.05em;color:#64748b;font-weight:500;margin-bottom:14px">Ticket history</div>
 	{{foreach $events as $e}}
-	<div style="display:flex;gap:12px;margin-bottom:10px;font-size:13px;color:#374151;align-items:flex-start">
-		<span style="color:#9ca3af;font-size:12px;flex-shrink:0;width:160px">{$e['when']}</span>
-		<div style="flex:1">
-			<strong>{$e['actor_name']}</strong> {$e['verb']}
+	<div style="display:flex;gap:16px;margin-bottom:8px;font-size:13px;color:#374151;align-items:baseline">
+		<span style="color:#94a3b8;font-size:12px;flex-shrink:0;width:180px">{$e['when']}</span>
+		<div style="flex:1;min-width:0"><strong style="font-weight:500">{$e['actor_name']}</strong> {$e['verb']}
 			{{if $e['note']}}
 			<div style="font-size:12px;color:#4b5563;margin-top:4px;padding:8px 12px;background:#f9fafb;border-radius:6px;border-left:2px solid #d1d5db">{$e['note']}</div>
 			{{endif}}

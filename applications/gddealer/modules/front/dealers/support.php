@@ -656,7 +656,7 @@ class _support extends \IPS\Dispatcher\Controller
 					}
 				}
 
-				$replyMemberName = 'Staff';
+				$replyMemberName = 'Unknown';
 				try
 				{
 					$rm = \IPS\Member::load( (int) $r['member_id'] );
@@ -667,22 +667,26 @@ class _support extends \IPS\Dispatcher\Controller
 				}
 				catch ( \Exception ) {}
 
-				$createdTs = strtotime( (string) $r['created_at'] );
+				$rCreatedTs = strtotime( (string) $r['created_at'] );
+				$rRole      = (string) $r['role'];
 				$replies[] = [
-					'id'           => (int) $r['id'],
-					'role'         => (string) $r['role'],
-					'role_label'   => (string) $r['role'] === 'dealer' ? 'You' : 'Staff',
-					'role_bg'      => (string) $r['role'] === 'dealer' ? '#2563eb' : '#16a34a',
-					'body'         => $replyBody,
-					'member_name'  => $replyMemberName,
-					'created_at'   => $createdTs ? (string) \IPS\DateTime::ts( $createdTs )->localeDate() : (string) $r['created_at'],
+					'id'          => (int) $r['id'],
+					'role'        => $rRole,
+					'role_label'  => $rRole === 'admin' ? 'Staff' : 'You',
+					'role_bg'     => $rRole === 'admin' ? '#dbeafe' : '#dcfce7',
+					'role_color'  => $rRole === 'admin' ? '#1e40af' : '#166534',
+					'role_border' => $rRole === 'admin' ? '#1e3a5f' : '#16a34a',
+					'body'        => $replyBody,
+					'author_name' => $replyMemberName,
+					'created_at'  => $rCreatedTs
+						? (string) \IPS\DateTime::ts( $rCreatedTs )->localeDate() . ' at ' . (string) \IPS\DateTime::ts( $rCreatedTs )->localeTime()
+						: (string) $r['created_at'],
 				];
 			}
 		}
 		catch ( \Exception ) {}
 
 		$createdTs = strtotime( (string) $ticket['created_at'] );
-		$updatedTs = strtotime( (string) $ticket['updated_at'] );
 
 		$ticketData = [
 			'id'              => (int) $ticket['id'],
@@ -692,12 +696,16 @@ class _support extends \IPS\Dispatcher\Controller
 			'status_bg'       => self::statusBg( (string) $ticket['status'] ),
 			'status_color'    => self::statusColor( (string) $ticket['status'] ),
 			'priority'        => (string) $ticket['priority'],
+			'priority_label'  => ucfirst( (string) $ticket['priority'] ),
+			'priority_bg'     => self::priorityBg( (string) $ticket['priority'] ),
 			'priority_color'  => self::priorityColor( (string) $ticket['priority'] ),
-			'department'      => $deptName,
-			'body'            => $ticketBody,
-			'created_at'      => $createdTs ? (string) \IPS\DateTime::ts( $createdTs )->localeDate() : (string) $ticket['created_at'],
-			'updated_at'      => $updatedTs ? (string) \IPS\DateTime::ts( $updatedTs )->localeDate() : (string) $ticket['updated_at'],
+			'department_name' => $deptName,
+			'created_at'      => $createdTs
+				? (string) \IPS\DateTime::ts( $createdTs )->localeDate() . ' at ' . (string) \IPS\DateTime::ts( $createdTs )->localeTime()
+				: (string) $ticket['created_at'],
 		];
+
+		$ticketAttachments = [];
 
 		$replyEditorHtml = (string) $replyEditor;
 		$csrfKey         = (string) \IPS\Session::i()->csrfKey;
@@ -711,6 +719,7 @@ class _support extends \IPS\Dispatcher\Controller
 			'app=gddealer&module=dealers&controller=support'
 		);
 
+		$canReply = !in_array( (string) $ticket['status'], [ 'closed' ], TRUE );
 		$canClose = !in_array( (string) $ticket['status'], [ 'closed' ], TRUE );
 
 		$newTicketUrl = (string) \IPS\Http\Url::internal(
@@ -718,7 +727,7 @@ class _support extends \IPS\Dispatcher\Controller
 		);
 
 		$this->output( 'support', (string) \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )
-			->supportView( $ticketData, $replies, $replyEditorHtml, $csrfKey, $replyUrl, $closeUrl, $backUrl, $canClose, EventLogger::getEvents( $ticketId ), $newTicketUrl ) );
+			->supportView( $ticketData, $ticketBody, $ticketAttachments, $replies, $replyEditorHtml, $csrfKey, $replyUrl, $closeUrl, $backUrl, $canReply, $canClose, EventLogger::getEvents( $ticketId ), $newTicketUrl ) );
 	}
 
 	protected function close(): void
