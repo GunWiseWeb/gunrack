@@ -35,21 +35,11 @@ class _stockreplies extends \IPS\Dispatcher\Controller
 		$rows = [];
 		try
 		{
-			foreach ( \IPS\Db::i()->select( 'sr.*, d.name AS dept_name',
-				[ 'gd_dealer_support_stock_replies', 'sr' ],
+			foreach ( \IPS\Db::i()->select( '*', 'gd_dealer_support_stock_replies',
 				null,
-				'sr.position ASC, sr.id ASC'
+				'position ASC, id ASC'
 			) as $r )
 			{
-				try
-				{
-					$r = array_merge( $r, \IPS\Db::i()->select( 'd.name AS dept_name',
-						[ 'gd_dealer_support_departments', 'd' ],
-						[ 'd.id=?', (int) $r['department_id'] ]
-					)->first() ? [] : [] );
-				}
-				catch ( \Exception ) {}
-
 				$deptName = '';
 				if ( !empty( $r['department_id'] ) )
 				{
@@ -65,7 +55,9 @@ class _stockreplies extends \IPS\Dispatcher\Controller
 				$rows[] = [
 					'id'              => (int) $r['id'],
 					'title'           => (string) $r['title'],
-					'department_name' => $deptName ?: 'All departments',
+					'body'            => (string) $r['body'],
+					'department_id'   => (int) ( $r['department_id'] ?? 0 ),
+					'department_name' => $deptName !== '' ? $deptName : 'All departments',
 					'position'        => (int) $r['position'],
 					'enabled'         => (bool) $r['enabled'],
 					'edit_url'        => (string) \IPS\Http\Url::internal(
