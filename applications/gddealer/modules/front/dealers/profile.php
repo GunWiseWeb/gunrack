@@ -316,26 +316,22 @@ class _profile extends \IPS\Dispatcher\Controller
 		$reviewBodyEditorHtml = '';
 		if ( $canRate )
 		{
-			try
-			{
-				$reviewEditor = new \IPS\Helpers\Form\Editor(
-					'review_body',
-					'',
-					FALSE,
-					[
-						'app'         => 'gddealer',
-						'key'         => 'Responses',
-						'autoSaveKey' => 'gddealer-review-new-' . (int) $member->member_id,
-						'attachIds'   => [ 0, 1 ],
-					],
-					NULL,
-					NULL,
-					NULL,
-					'editor_review_new_' . (int) $member->member_id
-				);
-				$reviewBodyEditorHtml = (string) $reviewEditor;
-			}
-			catch ( \Exception ) {}
+			$reviewEditor = new \IPS\Helpers\Form\Editor(
+				'review_body',
+				'',
+				FALSE,
+				[
+					'app'         => 'gddealer',
+					'key'         => 'Responses',
+					'autoSaveKey' => 'gddealer-review-new-' . (int) $member->member_id,
+					'attachIds'   => [ 0, 1 ],
+				],
+				NULL,
+				NULL,
+				NULL,
+				'editor_review_new_' . (int) $member->member_id
+			);
+			$reviewBodyEditorHtml = (string) $reviewEditor;
 		}
 
 		/* If this visit is in response to a dispute notification ("You have
@@ -355,49 +351,39 @@ class _profile extends \IPS\Dispatcher\Controller
 
 				/* Two editors for the customer reply: customer_response
 				   (id2=5) and customer_evidence (id2=6). */
-				$custRespHtml = '';
-				$custEvidHtml = '';
-				try
-				{
-					$crEditor = new \IPS\Helpers\Form\Editor(
-						'customer_response',
-						'',
-						FALSE,
-						[
-							'app'         => 'gddealer',
-							'key'         => 'Responses',
-							'autoSaveKey' => 'gddealer-customer-response-' . (int) $cd['id'],
-							'attachIds'   => [ (int) $cd['id'], 5 ],
-						],
-						NULL,
-						NULL,
-						NULL,
-						'editor_customer_response_' . (int) $cd['id']
-					);
-					$custRespHtml = (string) $crEditor;
-				}
-				catch ( \Exception ) {}
+				$crEditor = new \IPS\Helpers\Form\Editor(
+					'customer_response',
+					'',
+					FALSE,
+					[
+						'app'         => 'gddealer',
+						'key'         => 'Responses',
+						'autoSaveKey' => 'gddealer-customer-response-' . (int) $cd['id'],
+						'attachIds'   => [ (int) $cd['id'], 5 ],
+					],
+					NULL,
+					NULL,
+					NULL,
+					'editor_customer_response_' . (int) $cd['id']
+				);
+				$custRespHtml = (string) $crEditor;
 
-				try
-				{
-					$ceEditor = new \IPS\Helpers\Form\Editor(
-						'customer_evidence',
-						'',
-						FALSE,
-						[
-							'app'         => 'gddealer',
-							'key'         => 'Responses',
-							'autoSaveKey' => 'gddealer-customer-evidence-' . (int) $cd['id'],
-							'attachIds'   => [ (int) $cd['id'], 6 ],
-						],
-						NULL,
-						NULL,
-						NULL,
-						'editor_customer_evidence_' . (int) $cd['id']
-					);
-					$custEvidHtml = (string) $ceEditor;
-				}
-				catch ( \Exception ) {}
+				$ceEditor = new \IPS\Helpers\Form\Editor(
+					'customer_evidence',
+					'',
+					FALSE,
+					[
+						'app'         => 'gddealer',
+						'key'         => 'Responses',
+						'autoSaveKey' => 'gddealer-customer-evidence-' . (int) $cd['id'],
+						'attachIds'   => [ (int) $cd['id'], 6 ],
+					],
+					NULL,
+					NULL,
+					NULL,
+					'editor_customer_evidence_' . (int) $cd['id']
+				);
+				$custEvidHtml = (string) $ceEditor;
 
 				$customerDispute = [
 					'id'                 => (int) $cd['id'],
@@ -602,11 +588,13 @@ class _profile extends \IPS\Dispatcher\Controller
 		}
 
 		/* Insert without body first so we have a review id for the
-		   attachIds pair, then parse + claim attachments + update. */
+		   attachIds pair, then parse + claim attachments + update.
+		   \IPS\Db::i()->insert() returns the new row id directly; there
+		   is no separate insertId() method in IPS 5. */
 		$newReviewId = 0;
 		try
 		{
-			\IPS\Db::i()->insert( 'gd_dealer_ratings', [
+			$newReviewId = (int) \IPS\Db::i()->insert( 'gd_dealer_ratings', [
 				'dealer_id'       => $dealerId,
 				'member_id'       => (int) $member->member_id,
 				'rating_pricing'  => $pricing,
@@ -617,7 +605,6 @@ class _profile extends \IPS\Dispatcher\Controller
 				'status'          => 'approved',
 				'dispute_status'  => 'none',
 			]);
-			$newReviewId = (int) \IPS\Db::i()->insertId();
 		}
 		catch ( \Exception ) {}
 
@@ -1096,27 +1083,22 @@ class _profile extends \IPS\Dispatcher\Controller
 		}
 		catch ( \Exception ) {}
 
-		$bodyEditorHtml = '';
-		try
-		{
-			$bodyEditor = new \IPS\Helpers\Form\Editor(
-				'review_body',
-				(string) ( $review['review_body'] ?? '' ),
-				FALSE,
-				[
-					'app'         => 'gddealer',
-					'key'         => 'Responses',
-					'autoSaveKey' => 'gddealer-review-edit-' . (int) $id,
-					'attachIds'   => [ (int) $id, 1 ],
-				],
-				NULL,
-				NULL,
-				NULL,
-				'editor_review_edit_' . (int) $id
-			);
-			$bodyEditorHtml = (string) $bodyEditor;
-		}
-		catch ( \Exception ) {}
+		$bodyEditor = new \IPS\Helpers\Form\Editor(
+			'review_body',
+			(string) ( $review['review_body'] ?? '' ),
+			FALSE,
+			[
+				'app'         => 'gddealer',
+				'key'         => 'Responses',
+				'autoSaveKey' => 'gddealer-review-edit-' . (int) $id,
+				'attachIds'   => [ (int) $id, 1 ],
+			],
+			NULL,
+			NULL,
+			NULL,
+			'editor_review_edit_' . (int) $id
+		);
+		$bodyEditorHtml = (string) $bodyEditor;
 
 		$reviewData = [
 			'id'              => (int) $review['id'],

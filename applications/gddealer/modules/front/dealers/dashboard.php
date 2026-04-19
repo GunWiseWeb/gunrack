@@ -943,49 +943,41 @@ class _dashboard extends \IPS\Dispatcher\Controller
 
 				if ( $dealerResp === '' && (string) ( $r['dispute_status'] ?? 'none' ) === 'none' )
 				{
-					try
-					{
-						$editor = new \IPS\Helpers\Form\Editor(
-							'response',
-							'',
-							FALSE,
-							[
-								'app'         => 'gddealer',
-								'key'         => 'Responses',
-								'autoSaveKey' => 'gddealer-response-' . (int) $r['id'],
-								'attachIds'   => [ (int) $r['id'], 2 ],
-							],
-							NULL,
-							NULL,
-							NULL,
-							'editor_respond_' . (int) $r['id']
-						);
-						$respondEditorHtml = (string) $editor;
-					}
-					catch ( \Exception ) {}
+					$editor = new \IPS\Helpers\Form\Editor(
+						'response',
+						'',
+						FALSE,
+						[
+							'app'         => 'gddealer',
+							'key'         => 'Responses',
+							'autoSaveKey' => 'gddealer-response-' . (int) $r['id'],
+							'attachIds'   => [ (int) $r['id'], 2 ],
+						],
+						NULL,
+						NULL,
+						NULL,
+						'editor_respond_' . (int) $r['id']
+					);
+					$respondEditorHtml = (string) $editor;
 				}
 				elseif ( $dealerResp !== '' )
 				{
-					try
-					{
-						$editEditor = new \IPS\Helpers\Form\Editor(
-							'response',
-							$dealerResp,
-							FALSE,
-							[
-								'app'         => 'gddealer',
-								'key'         => 'Responses',
-								'autoSaveKey' => 'gddealer-response-' . (int) $r['id'],
-								'attachIds'   => [ (int) $r['id'], 2 ],
-							],
-							NULL,
-							NULL,
-							NULL,
-							'editor_respond_edit_' . (int) $r['id']
-						);
-						$editEditorHtml = (string) $editEditor;
-					}
-					catch ( \Exception ) {}
+					$editEditor = new \IPS\Helpers\Form\Editor(
+						'response',
+						$dealerResp,
+						FALSE,
+						[
+							'app'         => 'gddealer',
+							'key'         => 'Responses',
+							'autoSaveKey' => 'gddealer-response-' . (int) $r['id'],
+							'attachIds'   => [ (int) $r['id'], 2 ],
+						],
+						NULL,
+						NULL,
+						NULL,
+						'editor_respond_edit_' . (int) $r['id']
+					);
+					$editEditorHtml = (string) $editEditor;
 				}
 
 				/* Dispute editors — only built for rows that can actually be
@@ -995,47 +987,39 @@ class _dashboard extends \IPS\Dispatcher\Controller
 				$disputeEvidenceEditorHtml = '';
 				if ( (string) ( $r['dispute_status'] ?? 'none' ) === 'none' )
 				{
-					try
-					{
-						$rEditor = new \IPS\Helpers\Form\Editor(
-							'dispute_reason',
-							'',
-							FALSE,
-							[
-								'app'         => 'gddealer',
-								'key'         => 'Responses',
-								'autoSaveKey' => 'gddealer-dispute-reason-' . (int) $r['id'],
-								'attachIds'   => [ (int) $r['id'], 3 ],
-							],
-							NULL,
-							NULL,
-							NULL,
-							'editor_dispute_reason_' . (int) $r['id']
-						);
-						$disputeReasonEditorHtml = (string) $rEditor;
-					}
-					catch ( \Exception ) {}
+					$rEditor = new \IPS\Helpers\Form\Editor(
+						'dispute_reason',
+						'',
+						FALSE,
+						[
+							'app'         => 'gddealer',
+							'key'         => 'Responses',
+							'autoSaveKey' => 'gddealer-dispute-reason-' . (int) $r['id'],
+							'attachIds'   => [ (int) $r['id'], 3 ],
+						],
+						NULL,
+						NULL,
+						NULL,
+						'editor_dispute_reason_' . (int) $r['id']
+					);
+					$disputeReasonEditorHtml = (string) $rEditor;
 
-					try
-					{
-						$eEditor = new \IPS\Helpers\Form\Editor(
-							'dispute_evidence',
-							'',
-							FALSE,
-							[
-								'app'         => 'gddealer',
-								'key'         => 'Responses',
-								'autoSaveKey' => 'gddealer-dispute-evidence-' . (int) $r['id'],
-								'attachIds'   => [ (int) $r['id'], 4 ],
-							],
-							NULL,
-							NULL,
-							NULL,
-							'editor_dispute_evidence_' . (int) $r['id']
-						);
-						$disputeEvidenceEditorHtml = (string) $eEditor;
-					}
-					catch ( \Exception ) {}
+					$eEditor = new \IPS\Helpers\Form\Editor(
+						'dispute_evidence',
+						'',
+						FALSE,
+						[
+							'app'         => 'gddealer',
+							'key'         => 'Responses',
+							'autoSaveKey' => 'gddealer-dispute-evidence-' . (int) $r['id'],
+							'attachIds'   => [ (int) $r['id'], 4 ],
+						],
+						NULL,
+						NULL,
+						NULL,
+						'editor_dispute_evidence_' . (int) $r['id']
+					);
+					$disputeEvidenceEditorHtml = (string) $eEditor;
 				}
 
 				$rows[] = [
