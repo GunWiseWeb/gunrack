@@ -632,7 +632,7 @@ class _support extends \IPS\Dispatcher\Controller
 				$ticketBody = \IPS\Text\Parser::parseStatic(
 					(string) $ticket['body'],
 					[ $ticketId, 10 ],
-					NULL,
+					\IPS\Member::load( (int) $ticket['member_id'] ),
 					'gddealer_Responses'
 				);
 			}
@@ -657,8 +657,8 @@ class _support extends \IPS\Dispatcher\Controller
 					{
 						$replyBody = \IPS\Text\Parser::parseStatic(
 							(string) $r['body'],
-							[ (int) $r['id'], 11 ],
-							NULL,
+							[ $ticketId, 11 ],
+							\IPS\Member::load( (int) $r['member_id'] ),
 							'gddealer_Responses'
 						);
 					}

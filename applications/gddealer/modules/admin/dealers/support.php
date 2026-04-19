@@ -372,7 +372,7 @@ class _support extends \IPS\Dispatcher\Controller
 				try
 				{
 					$parsedBody = \IPS\Text\Parser::parseStatic(
-						(string) $r['body'], [ (int) $r['id'], 11 ], null, 'gddealer_Responses'
+						(string) $r['body'], [ $ticketId, 11 ], \IPS\Member::load( (int) $r['member_id'] ), 'gddealer_Responses'
 					);
 				}
 				catch ( \Exception ) { $parsedBody = (string) $r['body']; }
@@ -407,7 +407,7 @@ class _support extends \IPS\Dispatcher\Controller
 		try
 		{
 			$parsedTicketBody = \IPS\Text\Parser::parseStatic(
-				(string) $ticket['body'], [ $ticketId, 10 ], null, 'gddealer_Responses'
+				(string) $ticket['body'], [ $ticketId, 10 ], \IPS\Member::load( (int) $ticket['member_id'] ), 'gddealer_Responses'
 			);
 		}
 		catch ( \Exception ) { $parsedTicketBody = (string) $ticket['body']; }
