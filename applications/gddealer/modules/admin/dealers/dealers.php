@@ -555,12 +555,65 @@ class _dealers extends \IPS\Dispatcher\Controller
 	 */
 	protected function disputes()
 	{
+		$filterStatus = (string) ( \IPS\Request::i()->status ?? 'active' );
+		$validFilters = [ 'active', 'pending_admin', 'pending_customer', 'resolved_dealer', 'dismissed', 'all' ];
+		if ( !in_array( $filterStatus, $validFilters, TRUE ) )
+		{
+			$filterStatus = 'active';
+		}
+
+		$counts = [
+			'active'           => 0,
+			'pending_admin'    => 0,
+			'pending_customer' => 0,
+			'resolved_dealer'  => 0,
+			'dismissed'        => 0,
+			'all'              => 0,
+		];
+		try
+		{
+			foreach ( \IPS\Db::i()->select( 'dispute_status, COUNT(*) as cnt', 'gd_dealer_ratings',
+				[ 'dispute_status<>?', 'none' ], NULL, NULL, 'dispute_status'
+			) as $c )
+			{
+				$s = (string) $c['dispute_status'];
+				$n = (int) $c['cnt'];
+				if ( isset( $counts[ $s ] ) ) { $counts[ $s ] = $n; }
+				$counts['all'] += $n;
+				if ( $s === 'pending_admin' || $s === 'pending_customer' ) { $counts['active'] += $n; }
+			}
+		}
+		catch ( \Exception ) {}
+
+		switch ( $filterStatus )
+		{
+			case 'pending_admin':
+				$where = [ 'dispute_status=?', 'pending_admin' ];
+				break;
+			case 'pending_customer':
+				$where = [ 'dispute_status=?', 'pending_customer' ];
+				break;
+			case 'resolved_dealer':
+				$where = [ 'dispute_status=?', 'resolved_dealer' ];
+				break;
+			case 'dismissed':
+				$where = [ 'dispute_status=?', 'dismissed' ];
+				break;
+			case 'all':
+				$where = [ 'dispute_status<>?', 'none' ];
+				break;
+			default:
+				$where = [ \IPS\Db::i()->in( 'dispute_status', [ 'pending_admin', 'pending_customer' ] ) ];
+				break;
+		}
+
 		$rows = [];
 		try
 		{
 			foreach ( \IPS\Db::i()->select( '*', 'gd_dealer_ratings',
-				[ \IPS\Db::i()->in( 'dispute_status', [ 'pending_admin', 'pending_customer' ] ) ],
-				'dispute_at ASC'
+				$where,
+				'dispute_at DESC',
+				[ 0, 200 ]
 			) as $r )
 			{
 				$dealerName = '';
@@ -598,6 +651,8 @@ class _dealers extends \IPS\Dispatcher\Controller
 					'customer_response'     => ( $r['customer_response'] ?? '' ) !== '' ? \IPS\Text\Parser::parseStatic( (string) $r['customer_response'], [ (int) $r['id'], 5 ], NULL, 'gddealer_Responses' ) : '',
 					'customer_evidence'     => ( $r['customer_evidence'] ?? '' ) !== '' ? \IPS\Text\Parser::parseStatic( (string) $r['customer_evidence'], [ (int) $r['id'], 6 ], NULL, 'gddealer_Responses' ) : '',
 					'customer_responded_at' => (string) ( $r['customer_responded_at'] ?? '' ),
+					'dispute_outcome'       => (string) ( $r['dispute_outcome'] ?? '' ),
+					'dispute_resolved_at'   => (string) ( $r['dispute_resolved_at'] ?? '' ),
 					'created_at'            => (string) $r['created_at'],
 					'uphold_url'            => (string) \IPS\Http\Url::internal(
 						'app=gddealer&module=dealers&controller=dealers&do=upholdDispute&id=' . (int) $r['id']
@@ -613,8 +668,10 @@ class _dealers extends \IPS\Dispatcher\Controller
 		}
 		catch ( \Exception ) {}
 
+		$baseUrl = (string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dealers&do=disputes' );
+
 		\IPS\Output::i()->title  = \IPS\Member::loggedIn()->language()->addToStack( 'gddealer_disputes_title' );
-		\IPS\Output::i()->output = \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'admin' )->disputeQueue( $rows );
+		\IPS\Output::i()->output = \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'admin' )->disputeQueue( $rows, $filterStatus, $counts, $baseUrl );
 	}
 
 	/**

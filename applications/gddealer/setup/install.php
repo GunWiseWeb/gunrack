@@ -656,17 +656,44 @@ TEMPLATE_EOT,
 		'location'      => 'admin',
 		'group'         => 'dealers',
 		'template_name' => 'disputeQueue',
-		'template_data' => '$rows',
+		'template_data' => '$rows, $filterStatus, $counts, $baseUrl',
 		'template_content' => <<<'TEMPLATE_EOT'
 <div class="ipsBox">
 	<h2 class="ipsBox_title">{lang="gddealer_disputes_title"}</h2>
 	<div style="padding:16px">
 
+		<div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">
+			<a href="{$baseUrl}&amp;status=active" class="ipsButton ipsButton--small {{if $filterStatus === 'active'}}ipsButton--primary{{else}}ipsButton--inherit{{endif}}">Active ({$counts['active']})</a>
+			<a href="{$baseUrl}&amp;status=pending_admin" class="ipsButton ipsButton--small {{if $filterStatus === 'pending_admin'}}ipsButton--primary{{else}}ipsButton--inherit{{endif}}">Awaiting Admin ({$counts['pending_admin']})</a>
+			<a href="{$baseUrl}&amp;status=pending_customer" class="ipsButton ipsButton--small {{if $filterStatus === 'pending_customer'}}ipsButton--primary{{else}}ipsButton--inherit{{endif}}">Awaiting Customer ({$counts['pending_customer']})</a>
+			<a href="{$baseUrl}&amp;status=resolved_dealer" class="ipsButton ipsButton--small {{if $filterStatus === 'resolved_dealer'}}ipsButton--primary{{else}}ipsButton--inherit{{endif}}">Upheld ({$counts['resolved_dealer']})</a>
+			<a href="{$baseUrl}&amp;status=dismissed" class="ipsButton ipsButton--small {{if $filterStatus === 'dismissed'}}ipsButton--primary{{else}}ipsButton--inherit{{endif}}">Dismissed ({$counts['dismissed']})</a>
+			<a href="{$baseUrl}&amp;status=all" class="ipsButton ipsButton--small {{if $filterStatus === 'all'}}ipsButton--primary{{else}}ipsButton--inherit{{endif}}">All ({$counts['all']})</a>
+		</div>
+
 		{{if count($rows) === 0}}
-			<div class="ipsEmptyMessage"><p>No disputed reviews pending resolution.</p></div>
+			<div class="ipsEmptyMessage"><p>No disputes match this filter.</p></div>
 		{{else}}
 			{{foreach $rows as $r}}
-			<div style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:20px;margin-bottom:16px">
+
+			{{if $r['dispute_status'] === 'resolved_dealer' || $r['dispute_status'] === 'dismissed'}}
+			<details style="margin-bottom:16px">
+				<summary style="cursor:pointer;background:#f3f4f6;border:1px solid #e0e0e0;border-radius:8px;padding:12px 16px;font-size:0.9em;list-style:none;display:flex;align-items:center;gap:8px">
+					<i class="fa-solid fa-chevron-right" style="font-size:0.7em;color:#999;transition:transform 0.2s" aria-hidden="true"></i>
+					<strong>{$r['dealer_name']}</strong>
+					<span style="color:#999;font-size:0.9em">vs {$r['member_name']}</span>
+					{{if $r['dispute_status'] === 'resolved_dealer'}}
+					<span class="ipsBadge ipsBadge--positive" style="margin-left:auto">Upheld</span>
+					{{else}}
+					<span class="ipsBadge ipsBadge--negative" style="margin-left:auto">Dismissed</span>
+					{{endif}}
+					<span style="color:#999;font-size:0.8em">{$r['dispute_resolved_at']}</span>
+				</summary>
+			{{else}}
+			<div style="margin-bottom:16px">
+			{{endif}}
+
+				<div style="background:#fff;border:1px solid #e0e0e0;border-radius:8px;padding:20px;{{if $r['dispute_status'] === 'resolved_dealer' || $r['dispute_status'] === 'dismissed'}}margin-top:8px;border-top-left-radius:0;border-top-right-radius:0{{endif}}">
 				<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;flex-wrap:wrap;gap:8px">
 					<div>
 						<strong>{$r['dealer_name']}</strong>
@@ -679,6 +706,10 @@ TEMPLATE_EOT,
 							<span class="ipsBadge ipsBadge--warning">Awaiting customer &mdash; {$r['days_remaining']} days left (deadline {$r['dispute_deadline']})</span>
 						{{elseif $r['dispute_status'] === 'pending_admin'}}
 							<span class="ipsBadge ipsBadge--style1">Awaiting admin decision (disputed {$r['dispute_at']})</span>
+						{{elseif $r['dispute_status'] === 'resolved_dealer'}}
+							<span class="ipsBadge ipsBadge--positive">Upheld &mdash; resolved {$r['dispute_resolved_at']}</span>
+						{{elseif $r['dispute_status'] === 'dismissed'}}
+							<span class="ipsBadge ipsBadge--negative">Dismissed &mdash; resolved {$r['dispute_resolved_at']}</span>
 						{{endif}}
 					</div>
 				</div>
@@ -724,6 +755,7 @@ TEMPLATE_EOT,
 				</div>
 				{{endif}}
 
+				{{if $r['dispute_status'] === 'pending_admin' || $r['dispute_status'] === 'pending_customer'}}
 				<div style="display:flex;gap:8px;flex-wrap:wrap">
 					<a href="{$r['uphold_url']}" class="ipsButton ipsButton--negative ipsButton--small">Uphold Dealer (exclude from avg)</a>
 					<a href="{$r['dismiss_url']}" class="ipsButton ipsButton--positive ipsButton--small">Dismiss Contest (keep review)</a>
@@ -735,7 +767,15 @@ TEMPLATE_EOT,
 						</form>
 					</details>
 				</div>
+				{{endif}}
 			</div>
+
+			{{if $r['dispute_status'] === 'resolved_dealer' || $r['dispute_status'] === 'dismissed'}}
+			</details>
+			{{else}}
+			</div>
+			{{endif}}
+
 			{{endforeach}}
 		{{endif}}
 
