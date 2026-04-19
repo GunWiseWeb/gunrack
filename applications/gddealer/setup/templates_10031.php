@@ -79,7 +79,7 @@ $dealerReviewsContent = <<<'TEMPLATE_EOT'
 			</div>
 
 			{{if $r['review_body']}}
-			<p style="margin:0 0 12px;color:#333">{$r['review_body']}</p>
+			<div style="margin:0 0 12px;color:#333">{$r['review_body']|raw}</div>
 			{{endif}}
 
 			{{if $r['dealer_response']}}

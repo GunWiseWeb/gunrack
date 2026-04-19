@@ -385,7 +385,7 @@ TEMPLATE_EOT,
 					</td>
 				</tr>
 				{{if $r['review_body']}}
-				<tr><td colspan="7" style="color:#555;background:#fafafa"><em>{$r['review_body']}</em></td></tr>
+				<tr><td colspan="7" style="color:#555;background:#fafafa"><em>{$r['review_body']|raw}</em></td></tr>
 				{{endif}}
 				{{endforeach}}
 				{{if count( $reviews ) === 0}}
@@ -535,7 +535,7 @@ TEMPLATE_EOT,
 					</td>
 				</tr>
 				{{if $r['review_body']}}
-				<tr><td colspan="8" style="color:#555;background:#fafafa"><em>{$r['review_body']}</em></td></tr>
+				<tr><td colspan="8" style="color:#555;background:#fafafa"><em>{$r['review_body']|raw}</em></td></tr>
 				{{endif}}
 				{{endforeach}}
 				{{if count( $rows ) === 0}}
@@ -692,30 +692,30 @@ TEMPLATE_EOT,
 				{{if $r['review_body']}}
 				<div style="background:#f9fafb;border:1px solid #e5e7eb;padding:12px;border-radius:4px;margin-bottom:12px">
 					<div style="font-size:0.75em;color:#666;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:4px">Customer review</div>
-					<p style="margin:0;color:#333;font-size:0.9em">{$r['review_body']}</p>
+					<div style="margin:0;color:#333;font-size:0.9em">{$r['review_body']|raw}</div>
 				</div>
 				{{endif}}
 
 				{{if $r['dealer_response']}}
 				<div style="background:#f0f7ff;border-left:3px solid #2563eb;padding:8px 12px;border-radius:0 4px 4px 0;margin-bottom:12px;font-size:0.85em">
-					<strong style="color:#2563eb">Dealer public response:</strong> {$r['dealer_response']}
+					<strong style="color:#2563eb">Dealer public response:</strong> {$r['dealer_response']|raw}
 				</div>
 				{{endif}}
 
 				<div style="background:#fff8f0;border-left:3px solid #f59e0b;padding:10px 14px;border-radius:0 4px 4px 0;margin-bottom:12px;font-size:0.85em;color:#92400e">
 					<strong>Dealer contest ({$r['dispute_at']}):</strong>
-					<div style="white-space:pre-wrap;margin-top:4px">{$r['dispute_reason']}</div>
+					<div style="margin-top:4px">{$r['dispute_reason']|raw}</div>
 					{{if $r['dispute_evidence']}}
-					<div style="margin-top:8px"><strong>Evidence:</strong><div style="white-space:pre-wrap;margin-top:4px">{$r['dispute_evidence']}</div></div>
+					<div style="margin-top:8px"><strong>Evidence:</strong><div style="margin-top:4px">{$r['dispute_evidence']|raw}</div></div>
 					{{endif}}
 				</div>
 
 				{{if $r['customer_response']}}
 				<div style="background:#ecfdf5;border-left:3px solid #10b981;padding:10px 14px;border-radius:0 4px 4px 0;margin-bottom:12px;font-size:0.85em;color:#065f46">
 					<strong>Customer response ({$r['customer_responded_at']}):</strong>
-					<div style="white-space:pre-wrap;margin-top:4px">{$r['customer_response']}</div>
+					<div style="margin-top:4px">{$r['customer_response']|raw}</div>
 					{{if $r['customer_evidence']}}
-					<div style="margin-top:8px"><strong>Evidence:</strong><div style="white-space:pre-wrap;margin-top:4px">{$r['customer_evidence']}</div></div>
+					<div style="margin-top:8px"><strong>Evidence:</strong><div style="margin-top:4px">{$r['customer_evidence']|raw}</div></div>
 					{{endif}}
 				</div>
 				{{else}}
@@ -1845,7 +1845,7 @@ TEMPLATE_EOT,
 			</div>
 
 			{{if $r['review_body']}}
-			<p style="margin:0 0 12px;color:#333">{$r['review_body']}</p>
+			<div style="margin:0 0 12px;color:#333">{$r['review_body']|raw}</div>
 			{{endif}}
 
 			{{if $r['dealer_response']}}
@@ -2235,7 +2235,7 @@ TEMPLATE_EOT,
 						</div>
 
 						{{if $r['review_body']}}
-						<p style="font-size:14px;line-height:1.6;color:#374151;margin:4px 0 0">{$r['review_body']}</p>
+						<div style="font-size:14px;line-height:1.6;color:#374151;margin:4px 0 0">{$r['review_body']|raw}</div>
 						{{endif}}
 
 						{{if $r['is_own_review'] and $r['dispute_status'] === 'pending_customer'}}
@@ -2259,7 +2259,7 @@ TEMPLATE_EOT,
 								</span>
 								<span style="font-size:11px;color:#9ca3af">{$r['response_at']}</span>
 							</div>
-							<p style="font-size:13px;line-height:1.5;color:#374151;margin:0">{$r['dealer_response']}</p>
+							<div style="font-size:13px;line-height:1.5;color:#374151;margin:0">{$r['dealer_response']|raw}</div>
 						</div>
 						{{endif}}
 
