@@ -317,7 +317,7 @@ class _profile extends \IPS\Dispatcher\Controller
 		if ( $canRate )
 		{
 			$reviewEditor = new \IPS\Helpers\Form\Editor(
-				'review_body',
+				'gddealer_review_body',
 				'',
 				FALSE,
 				[
@@ -352,7 +352,7 @@ class _profile extends \IPS\Dispatcher\Controller
 				/* Two editors for the customer reply: customer_response
 				   (id2=5) and customer_evidence (id2=6). */
 				$crEditor = new \IPS\Helpers\Form\Editor(
-					'customer_response',
+					'gddealer_customer_response',
 					'',
 					FALSE,
 					[
@@ -369,7 +369,7 @@ class _profile extends \IPS\Dispatcher\Controller
 				$custRespHtml = (string) $crEditor;
 
 				$ceEditor = new \IPS\Helpers\Form\Editor(
-					'customer_evidence',
+					'gddealer_customer_evidence',
 					'',
 					FALSE,
 					[
@@ -572,10 +572,29 @@ class _profile extends \IPS\Dispatcher\Controller
 			return;
 		}
 
+		/* Construct the editor before any save logic so IPS's upload
+		   interceptor (getUploader query param) fires on attachment POSTs.
+		   autoSaveKey must match the render-side editor in manage(). */
+		new \IPS\Helpers\Form\Editor(
+			'gddealer_review_body',
+			'',
+			FALSE,
+			[
+				'app'         => 'gddealer',
+				'key'         => 'Responses',
+				'autoSaveKey' => 'gddealer-review-new-' . (int) $member->member_id,
+				'attachIds'   => [ 0, 1 ],
+			],
+			NULL,
+			NULL,
+			NULL,
+			'editor_review_new_' . (int) $member->member_id
+		);
+
 		$pricing  = max( 1, min( 5, (int) ( \IPS\Request::i()->rating_pricing ?? 0 ) ) );
 		$shipping = max( 1, min( 5, (int) ( \IPS\Request::i()->rating_shipping ?? 0 ) ) );
 		$service  = max( 1, min( 5, (int) ( \IPS\Request::i()->rating_service ?? 0 ) ) );
-		$bodyRaw  = (string) ( \IPS\Request::i()->review_body ?? '' );
+		$bodyRaw  = (string) ( \IPS\Request::i()->gddealer_review_body ?? '' );
 
 		$profileUrl = \IPS\Http\Url::internal(
 			'app=gddealer&module=dealers&controller=profile&dealer_slug=' . urlencode( $slug )
@@ -747,8 +766,41 @@ class _profile extends \IPS\Dispatcher\Controller
 			return;
 		}
 
-		$responseRaw = (string) ( \IPS\Request::i()->customer_response ?? '' );
-		$evidenceRaw = (string) ( \IPS\Request::i()->customer_evidence ?? '' );
+		/* Construct editors before save logic so upload POSTs are intercepted.
+		   autoSaveKeys must match the render-side editors in manage(). */
+		new \IPS\Helpers\Form\Editor(
+			'gddealer_customer_response',
+			'',
+			FALSE,
+			[
+				'app'         => 'gddealer',
+				'key'         => 'Responses',
+				'autoSaveKey' => 'gddealer-customer-response-' . (int) $review['id'],
+				'attachIds'   => [ (int) $review['id'], 5 ],
+			],
+			NULL,
+			NULL,
+			NULL,
+			'editor_customer_response_' . (int) $review['id']
+		);
+		new \IPS\Helpers\Form\Editor(
+			'gddealer_customer_evidence',
+			'',
+			FALSE,
+			[
+				'app'         => 'gddealer',
+				'key'         => 'Responses',
+				'autoSaveKey' => 'gddealer-customer-evidence-' . (int) $review['id'],
+				'attachIds'   => [ (int) $review['id'], 6 ],
+			],
+			NULL,
+			NULL,
+			NULL,
+			'editor_customer_evidence_' . (int) $review['id']
+		);
+
+		$responseRaw = (string) ( \IPS\Request::i()->gddealer_customer_response ?? '' );
+		$evidenceRaw = (string) ( \IPS\Request::i()->gddealer_customer_evidence ?? '' );
 
 		/* Editor HTML → IPS sanitizer. attachIds=[id,5] for customer_response,
 		   [id,6] for customer_evidence. */
@@ -968,6 +1020,30 @@ class _profile extends \IPS\Dispatcher\Controller
 			return;
 		}
 
+		$dealerId   = (int) $review['dealer_id'];
+		$dealerName = '';
+		try
+		{
+			$dealerName = (string) \IPS\Db::i()->select( 'dealer_name', 'gd_dealer_feed_config', [ 'dealer_id=?', $dealerId ] )->first();
+		}
+		catch ( \Exception ) {}
+
+		$bodyEditor = new \IPS\Helpers\Form\Editor(
+			'gddealer_review_body',
+			(string) ( $review['review_body'] ?? '' ),
+			FALSE,
+			[
+				'app'         => 'gddealer',
+				'key'         => 'Responses',
+				'autoSaveKey' => 'gddealer-review-edit-' . (int) $id,
+				'attachIds'   => [ (int) $id, 1 ],
+			],
+			NULL,
+			NULL,
+			NULL,
+			'editor_review_edit_' . (int) $id
+		);
+
 		if ( \IPS\Request::i()->requestMethod() === 'POST' )
 		{
 			\IPS\Session::i()->csrfCheck();
@@ -975,7 +1051,7 @@ class _profile extends \IPS\Dispatcher\Controller
 			$pricing  = max( 1, min( 5, (int) ( \IPS\Request::i()->rating_pricing  ?? 0 ) ) );
 			$shipping = max( 1, min( 5, (int) ( \IPS\Request::i()->rating_shipping ?? 0 ) ) );
 			$service  = max( 1, min( 5, (int) ( \IPS\Request::i()->rating_service  ?? 0 ) ) );
-			$bodyRaw  = (string) ( \IPS\Request::i()->review_body ?? '' );
+			$bodyRaw  = (string) ( \IPS\Request::i()->gddealer_review_body ?? '' );
 
 			$body = '';
 			if ( trim( $bodyRaw ) !== '' )
@@ -1075,29 +1151,6 @@ class _profile extends \IPS\Dispatcher\Controller
 		$shippingNow = max( 0, min( 5, (int) $review['rating_shipping'] ) );
 		$serviceNow  = max( 0, min( 5, (int) $review['rating_service'] ) );
 
-		$dealerId   = (int) $review['dealer_id'];
-		$dealerName = '';
-		try
-		{
-			$dealerName = (string) \IPS\Db::i()->select( 'dealer_name', 'gd_dealer_feed_config', [ 'dealer_id=?', $dealerId ] )->first();
-		}
-		catch ( \Exception ) {}
-
-		$bodyEditor = new \IPS\Helpers\Form\Editor(
-			'review_body',
-			(string) ( $review['review_body'] ?? '' ),
-			FALSE,
-			[
-				'app'         => 'gddealer',
-				'key'         => 'Responses',
-				'autoSaveKey' => 'gddealer-review-edit-' . (int) $id,
-				'attachIds'   => [ (int) $id, 1 ],
-			],
-			NULL,
-			NULL,
-			NULL,
-			'editor_review_edit_' . (int) $id
-		);
 		$bodyEditorHtml = (string) $bodyEditor;
 
 		$reviewData = [

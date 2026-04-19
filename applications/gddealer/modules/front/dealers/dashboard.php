@@ -944,7 +944,7 @@ class _dashboard extends \IPS\Dispatcher\Controller
 				if ( $dealerResp === '' && (string) ( $r['dispute_status'] ?? 'none' ) === 'none' )
 				{
 					$editor = new \IPS\Helpers\Form\Editor(
-						'response',
+						'gddealer_response',
 						'',
 						FALSE,
 						[
@@ -963,7 +963,7 @@ class _dashboard extends \IPS\Dispatcher\Controller
 				elseif ( $dealerResp !== '' )
 				{
 					$editEditor = new \IPS\Helpers\Form\Editor(
-						'response',
+						'gddealer_response',
 						$dealerResp,
 						FALSE,
 						[
@@ -988,7 +988,7 @@ class _dashboard extends \IPS\Dispatcher\Controller
 				if ( (string) ( $r['dispute_status'] ?? 'none' ) === 'none' )
 				{
 					$rEditor = new \IPS\Helpers\Form\Editor(
-						'dispute_reason',
+						'gddealer_dispute_reason',
 						'',
 						FALSE,
 						[
@@ -1005,7 +1005,7 @@ class _dashboard extends \IPS\Dispatcher\Controller
 					$disputeReasonEditorHtml = (string) $rEditor;
 
 					$eEditor = new \IPS\Helpers\Form\Editor(
-						'dispute_evidence',
+						'gddealer_dispute_evidence',
 						'',
 						FALSE,
 						[
@@ -1131,7 +1131,29 @@ class _dashboard extends \IPS\Dispatcher\Controller
 	{
 		\IPS\Session::i()->csrfCheck();
 		$id  = (int) ( \IPS\Request::i()->id ?? 0 );
-		$raw = (string) \IPS\Request::i()->response;
+
+		/* Construct editor before save logic so upload POSTs are intercepted.
+		   autoSaveKey must match the render-side editor in reviews(). */
+		if ( $id > 0 )
+		{
+			new \IPS\Helpers\Form\Editor(
+				'gddealer_response',
+				'',
+				FALSE,
+				[
+					'app'         => 'gddealer',
+					'key'         => 'Responses',
+					'autoSaveKey' => 'gddealer-response-' . $id,
+					'attachIds'   => [ $id, 2 ],
+				],
+				NULL,
+				NULL,
+				NULL,
+				'editor_respond_' . $id
+			);
+		}
+
+		$raw = (string) \IPS\Request::i()->gddealer_response;
 
 		/* Editor output is HTML. parseStatic runs IPS's HTMLPurifier against
 		   it (strips unsafe tags/attrs, converts pasted embeds, resolves
@@ -1304,9 +1326,46 @@ class _dashboard extends \IPS\Dispatcher\Controller
 	{
 		\IPS\Session::i()->csrfCheck();
 
-		$id          = (int) ( \IPS\Request::i()->id ?? 0 );
-		$reasonRaw   = (string) \IPS\Request::i()->dispute_reason;
-		$evidenceRaw = (string) \IPS\Request::i()->dispute_evidence;
+		$id = (int) ( \IPS\Request::i()->id ?? 0 );
+
+		/* Construct editors before save logic so upload POSTs are intercepted.
+		   autoSaveKeys must match the render-side editors in reviews(). */
+		if ( $id > 0 )
+		{
+			new \IPS\Helpers\Form\Editor(
+				'gddealer_dispute_reason',
+				'',
+				FALSE,
+				[
+					'app'         => 'gddealer',
+					'key'         => 'Responses',
+					'autoSaveKey' => 'gddealer-dispute-reason-' . $id,
+					'attachIds'   => [ $id, 3 ],
+				],
+				NULL,
+				NULL,
+				NULL,
+				'editor_dispute_reason_' . $id
+			);
+			new \IPS\Helpers\Form\Editor(
+				'gddealer_dispute_evidence',
+				'',
+				FALSE,
+				[
+					'app'         => 'gddealer',
+					'key'         => 'Responses',
+					'autoSaveKey' => 'gddealer-dispute-evidence-' . $id,
+					'attachIds'   => [ $id, 4 ],
+				],
+				NULL,
+				NULL,
+				NULL,
+				'editor_dispute_evidence_' . $id
+			);
+		}
+
+		$reasonRaw   = (string) \IPS\Request::i()->gddealer_dispute_reason;
+		$evidenceRaw = (string) \IPS\Request::i()->gddealer_dispute_evidence;
 
 		/* Both fields arrive as editor HTML — parse through IPS sanitizer
 		   (area='gddealer_Responses', attachIds tag the review + the

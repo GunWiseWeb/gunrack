@@ -351,6 +351,12 @@
     <word key="menu__gddealer_dealers_reviews"><![CDATA[All Reviews]]></word>
     <word key="gddealer_review_updated"><![CDATA[Your review has been updated.]]></word>
     <word key="gddealer_cannot_edit_disputed"><![CDATA[You cannot edit a review that is currently under dispute.]]></word>
+    <word key="gddealer_review_body"><![CDATA[Your review]]></word>
+    <word key="gddealer_response"><![CDATA[Your response]]></word>
+    <word key="gddealer_dispute_reason"><![CDATA[Reason for contest]]></word>
+    <word key="gddealer_dispute_evidence"><![CDATA[Supporting evidence]]></word>
+    <word key="gddealer_customer_response"><![CDATA[Your response]]></word>
+    <word key="gddealer_customer_evidence"><![CDATA[Supporting evidence]]></word>
     <word key="gddealer_dispute_counts_title"><![CDATA[Dispute Counts]]></word>
     <word key="gddealer_dispute_count_reset"><![CDATA[Dispute count reset to 0 for this month.]]></word>
     <word key="gddealer_disputes_granted"><![CDATA[Bonus disputes granted.]]></word>
