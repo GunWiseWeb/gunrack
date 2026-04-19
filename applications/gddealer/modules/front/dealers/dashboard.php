@@ -1044,8 +1044,8 @@ class _dashboard extends \IPS\Dispatcher\Controller
 					'rating_pricing'   => (int) $r['rating_pricing'],
 					'rating_shipping'  => (int) $r['rating_shipping'],
 					'rating_service'   => (int) $r['rating_service'],
-					'review_body'      => (string) ( $r['review_body'] ?? '' ),
-					'dealer_response'  => (string) ( $r['dealer_response'] ?? '' ),
+					'review_body'      => ( $r['review_body'] ?? '' ) !== '' ? \IPS\Text\Parser::parseStatic( (string) $r['review_body'], [ (int) $r['id'], 1 ], NULL, 'gddealer_Responses' ) : '',
+					'dealer_response'  => ( $r['dealer_response'] ?? '' ) !== '' ? \IPS\Text\Parser::parseStatic( (string) $r['dealer_response'], [ (int) $r['id'], 2 ], NULL, 'gddealer_Responses' ) : '',
 					'response_at'      => $responseTs
 						? (string) \IPS\DateTime::ts( $responseTs )->localeDate() . ' · ' . (string) \IPS\DateTime::ts( $responseTs )->localeTime()
 						: '',

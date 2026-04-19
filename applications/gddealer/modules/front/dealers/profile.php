@@ -267,8 +267,8 @@ class _profile extends \IPS\Dispatcher\Controller
 					'rating_pricing'       => $pricing,
 					'rating_shipping'      => $shipping,
 					'rating_service'       => $service,
-					'review_body'          => (string) ( $r['review_body'] ?? '' ),
-					'dealer_response'      => (string) ( $r['dealer_response'] ?? '' ),
+					'review_body'          => ( $r['review_body'] ?? '' ) !== '' ? \IPS\Text\Parser::parseStatic( (string) $r['review_body'], [ (int) $r['id'], 1 ], NULL, 'gddealer_Responses' ) : '',
+					'dealer_response'      => ( $r['dealer_response'] ?? '' ) !== '' ? \IPS\Text\Parser::parseStatic( (string) $r['dealer_response'], [ (int) $r['id'], 2 ], NULL, 'gddealer_Responses' ) : '',
 					'dealer_name'          => (string) ( $dealerRow['dealer_name'] ?? '' ),
 					'created_at'           => $createdAt,
 					'created_at_formatted' => $createdTs ? (string) \IPS\DateTime::ts( $createdTs )->localeDate() : '',
@@ -401,8 +401,8 @@ class _profile extends \IPS\Dispatcher\Controller
 
 				$customerDispute = [
 					'id'                 => (int) $cd['id'],
-					'dispute_reason'     => (string) ( $cd['dispute_reason'] ?? '' ),
-					'dispute_evidence'   => (string) ( $cd['dispute_evidence'] ?? '' ),
+					'dispute_reason'     => ( $cd['dispute_reason'] ?? '' ) !== '' ? \IPS\Text\Parser::parseStatic( (string) $cd['dispute_reason'], [ (int) $cd['id'], 3 ], NULL, 'gddealer_Responses' ) : '',
+					'dispute_evidence'   => ( $cd['dispute_evidence'] ?? '' ) !== '' ? \IPS\Text\Parser::parseStatic( (string) $cd['dispute_evidence'], [ (int) $cd['id'], 4 ], NULL, 'gddealer_Responses' ) : '',
 					'dispute_deadline'   => $deadlineRaw,
 					'deadline_formatted' => $deadlineRaw !== '' ? date( 'F j, Y', strtotime( $deadlineRaw ) ) : '',
 					'respond_url'        => (string) \IPS\Http\Url::internal(
