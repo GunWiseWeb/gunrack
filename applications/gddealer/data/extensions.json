@@ -11,6 +11,9 @@
 		},
 		"FrontNavigation": {
 			"DealerNav": "IPS\\gddealer\\extensions\\core\\FrontNavigation\\DealerNav"
+		},
+		"EditorLocations": {
+			"Responses": "IPS\\gddealer\\extensions\\core\\EditorLocations\\Responses"
 		}
 	}
 }
