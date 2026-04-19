@@ -11,6 +11,18 @@ GunRack (gunrack.deals) is a firearms price comparison and community platform bu
 5. **All 12 plugins must register CSRF token validation on every state-changing front-end action.** See Appendix C.
 6. **Never store SES credentials or API keys in source code or commit them to Git.**
 
+## Known landmines — check these before shipping any plugin build
+These are the high-friction spots that have broken production deploys multiple times. Skim this list first, then see the numbered rule for details.
+- `data/extensions.json` stripped during build or on server writeback — see rule #16
+- `data/emails.xml` whitespace breaks IPS's XMLReader and silently parses zero templates — see rule #18
+- New admin templates added only to `install.php`, not seeded into existing installs via `templates_XXXXX.php` — see rule #19
+- Notification registered in the extension but never seeded into `core_notification_defaults` — see rule #24
+- Email send and bell notification nested in the same `try/catch`, so an email failure silently eats the notification — see rule #25
+- `\IPS\Output::i()->redirect( $url, 'message' )` shows a ~1 second black interstitial on front-end controllers — see rule #21
+- `app_long_version` stuck at a low value so upgrades never run — always check the DB row before debugging "my upgrade step didn't execute"
+- `\IPS\Db::i()->insertId()` does not exist — `insert()` returns the ID directly (rule #20)
+- Adding `app_version` fields to `data/application.json` triggers "Unknown column" on upgrade — only `data/versions.json` holds versions (rule #23)
+
 ## Tech stack
 - **Platform:** IPS Community Suite (self-hosted)
 - **Server:** Standard NVMe — 4 Core, 10GB RAM, 140GB NVMe, 2x IPv4
@@ -112,6 +124,47 @@ These were learned by comparing against a working IPS v5 plugin. They apply to e
     - `{?}` — SEO title placeholder, no parameter name
     
     Any other token form — `{!param}`, `{$param}`, `{*param}`, `{%param}` — does not exist in IPS 5 and silently breaks the route (it either fails to register or matches nothing). Common mistake: using `{#do}` for string action values like `feedSettings`, `listings`, `rate`, `guidelines` — those need `{@do}` because `{#}` only accepts digits. Rule of thumb: if the URL segment is not strictly a positive integer, use `{@param}`, never `{#param}`. More specific friendly patterns must be listed BEFORE wildcard patterns in `furl.json` so literal paths win over slug capture — e.g. `review-guidelines` must appear before `profile/{@dealer_slug}`.
+16. **`data/extensions.json` is the source of truth for extension registration** — every extension class under `extensions/<group>/<type>/` must have a corresponding entry in `data/extensions.json` using the fully qualified namespace with **double-backslashes** in JSON. Format: `"<Type>": { "<ClassName>": "IPS\\<app>\\extensions\\<group>\\<Type>\\<ClassName>" }`. If the file exists on disk but isn't registered, IPS cannot see it — any code depending on that extension throws `OutOfBoundsException`. This is especially fatal for `EditorLocations` since `\IPS\Helpers\Form\Editor` fails to construct when its `key` option isn't registered. IPS has been observed to overwrite `data/extensions.json` from a stale datastore cache during concurrent requests on upgrade, stripping entries. Every upgrade step should defensively self-heal the file: check each required registration, rewrite the file if anything is missing, then `unset( \IPS\Data\Store::i()->extensions )`. See `applications/gddealer/setup/upg_10033/upgrade.php` for the reference implementation.
+17. **Build-time verification — inspect the tar, not just the repo** — pre-build greps on source files are necessary but not sufficient. The repo can be correct and the tar can still ship with missing or stripped content; this has happened multiple times. Every build process must end with a verification pass that extracts the tar (or uses `tar -xOf`) and greps the extracted files against the expected state. No tar is handed off until the extracted contents match the source. Specifically verify: `data/extensions.json`, `data/versions.json`, `data/emails.xml`, every `extensions/*/*/*.php` file, and `Application.php` as the first tar entry. Example:
+    ```bash
+    tar -xOf applications/<app>/<app>-v<ver>.tar data/extensions.json | grep <ClassName>
+    tar -tf applications/<app>/<app>-v<ver>.tar | head -1    # must print Application.php
+    ```
+18. **`data/emails.xml` whitespace is parser-sensitive** — IPS's `installEmailTemplates()` uses `XMLReader` with a loop that exits the moment `$xml->name` isn't `'template'`, **including whitespace text nodes**. Pretty-printed XML with tabs or newlines between `<emails>` and the first `<template>` (or between sibling `<template>` elements) silently parses to **zero** templates. Core IPS `emails.xml` files are written with no whitespace between element siblings (e.g. `<emails><template><template_name>...`). Always verify before shipping:
+    ```bash
+    php -r '
+    $xml = new XMLReader();
+    $xml->open("applications/<app>/data/emails.xml");
+    $xml->read();
+    $count = 0;
+    while ( $xml->read() && $xml->name == "template" ) {
+        if ( $xml->nodeType != XMLReader::ELEMENT ) continue;
+        $count++;
+        while ( $xml->read() && $xml->name != "template" ) {}
+    }
+    echo "Templates parsed: $count\n";
+    '
+    ```
+    Output must match the expected template count exactly. If it's less, the XML is malformed for IPS's parser regardless of whether it's valid XML.
+19. **Seed templates in BOTH `install.php` AND `templates_XXXXX.php`** — `setup/install.php` runs on fresh installs only; `setup/templates_XXXXX.php` runs on upgrades. Adding template content to `install.php` without a corresponding `templates_XXXXX.php` means existing installs never get the new content and pages render blank. For every new admin or front template, seed it in both. Use `\IPS\Db::i()->replace()` in the upgrade seed — NOT `insert()` or `INSERT IGNORE` — so existing rows are overwritten with the new design. Same applies to notification defaults, email templates, and any other seeded data. After any upgrade, spot-check `core_theme_templates` to confirm the row exists; don't assume because the file is in the repo it landed in the DB.
+20. **IPS 5 method signatures — never guess, always read core source** — before writing any call to an IPS API, read the core source in the reference IPS install. Verified APIs that have caused regressions:
+    - `\IPS\Db::i()->insert( $table, $set, $onDupKey=FALSE, $ignoreErrors=FALSE ): int|string` returns the new row ID directly. **There is no `insertId()` method** — assign the return value of `insert()` to get the ID.
+    - `\IPS\DateTime::ts( $unix )->localeDate()` / `->localeTime()` applies the viewer's profile timezone. Never use raw `date()` for user-visible timestamps — that ignores timezone.
+    - `\IPS\Helpers\Form\Editor` constructor: `new Editor( string $name, mixed $defaultValue, ?bool $required, array $options, ... )`. Required `$options` keys: `app`, `key`, `autoSaveKey`, `attachIds`. Throws `OutOfBoundsException` if `$options['key']` is not registered in `data/extensions.json` under `EditorLocations`.
+    - `\IPS\Text\Parser::parseStatic( string $value, ?array $attachIds, ?Member $member, string $area, ... )` parses editor HTML for display. `$area` format is `"<app>_<ExtensionClassName>"` (e.g. `'gddealer_Responses'`).
+    - `\IPS\File::claimAttachments( $postKey, $id1, $id2, $id3 )` must be called after saving editor content to claim uploaded attachments. `$postKey` must match the `autoSaveKey` from the editor constructor.
+21. **`\IPS\Output::i()->redirect()` with a message string shows a black interstitial page on the front-end** — passing a second argument (a message key) to `redirect()` causes IPS to render a "Please wait while we transfer you..." interstitial for ~1 second before the HTTP redirect. On sites with certain theme configurations this renders against a dark background and looks broken. For user-facing controllers in this project, use bare redirects: `\IPS\Output::i()->redirect( $url )` — no second argument. Admin controllers can keep messages since AdminCP chrome handles them fine.
+22. **Upgrade step conventions** — every new feature that touches the DB or seed data needs `setup/upg_XXXXX/upgrade.php` where `XXXXX` matches the `long_version` from `data/versions.json`. Upgrade steps MUST be idempotent — safe to re-run. Use `INSERT IGNORE`, check-then-insert, or guards like `NOT LIKE '<%'` on data migrations. Always clear extension / application datastore caches at the end of every step:
+    ```php
+    try { unset( \IPS\Data\Store::i()->extensions ); }   catch ( \Exception ) {}
+    try { unset( \IPS\Data\Store::i()->applications ); } catch ( \Exception ) {}
+    try { \IPS\Data\Cache::i()->clearAll(); }            catch ( \Exception ) {}
+    ```
+    Never assume `\IPS\Application::load( $app )->installEmailTemplates()` will seed templates on its own — on existing installs with malformed `emails.xml` it silently inserts zero templates. Upgrade steps that rely on email templates should verify `core_email_templates` row counts afterward and fall back to direct inserts if needed.
+23. **Never add version fields to `data/application.json`** — IPS reads version exclusively from `data/versions.json`. Adding `app_version` or `app_version_human` to `application.json` triggers "Unknown column" errors on upgrade. Version bumps only touch `data/versions.json`.
+24. **Notifications must be registered in three places** — a new IPS bell-notification key needs all of: (1) registration in `extensions/core/Notifications/<NotificationsExtension>.php` under `configurationOptions()` AND a matching `parse_<key>()` method, (2) seeding in `core_notification_defaults` via both `setup/install.php` AND `setup/upg_XXXXX/upgrade.php` for existing installs, (3) language strings for `<app>_notif_<key>` and `<app>_notif_<key>_desc` in `data/lang.xml`. Missing any of the three causes silent notification failures where the code appears to succeed but no bell ever appears.
+25. **Email and bell notifications must be in independent `try/catch` blocks** — never nest an email send and a bell notification send in the same `try/catch`. If the email throws (template missing, SES failure, transient error), the shared catch swallows the exception and the notification is never sent. Always use two adjacent, completely independent `try/catch` blocks so a failure in one channel cannot suppress the other. When adding a new action that modifies reviews, disputes, or any user-visible state, audit every code path that can reach that state — not just the primary action. Edits typically go through a separate action (e.g. `editReview()`) that needs its own email + notification pair.
+26. **Test the production deploy path, not just the repo state** — every completed feature must be verified by: (a) extracting the built tar to confirm all expected files are present, (b) running the IPS upgrade against a DB state that matches production, (c) spot-checking that new template content actually landed in `core_theme_templates` and not just in `setup/install.php`, (d) testing the user-facing flow in a browser with a non-admin account. "The code looks right in the repo" is not the bar. "The feature works on a clean IPS install after deploying the tar" is the bar.
 
 ## Full specification
 Read `GunRack_Spec_v2.9.16.md` for complete specs on all 12 plugins, database schemas, acceptance criteria, server setup (Appendix B), security requirements (Appendix C), and Phase 2 roadmap (Section 19).
