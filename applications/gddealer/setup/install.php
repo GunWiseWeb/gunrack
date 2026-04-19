@@ -1860,10 +1860,10 @@ TEMPLATE_EOT,
 							</form>
 						</div>
 					</div>
-					<p class="gd-resp-text" style="margin:0;font-size:0.9em">{$r['dealer_response']}</p>
+					<div class="gd-resp-text" style="margin:0;font-size:0.9em">{$r['dealer_response']|raw}</div>
 					<form class="gd-resp-edit" method="post" action="{$r['respond_url']}" style="display:none;margin-top:8px">
 						<input type="hidden" name="csrfKey" value="{$csrfKey}">
-						<textarea name="response" rows="3" required style="width:100%;border:1px solid #d1d5db;border-radius:4px;padding:8px;font-size:0.9em;box-sizing:border-box">{$r['dealer_response']}</textarea>
+						{$r['edit_editor_html']|raw}
 						<div style="display:flex;gap:6px;margin-top:8px">
 							<button type="submit" class="ipsButton ipsButton--primary ipsButton--small">Save changes</button>
 							<button type="button" onclick="var w=this.closest('div[data-resp]');w.querySelector('.gd-resp-text').style.display='block';w.querySelector('.gd-resp-actions').style.display='flex';w.querySelector('.gd-resp-edit').style.display='none';return false" class="ipsButton ipsButton--normal ipsButton--small">Cancel</button>
@@ -1909,7 +1909,7 @@ TEMPLATE_EOT,
 					<summary style="cursor:pointer;font-size:0.85em;color:#2563eb;font-weight:600">Respond to this review</summary>
 					<form method="post" action="{$r['respond_url']}" style="margin-top:8px">
 						<input type="hidden" name="csrfKey" value="{$csrfKey}">
-						<textarea name="response" rows="3" style="width:100%;border:1px solid var(--i-border-color,#ccc);border-radius:4px;padding:8px;font-size:0.9em;box-sizing:border-box" placeholder="Write a professional response visible to all buyers..."></textarea>
+						{$r['respond_editor_html']|raw}
 						<button type="submit" class="ipsButton ipsButton--primary ipsButton--small" style="margin-top:8px">Post Response</button>
 					</form>
 				</details>

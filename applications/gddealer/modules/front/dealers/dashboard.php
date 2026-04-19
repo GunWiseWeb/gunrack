@@ -931,6 +931,63 @@ class _dashboard extends \IPS\Dispatcher\Controller
 				$responseTs = $r['response_at'] ? strtotime( (string) $r['response_at'] ) : 0;
 				$deadlineTs = $r['dispute_deadline'] ? strtotime( (string) $r['dispute_deadline'] ) : 0;
 
+				/* Per-row IPS rich-text editor for the dealer response.
+				   Only one editor is ever rendered per row: the new-response
+				   editor for empty rows, the edit-response editor for rows
+				   that already have a response. autoSaveKey is unique per
+				   reviewId so drafts don't cross-contaminate. attachIds=
+				   [reviewId,2] pegs attachments to dealer_response. */
+				$respondEditorHtml = '';
+				$editEditorHtml    = '';
+				$dealerResp        = (string) ( $r['dealer_response'] ?? '' );
+
+				if ( $dealerResp === '' && (string) ( $r['dispute_status'] ?? 'none' ) === 'none' )
+				{
+					try
+					{
+						$editor = new \IPS\Helpers\Form\Editor(
+							'response',
+							'',
+							FALSE,
+							[
+								'app'         => 'gddealer',
+								'key'         => 'Responses',
+								'autoSaveKey' => 'gddealer-response-' . (int) $r['id'],
+								'attachIds'   => [ (int) $r['id'], 2 ],
+							],
+							NULL,
+							NULL,
+							NULL,
+							'editor_respond_' . (int) $r['id']
+						);
+						$respondEditorHtml = (string) $editor;
+					}
+					catch ( \Exception ) {}
+				}
+				elseif ( $dealerResp !== '' )
+				{
+					try
+					{
+						$editEditor = new \IPS\Helpers\Form\Editor(
+							'response',
+							$dealerResp,
+							FALSE,
+							[
+								'app'         => 'gddealer',
+								'key'         => 'Responses',
+								'autoSaveKey' => 'gddealer-response-' . (int) $r['id'],
+								'attachIds'   => [ (int) $r['id'], 2 ],
+							],
+							NULL,
+							NULL,
+							NULL,
+							'editor_respond_edit_' . (int) $r['id']
+						);
+						$editEditorHtml = (string) $editEditor;
+					}
+					catch ( \Exception ) {}
+				}
+
 				$rows[] = [
 					'id'               => (int) $r['id'],
 					'member_id'        => (int) $r['member_id'],
@@ -961,6 +1018,8 @@ class _dashboard extends \IPS\Dispatcher\Controller
 					'dispute_url'      => (string) \IPS\Http\Url::internal(
 						'app=gddealer&module=dealers&controller=dashboard&do=dispute&id=' . (int) $r['id']
 					)->csrf(),
+					'respond_editor_html' => $respondEditorHtml,
+					'edit_editor_html'    => $editEditorHtml,
 				];
 			}
 		}
@@ -1035,8 +1094,32 @@ class _dashboard extends \IPS\Dispatcher\Controller
 	protected function respond(): void
 	{
 		\IPS\Session::i()->csrfCheck();
-		$id       = (int) ( \IPS\Request::i()->id ?? 0 );
-		$response = trim( (string) \IPS\Request::i()->response );
+		$id  = (int) ( \IPS\Request::i()->id ?? 0 );
+		$raw = (string) \IPS\Request::i()->response;
+
+		/* Editor output is HTML. parseStatic runs IPS's HTMLPurifier against
+		   it (strips unsafe tags/attrs, converts pasted embeds, resolves
+		   attachment placeholders). The $area string must match the editor
+		   location extension: gddealer_Responses. attachIds=[reviewId,2]
+		   identifies the dealer_response field for attachment bookkeeping. */
+		$response = '';
+		if ( $raw !== '' && $id > 0 )
+		{
+			try
+			{
+				$response = \IPS\Text\Parser::parseStatic(
+					$raw,
+					[ (int) $id, 2 ],
+					\IPS\Member::loggedIn(),
+					'gddealer_Responses'
+				);
+			}
+			catch ( \Exception )
+			{
+				$response = $raw;
+			}
+		}
+		$response = trim( $response );
 
 		if ( $id > 0 && $response !== '' )
 		{
@@ -1045,6 +1128,19 @@ class _dashboard extends \IPS\Dispatcher\Controller
 				\IPS\Db::i()->update( 'gd_dealer_ratings',
 					[ 'dealer_response' => $response, 'response_at' => date( 'Y-m-d H:i:s' ) ],
 					[ 'id=? AND dealer_id=? AND dispute_status=?', $id, (int) $this->dealer->dealer_id, 'none' ]
+				);
+			}
+			catch ( \Exception ) {}
+
+			/* Claim any attachments uploaded via the editor so they're
+			   linked to this review+field and survive garbage collection.
+			   autoSaveKey matches the editor instantiation in reviews(). */
+			try
+			{
+				\IPS\File::claimAttachments(
+					'gddealer-response-' . (int) $id,
+					(int) $id,
+					2
 				);
 			}
 			catch ( \Exception ) {}
