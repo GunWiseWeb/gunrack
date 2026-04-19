@@ -1094,6 +1094,136 @@ class _dealers extends \IPS\Dispatcher\Controller
 			$rows, $dealerOptions, $filterStatus, $filterDealer, $formUrl
 		);
 	}
+	/* =============== Dispute Count Management =============== */
+
+	protected static array $disputeLimits = [
+		'basic'      => 2,
+		'pro'        => 5,
+		'founding'   => 5,
+		'enterprise' => PHP_INT_MAX,
+	];
+
+	protected function disputeCounts()
+	{
+		$monthKey = date( 'Y-m' );
+		$rows = [];
+
+		try
+		{
+			foreach ( \IPS\Db::i()->select( '*', 'gd_dealer_feed_config', NULL, 'dealer_name ASC' ) as $d )
+			{
+				$dealerId = (int) $d['dealer_id'];
+				$tier     = (string) ( $d['subscription_tier'] ?? 'basic' );
+				$limit    = self::$disputeLimits[ $tier ] ?? 2;
+				$used     = 0;
+				$bonus    = 0;
+
+				try
+				{
+					$row = \IPS\Db::i()->select( 'count, bonus', 'gd_dealer_dispute_counts',
+						[ 'dealer_id=? AND month_key=?', $dealerId, $monthKey ]
+					)->first();
+					$used  = (int) $row['count'];
+					$bonus = (int) ( $row['bonus'] ?? 0 );
+				}
+				catch ( \Exception ) {}
+
+				$effectiveLimit = $limit === PHP_INT_MAX ? -1 : $limit + $bonus;
+				$remaining      = $effectiveLimit === -1 ? -1 : max( 0, $effectiveLimit - $used );
+
+				$rows[] = [
+					'dealer_id'   => $dealerId,
+					'dealer_name' => (string) $d['dealer_name'],
+					'tier'        => $tier,
+					'limit'       => $limit === PHP_INT_MAX ? -1 : $limit,
+					'bonus'       => $bonus,
+					'used'        => $used,
+					'remaining'   => $remaining,
+					'unlimited'   => $effectiveLimit === -1,
+					'reset_url'   => (string) \IPS\Http\Url::internal(
+						'app=gddealer&module=dealers&controller=dealers&do=resetDisputeCount&id=' . $dealerId
+					)->csrf(),
+					'grant1_url'  => (string) \IPS\Http\Url::internal(
+						'app=gddealer&module=dealers&controller=dealers&do=grantDisputes&id=' . $dealerId . '&amount=1'
+					)->csrf(),
+					'grant5_url'  => (string) \IPS\Http\Url::internal(
+						'app=gddealer&module=dealers&controller=dealers&do=grantDisputes&id=' . $dealerId . '&amount=5'
+					)->csrf(),
+				];
+			}
+		}
+		catch ( \Exception ) {}
+
+		\IPS\Output::i()->title  = \IPS\Member::loggedIn()->language()->addToStack( 'gddealer_dispute_counts_title' );
+		\IPS\Output::i()->output = \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'admin' )->disputeCounts( $rows, $monthKey );
+	}
+
+	protected function resetDisputeCount()
+	{
+		\IPS\Session::i()->csrfCheck();
+
+		$dealerId = (int) ( \IPS\Request::i()->id ?? 0 );
+		$monthKey = date( 'Y-m' );
+
+		if ( $dealerId > 0 )
+		{
+			try
+			{
+				\IPS\Db::i()->update( 'gd_dealer_dispute_counts',
+					[ 'count' => 0 ],
+					[ 'dealer_id=? AND month_key=?', $dealerId, $monthKey ]
+				);
+			}
+			catch ( \Exception ) {}
+		}
+
+		\IPS\Output::i()->redirect(
+			\IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dealers&do=disputeCounts' ),
+			'gddealer_dispute_count_reset'
+		);
+	}
+
+	protected function grantDisputes()
+	{
+		\IPS\Session::i()->csrfCheck();
+
+		$dealerId = (int) ( \IPS\Request::i()->id ?? 0 );
+		$amount   = max( 1, min( 100, (int) ( \IPS\Request::i()->amount ?? 1 ) ) );
+		$monthKey = date( 'Y-m' );
+
+		if ( $dealerId > 0 )
+		{
+			try
+			{
+				$exists = (int) \IPS\Db::i()->select( 'COUNT(*)', 'gd_dealer_dispute_counts',
+					[ 'dealer_id=? AND month_key=?', $dealerId, $monthKey ]
+				)->first();
+
+				if ( $exists > 0 )
+				{
+					\IPS\Db::i()->update( 'gd_dealer_dispute_counts',
+						'bonus = bonus + ' . $amount,
+						[ 'dealer_id=? AND month_key=?', $dealerId, $monthKey ]
+					);
+				}
+				else
+				{
+					\IPS\Db::i()->insert( 'gd_dealer_dispute_counts', [
+						'dealer_id' => $dealerId,
+						'month_key' => $monthKey,
+						'count'     => 0,
+						'bonus'     => $amount,
+					] );
+				}
+			}
+			catch ( \Exception ) {}
+		}
+
+		\IPS\Output::i()->redirect(
+			\IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dealers&do=disputeCounts' ),
+			'gddealer_disputes_granted'
+		);
+	}
 }
 
 class dealers extends _dealers {}

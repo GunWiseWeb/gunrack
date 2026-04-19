@@ -969,17 +969,21 @@ class _dashboard extends \IPS\Dispatcher\Controller
 		$tier     = (string) $this->dealer->subscription_tier;
 		$limit    = self::$disputeLimits[ $tier ] ?? 2;
 		$monthKey = date( 'Y-m' );
+		$bonus    = 0;
 		try
 		{
-			$used = (int) \IPS\Db::i()->select( 'count', 'gd_dealer_dispute_counts',
+			$row = \IPS\Db::i()->select( 'count, bonus', 'gd_dealer_dispute_counts',
 				[ 'dealer_id=? AND month_key=?', $dealerId, $monthKey ]
 			)->first();
+			$used  = (int) $row['count'];
+			$bonus = (int) ( $row['bonus'] ?? 0 );
 		}
 		catch ( \Exception )
 		{
 			$used = 0;
 		}
-		$remaining = $limit === PHP_INT_MAX ? -1 : max( 0, $limit - $used );
+		$effectiveLimit = $limit === PHP_INT_MAX ? PHP_INT_MAX : $limit + $bonus;
+		$remaining = $effectiveLimit === PHP_INT_MAX ? -1 : max( 0, $effectiveLimit - $used );
 
 		$avgOverall = $total > 0 ? round( ( $avgPricing + $avgShipping + $avgService ) / 3, 1 ) : 0.0;
 
@@ -1150,19 +1154,23 @@ class _dashboard extends \IPS\Dispatcher\Controller
 
 		$limit    = self::$disputeLimits[ $tier ] ?? 2;
 		$monthKey = date( 'Y-m' );
+		$bonus    = 0;
 
 		try
 		{
-			$used = (int) \IPS\Db::i()->select( 'count', 'gd_dealer_dispute_counts',
+			$row = \IPS\Db::i()->select( 'count, bonus', 'gd_dealer_dispute_counts',
 				[ 'dealer_id=? AND month_key=?', $dealerId, $monthKey ]
 			)->first();
+			$used  = (int) $row['count'];
+			$bonus = (int) ( $row['bonus'] ?? 0 );
 		}
 		catch ( \Exception )
 		{
 			$used = 0;
 		}
 
-		if ( $used >= $limit )
+		$effectiveLimit = $limit === PHP_INT_MAX ? PHP_INT_MAX : $limit + $bonus;
+		if ( $used >= $effectiveLimit )
 		{
 			\IPS\Output::i()->redirect( $redirectUrl, 'gddealer_front_dispute_limit_reached' );
 			return;

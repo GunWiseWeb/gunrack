@@ -399,6 +399,56 @@ TEMPLATE_EOT,
 TEMPLATE_EOT,
 	],
 
+	/* ===== ADMIN: disputeCounts ===== */
+	[
+		'set_id'        => 1,
+		'app'           => 'gddealer',
+		'location'      => 'admin',
+		'group'         => 'dealers',
+		'template_name' => 'disputeCounts',
+		'template_data' => '$rows, $monthKey',
+		'template_content' => <<<'TEMPLATE_EOT'
+<div class="ipsBox ipsPull">
+	<div class="ipsBox_body">
+		<h2 class="ipsType_sectionHead" style="padding:16px 20px;margin:0;border-bottom:1px solid var(--i-border-color,#e0e0e0)">Dispute Counts — {$monthKey}</h2>
+		<table class="ipsTable ipsTable_zebra" style="width:100%">
+			<thead>
+				<tr>
+					<th>Dealer</th>
+					<th>Tier</th>
+					<th>Base Limit</th>
+					<th>Bonus</th>
+					<th>Used</th>
+					<th>Remaining</th>
+					<th style="text-align:right">Actions</th>
+				</tr>
+			</thead>
+			<tbody>
+				{{if count($rows) === 0}}
+					<tr><td colspan="7" style="padding:20px;text-align:center;color:#999">No dealers found.</td></tr>
+				{{endif}}
+				{{foreach $rows as $r}}
+					<tr>
+						<td>{$r['dealer_name']}</td>
+						<td>{$r['tier']}</td>
+						<td>{{if $r['unlimited']}}Unlimited{{else}}{$r['limit']}{{endif}}</td>
+						<td>{$r['bonus']}</td>
+						<td>{$r['used']}</td>
+						<td>{{if $r['unlimited']}}Unlimited{{else}}{$r['remaining']}{{endif}}</td>
+						<td style="text-align:right;white-space:nowrap">
+							<a href="{$r['reset_url']}" class="ipsButton ipsButton--small ipsButton--light" title="Reset count to 0">Reset</a>
+							<a href="{$r['grant1_url']}" class="ipsButton ipsButton--small ipsButton--positive" title="Grant 1 bonus dispute">+1</a>
+							<a href="{$r['grant5_url']}" class="ipsButton ipsButton--small ipsButton--positive" title="Grant 5 bonus disputes">+5</a>
+						</td>
+					</tr>
+				{{endforeach}}
+			</tbody>
+		</table>
+	</div>
+</div>
+TEMPLATE_EOT,
+	],
+
 	/* ===== ADMIN: allReviews ===== */
 	[
 		'set_id'        => 1,
