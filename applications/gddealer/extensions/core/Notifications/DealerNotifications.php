@@ -116,6 +116,33 @@ class DealerNotifications extends NotificationsAbstract
 				'default'           => [ 'inline', 'email' ],
 				'disabled'          => [],
 			],
+			'support_ticket_new' => [
+				'type'              => 'standard',
+				'notificationTypes' => [ 'support_ticket_new' ],
+				'title'             => 'gddealer_notif_support_ticket_new',
+				'showTitle'         => true,
+				'description'       => 'gddealer_notif_support_ticket_new_desc',
+				'default'           => [ 'inline', 'email' ],
+				'disabled'          => [],
+			],
+			'support_reply_to_dealer' => [
+				'type'              => 'standard',
+				'notificationTypes' => [ 'support_reply_to_dealer' ],
+				'title'             => 'gddealer_notif_support_reply_to_dealer',
+				'showTitle'         => true,
+				'description'       => 'gddealer_notif_support_reply_to_dealer_desc',
+				'default'           => [ 'inline', 'email' ],
+				'disabled'          => [],
+			],
+			'support_reply_to_admin' => [
+				'type'              => 'standard',
+				'notificationTypes' => [ 'support_reply_to_admin' ],
+				'title'             => 'gddealer_notif_support_reply_to_admin',
+				'showTitle'         => true,
+				'description'       => 'gddealer_notif_support_reply_to_admin_desc',
+				'default'           => [ 'inline', 'email' ],
+				'disabled'          => [],
+			],
 		];
 	}
 
@@ -256,6 +283,51 @@ class DealerNotifications extends NotificationsAbstract
 			'title'   => $title,
 			'url'     => \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dashboard&do=reviews' ),
 			'content' => $content,
+			'author'  => NULL,
+		];
+	}
+
+	public function parse_support_ticket_new( Inline $notification, bool $htmlEscape = TRUE ): array
+	{
+		$extra = $notification->extra ?: [];
+		$id    = (int) ( $extra['ticket_id'] ?? 0 );
+		$url   = $id > 0
+			? \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=support&do=view&id=' . $id, 'admin' )
+			: \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=support&do=tickets', 'admin' );
+		return [
+			'title'   => 'New support ticket from ' . (string) ( $extra['dealer_name'] ?? 'a dealer' ),
+			'url'     => $url,
+			'content' => (string) ( $extra['subject'] ?? '' ),
+			'author'  => NULL,
+		];
+	}
+
+	public function parse_support_reply_to_dealer( Inline $notification, bool $htmlEscape = TRUE ): array
+	{
+		$extra = $notification->extra ?: [];
+		$id    = (int) ( $extra['ticket_id'] ?? 0 );
+		$url   = $id > 0
+			? \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=support&do=view&id=' . $id )
+			: \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=support' );
+		return [
+			'title'   => 'Staff replied to your ticket: ' . (string) ( $extra['subject'] ?? '' ),
+			'url'     => $url,
+			'content' => 'Click to view the reply.',
+			'author'  => NULL,
+		];
+	}
+
+	public function parse_support_reply_to_admin( Inline $notification, bool $htmlEscape = TRUE ): array
+	{
+		$extra = $notification->extra ?: [];
+		$id    = (int) ( $extra['ticket_id'] ?? 0 );
+		$url   = $id > 0
+			? \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=support&do=view&id=' . $id, 'admin' )
+			: \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=support&do=tickets', 'admin' );
+		return [
+			'title'   => (string) ( $extra['dealer_name'] ?? 'A dealer' ) . ' replied on ticket: ' . (string) ( $extra['subject'] ?? '' ),
+			'url'     => $url,
+			'content' => 'Click to view the reply.',
 			'author'  => NULL,
 		];
 	}

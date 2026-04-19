@@ -373,5 +373,11 @@
     <word key="gddealer_support_subject"><![CDATA[Subject]]></word>
     <word key="gddealer_support_department"><![CDATA[Department]]></word>
     <word key="gddealer_support_priority"><![CDATA[Priority]]></word>
+    <word key="gddealer_notif_support_ticket_new"><![CDATA[New support ticket opened]]></word>
+    <word key="gddealer_notif_support_ticket_new_desc"><![CDATA[When a dealer opens a new support ticket]]></word>
+    <word key="gddealer_notif_support_reply_to_dealer"><![CDATA[Staff reply on your support ticket]]></word>
+    <word key="gddealer_notif_support_reply_to_dealer_desc"><![CDATA[When staff reply to your support ticket]]></word>
+    <word key="gddealer_notif_support_reply_to_admin"><![CDATA[Dealer reply on support ticket]]></word>
+    <word key="gddealer_notif_support_reply_to_admin_desc"><![CDATA[When a dealer replies to a support ticket]]></word>
   </app>
 </language>

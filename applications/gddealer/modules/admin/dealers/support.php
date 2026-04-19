@@ -12,6 +12,7 @@
 namespace IPS\gddealer\modules\admin\dealers;
 
 use IPS\gddealer\Attachment\Helper as AttachHelper;
+use IPS\gddealer\Support\EventLogger;
 use function defined;
 
 if ( !defined( '\IPS\SUITE_UNIQUE_KEY' ) )
@@ -444,10 +445,13 @@ class _support extends \IPS\Dispatcher\Controller
 			'can_reply'       => (string) $ticket['status'] !== 'closed',
 		];
 
+		$events = EventLogger::getEvents( $ticketId );
+
 		\IPS\Output::i()->title  = 'Ticket #' . $ticketId . ' — ' . $ticketDisplay['subject'];
 		\IPS\Output::i()->output = \IPS\Theme::i()->getTemplate( 'dealers' )->supportTicketView(
 			$ticketDisplay, $parsedTicketBody, $ticketAttachments, $replies, $replyEditorHtml,
-			$replyUrl, $updateStatusUrl, $updatePriorityUrl, $assignUrl, $deleteUrl, $backUrl
+			$replyUrl, $updateStatusUrl, $updatePriorityUrl, $assignUrl, $deleteUrl, $backUrl,
+			$events
 		);
 	}
 
@@ -519,9 +523,8 @@ class _support extends \IPS\Dispatcher\Controller
 		catch ( \Exception ) {}
 
 		$currentStatus = (string) $ticket['status'];
-		$newStatus     = in_array( $currentStatus, [ 'closed', 'resolved' ], true )
-			? $currentStatus
-			: 'pending_customer';
+		$wasReopened   = in_array( $currentStatus, [ 'closed', 'resolved' ], true );
+		$newStatus     = 'pending_customer';
 
 		try
 		{
@@ -541,6 +544,82 @@ class _support extends \IPS\Dispatcher\Controller
 				'gddealer-support-admin-reply-' . $ticketId,
 				$ticketId,
 				11
+			);
+		}
+		catch ( \Exception ) {}
+
+		/* Notify the dealer — bell + email + PM, each in its own try/catch so
+		   one channel can't suppress another (landmine #25). */
+		$dealer  = \IPS\Member::load( (int) $ticket['member_id'] );
+		$subject = (string) $ticket['subject'];
+		$ticketUrl = (string) \IPS\Http\Url::internal(
+			'app=gddealer&module=dealers&controller=support&do=view&id=' . $ticketId
+		);
+
+		if ( $dealer && $dealer->member_id )
+		{
+			try
+			{
+				$notification = new \IPS\Notification(
+					\IPS\Application::load( 'gddealer' ),
+					'support_reply_to_dealer',
+					$dealer,
+					[ $dealer ],
+					[
+						'ticket_id' => $ticketId,
+						'subject'   => $subject,
+					]
+				);
+				$notification->recipients->attach( $dealer );
+				$notification->send();
+			}
+			catch ( \Exception ) {}
+
+			try
+			{
+				\IPS\Email::buildFromTemplate( 'gddealer', 'supportReplyToDealer', [
+					'name'     => (string) $dealer->name,
+					'subject'  => $subject,
+					'view_url' => $ticketUrl,
+				], \IPS\Email::TYPE_TRANSACTIONAL )->send( $dealer );
+			}
+			catch ( \Exception ) {}
+
+			try
+			{
+				$sender = $me;
+				if ( \IPS\core\Messenger\Conversation::memberCanReceiveNewMessage( $dealer, $sender ) )
+				{
+					$pmBody = "Staff have replied to your support ticket: " . $subject . "\n\n"
+						. "View the reply: " . $ticketUrl;
+					$conversation = \IPS\core\Messenger\Conversation::createItem(
+						$sender, \IPS\Request::i()->ipAddress(), \IPS\DateTime::create()
+					);
+					$conversation->title    = 'Re: ' . $subject;
+					$conversation->to_count = 1;
+					$conversation->save();
+
+					$commentClass = $conversation::$commentClass;
+					$post = $commentClass::create(
+						$conversation, $pmBody, TRUE, NULL, NULL, $sender, \IPS\DateTime::create()
+					);
+					$conversation->first_msg_id = $post->id;
+					$conversation->save();
+					$conversation->authorize( [ $sender->member_id, $dealer->member_id ] );
+					$post->sendNotifications();
+				}
+			}
+			catch ( \Exception ) {}
+		}
+
+		try
+		{
+			EventLogger::log(
+				$ticketId,
+				$wasReopened ? 'admin_reopened' : 'admin_replied',
+				'admin',
+				(int) $me->member_id,
+				null
 			);
 		}
 		catch ( \Exception ) {}
@@ -568,6 +647,15 @@ class _support extends \IPS\Dispatcher\Controller
 			return;
 		}
 
+		$currentStatus = '';
+		try
+		{
+			$currentStatus = (string) \IPS\Db::i()->select( 'status', 'gd_dealer_support_tickets',
+				[ 'id=?', $ticketId ]
+			)->first();
+		}
+		catch ( \Exception ) {}
+
 		try
 		{
 			\IPS\Db::i()->update( 'gd_dealer_support_tickets', [
@@ -576,6 +664,23 @@ class _support extends \IPS\Dispatcher\Controller
 			], [ 'id=?', $ticketId ] );
 		}
 		catch ( \Exception ) {}
+
+		if ( $currentStatus !== '' && $currentStatus !== $newStatus )
+		{
+			try
+			{
+				EventLogger::log(
+					$ticketId,
+					$newStatus === 'closed' ? 'ticket_closed' : 'status_changed',
+					'admin',
+					(int) \IPS\Member::loggedIn()->member_id,
+					null,
+					$currentStatus,
+					$newStatus
+				);
+			}
+			catch ( \Exception ) {}
+		}
 
 		\IPS\Output::i()->redirect(
 			\IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=support&do=view&id=' . $ticketId, 'admin' ),
@@ -599,6 +704,15 @@ class _support extends \IPS\Dispatcher\Controller
 			return;
 		}
 
+		$currentPriority = '';
+		try
+		{
+			$currentPriority = (string) \IPS\Db::i()->select( 'priority', 'gd_dealer_support_tickets',
+				[ 'id=?', $ticketId ]
+			)->first();
+		}
+		catch ( \Exception ) {}
+
 		try
 		{
 			\IPS\Db::i()->update( 'gd_dealer_support_tickets', [
@@ -607,6 +721,19 @@ class _support extends \IPS\Dispatcher\Controller
 			], [ 'id=?', $ticketId ] );
 		}
 		catch ( \Exception ) {}
+
+		if ( $currentPriority !== '' && $currentPriority !== $newPriority )
+		{
+			try
+			{
+				EventLogger::log(
+					$ticketId, 'priority_changed', 'admin',
+					(int) \IPS\Member::loggedIn()->member_id,
+					null, $currentPriority, $newPriority
+				);
+			}
+			catch ( \Exception ) {}
+		}
 
 		\IPS\Output::i()->redirect(
 			\IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=support&do=view&id=' . $ticketId, 'admin' ),
@@ -633,6 +760,15 @@ class _support extends \IPS\Dispatcher\Controller
 			catch ( \Exception ) {}
 		}
 
+		$currentAssignee = 0;
+		try
+		{
+			$currentAssignee = (int) \IPS\Db::i()->select( 'assigned_to', 'gd_dealer_support_tickets',
+				[ 'id=?', $ticketId ]
+			)->first();
+		}
+		catch ( \Exception ) {}
+
 		try
 		{
 			\IPS\Db::i()->update( 'gd_dealer_support_tickets', [
@@ -641,6 +777,23 @@ class _support extends \IPS\Dispatcher\Controller
 			], [ 'id=?', $ticketId ] );
 		}
 		catch ( \Exception ) {}
+
+		if ( $currentAssignee !== (int) $value )
+		{
+			try
+			{
+				EventLogger::log(
+					$ticketId,
+					$value === null ? 'unassigned' : 'assigned',
+					'admin',
+					(int) \IPS\Member::loggedIn()->member_id,
+					null,
+					$currentAssignee > 0 ? (string) $currentAssignee : null,
+					$value !== null ? (string) $value : null
+				);
+			}
+			catch ( \Exception ) {}
+		}
 
 		\IPS\Output::i()->redirect(
 			\IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=support&do=view&id=' . $ticketId, 'admin' ),

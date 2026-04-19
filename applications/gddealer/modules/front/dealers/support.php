@@ -12,6 +12,7 @@
 namespace IPS\gddealer\modules\front\dealers;
 
 use IPS\gddealer\Dealer\Dealer;
+use IPS\gddealer\Support\EventLogger;
 use function defined;
 
 if ( !defined( '\IPS\SUITE_UNIQUE_KEY' ) )
@@ -238,6 +239,88 @@ class _support extends \IPS\Dispatcher\Controller
 					);
 				}
 				catch ( \Exception ) {}
+
+				/* Notify admins — bell + email. Each channel gets its own
+				   try/catch so one failure can't suppress the other. */
+				$dealerName = '';
+				try
+				{
+					$dealerName = (string) \IPS\Db::i()->select( 'dealer_name', 'gd_dealer_feed_config',
+						[ 'dealer_id=?', $dealerId ]
+					)->first();
+				}
+				catch ( \Exception ) {}
+
+				$deptNameNotify = '';
+				foreach ( $departments as $dept )
+				{
+					if ( (int) $dept['id'] === $departmentId )
+					{
+						$deptNameNotify = (string) $dept['name'];
+						break;
+					}
+				}
+
+				$adminTicketUrl = (string) \IPS\Http\Url::internal(
+					'app=gddealer&module=dealers&controller=support&do=view&id=' . $ticketId, 'admin'
+				);
+
+				/* TODO: make admin group IDs configurable via a setting.
+				   For MVP, notify all members in group_id=4 (Administrator). */
+				$adminMembers = [];
+				try
+				{
+					foreach ( \IPS\Db::i()->select( 'member_id', 'core_members',
+						[ \IPS\Db::i()->in( 'member_group_id', [ 4 ] ) ],
+						null, [ 0, 50 ]
+					) as $mid )
+					{
+						$am = \IPS\Member::load( (int) $mid );
+						if ( $am->member_id ) { $adminMembers[] = $am; }
+					}
+				}
+				catch ( \Exception ) {}
+
+				foreach ( $adminMembers as $admin )
+				{
+					try
+					{
+						$notification = new \IPS\Notification(
+							\IPS\Application::load( 'gddealer' ),
+							'support_ticket_new',
+							$admin,
+							[ $admin ],
+							[
+								'ticket_id'   => $ticketId,
+								'subject'     => $subject,
+								'dealer_name' => $dealerName,
+							]
+						);
+						$notification->recipients->attach( $admin );
+						$notification->send();
+					}
+					catch ( \Exception ) {}
+
+					try
+					{
+						\IPS\Email::buildFromTemplate( 'gddealer', 'supportTicketNew', [
+							'dealer_name' => $dealerName,
+							'subject'     => $subject,
+							'priority'    => ucfirst( $priority ),
+							'department'  => $deptNameNotify,
+							'view_url'    => $adminTicketUrl,
+						], \IPS\Email::TYPE_TRANSACTIONAL )->send( $admin );
+					}
+					catch ( \Exception ) {}
+				}
+
+				try
+				{
+					EventLogger::log(
+						$ticketId, 'ticket_opened', 'dealer', $dealerId, null
+					);
+				}
+				catch ( \Exception ) {}
 			}
 
 			\IPS\Output::i()->redirect( \IPS\Http\Url::internal(
@@ -388,6 +471,86 @@ class _support extends \IPS\Dispatcher\Controller
 			}
 			catch ( \Exception ) {}
 
+			/* Notify admins (or the assigned admin) that the dealer replied. */
+			$dealerName = '';
+			try
+			{
+				$dealerName = (string) \IPS\Db::i()->select( 'dealer_name', 'gd_dealer_feed_config',
+					[ 'dealer_id=?', $dealerId ]
+				)->first();
+			}
+			catch ( \Exception ) {}
+
+			$adminTicketUrl = (string) \IPS\Http\Url::internal(
+				'app=gddealer&module=dealers&controller=support&do=view&id=' . $ticketId, 'admin'
+			);
+
+			$targetMembers = [];
+			if ( !empty( $ticket['assigned_to'] ) )
+			{
+				try
+				{
+					$assignee = \IPS\Member::load( (int) $ticket['assigned_to'] );
+					if ( $assignee->member_id ) { $targetMembers[] = $assignee; }
+				}
+				catch ( \Exception ) {}
+			}
+			if ( empty( $targetMembers ) )
+			{
+				try
+				{
+					foreach ( \IPS\Db::i()->select( 'member_id', 'core_members',
+						[ \IPS\Db::i()->in( 'member_group_id', [ 4 ] ) ],
+						null, [ 0, 50 ]
+					) as $mid )
+					{
+						$am = \IPS\Member::load( (int) $mid );
+						if ( $am->member_id ) { $targetMembers[] = $am; }
+					}
+				}
+				catch ( \Exception ) {}
+			}
+
+			foreach ( $targetMembers as $admin )
+			{
+				try
+				{
+					$notification = new \IPS\Notification(
+						\IPS\Application::load( 'gddealer' ),
+						'support_reply_to_admin',
+						$admin,
+						[ $admin ],
+						[
+							'ticket_id'   => $ticketId,
+							'subject'     => (string) $ticket['subject'],
+							'dealer_name' => $dealerName,
+						]
+					);
+					$notification->recipients->attach( $admin );
+					$notification->send();
+				}
+				catch ( \Exception ) {}
+
+				try
+				{
+					\IPS\Email::buildFromTemplate( 'gddealer', 'supportReplyToAdmin', [
+						'subject'     => (string) $ticket['subject'],
+						'dealer_name' => $dealerName,
+						'view_url'    => $adminTicketUrl,
+					], \IPS\Email::TYPE_TRANSACTIONAL )->send( $admin );
+				}
+				catch ( \Exception ) {}
+			}
+
+			try
+			{
+				EventLogger::log(
+					$ticketId, 'dealer_replied', 'dealer',
+					(int) $member->member_id, null
+				);
+			}
+			catch ( \Exception ) {}
+
 			\IPS\Output::i()->redirect( \IPS\Http\Url::internal(
 				'app=gddealer&module=dealers&controller=support&do=view&id=' . $ticketId
 			) );
@@ -505,7 +668,7 @@ class _support extends \IPS\Dispatcher\Controller
 
 		\IPS\Output::i()->title  = (string) $ticket['subject'];
 		\IPS\Output::i()->output = \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )
-			->supportView( $ticketData, $replies, $replyEditorHtml, $csrfKey, $replyUrl, $closeUrl, $backUrl, $canClose );
+			->supportView( $ticketData, $replies, $replyEditorHtml, $csrfKey, $replyUrl, $closeUrl, $backUrl, $canClose, EventLogger::getEvents( $ticketId ) );
 	}
 
 	protected function close(): void
@@ -540,6 +703,15 @@ class _support extends \IPS\Dispatcher\Controller
 				'status'     => 'closed',
 				'updated_at' => date( 'Y-m-d H:i:s' ),
 			], [ 'id=? AND dealer_id=?', $ticketId, $dealerId ] );
+		}
+		catch ( \Exception ) {}
+
+		try
+		{
+			EventLogger::log(
+				$ticketId, 'ticket_closed', 'dealer',
+				(int) $member->member_id, null
+			);
 		}
 		catch ( \Exception ) {}
 

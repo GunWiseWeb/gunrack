@@ -2802,6 +2802,9 @@ $notificationDefaults = [
 	'dispute_customer_responded' => [ 'default' => 'inline,email', 'disabled' => '' ],
 	'dispute_outcome_reviewer'   => [ 'default' => 'inline,email', 'disabled' => '' ],
 	'dispute_edit_requested'     => [ 'default' => 'inline,email', 'disabled' => '' ],
+	'support_ticket_new'         => [ 'default' => 'inline,email', 'disabled' => '' ],
+	'support_reply_to_dealer'    => [ 'default' => 'inline,email', 'disabled' => '' ],
+	'support_reply_to_admin'     => [ 'default' => 'inline,email', 'disabled' => '' ],
 ];
 
 foreach ( $notificationDefaults as $key => $data )
@@ -2974,7 +2977,7 @@ $gddealerTemplates[] = [
 	'location'      => 'admin',
 	'group'         => 'dealers',
 	'template_name' => 'supportTicketView',
-	'template_data' => '$ticket, $ticket_body, $ticket_attachments, $replies, $reply_editor_html, $reply_url, $update_status_url, $update_priority_url, $assign_url, $delete_url, $back_url',
+	'template_data' => '$ticket, $ticket_body, $ticket_attachments, $replies, $reply_editor_html, $reply_url, $update_status_url, $update_priority_url, $assign_url, $delete_url, $back_url, $events',
 	'template_content' => <<<'TEMPLATE_EOT'
 <div class="ipsBox ipsPull">
 <div class="ipsBox_body ipsPad">
@@ -3074,6 +3077,22 @@ $gddealerTemplates[] = [
 	</div>
 </aside>
 </div>
+{{if count($events) > 0}}
+<div style="margin-top:24px;border-top:1px solid #e5e7eb;padding-top:16px">
+	<div style="font-size:11px;color:#6b7280;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:12px">Ticket history</div>
+	{{foreach $events as $e}}
+	<div style="display:flex;gap:12px;margin-bottom:10px;font-size:13px;color:#374151;align-items:flex-start">
+		<span style="color:#9ca3af;font-size:12px;flex-shrink:0;width:160px">{$e['when']}</span>
+		<div style="flex:1">
+			<strong>{$e['actor_name']}</strong> {$e['verb']}
+			{{if $e['note']}}
+			<div style="font-size:12px;color:#4b5563;margin-top:4px;padding:8px 12px;background:#f9fafb;border-radius:6px;border-left:2px solid #d1d5db">{$e['note']}</div>
+			{{endif}}
+		</div>
+	</div>
+	{{endforeach}}
+</div>
+{{endif}}
 </div>
 </div>
 TEMPLATE_EOT,
@@ -3195,7 +3214,7 @@ $gddealerTemplates[] = [
 	'location'      => 'front',
 	'group'         => 'dealers',
 	'template_name' => 'supportView',
-	'template_data' => '$ticket, $replies, $reply_editor_html, $csrf_key, $reply_url, $close_url, $back_url, $can_close',
+	'template_data' => '$ticket, $replies, $reply_editor_html, $csrf_key, $reply_url, $close_url, $back_url, $can_close, $events',
 	'template_content' => <<<'TEMPLATE_EOT'
 <div class="gdDealerWrapper" style="max-width:800px;margin:0 auto">
 <div style="margin-bottom:16px"><a href="{$back_url}" style="color:#2563eb;font-size:0.9em;text-decoration:none">&larr; Back to tickets</a></div>
@@ -3245,6 +3264,22 @@ $gddealerTemplates[] = [
 			<button type="submit" class="ipsButton ipsButton--primary">{lang="gddealer_support_reply"}</button>
 		</form>
 	</div>
+</div>
+{{endif}}
+{{if count($events) > 0}}
+<div style="margin-top:24px;border-top:1px solid #e5e7eb;padding-top:16px">
+	<div style="font-size:11px;color:#6b7280;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:12px">Ticket history</div>
+	{{foreach $events as $e}}
+	<div style="display:flex;gap:12px;margin-bottom:10px;font-size:13px;color:#374151;align-items:flex-start">
+		<span style="color:#9ca3af;font-size:12px;flex-shrink:0;width:160px">{$e['when']}</span>
+		<div style="flex:1">
+			<strong>{$e['actor_name']}</strong> {$e['verb']}
+			{{if $e['note']}}
+			<div style="font-size:12px;color:#4b5563;margin-top:4px;padding:8px 12px;background:#f9fafb;border-radius:6px;border-left:2px solid #d1d5db">{$e['note']}</div>
+			{{endif}}
+		</div>
+	</div>
+	{{endforeach}}
 </div>
 {{endif}}
 </div>
