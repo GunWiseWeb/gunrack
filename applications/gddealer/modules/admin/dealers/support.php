@@ -368,14 +368,7 @@ class _support extends \IPS\Dispatcher\Controller
 				}
 				catch ( \Exception ) {}
 
-				$parsedBody = '';
-				try
-				{
-					$parsedBody = \IPS\Text\Parser::parseStatic(
-						(string) $r['body'], [ $ticketId, 11 ], \IPS\Member::load( (int) $r['member_id'] ), 'gddealer_Responses'
-					);
-				}
-				catch ( \Exception ) { $parsedBody = (string) $r['body']; }
+				$parsedBody = (string) ( $r['body'] ?? '' );
 
 				$replyTs = strtotime( (string) $r['created_at'] );
 
@@ -403,14 +396,7 @@ class _support extends \IPS\Dispatcher\Controller
 		}
 		catch ( \Exception ) {}
 
-		$parsedTicketBody = '';
-		try
-		{
-			$parsedTicketBody = \IPS\Text\Parser::parseStatic(
-				(string) $ticket['body'], [ $ticketId, 10 ], \IPS\Member::load( (int) $ticket['member_id'] ), 'gddealer_Responses'
-			);
-		}
-		catch ( \Exception ) { $parsedTicketBody = (string) $ticket['body']; }
+		$parsedTicketBody = (string) ( $ticket['body'] ?? '' );
 
 		$ticketAttachments = AttachHelper::getAttachments( $ticketId, 10 );
 

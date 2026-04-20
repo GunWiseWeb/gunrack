@@ -1,7 +1,11 @@
 <?php
 /**
- * v1.0.65: Remove editor restriction level on support editors so images
- * render. Cache clears force IPS to re-read the clean editor config.
+ * v1.0.65: Stop re-parsing stored bodies at render. Parser::parseStatic
+ * was being invoked on already-parsed content (with <fileStore> tokens),
+ * which HTMLPurifier treated as broken tags and stripped the src.
+ * Removed render-time parseStatic from support + profile controllers;
+ * stored bodies now pass through as-is, and IPS's output layer expands
+ * <fileStore.core_Attachment> tokens to real URLs.
  */
 
 namespace IPS\gddealer\setup\upg_10065;

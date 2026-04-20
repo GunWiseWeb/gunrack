@@ -341,8 +341,8 @@ class _profile extends \IPS\Dispatcher\Controller
 					'rating_pricing'       => $pricing,
 					'rating_shipping'      => $shipping,
 					'rating_service'       => $service,
-					'review_body'          => ( $r['review_body'] ?? '' ) !== '' ? \IPS\Text\Parser::parseStatic( (string) $r['review_body'], [ (int) $r['id'], 1 ], NULL, 'gddealer_Responses' ) : '',
-					'dealer_response'      => ( $r['dealer_response'] ?? '' ) !== '' ? \IPS\Text\Parser::parseStatic( (string) $r['dealer_response'], [ (int) $r['id'], 2 ], NULL, 'gddealer_Responses' ) : '',
+					'review_body'          => (string) ( $r['review_body'] ?? '' ),
+					'dealer_response'      => (string) ( $r['dealer_response'] ?? '' ),
 					'dealer_name'          => (string) ( $dealerRow['dealer_name'] ?? '' ),
 					'created_at'           => $createdAt,
 					'created_at_formatted' => $createdTs ? (string) \IPS\DateTime::ts( $createdTs )->localeDate() : '',
@@ -461,8 +461,8 @@ class _profile extends \IPS\Dispatcher\Controller
 				);
 				$custEvidHtml = (string) $ceEditor;
 
-				$reasonRendered   = ( $cd['dispute_reason'] ?? '' ) !== '' ? \IPS\Text\Parser::parseStatic( (string) $cd['dispute_reason'], [ (int) $cd['id'], 3 ], NULL, 'gddealer_Responses' ) : '';
-				$evidenceRendered = ( $cd['dispute_evidence'] ?? '' ) !== '' ? \IPS\Text\Parser::parseStatic( (string) $cd['dispute_evidence'], [ (int) $cd['id'], 4 ], NULL, 'gddealer_Responses' ) : '';
+				$reasonRendered   = (string) ( $cd['dispute_reason'] ?? '' );
+				$evidenceRendered = (string) ( $cd['dispute_evidence'] ?? '' );
 
 				$reasonAtts   = AttachHelper::getAttachments( (int) $cd['id'], 3 );
 				$evidenceAtts = AttachHelper::getAttachments( (int) $cd['id'], 4 );

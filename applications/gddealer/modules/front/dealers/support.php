@@ -624,23 +624,7 @@ class _support extends \IPS\Dispatcher\Controller
 		}
 		catch ( \Exception ) {}
 
-		$ticketBody = '';
-		if ( ( $ticket['body'] ?? '' ) !== '' )
-		{
-			try
-			{
-				$ticketBody = \IPS\Text\Parser::parseStatic(
-					(string) $ticket['body'],
-					[ $ticketId, 10 ],
-					\IPS\Member::load( (int) $ticket['member_id'] ),
-					'gddealer_Responses'
-				);
-			}
-			catch ( \Exception )
-			{
-				$ticketBody = (string) $ticket['body'];
-			}
-		}
+		$ticketBody = (string) ( $ticket['body'] ?? '' );
 
 		$replies = [];
 		try
@@ -650,23 +634,7 @@ class _support extends \IPS\Dispatcher\Controller
 				'created_at ASC'
 			) as $r )
 			{
-				$replyBody = '';
-				if ( ( $r['body'] ?? '' ) !== '' )
-				{
-					try
-					{
-						$replyBody = \IPS\Text\Parser::parseStatic(
-							(string) $r['body'],
-							[ $ticketId, 11 ],
-							\IPS\Member::load( (int) $r['member_id'] ),
-							'gddealer_Responses'
-						);
-					}
-					catch ( \Exception )
-					{
-						$replyBody = (string) $r['body'];
-					}
-				}
+				$replyBody = (string) ( $r['body'] ?? '' );
 
 				$replyMemberName = 'Unknown';
 				try
