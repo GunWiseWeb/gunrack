@@ -166,14 +166,28 @@ trait DealerShellTrait
   .gdDealerWrapper .ipsPageHeader .ipsCoverPhoto__container { height: 100px !important; }
   .gdDealerWrapper .ipsPageHeader .ipsCoverPhoto { min-height: 100px !important; }
   .gdDealerWrapper .ipsCoverPhotoMeta {
-    padding: 12px 14px !important;
-    gap: 10px !important;
+    padding: 0 14px 14px !important;
+    gap: 12px !important;
     flex-direction: column !important;
     align-items: flex-start !important;
   }
-  .gdDealerWrapper .ipsCoverPhoto__avatar { margin-top: -40px !important; }
-  .gdDealerWrapper .ipsCoverPhoto__avatar .ipsUserPhoto img { width: 64px !important; height: 64px !important; }
-  .gdDealerWrapper .ipsCoverPhoto__titles { width: 100%; }
+  .gdDealerWrapper .ipsCoverPhoto__avatar {
+    margin-top: -32px !important;
+    margin-bottom: 0 !important;
+    position: relative !important;
+    z-index: 2 !important;
+  }
+  .gdDealerWrapper .ipsCoverPhoto__avatar .ipsUserPhoto img {
+    width: 64px !important;
+    height: 64px !important;
+    border: 3px solid #fff !important;
+    border-radius: 50% !important;
+    background: #fff !important;
+  }
+  .gdDealerWrapper .ipsCoverPhoto__titles {
+    width: 100% !important;
+    margin-top: 4px !important;
+  }
   .gdDealerWrapper .ipsCoverPhoto__titles h1 { font-size: 1.2em !important; }
   .gdDealerWrapper .ipsCoverPhoto__buttons { width: 100%; }
   .gdDealerWrapper .ipsCoverPhoto__buttons .ipsButton { width: 100%; justify-content: center; }
@@ -222,14 +236,44 @@ trait DealerShellTrait
   }
 
   .gdHelpLayout {
+    display: flex !important;
     flex-direction: column !important;
     gap: 16px !important;
+    align-items: stretch !important;
+    margin: 0 12px !important;
+    padding: 0 !important;
   }
-  .gdHelpSidebar, .gdHelpContent, .gdHelpMain {
+  .gdHelpContent,
+  .gdHelpMain {
+    order: 1 !important;
     width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    flex: 0 0 auto !important;
+  }
+  .gdHelpSidebar {
+    order: 2 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    min-width: 0 !important;
+    flex: 0 0 auto !important;
     position: static !important;
-    max-width: none !important;
-    flex: 1 1 auto !important;
+    top: auto !important;
+    flex-shrink: 1 !important;
+  }
+  .gdHelpSidebar > div {
+    margin-bottom: 12px !important;
+  }
+  .gdHelpSidebar table {
+    font-size: 14px !important;
+  }
+  .gdHelpSidebar table td {
+    padding: 8px 0 !important;
+  }
+  .gdDealerWrapper > h2,
+  .gdDealerWrapper > p {
+    margin-left: 12px !important;
+    margin-right: 12px !important;
   }
 
   .gdTableWrap table, .gdResponsiveTable {
@@ -385,7 +429,14 @@ trait DealerShellTrait
     font-size: 13px !important;
   }
   .gdDealerWrapper .ipsPageHeader .ipsCoverPhoto__container { height: 80px !important; }
-  .gdDealerWrapper .ipsCoverPhoto__avatar .ipsUserPhoto img { width: 56px !important; height: 56px !important; }
+  .gdDealerWrapper .ipsCoverPhoto__avatar { margin-top: -28px !important; }
+  .gdDealerWrapper .ipsCoverPhoto__avatar .ipsUserPhoto img {
+    width: 56px !important;
+    height: 56px !important;
+    border: 3px solid #fff !important;
+    border-radius: 50% !important;
+    background: #fff !important;
+  }
   .gdDealerWrapper .ipsCoverPhoto__titles h1 { font-size: 1.1em !important; }
   #elDealerTabs_content { padding: 12px !important; }
 
