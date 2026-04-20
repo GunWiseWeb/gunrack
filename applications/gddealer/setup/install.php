@@ -875,19 +875,6 @@ TEMPLATE_EOT,
 		'template_name' => 'dealerShell',
 		'template_data' => '$dealer, $activeTab, $tabUrls, $body, $can_access_support, $support_url',
 		'template_content' => <<<'TEMPLATE_EOT'
-<style>
-@media (max-width: 768px) {
-  .gdTableWrap { overflow-x:auto; -webkit-overflow-scrolling:touch; }
-  .gdHelpLayout { flex-direction:column !important; }
-  .gdHelpSidebar { width:100% !important; position:static !important; }
-  .gdFlexWrap > .ipsProfile__aside { width:100% !important; flex-shrink:1 !important; }
-  .gdShellTabs [role="tablist"] { flex-wrap:wrap !important; }
-  .gdShellTabs [role="tablist"] a { flex:1 1 auto; text-align:center; padding:10px 12px !important; font-size:0.85em; }
-}
-@media (max-width: 480px) {
-  .gdShellTabs [role="tablist"] a { flex:1 1 100%; }
-}
-</style>
 <div class="gdDealerWrapper" style="width:100%;box-sizing:border-box">
 
 	<header class="ipsPageHeader ipsBox ipsBox--profileHeader ipsPull i-margin-bottom_block" style="width:100%;box-sizing:border-box;border-radius:8px;overflow:hidden;margin-bottom:16px">
@@ -1009,11 +996,11 @@ TEMPLATE_EOT,
 	</aside>
 
 	<div class="ipsProfile__main" style="flex:1;min-width:300px">
-		<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:24px">
+		<div class="gdStatCards gdOverviewStats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:24px">
 			{{if $prefs['show_active']}}
 			<div class="ipsWidget gdStatCard" style="background:{$overview['card_styles']['bg']};color:{$overview['card_styles']['color']};border:1px solid {$overview['card_styles']['border']};border-radius:8px">
 				<div class="ipsWidget__content i-padding_2" style="padding:16px;text-align:center">
-					<div style="font-size:2em;font-weight:800;color:{{if $overview['numbers_light']}}#ffffff{{else}}var(--gd-accent,#16a34a){{endif}}">{expression="number_format($overview['active_listings'])"}</div>
+					<div class="gdStatCard__value" style="font-size:2em;font-weight:800;color:{{if $overview['numbers_light']}}#ffffff{{else}}var(--gd-accent,#16a34a){{endif}}">{expression="number_format($overview['active_listings'])"}</div>
 					<div style="font-size:0.82em;color:{$overview['card_styles']['label']};margin-top:4px">{lang="gddealer_front_active_listings"}</div>
 				</div>
 			</div>
@@ -1021,7 +1008,7 @@ TEMPLATE_EOT,
 			{{if $prefs['show_outofstock']}}
 			<div class="ipsWidget gdStatCard" style="background:{$overview['card_styles']['bg']};color:{$overview['card_styles']['color']};border:1px solid {$overview['card_styles']['border']};border-radius:8px">
 				<div class="ipsWidget__content i-padding_2" style="padding:16px;text-align:center">
-					<div style="font-size:2em;font-weight:800;color:{{if $overview['numbers_light']}}#ffffff{{else}}var(--gd-danger,#dc2626){{endif}}">{expression="number_format($overview['out_of_stock'])"}</div>
+					<div class="gdStatCard__value" style="font-size:2em;font-weight:800;color:{{if $overview['numbers_light']}}#ffffff{{else}}var(--gd-danger,#dc2626){{endif}}">{expression="number_format($overview['out_of_stock'])"}</div>
 					<div style="font-size:0.82em;color:{$overview['card_styles']['label']};margin-top:4px">{lang="gddealer_front_out_of_stock"}</div>
 				</div>
 			</div>
@@ -1029,7 +1016,7 @@ TEMPLATE_EOT,
 			{{if $prefs['show_unmatched']}}
 			<div class="ipsWidget gdStatCard" style="background:{$overview['card_styles']['bg']};color:{$overview['card_styles']['color']};border:1px solid {$overview['card_styles']['border']};border-radius:8px">
 				<div class="ipsWidget__content i-padding_2" style="padding:16px;text-align:center">
-					<div style="font-size:2em;font-weight:800;color:{{if $overview['numbers_light']}}#ffffff{{else}}var(--gd-warning,#d97706){{endif}}">{expression="number_format($overview['unmatched'])"}</div>
+					<div class="gdStatCard__value" style="font-size:2em;font-weight:800;color:{{if $overview['numbers_light']}}#ffffff{{else}}var(--gd-warning,#d97706){{endif}}">{expression="number_format($overview['unmatched'])"}</div>
 					<div style="font-size:0.82em;color:{$overview['card_styles']['label']};margin-top:4px">{lang="gddealer_front_unmatched_count"}</div>
 				</div>
 			</div>
@@ -1037,7 +1024,7 @@ TEMPLATE_EOT,
 			{{if $prefs['show_clicks_7d']}}
 			<div class="ipsWidget gdStatCard" style="background:{$overview['card_styles']['bg']};color:{$overview['card_styles']['color']};border:1px solid {$overview['card_styles']['border']};border-radius:8px">
 				<div class="ipsWidget__content i-padding_2" style="padding:16px;text-align:center">
-					<div style="font-size:2em;font-weight:800;color:{{if $overview['numbers_light']}}#ffffff{{else}}inherit{{endif}}">{expression="number_format($overview['clicks_7d'])"}</div>
+					<div class="gdStatCard__value" style="font-size:2em;font-weight:800;color:{{if $overview['numbers_light']}}#ffffff{{else}}inherit{{endif}}">{expression="number_format($overview['clicks_7d'])"}</div>
 					<div style="font-size:0.82em;color:{$overview['card_styles']['label']};margin-top:4px">{lang="gddealer_front_clicks_7d"}</div>
 				</div>
 			</div>
@@ -1045,7 +1032,7 @@ TEMPLATE_EOT,
 			{{if $prefs['show_clicks_30d']}}
 			<div class="ipsWidget gdStatCard" style="background:{$overview['card_styles']['bg']};color:{$overview['card_styles']['color']};border:1px solid {$overview['card_styles']['border']};border-radius:8px">
 				<div class="ipsWidget__content i-padding_2" style="padding:16px;text-align:center">
-					<div style="font-size:2em;font-weight:800;color:{{if $overview['numbers_light']}}#ffffff{{else}}inherit{{endif}}">{expression="number_format($overview['clicks_30d'])"}</div>
+					<div class="gdStatCard__value" style="font-size:2em;font-weight:800;color:{{if $overview['numbers_light']}}#ffffff{{else}}inherit{{endif}}">{expression="number_format($overview['clicks_30d'])"}</div>
 					<div style="font-size:0.82em;color:{$overview['card_styles']['label']};margin-top:4px">{lang="gddealer_front_clicks_30d"}</div>
 				</div>
 			</div>
@@ -1180,7 +1167,7 @@ TEMPLATE_EOT,
 	<div class="ipsBox" style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px">
 		<h3 class="ipsBox__header" style="margin:0;padding:14px 18px;border-bottom:1px solid var(--i-border-color,#f0f0f0);font-size:1em;font-weight:700">{lang="gddealer_front_import_history"}</h3>
 		<div class="gdTableWrap">
-		<table class="ipsTable ipsTable_zebra" style="width:100%">
+		<table class="ipsTable ipsTable_zebra gdResponsiveTable" style="width:100%">
 		<thead>
 			<tr>
 				<th>Started</th>
@@ -1196,8 +1183,8 @@ TEMPLATE_EOT,
 		<tbody>
 			{{foreach $logs as $l}}
 			<tr>
-				<td>{$l['run_start']}</td>
-				<td>
+				<td data-label="Started">{$l['run_start']}</td>
+				<td data-label="Status">
 					{{if $l['status'] === 'completed'}}
 						<span class="ipsBadge ipsBadge--positive">OK</span>
 					{{elseif $l['status'] === 'failed'}}
@@ -1206,12 +1193,12 @@ TEMPLATE_EOT,
 						<span class="ipsBadge ipsBadge--warning">{$l['status']}</span>
 					{{endif}}
 				</td>
-				<td>{$l['records_total']}</td>
-				<td>{$l['records_created']}</td>
-				<td>{$l['records_updated']}</td>
-				<td>{$l['records_unchanged']}</td>
-				<td>{$l['records_unmatched']}</td>
-				<td>{$l['price_drops']}</td>
+				<td data-label="Total">{$l['records_total']}</td>
+				<td data-label="New">{$l['records_created']}</td>
+				<td data-label="Updated">{$l['records_updated']}</td>
+				<td data-label="Unchanged">{$l['records_unchanged']}</td>
+				<td data-label="Unmatched">{$l['records_unmatched']}</td>
+				<td data-label="Drops">{$l['price_drops']}</td>
 			</tr>
 			{{if $l['error_log']}}
 			<tr><td colspan="8"><pre style="white-space:pre-wrap;color:#c00;margin:0">{$l['error_log']}</pre></td></tr>
@@ -1269,7 +1256,7 @@ TEMPLATE_EOT,
 	<p style="color:#666">{expression="number_format( $total )"} listings total.</p>
 
 	<div class="gdTableWrap">
-	<table class="ipsTable ipsTable_zebra" style="width:100%">
+	<table class="ipsTable ipsTable_zebra gdResponsiveTable" style="width:100%">
 		<thead>
 			<tr>
 				<th>{lang="gddealer_listing_upc"}</th>
@@ -1283,18 +1270,18 @@ TEMPLATE_EOT,
 		<tbody>
 			{{foreach $rows as $r}}
 			<tr>
-				<td><code>{$r['upc']}</code></td>
-				<td>{$r['dealer_price']}</td>
-				<td>
+				<td data-label="UPC"><code>{$r['upc']}</code></td>
+				<td data-label="Price">{$r['dealer_price']}</td>
+				<td data-label="Stock">
 					{{if $r['in_stock']}}
 						<span class="ipsBadge ipsBadge--positive">In Stock</span>
 					{{else}}
 						<span class="ipsBadge ipsBadge--neutral">Out</span>
 					{{endif}}
 				</td>
-				<td>{$r['condition']}</td>
-				<td>{$r['listing_status']}</td>
-				<td>{$r['last_updated']}</td>
+				<td data-label="Condition">{$r['condition']}</td>
+				<td data-label="Status">{$r['listing_status']}</td>
+				<td data-label="Last Updated">{$r['last_updated']}</td>
 			</tr>
 			{{endforeach}}
 			{{if count( $rows ) === 0}}
@@ -1335,7 +1322,7 @@ TEMPLATE_EOT,
 	</p>
 
 	<div class="gdTableWrap">
-	<table class="ipsTable ipsTable_zebra" style="width:100%">
+	<table class="ipsTable ipsTable_zebra gdResponsiveTable" style="width:100%">
 		<thead>
 			<tr>
 				<th>{lang="gddealer_unmatched_upc"}</th>
@@ -1348,11 +1335,11 @@ TEMPLATE_EOT,
 		<tbody>
 			{{foreach $rows as $r}}
 			<tr>
-				<td><code>{$r['upc']}</code></td>
-				<td>{$r['first_seen']}</td>
-				<td>{$r['last_seen']}</td>
-				<td>{$r['occurrence_count']}</td>
-				<td><a href="{$r['exclude_url']}" class="ipsButton ipsButton--small ipsButton--negative">{lang="gddealer_front_unmatched_exclude"}</a></td>
+				<td data-label="UPC"><code>{$r['upc']}</code></td>
+				<td data-label="First Seen">{$r['first_seen']}</td>
+				<td data-label="Last Seen">{$r['last_seen']}</td>
+				<td data-label="Count">{$r['occurrence_count']}</td>
+				<td data-label=""><a href="{$r['exclude_url']}" class="ipsButton ipsButton--small ipsButton--negative">{lang="gddealer_front_unmatched_exclude"}</a></td>
 			</tr>
 			{{endforeach}}
 			{{if count( $rows ) === 0}}
@@ -1387,25 +1374,25 @@ TEMPLATE_EOT,
 		</div>
 	{{else}}
 
-		<div style="display:flex;gap:16px;margin-bottom:24px;flex-wrap:wrap">
+		<div class="gdStatCards" style="display:flex;gap:16px;margin-bottom:24px;flex-wrap:wrap">
 			<div style="flex:1 1 180px;background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:16px;text-align:center">
-				<div style="font-size:2em;font-weight:700;color:#16a34a">{$analytics['comp_lowest']}</div>
+				<div class="gdStatCard__value" style="font-size:2em;font-weight:700;color:#16a34a">{$analytics['comp_lowest']}</div>
 				<div style="color:#666;font-size:0.9em">Listings &mdash; Lowest Price</div>
 			</div>
 			<div style="flex:1 1 180px;background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:16px;text-align:center">
-				<div style="font-size:2em;font-weight:700;color:#f59e0b">{$analytics['comp_mid']}</div>
+				<div class="gdStatCard__value" style="font-size:2em;font-weight:700;color:#f59e0b">{$analytics['comp_mid']}</div>
 				<div style="color:#666;font-size:0.9em">Listings &mdash; Mid Range</div>
 			</div>
 			<div style="flex:1 1 180px;background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:16px;text-align:center">
-				<div style="font-size:2em;font-weight:700;color:#dc2626">{$analytics['comp_high']}</div>
+				<div class="gdStatCard__value" style="font-size:2em;font-weight:700;color:#dc2626">{$analytics['comp_high']}</div>
 				<div style="color:#666;font-size:0.9em">Listings &mdash; Highest Price</div>
 			</div>
 			<div style="flex:1 1 180px;background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:16px;text-align:center">
-				<div style="font-size:2em;font-weight:700;color:#2563eb">{$analytics['comp_only']}</div>
+				<div class="gdStatCard__value" style="font-size:2em;font-weight:700;color:#2563eb">{$analytics['comp_only']}</div>
 				<div style="color:#666;font-size:0.9em">Only Dealer for UPC</div>
 			</div>
 			<div style="flex:1 1 180px;background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:16px;text-align:center">
-				<div style="font-size:2em;font-weight:700">{$analytics['price_drop_count']}</div>
+				<div class="gdStatCard__value" style="font-size:2em;font-weight:700">{$analytics['price_drop_count']}</div>
 				<div style="color:#666;font-size:0.9em">Price Drops (30 days)</div>
 			</div>
 		</div>
@@ -1415,7 +1402,7 @@ TEMPLATE_EOT,
 				<h3 style="margin:0;font-size:1em;font-weight:700">Top 20 Most-Clicked Listings (Last 30 Days)</h3>
 			</div>
 			<div class="gdTableWrap">
-			<table class="ipsTable ipsTable_zebra" style="width:100%">
+			<table class="ipsTable ipsTable_zebra gdResponsiveTable" style="width:100%">
 				<thead><tr>
 					<th>UPC</th>
 					<th style="width:120px">Your Price</th>
@@ -1429,11 +1416,11 @@ TEMPLATE_EOT,
 				{{else}}
 					{{foreach $topClicked as $r}}
 					<tr>
-						<td><code>{$r['upc']}</code></td>
-						<td>${expression="number_format( (float) $r['dealer_price'], 2 )"}</td>
-						<td>{$r['click_count_30d']}</td>
-						<td>{$r['click_count_7d']}</td>
-						<td>{{if $r['in_stock']}}<span style="color:#16a34a;font-weight:600">In Stock</span>{{else}}<span style="color:#dc2626">Out of Stock</span>{{endif}}</td>
+						<td data-label="UPC"><code>{$r['upc']}</code></td>
+						<td data-label="Your Price">${expression="number_format( (float) $r['dealer_price'], 2 )"}</td>
+						<td data-label="Clicks (30d)">{$r['click_count_30d']}</td>
+						<td data-label="Clicks (7d)">{$r['click_count_7d']}</td>
+						<td data-label="Status">{{if $r['in_stock']}}<span style="color:#16a34a;font-weight:600">In Stock</span>{{else}}<span style="color:#dc2626">Out of Stock</span>{{endif}}</td>
 					</tr>
 					{{endforeach}}
 				{{endif}}
@@ -1448,7 +1435,7 @@ TEMPLATE_EOT,
 				<p style="margin:4px 0 0;color:#666;font-size:0.85em">Products where lowering your price could win more clicks.</p>
 			</div>
 			<div class="gdTableWrap">
-			<table class="ipsTable ipsTable_zebra" style="width:100%">
+			<table class="ipsTable ipsTable_zebra gdResponsiveTable" style="width:100%">
 				<thead><tr>
 					<th>UPC</th>
 					<th style="width:120px">Your Price</th>
@@ -1462,11 +1449,11 @@ TEMPLATE_EOT,
 				{{else}}
 					{{foreach $opportunities as $r}}
 					<tr>
-						<td><code>{$r['upc']}</code></td>
-						<td>${expression="number_format( (float) $r['your_price'], 2 )"}</td>
-						<td>${expression="number_format( (float) $r['lowest_price'], 2 )"}</td>
-						<td style="color:#dc2626;font-weight:600">+${expression="number_format( (float) $r['gap'], 2 )"}</td>
-						<td>{$r['click_count_30d']}</td>
+						<td data-label="UPC"><code>{$r['upc']}</code></td>
+						<td data-label="Your Price">${expression="number_format( (float) $r['your_price'], 2 )"}</td>
+						<td data-label="Lowest Price">${expression="number_format( (float) $r['lowest_price'], 2 )"}</td>
+						<td data-label="Gap" style="color:#dc2626;font-weight:600">+${expression="number_format( (float) $r['gap'], 2 )"}</td>
+						<td data-label="Clicks (30d)">{$r['click_count_30d']}</td>
 					</tr>
 					{{endforeach}}
 				{{endif}}
@@ -1564,7 +1551,7 @@ TEMPLATE_EOT,
 
 	<div class="gdHelpLayout" style="display:flex;gap:24px;align-items:flex-start">
 
-		<div style="flex:1 1 0;min-width:0">
+		<div class="gdHelpContent" style="flex:1 1 0;min-width:0">
 
 			<div style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:20px;margin-bottom:16px">
 				<h3 style="margin:0 0 12px;font-size:1.05em;font-weight:700;color:#1e3a5f">
@@ -1887,23 +1874,23 @@ TEMPLATE_EOT,
 		'template_content' => <<<'TEMPLATE_EOT'
 <div style="margin-bottom:24px">
 
-	<div style="display:flex;gap:16px;margin-bottom:24px;flex-wrap:wrap">
+	<div class="gdStatCards gdRatingCards" style="display:flex;gap:16px;margin-bottom:24px;flex-wrap:wrap">
 		<div style="flex:1 1 160px;background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:16px;text-align:center">
-			<div style="font-size:2em;font-weight:800;color:{$data['rating_color']};line-height:1">{$data['avg_overall']}</div>
+			<div class="gdStatCard__value" style="font-size:2em;font-weight:800;color:{$data['rating_color']};line-height:1">{$data['avg_overall']}</div>
 			<div style="color:#666;font-size:0.85em;margin-top:4px">Overall Rating</div>
 			<div style="font-size:0.72em;font-weight:600;color:{$data['rating_color']};margin-top:4px">{$data['rating_label']}</div>
 			<div style="color:#999;font-size:0.8em;margin-top:4px">{$data['total']} reviews</div>
 		</div>
 		<div style="flex:1 1 160px;background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:16px;text-align:center">
-			<div style="font-size:2em;font-weight:800;color:{$data['color_pricing']}">{$data['avg_pricing']}</div>
+			<div class="gdStatCard__value" style="font-size:2em;font-weight:800;color:{$data['color_pricing']}">{$data['avg_pricing']}</div>
 			<div style="color:#666;font-size:0.85em">Pricing Accuracy</div>
 		</div>
 		<div style="flex:1 1 160px;background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:16px;text-align:center">
-			<div style="font-size:2em;font-weight:800;color:{$data['color_shipping']}">{$data['avg_shipping']}</div>
+			<div class="gdStatCard__value" style="font-size:2em;font-weight:800;color:{$data['color_shipping']}">{$data['avg_shipping']}</div>
 			<div style="color:#666;font-size:0.85em">Shipping Speed</div>
 		</div>
 		<div style="flex:1 1 160px;background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:16px;text-align:center">
-			<div style="font-size:2em;font-weight:800;color:{$data['color_service']}">{$data['avg_service']}</div>
+			<div class="gdStatCard__value" style="font-size:2em;font-weight:800;color:{$data['color_service']}">{$data['avg_service']}</div>
 			<div style="color:#666;font-size:0.85em">Customer Service</div>
 		</div>
 	</div>
@@ -1925,13 +1912,13 @@ TEMPLATE_EOT,
 		{{endif}}
 	</div>
 
-	<div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap">
+	<div class="gdSubNav" style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap">
 		{{foreach $data['subNav'] as $tab}}
 		<a href="{$tab['url']}" style="display:inline-block;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:600;text-decoration:none;{{if $tab['active']}}background:#1e3a5f;color:#fff{{else}}background:#f1f5f9;color:#64748b{{endif}}">{$tab['label']} ({$tab['count']})</a>
 		{{endforeach}}
 	</div>
 
-	<form method="get" action="{$data['filterFormUrl']}" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px;padding:12px 16px;background:#f8fafc;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px">
+	<form method="get" action="{$data['filterFormUrl']}" class="gdFilterBar" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px;padding:12px 16px;background:#f8fafc;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px">
 		<input type="hidden" name="tab" value="{$data['activeTab']}">
 		<select name="rating" style="padding:6px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;background:#fff">
 			<option value="all"{{if $data['ratingFilter'] === 'all'}} selected{{endif}}>All ratings</option>
@@ -1967,9 +1954,9 @@ TEMPLATE_EOT,
 		</div>
 	{{else}}
 		{{foreach $data['rows'] as $r}}
-		<div style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:20px;margin-bottom:12px">
-			<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;flex-wrap:wrap;gap:8px">
-				<div style="display:flex;gap:16px;flex-wrap:wrap;align-items:center">
+		<div class="gdReviewCard" style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:20px;margin-bottom:12px">
+			<div class="gdReviewCard__header" style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+				<div class="gdReviewCard__ratings" style="display:flex;gap:16px;flex-wrap:wrap;align-items:center">
 					<span style="font-size:0.8em;font-weight:700;color:{$r['avg_color']};background:{$r['avg_color']}18;padding:2px 8px;border-radius:12px">{$r['avg_overall']} / 5</span>
 					<span style="font-size:0.8em;color:#666">Pricing: <strong>{$r['rating_pricing']}/5</strong></span>
 					<span style="font-size:0.8em;color:#666">Shipping: <strong>{$r['rating_shipping']}/5</strong></span>
@@ -2112,7 +2099,7 @@ TEMPLATE_EOT,
 		{{endforeach}}
 
 		{{if count($data['pageLinks']) > 0}}
-		<div style="display:flex;justify-content:center;gap:4px;margin-top:20px;flex-wrap:wrap">
+		<div class="gdPagination" style="display:flex;justify-content:center;gap:4px;margin-top:20px;flex-wrap:wrap">
 			{{foreach $data['pageLinks'] as $pl}}
 				{{if $pl['disabled']}}
 					<span style="padding:6px 10px;font-size:13px;color:#9ca3af">{$pl['label']}</span>
@@ -3207,7 +3194,7 @@ $gddealerTemplates[] = [
 	'template_content' => <<<'TEMPLATE_EOT'
 <div>
 <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:20px;padding-bottom:14px;border-bottom:0.5px solid #e5e7eb;flex-wrap:wrap">
-	<div style="display:flex;gap:4px;flex-wrap:wrap">
+	<div class="gdSubNav" style="display:flex;gap:4px;flex-wrap:wrap">
 		<a href="{$subNav['open_url']}" style="padding:8px 14px;font-size:13px;font-weight:500;text-decoration:none;border-radius:8px;{{if $subNav['active'] === 'open'}}background:#1e3a5f;color:#fff{{else}}color:#475569{{endif}}">
 			Open tickets
 			{{if $subNav['open_count'] > 0}}
@@ -3237,8 +3224,8 @@ $gddealerTemplates[] = [
 	<a href="{$subNav['new_url']}" style="display:inline-block;padding:10px 20px;background:#16a34a;color:#fff;font-size:13px;font-weight:500;border-radius:8px;text-decoration:none">Open a new ticket</a>
 </div>
 {{else}}
-<div style="background:#fff;border:0.5px solid #e5e7eb;border-radius:12px;overflow:hidden">
-	<div style="display:grid;grid-template-columns:52px 1fr 110px 110px 140px;gap:14px;align-items:center;padding:12px 18px;background:#1e3a5f;color:#fff">
+<div class="gdSupportList__grid" style="background:#fff;border:0.5px solid #e5e7eb;border-radius:12px;overflow:hidden">
+	<div class="gdSupportList__header" style="display:grid;grid-template-columns:52px 1fr 110px 110px 140px;gap:14px;align-items:center;padding:12px 18px;background:#1e3a5f;color:#fff">
 		<div></div>
 		<div style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;font-weight:600">Subject</div>
 		<div style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;font-weight:600">Status</div>
@@ -3246,15 +3233,15 @@ $gddealerTemplates[] = [
 		<div style="font-size:11px;text-transform:uppercase;letter-spacing:0.06em;font-weight:600">Updated</div>
 	</div>
 	{{foreach $tickets as $t}}
-	<a href="{$t['view_url']}" style="display:grid;grid-template-columns:52px 1fr 110px 110px 140px;gap:14px;align-items:center;padding:14px 18px;text-decoration:none;color:inherit;border-bottom:0.5px solid #f1f5f9;{{if $t['needs_attention']}}border-left:3px solid #f59e0b;padding-left:15px{{endif}}">
-		<div style="width:36px;height:36px;background:{$t['icon_bg']};border-radius:10px;display:flex;align-items:center;justify-content:center;color:{$t['icon_color']};font-weight:600;font-size:15px">{$t['icon_glyph']}</div>
-		<div style="min-width:0">
+	<a href="{$t['view_url']}" class="gdSupportList__row" style="display:grid;grid-template-columns:52px 1fr 110px 110px 140px;gap:14px;align-items:center;padding:14px 18px;text-decoration:none;color:inherit;border-bottom:0.5px solid #f1f5f9;{{if $t['needs_attention']}}border-left:3px solid #f59e0b;padding-left:15px{{endif}}">
+		<div class="gdSupportList__iconCell" style="width:36px;height:36px;background:{$t['icon_bg']};border-radius:10px;display:flex;align-items:center;justify-content:center;color:{$t['icon_color']};font-weight:600;font-size:15px">{$t['icon_glyph']}</div>
+		<div class="gdSupportList__subject" style="min-width:0">
 			<div style="font-size:14px;font-weight:500;color:#111827;margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{$t['subject']}</div>
 			<div style="font-size:12px;color:#94a3b8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{if $t['department_name']}}{$t['department_name']} &middot; {{endif}}#{$t['id']}</div>
 		</div>
-		<div><span style="display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:500;background:{$t['status_bg']};color:{$t['status_color']};white-space:nowrap">{$t['status_label']}</span></div>
-		<div>{{if $t['priority'] !== 'normal'}}<span style="display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:500;background:{$t['priority_bg']};color:{$t['priority_color']};white-space:nowrap">{$t['priority_label']}</span>{{else}}<span style="font-size:12px;color:#94a3b8">Normal</span>{{endif}}</div>
-		<div style="font-size:12px;color:#64748b">
+		<div class="gdSupportList__meta"><span style="display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:500;background:{$t['status_bg']};color:{$t['status_color']};white-space:nowrap">{$t['status_label']}</span></div>
+		<div class="gdSupportList__meta">{{if $t['priority'] !== 'normal'}}<span style="display:inline-block;padding:3px 10px;border-radius:12px;font-size:11px;font-weight:500;background:{$t['priority_bg']};color:{$t['priority_color']};white-space:nowrap">{$t['priority_label']}</span>{{else}}<span style="font-size:12px;color:#94a3b8">Normal</span>{{endif}}</div>
+		<div class="gdSupportList__meta" style="font-size:12px;color:#64748b">
 			<div>{$t['updated_at_relative']}</div>
 			{{if $t['last_reply_role'] === 'admin'}}
 			<div style="font-size:11px;color:#1e40af;font-weight:500;margin-top:2px">Staff replied</div>
@@ -3294,7 +3281,7 @@ $gddealerTemplates[] = [
 			<label style="display:block;font-size:13px;font-weight:500;color:#111827;margin-bottom:6px">Subject</label>
 			<input type="text" name="support_subject" required maxlength="160" placeholder="Brief summary of your question or issue" style="width:100%;padding:10px 12px;font-size:14px;border:0.5px solid #e5e7eb;border-radius:8px;background:#fff;color:#111827;box-sizing:border-box">
 		</div>
-		<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px">
+		<div class="gdFormGrid2" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px">
 			<div>
 				<label style="display:block;font-size:13px;font-weight:500;color:#111827;margin-bottom:6px">Department</label>
 				<select name="support_department" style="width:100%;padding:10px 12px;font-size:14px;border:0.5px solid #e5e7eb;border-radius:8px;background:#fff;color:#111827;box-sizing:border-box">
@@ -3381,7 +3368,7 @@ $gddealerTemplates[] = [
 </div>
 <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:24px">
 	{{foreach $replies as $r}}
-	<div style="background:#fff;border:0.5px solid #e5e7eb;border-radius:12px;padding:20px 24px;border-left:3px solid {$r['role_border']}">
+	<div class="gdReplyCard" style="background:#fff;border:0.5px solid #e5e7eb;border-radius:12px;padding:20px 24px;border-left:3px solid {$r['role_border']}">
 		<div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
 			<span style="padding:3px 10px;border-radius:12px;font-size:11px;font-weight:500;background:{$r['role_bg']};color:{$r['role_color']}">{$r['role_label']}</span>
 			<strong style="font-size:13px;color:#111827;font-weight:500">{$r['author_name']}</strong>
@@ -3412,7 +3399,7 @@ $gddealerTemplates[] = [
 </div>
 {{endif}}
 {{if count($events) > 0}}
-<div style="background:#fff;border:0.5px solid #e5e7eb;border-radius:12px;padding:20px 24px">
+<div class="gdTicketHistory" style="background:#fff;border:0.5px solid #e5e7eb;border-radius:12px;padding:20px 24px">
 	<div style="font-size:11px;text-transform:uppercase;letter-spacing:0.05em;color:#64748b;font-weight:500;margin-bottom:14px">Ticket history</div>
 	{{foreach $events as $e}}
 	<div style="display:flex;gap:16px;margin-bottom:8px;font-size:13px;color:#374151;align-items:baseline">
