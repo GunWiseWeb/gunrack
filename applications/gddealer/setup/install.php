@@ -1925,8 +1925,46 @@ TEMPLATE_EOT,
 		{{endif}}
 	</div>
 
+	<div style="display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap">
+		{{foreach $data['subNav'] as $tab}}
+		<a href="{$tab['url']}" style="display:inline-block;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:600;text-decoration:none;{{if $tab['active']}}background:#1e3a5f;color:#fff{{else}}background:#f1f5f9;color:#64748b{{endif}}">{$tab['label']} ({$tab['count']})</a>
+		{{endforeach}}
+	</div>
+
+	<form method="get" action="{$data['filterFormUrl']}" style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:16px;padding:12px 16px;background:#f8fafc;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px">
+		<input type="hidden" name="tab" value="{$data['activeTab']}">
+		<select name="rating" style="padding:6px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;background:#fff">
+			<option value="all"{{if $data['ratingFilter'] === 'all'}} selected{{endif}}>All ratings</option>
+			<option value="5"{{if $data['ratingFilter'] === '5'}} selected{{endif}}>5&#9733; only</option>
+			<option value="4-5"{{if $data['ratingFilter'] === '4-5'}} selected{{endif}}>4-5&#9733;</option>
+			<option value="3-"{{if $data['ratingFilter'] === '3-'}} selected{{endif}}>3&#9733; and below</option>
+			<option value="1-2"{{if $data['ratingFilter'] === '1-2'}} selected{{endif}}>1-2&#9733; only</option>
+		</select>
+		<select name="date" style="padding:6px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;background:#fff">
+			<option value="any"{{if $data['dateFilter'] === 'any'}} selected{{endif}}>Any date</option>
+			<option value="7"{{if $data['dateFilter'] === '7'}} selected{{endif}}>Last 7 days</option>
+			<option value="30"{{if $data['dateFilter'] === '30'}} selected{{endif}}>Last 30 days</option>
+			<option value="90"{{if $data['dateFilter'] === '90'}} selected{{endif}}>Last 90 days</option>
+			<option value="year"{{if $data['dateFilter'] === 'year'}} selected{{endif}}>This year</option>
+		</select>
+		<input type="text" name="q" value="{$data['search']}" placeholder="Search reviews..." style="padding:6px 10px;border:1px solid #d1d5db;border-radius:6px;font-size:13px;flex:1 1 160px;min-width:120px">
+		<button type="submit" style="padding:6px 16px;background:#1e3a5f;color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer">Apply</button>
+	</form>
+
+	{{if $data['totalCount'] > 0}}
+		<div style="font-size:0.8em;color:#64748b;margin-bottom:10px">{expression="number_format( $data['totalCount'] )"} {expression="$data['totalCount'] === 1 ? 'review' : 'reviews'"} found</div>
+	{{endif}}
+
 	{{if count($data['rows']) === 0}}
-		<div class="ipsEmptyMessage"><p>No reviews yet. Reviews appear here once customers rate your dealership.</p></div>
+		<div style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:32px;text-align:center;color:#64748b">
+			{{if $data['activeTab'] === 'attention'}}
+				<p style="margin:0;font-size:0.95em">No reviews need your attention right now.</p>
+			{{elseif $data['activeTab'] === 'contested'}}
+				<p style="margin:0;font-size:0.95em">No contested reviews.</p>
+			{{else}}
+				<p style="margin:0;font-size:0.95em">No reviews match your filters.</p>
+			{{endif}}
+		</div>
 	{{else}}
 		{{foreach $data['rows'] as $r}}
 		<div style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:20px;margin-bottom:12px">
@@ -2072,6 +2110,20 @@ TEMPLATE_EOT,
 			{{endif}}
 		</div>
 		{{endforeach}}
+
+		{{if count($data['pageLinks']) > 0}}
+		<div style="display:flex;justify-content:center;gap:4px;margin-top:20px;flex-wrap:wrap">
+			{{foreach $data['pageLinks'] as $pl}}
+				{{if $pl['disabled']}}
+					<span style="padding:6px 10px;font-size:13px;color:#9ca3af">{$pl['label']}</span>
+				{{elseif $pl['active']}}
+					<span style="padding:6px 12px;background:#1e3a5f;color:#fff;border-radius:6px;font-size:13px;font-weight:700">{$pl['label']}</span>
+				{{else}}
+					<a href="{$pl['url']}" style="padding:6px 12px;background:#f1f5f9;color:#374151;border-radius:6px;font-size:13px;text-decoration:none;font-weight:600">{$pl['label']}</a>
+				{{endif}}
+			{{endforeach}}
+		</div>
+		{{endif}}
 	{{endif}}
 
 </div>

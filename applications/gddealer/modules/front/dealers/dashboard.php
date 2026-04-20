@@ -913,34 +913,80 @@ class _dashboard extends \IPS\Dispatcher\Controller
 		}
 		catch ( \Exception ) {}
 
-		$rows = [];
-		$avgPricing = 0.0;
-		$avgShipping = 0.0;
-		$avgService = 0.0;
-		$total = 0;
+		$activeTab = (string) ( \IPS\Request::i()->tab ?? '' );
+		if ( !in_array( $activeTab, [ 'attention', 'contested', 'recent', 'all' ], TRUE ) )
+		{
+			$activeTab = 'attention';
+		}
 
+		$ratingFilter = (string) ( \IPS\Request::i()->rating ?? '' );
+		if ( !in_array( $ratingFilter, [ '5', '4-5', '3-', '1-2' ], TRUE ) ) { $ratingFilter = 'all'; }
+
+		$dateFilter = (string) ( \IPS\Request::i()->date ?? '' );
+		if ( !in_array( $dateFilter, [ '7', '30', '90', 'year' ], TRUE ) ) { $dateFilter = 'any'; }
+
+		$search  = trim( (string) ( \IPS\Request::i()->q ?? '' ) );
+		$page    = max( 1, (int) ( \IPS\Request::i()->page ?? 1 ) );
+		$perPage = 25;
+
+		$counts = [
+			'attention' => $this->_countReviews( $dealerId, 'attention' ),
+			'contested' => $this->_countReviews( $dealerId, 'contested' ),
+			'recent'    => $this->_countReviews( $dealerId, 'recent' ),
+			'all'       => $this->_countReviews( $dealerId, 'all' ),
+		];
+
+		$whereStr  = 'dealer_id=? AND status=?';
+		$whereVals = [ $dealerId, 'approved' ];
+
+		switch ( $activeTab )
+		{
+			case 'attention':
+				$whereStr .= " AND ((dispute_status='none' AND dealer_response IS NULL AND created_at > DATE_SUB(NOW(), INTERVAL 30 DAY)) OR dispute_status IN ('pending_customer','pending_admin'))";
+				break;
+			case 'contested':
+				$whereStr .= " AND dispute_status IN ('pending_customer','pending_admin','resolved_dealer','resolved_customer')";
+				break;
+		}
+
+		if ( $ratingFilter === '5' )       { $whereStr .= ' AND ((rating_pricing + rating_shipping + rating_service) / 3) >= 5'; }
+		elseif ( $ratingFilter === '4-5' ) { $whereStr .= ' AND ((rating_pricing + rating_shipping + rating_service) / 3) >= 4'; }
+		elseif ( $ratingFilter === '3-' )  { $whereStr .= ' AND ((rating_pricing + rating_shipping + rating_service) / 3) <= 3'; }
+		elseif ( $ratingFilter === '1-2' ) { $whereStr .= ' AND ((rating_pricing + rating_shipping + rating_service) / 3) <= 2'; }
+
+		if ( $dateFilter === '7' )        { $whereStr .= ' AND created_at > DATE_SUB(NOW(), INTERVAL 7 DAY)'; }
+		elseif ( $dateFilter === '30' )   { $whereStr .= ' AND created_at > DATE_SUB(NOW(), INTERVAL 30 DAY)'; }
+		elseif ( $dateFilter === '90' )   { $whereStr .= ' AND created_at > DATE_SUB(NOW(), INTERVAL 90 DAY)'; }
+		elseif ( $dateFilter === 'year' ) { $whereStr .= ' AND YEAR(created_at) = YEAR(NOW())'; }
+
+		if ( $search !== '' )
+		{
+			$esc = str_replace( [ '\\', '%', '_' ], [ '\\\\', '\\%', '\\_' ], $search );
+			$whereStr .= ' AND review_body LIKE ?';
+			$whereVals[] = '%' . $esc . '%';
+		}
+
+		$where = array_merge( [ $whereStr ], $whereVals );
+
+		$totalCount = 0;
+		try { $totalCount = (int) \IPS\Db::i()->select( 'COUNT(*)', 'gd_dealer_ratings', $where )->first(); }
+		catch ( \Exception ) {}
+
+		$totalPages = max( 1, (int) ceil( $totalCount / $perPage ) );
+		$page       = min( $page, $totalPages );
+		$offset     = ( $page - 1 ) * $perPage;
+
+		$rows = [];
 		try
 		{
-			foreach ( \IPS\Db::i()->select( '*', 'gd_dealer_ratings',
-				[ 'dealer_id=? AND status=?', $dealerId, 'approved' ],
-				'created_at DESC', [ 0, 50 ]
-			) as $r )
+			foreach ( \IPS\Db::i()->select( '*', 'gd_dealer_ratings', $where, 'created_at DESC', [ $offset, $perPage ] ) as $r )
 			{
 				$reviewAvg = ( (int) $r['rating_pricing'] + (int) $r['rating_shipping'] + (int) $r['rating_service'] ) / 3;
 
-				/* Timestamps stored as server-local Y-m-d H:i:s DATETIME.
-				   strtotime() returns a Unix timestamp; \IPS\DateTime::ts()
-				   then renders it in the viewing member's timezone. */
 				$createdTs  = $r['created_at'] ? strtotime( (string) $r['created_at'] ) : 0;
 				$responseTs = $r['response_at'] ? strtotime( (string) $r['response_at'] ) : 0;
 				$deadlineTs = $r['dispute_deadline'] ? strtotime( (string) $r['dispute_deadline'] ) : 0;
 
-				/* Per-row IPS rich-text editor for the dealer response.
-				   Only one editor is ever rendered per row: the new-response
-				   editor for empty rows, the edit-response editor for rows
-				   that already have a response. autoSaveKey is unique per
-				   reviewId so drafts don't cross-contaminate. attachIds=
-				   [reviewId,2] pegs attachments to dealer_response. */
 				$respondEditorHtml = '';
 				$editEditorHtml    = '';
 				$dealerResp        = (string) ( $r['dealer_response'] ?? '' );
@@ -984,9 +1030,6 @@ class _dashboard extends \IPS\Dispatcher\Controller
 					$editEditorHtml = (string) $editEditor;
 				}
 
-				/* Dispute editors — only built for rows that can actually be
-				   disputed (status=none). Two editors per eligible row:
-				   reason (id2=3) and evidence (id2=4). */
 				$disputeReasonEditorHtml   = '';
 				$disputeEvidenceEditorHtml = '';
 				if ( (string) ( $r['dispute_status'] ?? 'none' ) === 'none' )
@@ -1032,8 +1075,8 @@ class _dashboard extends \IPS\Dispatcher\Controller
 					'rating_pricing'   => (int) $r['rating_pricing'],
 					'rating_shipping'  => (int) $r['rating_shipping'],
 					'rating_service'   => (int) $r['rating_service'],
-					'review_body'      => ( $r['review_body'] ?? '' ) !== '' ? \IPS\Text\Parser::parseStatic( (string) $r['review_body'], [ (int) $r['id'], 1 ], NULL, 'gddealer_Responses' ) : '',
-					'dealer_response'  => ( $r['dealer_response'] ?? '' ) !== '' ? \IPS\Text\Parser::parseStatic( (string) $r['dealer_response'], [ (int) $r['id'], 2 ], NULL, 'gddealer_Responses' ) : '',
+					'review_body'      => (string) ( $r['review_body'] ?? '' ),
+					'dealer_response'  => (string) ( $r['dealer_response'] ?? '' ),
 					'response_at'      => $responseTs
 						? (string) \IPS\DateTime::ts( $responseTs )->localeDate() . ' · ' . (string) \IPS\DateTime::ts( $responseTs )->localeTime()
 						: '',
@@ -1085,8 +1128,11 @@ class _dashboard extends \IPS\Dispatcher\Controller
 		}
 		catch ( \Exception ) {}
 
-		/* Averages exclude reviews resolved in the dealer's favor. Pending
-		   and dismissed reviews continue to count. */
+		$avgPricing  = 0.0;
+		$avgShipping = 0.0;
+		$avgService  = 0.0;
+		$total       = 0;
+
 		try
 		{
 			$agg = \IPS\Db::i()->select(
@@ -1101,7 +1147,6 @@ class _dashboard extends \IPS\Dispatcher\Controller
 		}
 		catch ( \Exception ) {}
 
-		/* Compute monthly dispute usage for this dealer. */
 		$tier     = (string) $this->dealer->subscription_tier;
 		$limit    = self::$disputeLimits[ $tier ] ?? 2;
 		$monthKey = date( 'Y-m' );
@@ -1123,6 +1168,58 @@ class _dashboard extends \IPS\Dispatcher\Controller
 
 		$avgOverall = $total > 0 ? round( ( $avgPricing + $avgShipping + $avgService ) / 3, 1 ) : 0.0;
 
+		$base = \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dashboard&do=reviews' );
+
+		$buildQS = function ( array $extra ) use ( $activeTab, $ratingFilter, $dateFilter, $search ): array
+		{
+			$qs = [ 'tab' => $activeTab ];
+			if ( $ratingFilter !== 'all' ) { $qs['rating'] = $ratingFilter; }
+			if ( $dateFilter !== 'any' )   { $qs['date']   = $dateFilter; }
+			if ( $search !== '' )          { $qs['q']      = $search; }
+			return array_merge( $qs, $extra );
+		};
+
+		$subNav = [];
+		foreach ( [ 'attention' => 'Needs attention', 'contested' => 'Contested', 'recent' => 'Recent', 'all' => 'All' ] as $tab => $label )
+		{
+			$subNav[] = [
+				'key'    => $tab,
+				'label'  => $label,
+				'count'  => $counts[ $tab ],
+				'url'    => (string) $base->setQueryString( $buildQS( [ 'tab' => $tab ] ) ),
+				'active' => $tab === $activeTab,
+			];
+		}
+
+		$pageLinks = [];
+		if ( $totalPages > 1 )
+		{
+			if ( $page > 1 )
+			{
+				$pageLinks[] = [ 'label' => "\xC2\xAB Prev", 'url' => (string) $base->setQueryString( $buildQS( [ 'page' => $page - 1 ] ) ), 'active' => false, 'disabled' => false ];
+			}
+			$start = max( 1, $page - 2 );
+			$end   = min( $totalPages, $page + 2 );
+			if ( $start > 1 )
+			{
+				$pageLinks[] = [ 'label' => '1', 'url' => (string) $base->setQueryString( $buildQS( [ 'page' => 1 ] ) ), 'active' => false, 'disabled' => false ];
+				if ( $start > 2 ) { $pageLinks[] = [ 'label' => '...', 'url' => '', 'active' => false, 'disabled' => true ]; }
+			}
+			for ( $p = $start; $p <= $end; $p++ )
+			{
+				$pageLinks[] = [ 'label' => (string) $p, 'url' => (string) $base->setQueryString( $buildQS( [ 'page' => $p ] ) ), 'active' => $p === $page, 'disabled' => false ];
+			}
+			if ( $end < $totalPages )
+			{
+				if ( $end < $totalPages - 1 ) { $pageLinks[] = [ 'label' => '...', 'url' => '', 'active' => false, 'disabled' => true ]; }
+				$pageLinks[] = [ 'label' => (string) $totalPages, 'url' => (string) $base->setQueryString( $buildQS( [ 'page' => $totalPages ] ) ), 'active' => false, 'disabled' => false ];
+			}
+			if ( $page < $totalPages )
+			{
+				$pageLinks[] = [ 'label' => "Next \xC2\xBB", 'url' => (string) $base->setQueryString( $buildQS( [ 'page' => $page + 1 ] ) ), 'active' => false, 'disabled' => false ];
+			}
+		}
+
 		$data = [
 			'rows'               => $rows,
 			'total'              => $total,
@@ -1143,11 +1240,40 @@ class _dashboard extends \IPS\Dispatcher\Controller
 			),
 			'disputes_suspended' => (bool) ( $this->dealer->disputes_suspended ?? 0 ),
 			'help_email'         => (string) ( \IPS\Settings::i()->gddealer_help_contact ?: 'dealers@gunrack.deals' ),
+			'subNav'             => $subNav,
+			'filterFormUrl'      => (string) $base,
+			'activeTab'          => $activeTab,
+			'ratingFilter'       => $ratingFilter,
+			'dateFilter'         => $dateFilter,
+			'search'             => $search,
+			'page'               => $page,
+			'totalPages'         => $totalPages,
+			'totalCount'         => $totalCount,
+			'pageLinks'          => $pageLinks,
 		];
 
 		$csrfKey = (string) \IPS\Session::i()->csrfKey;
 
 		$this->output( 'reviews', \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )->dealerReviews( $data, $csrfKey ) );
+	}
+
+	protected function _countReviews( int $dealerId, string $tab ): int
+	{
+		$whereStr  = 'dealer_id=? AND status=?';
+		$whereVals = [ $dealerId, 'approved' ];
+
+		switch ( $tab )
+		{
+			case 'attention':
+				$whereStr .= " AND ((dispute_status='none' AND dealer_response IS NULL AND created_at > DATE_SUB(NOW(), INTERVAL 30 DAY)) OR dispute_status IN ('pending_customer','pending_admin'))";
+				break;
+			case 'contested':
+				$whereStr .= " AND dispute_status IN ('pending_customer','pending_admin','resolved_dealer','resolved_customer')";
+				break;
+		}
+
+		try { return (int) \IPS\Db::i()->select( 'COUNT(*)', 'gd_dealer_ratings', array_merge( [ $whereStr ], $whereVals ) )->first(); }
+		catch ( \Exception ) { return 0; }
 	}
 
 	/** Post a dealer response to a review. */
