@@ -1544,29 +1544,25 @@ TEMPLATE_EOT,
 		'template_name' => 'help',
 		'template_data' => '$helpData',
 		'template_content' => <<<'TEMPLATE_EOT'
-<div>
+<div class="gdHelpPage">
+	<div class="gdHelpPage__header">
+		<h2>Feed Setup Guide</h2>
+		<p>{$helpData['intro']}</p>
+	</div>
 
-	<h2 style="margin:0 0 4px">Feed Setup Guide</h2>
-	<p style="color:#666;margin:0 0 24px">{$helpData['intro']}</p>
-
-	<div class="gdHelpLayout" style="display:flex;gap:24px;align-items:flex-start">
-
-		<div class="gdHelpContent" style="flex:1 1 0;min-width:0">
-
-			<div style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:20px;margin-bottom:16px">
-				<h3 style="margin:0 0 12px;font-size:1.05em;font-weight:700;color:#1e3a5f">
-					<span style="background:#2563eb;color:#fff;border-radius:50%;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;font-size:0.8em;margin-right:8px;font-weight:700">1</span>
-					Prepare your product feed
-				</h3>
+	<div class="gdHelpPage__grid">
+		<div class="gdHelpPage__main">
+			<div class="gdHelpPage__card">
+				<h3><span class="gdHelpPage__num">1</span> Prepare your product feed</h3>
 				<p>{$helpData['step1']}</p>
 				<p><strong>Required fields per product:</strong></p>
-				<ul style="margin:8px 0;padding-left:20px">
+				<ul>
 					<li><strong>UPC</strong> &mdash; 12-digit UPC barcode. Must match our catalog exactly.</li>
 					<li><strong>Price</strong> &mdash; Your retail price as a decimal (e.g. 499.99)</li>
 					<li><strong>In Stock</strong> &mdash; Boolean or quantity (0/1, true/false, or quantity integer)</li>
 				</ul>
 				<p><strong>Optional but recommended:</strong></p>
-				<ul style="margin:8px 0;padding-left:20px">
+				<ul>
 					<li><strong>SKU</strong> &mdash; Your internal product identifier</li>
 					<li><strong>Shipping Cost</strong> &mdash; Flat shipping fee. Use 0 for free shipping.</li>
 					<li><strong>Condition</strong> &mdash; new, used, or refurbished</li>
@@ -1575,20 +1571,15 @@ TEMPLATE_EOT,
 				</ul>
 			</div>
 
-			<div style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:20px;margin-bottom:16px">
-				<h3 style="margin:0 0 12px;font-size:1.05em;font-weight:700;color:#1e3a5f">
-					<span style="background:#2563eb;color:#fff;border-radius:50%;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;font-size:0.8em;margin-right:8px;font-weight:700">2</span>
-					Format your feed
-				</h3>
+			<div class="gdHelpPage__card">
+				<h3><span class="gdHelpPage__num">2</span> Format your feed</h3>
 				<p>{$helpData['step2']}</p>
-
-				<p style="margin-top:12px"><strong>CSV format example:</strong></p>
-				<pre style="background:#f4f4f4;padding:12px;border-radius:4px;overflow-x:auto;font-size:0.85em">upc,price,in_stock,shipping_cost,condition,product_url
+				<p><strong>CSV format example:</strong></p>
+				<pre>upc,price,in_stock,shipping_cost,condition,product_url
 026495088565,499.99,1,15.00,new,https://yourstore.com/product/123
 000000000000,299.99,0,0.00,new,https://yourstore.com/product/456</pre>
-
-				<p style="margin-top:16px"><strong>JSON format example:</strong></p>
-				<pre style="background:#f4f4f4;padding:12px;border-radius:4px;overflow-x:auto;font-size:0.85em">[
+				<p><strong>JSON format example:</strong></p>
+				<pre>[
   {
     "upc": "026495088565",
     "price": 499.99,
@@ -1598,9 +1589,8 @@ TEMPLATE_EOT,
     "product_url": "https://yourstore.com/product/123"
   }
 ]</pre>
-
-				<p style="margin-top:16px"><strong>XML format example:</strong></p>
-				<pre style="background:#f4f4f4;padding:12px;border-radius:4px;overflow-x:auto;font-size:0.85em">&lt;products&gt;
+				<p><strong>XML format example:</strong></p>
+				<pre>&lt;products&gt;
   &lt;product&gt;
     &lt;upc&gt;026495088565&lt;/upc&gt;
     &lt;price&gt;499.99&lt;/price&gt;
@@ -1611,13 +1601,10 @@ TEMPLATE_EOT,
 &lt;/products&gt;</pre>
 			</div>
 
-			<div style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:20px;margin-bottom:16px">
-				<h3 style="margin:0 0 12px;font-size:1.05em;font-weight:700;color:#1e3a5f">
-					<span style="background:#2563eb;color:#fff;border-radius:50%;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;font-size:0.8em;margin-right:8px;font-weight:700">3</span>
-					Configure field mapping
-				</h3>
+			<div class="gdHelpPage__card">
+				<h3><span class="gdHelpPage__num">3</span> Configure field mapping</h3>
 				<p>{$helpData['step3']}</p>
-				<pre style="background:#f4f4f4;padding:12px;border-radius:4px;overflow-x:auto;font-size:0.85em;margin-top:12px">{
+				<pre>{
   "UPC": "upc",
   "PRICE": "dealer_price",
   "QTY": "stock_qty",
@@ -1628,75 +1615,165 @@ TEMPLATE_EOT,
 }</pre>
 			</div>
 
-			<div style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:20px;margin-bottom:16px">
-				<h3 style="margin:0 0 12px;font-size:1.05em;font-weight:700;color:#1e3a5f">
-					<span style="background:#2563eb;color:#fff;border-radius:50%;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;font-size:0.8em;margin-right:8px;font-weight:700">4</span>
-					Enter your feed URL
-				</h3>
+			<div class="gdHelpPage__card">
+				<h3><span class="gdHelpPage__num">4</span> Enter your feed URL</h3>
 				<p>{$helpData['step4']}</p>
-				<ul style="margin:8px 0;padding-left:20px">
-					<li>Basic Auth: <code style="background:#f4f4f4;padding:1px 6px;border-radius:3px">{"username":"user","password":"pass"}</code></li>
-					<li>API Key: <code style="background:#f4f4f4;padding:1px 6px;border-radius:3px">{"api_key":"your-key-here"}</code></li>
+				<ul>
+					<li>Basic Auth: <code>{"username":"user","password":"pass"}</code></li>
+					<li>API Key: <code>{"api_key":"your-key-here"}</code></li>
 				</ul>
 			</div>
 
-			<div style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:20px;margin-bottom:24px">
-				<h3 style="margin:0 0 12px;font-size:1.05em;font-weight:700;color:#1e3a5f">
-					<span style="background:#2563eb;color:#fff;border-radius:50%;width:24px;height:24px;display:inline-flex;align-items:center;justify-content:center;font-size:0.8em;margin-right:8px;font-weight:700">5</span>
-					Review your listings
-				</h3>
+			<div class="gdHelpPage__card">
+				<h3><span class="gdHelpPage__num">5</span> Review your listings</h3>
 				<p>{$helpData['step5']}</p>
 			</div>
 
-			<div style="background:#f0f7ff;border:1px solid #bfdbfe;border-radius:6px;padding:16px">
-				<h3 style="margin:0 0 8px;color:#1e40af">Feed Requirements Summary</h3>
-				<ul style="margin:0;padding-left:20px;color:#1e3a5f">
+			<div class="gdHelpPage__card gdHelpPage__card--info">
+				<h3>Feed Requirements Summary</h3>
+				<ul>
 					{{foreach $helpData['requirements'] as $req}}
 					<li>{$req}</li>
 					{{endforeach}}
 				</ul>
 			</div>
-
 		</div>
 
-		<div class="gdHelpSidebar" style="width:280px;flex-shrink:0;position:sticky;top:24px">
-
-			<div style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:20px;margin-bottom:16px">
-				<h3 style="margin:0 0 12px;font-size:0.95em;font-weight:700">Quick Field Reference</h3>
-				<table style="width:100%;font-size:0.85em;border-collapse:collapse">
-					<tr style="border-bottom:1px solid #f0f0f0"><td style="padding:6px 0;font-weight:600">upc</td><td style="padding:6px 0;color:#666">Required</td></tr>
-					<tr style="border-bottom:1px solid #f0f0f0"><td style="padding:6px 0;font-weight:600">dealer_price</td><td style="padding:6px 0;color:#666">Required</td></tr>
-					<tr style="border-bottom:1px solid #f0f0f0"><td style="padding:6px 0;font-weight:600">in_stock</td><td style="padding:6px 0;color:#666">Required</td></tr>
-					<tr style="border-bottom:1px solid #f0f0f0"><td style="padding:6px 0;font-weight:600">shipping_cost</td><td style="padding:6px 0;color:#666">Optional</td></tr>
-					<tr style="border-bottom:1px solid #f0f0f0"><td style="padding:6px 0;font-weight:600">condition</td><td style="padding:6px 0;color:#666">Optional</td></tr>
-					<tr style="border-bottom:1px solid #f0f0f0"><td style="padding:6px 0;font-weight:600">listing_url</td><td style="padding:6px 0;color:#666">Optional</td></tr>
-					<tr style="border-bottom:1px solid #f0f0f0"><td style="padding:6px 0;font-weight:600">stock_qty</td><td style="padding:6px 0;color:#666">Optional</td></tr>
-					<tr><td style="padding:6px 0;font-weight:600">dealer_sku</td><td style="padding:6px 0;color:#666">Optional</td></tr>
+		<aside class="gdHelpPage__sidebar">
+			<div class="gdHelpPage__card">
+				<h3>Quick Field Reference</h3>
+				<table>
+					<tr><td>upc</td><td class="gdHelpPage__req">Required</td></tr>
+					<tr><td>dealer_price</td><td class="gdHelpPage__req">Required</td></tr>
+					<tr><td>in_stock</td><td class="gdHelpPage__req">Required</td></tr>
+					<tr><td>shipping_cost</td><td class="gdHelpPage__opt">Optional</td></tr>
+					<tr><td>condition</td><td class="gdHelpPage__opt">Optional</td></tr>
+					<tr><td>listing_url</td><td class="gdHelpPage__opt">Optional</td></tr>
+					<tr><td>stock_qty</td><td class="gdHelpPage__opt">Optional</td></tr>
+					<tr><td>dealer_sku</td><td class="gdHelpPage__opt">Optional</td></tr>
 				</table>
 			</div>
 
-			<div style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:20px;margin-bottom:16px">
-				<h3 style="margin:0 0 12px;font-size:0.95em;font-weight:700">Sync Schedule</h3>
-				<table style="width:100%;font-size:0.85em;border-collapse:collapse">
-					<tr style="border-bottom:1px solid #f0f0f0"><td style="padding:6px 0;font-weight:600">Basic</td><td style="padding:6px 0;color:#666">Every 6 hours</td></tr>
-					<tr style="border-bottom:1px solid #f0f0f0"><td style="padding:6px 0;font-weight:600">Pro</td><td style="padding:6px 0;color:#666">Every 30 min</td></tr>
-					<tr><td style="padding:6px 0;font-weight:600">Enterprise</td><td style="padding:6px 0;color:#666">Every 15 min</td></tr>
+			<div class="gdHelpPage__card">
+				<h3>Sync Schedule</h3>
+				<table>
+					<tr><td>Basic</td><td>Every 6 hours</td></tr>
+					<tr><td>Pro</td><td>Every 30 min</td></tr>
+					<tr><td>Enterprise</td><td>Every 15 min</td></tr>
 				</table>
 			</div>
 
 			{{if $helpData['contact']}}
-			<div style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-radius:8px;padding:20px">
-				<h3 style="margin:0 0 8px;font-size:0.95em;font-weight:700">Need Help?</h3>
-				<p style="margin:0 0 12px;font-size:0.85em;color:#666">Our team can help you get your feed configured and your first import running.</p>
-				<a href="mailto:{$helpData['contact']}" class="ipsButton ipsButton--primary ipsButton--small" style="width:100%;text-align:center;display:block">Email Support</a>
+			<div class="gdHelpPage__card">
+				<h3>Need Help?</h3>
+				<p>Our team can help you get your feed configured and your first import running.</p>
+				<a href="mailto:{$helpData['contact']}" class="ipsButton ipsButton--primary" style="width:100%;text-align:center;display:block">Email Support</a>
 			</div>
 			{{endif}}
-
-		</div>
-
+		</aside>
 	</div>
-
 </div>
+
+<style>
+.gdHelpPage { max-width: 1200px; margin: 0 auto; padding: 20px; }
+.gdHelpPage__header { margin-bottom: 24px; }
+.gdHelpPage__header h2 { margin: 0 0 8px; font-size: 1.5em; font-weight: 700; color: #111827; }
+.gdHelpPage__header p { margin: 0; color: #64748b; }
+
+.gdHelpPage__grid {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) 300px;
+	gap: 24px;
+	align-items: start;
+}
+.gdHelpPage__main { min-width: 0; display: flex; flex-direction: column; gap: 16px; }
+.gdHelpPage__sidebar {
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+	position: sticky;
+	top: 20px;
+}
+
+.gdHelpPage__card {
+	background: #fff;
+	border: 1px solid var(--i-border-color, #e0e0e0);
+	border-radius: 8px;
+	padding: 20px;
+}
+.gdHelpPage__card--info {
+	background: #f0f7ff;
+	border-color: #bfdbfe;
+}
+.gdHelpPage__card--info h3 { color: #1e40af; }
+.gdHelpPage__card--info ul { color: #1e3a5f; }
+.gdHelpPage__card h3 {
+	margin: 0 0 12px;
+	font-size: 1.05em;
+	font-weight: 700;
+	color: #1e3a5f;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+.gdHelpPage__num {
+	background: #2563eb;
+	color: #fff;
+	border-radius: 50%;
+	width: 24px;
+	height: 24px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 0.8em;
+	font-weight: 700;
+	flex-shrink: 0;
+}
+.gdHelpPage__card ul { margin: 8px 0; padding-left: 20px; }
+.gdHelpPage__card p { margin: 0 0 12px; }
+.gdHelpPage__card p:last-child { margin-bottom: 0; }
+.gdHelpPage__card pre {
+	background: #f4f4f4;
+	padding: 12px;
+	border-radius: 4px;
+	overflow-x: auto;
+	font-size: 0.85em;
+	margin: 12px 0 0;
+}
+.gdHelpPage__card code {
+	background: #f4f4f4;
+	padding: 1px 6px;
+	border-radius: 3px;
+}
+.gdHelpPage__card table {
+	width: 100%;
+	font-size: 0.9em;
+	border-collapse: collapse;
+}
+.gdHelpPage__card table tr { border-bottom: 1px solid #f0f0f0; }
+.gdHelpPage__card table tr:last-child { border-bottom: none; }
+.gdHelpPage__card table td { padding: 8px 0; font-weight: 500; }
+.gdHelpPage__card table td:last-child { text-align: right; color: #64748b; font-weight: 400; }
+.gdHelpPage__req { color: #16a34a !important; }
+.gdHelpPage__opt { color: #64748b !important; }
+
+@media (max-width: 900px) {
+	.gdHelpPage__grid {
+		grid-template-columns: 1fr;
+	}
+	.gdHelpPage__sidebar {
+		position: static;
+		top: auto;
+	}
+}
+
+@media (max-width: 480px) {
+	.gdHelpPage { padding: 12px; }
+	.gdHelpPage__card { padding: 16px; }
+	.gdHelpPage__header h2 { font-size: 1.3em; }
+}
+</style>
 TEMPLATE_EOT,
 	],
 
