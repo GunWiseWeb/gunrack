@@ -32,6 +32,45 @@ class _Application extends \IPS\Application
 	{
 		require_once \IPS\ROOT_PATH . '/applications/gddealer/setup/install.php';
 	}
+
+	/**
+	 * acpMenuNumber — IPS 5 red-pill badge count for AdminCP menu items.
+	 * IPS invokes this on every AdminCP menu item with the item's raw query
+	 * string. Return an int count to show a badge; 0 hides it. Used by
+	 * Nexus and other core apps; no extension class involved.
+	 */
+	public function acpMenuNumber( string $queryString ): int
+	{
+		parse_str( $queryString, $query );
+		$controller = (string) ( $query['controller'] ?? '' );
+		$do         = (string) ( $query['do'] ?? '' );
+
+		if ( $controller === 'support' && $do === '' )
+		{
+			try
+			{
+				return (int) \IPS\Db::i()->select( 'COUNT(*)', 'gd_dealer_support_tickets',
+					[ "(status = ?) OR (status = ? AND last_reply_role = ?)",
+					  'open', 'pending_staff', 'dealer' ]
+				)->first();
+			}
+			catch ( \Exception ) { return 0; }
+		}
+
+		if ( $controller === 'dealers' && $do === 'disputes' )
+		{
+			try
+			{
+				return (int) \IPS\Db::i()->select( 'COUNT(*)', 'gd_dealer_ratings',
+					[ "dispute_status = ? OR (dispute_status = ? AND dispute_deadline IS NOT NULL AND dispute_deadline < ?)",
+					  'pending_admin', 'pending_customer', date( 'Y-m-d H:i:s' ) ]
+				)->first();
+			}
+			catch ( \Exception ) { return 0; }
+		}
+
+		return 0;
+	}
 }
 
 class Application extends _Application {}

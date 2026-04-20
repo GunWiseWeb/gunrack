@@ -14,9 +14,6 @@
 		},
 		"EditorLocations": {
 			"Responses": "IPS\\gddealer\\extensions\\core\\EditorLocations\\Responses"
-		},
-		"MenuCounts": {
-			"MenuCounts": "IPS\\gddealer\\extensions\\core\\MenuCounts\\MenuCounts"
 		}
 	}
 }
