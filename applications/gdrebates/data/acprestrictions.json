@@ -1,0 +1,12 @@
+{
+    "rebates": {
+        "dashboard":    { "rebates_manage": "rebates_manage" },
+        "submissions":  { "rebates_manage": "rebates_manage" },
+        "targets":      { "rebates_manage": "rebates_manage" },
+        "scraperqueue": { "rebates_manage": "rebates_manage" },
+        "scrapelog":    { "rebates_manage": "rebates_manage" },
+        "flags":        { "rebates_manage": "rebates_manage" },
+        "active":       { "rebates_manage": "rebates_manage" },
+        "settings":     { "rebates_manage": "rebates_manage" }
+    }
+}
