@@ -142,102 +142,82 @@ class _dashboard extends \IPS\Dispatcher\Controller
 		if ( !empty( $lastLogRow ) )
 		{
 			$lastImport = [
-				'run_start'         => (string) ( $lastLogRow['run_start']         ?? '' ),
-				'status'            => (string) ( $lastLogRow['status']            ?? '' ),
-				'records_total'     => (int)    ( $lastLogRow['records_total']     ?? 0 ),
-				'records_created'   => (int)    ( $lastLogRow['records_created']   ?? 0 ),
-				'records_updated'   => (int)    ( $lastLogRow['records_updated']   ?? 0 ),
-				'records_unchanged' => (int)    ( $lastLogRow['records_unchanged'] ?? 0 ),
-				'records_unmatched' => (int)    ( $lastLogRow['records_unmatched'] ?? 0 ),
-				'has_errors'        => !empty( $lastLogRow['error_log'] ),
+				'when_label'    => \IPS\DateTime::ts( strtotime( (string) $lastLogRow['run_start'] ) )->relative(),
+				'status'        => (string) ( $lastLogRow['status']            ?? 'completed' ),
+				'records'       => (int)    ( $lastLogRow['records_total']     ?? 0 ),
+				'updated'       => (int)    ( $lastLogRow['records_updated']   ?? 0 ),
+				'unmatched'     => (int)    ( $lastLogRow['records_unmatched'] ?? 0 ),
 			];
 		}
 
-		$overview = [
-			'tier'                 => (string) $dealer->subscription_tier,
-			'tier_label'           => ucfirst( (string) $dealer->subscription_tier ),
-			'active_listings'      => $active,
-			'out_of_stock'         => $out,
-			'unmatched'            => $unmatched,
-			'unmatched_count'      => $unmatched,
-			'clicks_7d'            => $clicks7,
-			'clicks_30d'           => $clicks30,
-			'onboarding_incomplete'=> empty( $dealer->feed_url ),
-			'last_import'          => $lastImport,
-			'profile_url'          => (string) \IPS\Http\Url::internal(
-				'app=gddealer&module=dealers&controller=profile&dealer_slug=' . urlencode( (string) $dealer->dealer_slug )
-			),
-			'customize_url'        => (string) \IPS\Http\Url::internal(
-				'app=gddealer&module=dealers&controller=dashboard&do=customize'
-			),
+		$setupSteps = [
+			[
+				'key'   => 'ffl',
+				'label' => 'Verify FFL license',
+				'done'  => !empty( $dealer->ffl_verified_at ?? null ),
+				'hint'  => 'Pending — we\'ll add verification in an upcoming release',
+			],
+			[
+				'key'   => 'business',
+				'label' => 'Add business details',
+				'done'  => !empty( $dealer->dealer_name ) && !empty( $dealer->business_phone ?? null ),
+				'hint'  => '',
+			],
+			[
+				'key'   => 'logo',
+				'label' => 'Upload logo',
+				'done'  => !empty( $this->dealerSummary()['avatar_url'] ),
+				'hint'  => '',
+			],
+			[
+				'key'   => 'feed',
+				'label' => 'Configure product feed',
+				'done'  => !empty( $dealer->feed_url ),
+				'hint'  => '',
+			],
+			[
+				'key'   => 'shipping',
+				'label' => 'Set shipping rules',
+				'done'  => false, /* TODO Phase 4: wire to gd_dealer_shipping table once it exists */
+				'hint'  => '',
+			],
+		];
+		$stepsDone  = count( array_filter( $setupSteps, fn($s) => $s['done'] ) );
+		$stepsTotal = count( $setupSteps );
+		$stepsPct   = $stepsTotal > 0 ? (int) round( ( $stepsDone / $stepsTotal ) * 100 ) : 0;
+		$activeHit = false;
+		foreach ( $setupSteps as &$step ) {
+			if ( $step['done'] ) { $step['state'] = 'done'; continue; }
+			if ( !$activeHit ) { $step['state'] = 'active'; $activeHit = true; continue; }
+			$step['state'] = 'pending';
+		}
+		unset( $step );
+
+		$publicProfileUrl = (string) \IPS\Http\Url::internal(
+			'app=gddealer&module=dealers&controller=profile&dealer_slug=' . urlencode( (string) $dealer->dealer_slug )
+		);
+
+		$data = [
+			'dealer'             => $this->dealerSummary(),
+			'tab_urls'           => $this->tabUrls(),
+			'stats'              => [
+				'active'    => $active,
+				'out'       => $out,
+				'unmatched' => $unmatched,
+				'clicks_7'  => $clicks7,
+				'clicks_30' => $clicks30,
+			],
+			'last_import'        => $lastImport,
+			'setup_steps'        => $setupSteps,
+			'steps_done'         => $stepsDone,
+			'steps_total'        => $stepsTotal,
+			'steps_pct'          => $stepsPct,
+			'public_profile_url' => $publicProfileUrl,
 		];
 
-		/* Dealer's personal card theme. Overrides admin global card colors
-		   for their own dashboard — we apply styles inline on each stat
-		   card rather than through the global CSS variable so the admin
-		   settings remain the default for dealers who pick "default". */
-		$prefsRaw = json_decode( (string) ( $dealer->dealer_dashboard_prefs ?? '{}' ), true );
-		if ( !is_array( $prefsRaw ) ) { $prefsRaw = []; }
-		$cardTheme = (string) ( $prefsRaw['card_theme'] ?? 'default' );
-
-		$s = \IPS\Settings::i();
-		$cardStyles = match( $cardTheme ) {
-			'dark'   => [ 'bg' => '#1e2d3d', 'color' => '#ffffff', 'border' => '#2d4a6b', 'label' => '#94a3b8' ],
-			'accent' => [ 'bg' => (string) ( $s->gddealer_color_primary ?: '#2563eb' ), 'color' => '#ffffff', 'border' => 'transparent', 'label' => 'rgba(255,255,255,0.8)' ],
-			default  => [
-				'bg'     => (string) ( $s->gddealer_color_card_bg     ?: '#ffffff' ),
-				'color'  => 'inherit',
-				'border' => (string) ( $s->gddealer_color_card_border ?: '#e0e0e0' ),
-				'label'  => '#6b7280',
-			],
-		};
-		$overview['card_styles']   = $cardStyles;
-		$overview['numbers_light'] = in_array( $cardTheme, [ 'dark', 'accent' ], true );
-
-		/* Admin-configurable quick-link list with fallback defaults. */
-		$rawLinks = json_decode( (string) ( $s->gddealer_quicklinks ?: '[]' ), true );
-		if ( !is_array( $rawLinks ) || empty( $rawLinks ) )
-		{
-			$rawLinks = [
-				[ 'icon' => 'fa-solid fa-user',           'label' => 'View Public Profile',  'url_type' => 'profile',       'custom_url' => '' ],
-				[ 'icon' => 'fa-solid fa-rss',            'label' => 'Feed Settings',         'url_type' => 'feed_settings', 'custom_url' => '' ],
-				[ 'icon' => 'fa-solid fa-circle-question','label' => 'Help & Setup Guide',    'url_type' => 'help',          'custom_url' => '' ],
-				[ 'icon' => 'fa-solid fa-sliders',        'label' => 'Customize Dashboard',   'url_type' => 'customize',     'custom_url' => '' ],
-			];
-		}
-
-		$resolvedLinks = [];
-		foreach ( $rawLinks as $link )
-		{
-			$type = (string) ( $link['url_type'] ?? 'custom' );
-			$url  = match( $type ) {
-				'profile'       => $overview['profile_url'],
-				'feed_settings' => (string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dashboard&do=feedSettings' ),
-				'listings'      => (string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dashboard&do=listings' ),
-				'unmatched'     => (string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dashboard&do=unmatched' ),
-				'analytics'     => (string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dashboard&do=analytics' ),
-				'reviews'       => (string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dashboard&do=reviews' ),
-				'help'          => (string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dashboard&do=help' ),
-				'subscription'  => (string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dashboard&do=subscription' ),
-				'customize'     => (string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dashboard&do=customize' ),
-				default         => (string) ( $link['custom_url'] ?? '#' ),
-			};
-
-			$resolvedLinks[] = [
-				'icon'     => htmlspecialchars( (string) ( $link['icon']  ?? 'fa-solid fa-link' ), ENT_QUOTES ),
-				'label'    => htmlspecialchars( (string) ( $link['label'] ?? 'Link' ),             ENT_QUOTES ),
-				'url'      => $url,
-				'external' => ( $type === 'custom' ),
-			];
-		}
-		$overview['quick_links'] = $resolvedLinks;
-
-		$this->output( 'overview', \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )->overview(
-			$this->dealerSummary(),
-			$overview,
-			$this->tabUrls(),
-			$this->dashboardPrefs()
-		) );
+		$this->output( 'overview',
+			\IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )->overview( $data )
+		);
 	}
 
 	/* ---------------- Tab: Customize Dashboard ---------------- */
@@ -400,39 +380,63 @@ class _dashboard extends \IPS\Dispatcher\Controller
 			$dealer->save();
 
 			\IPS\Output::i()->redirect(
-				\IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dashboard&do=feedSettings' ),
-				'gddealer_front_feed_saved'
+				\IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dashboard&do=feedSettings' )
 			);
 			return;
 		}
 
-		$logs = [];
-		foreach ( ImportLog::loadForDealer( (int) $dealer->dealer_id, 50 ) as $log )
-		{
-			$logs[] = [
-				'run_start'        => (string) $log->run_start,
-				'status'           => (string) $log->status,
-				'records_total'    => (int) $log->records_total,
-				'records_created'  => (int) $log->records_created,
-				'records_updated'  => (int) $log->records_updated,
-				'records_unchanged'=> (int) $log->records_unchanged,
-				'records_unmatched'=> (int) $log->records_unmatched,
-				'price_drops'      => (int) $log->price_drops,
-				'error_log'        => (string) ( $log->error_log ?? '' ),
-			];
+		$importLog = [];
+		try {
+			foreach ( ImportLog::loadForDealer( (int) $dealer->dealer_id, 15 ) as $log )
+			{
+				$importLog[] = [
+					'when'      => (string) $log->run_start,
+					'when_ago'  => \IPS\DateTime::ts( strtotime( (string) $log->run_start ) )->relative(),
+					'status'    => (string) $log->status,
+					'records'   => (int) $log->records_total,
+					'new'       => (int) ( $log->records_created ?? 0 ),
+					'updated'   => (int) ( $log->records_updated ?? 0 ),
+					'unmatched' => (int) ( $log->records_unmatched ?? 0 ),
+					'error'     => (string) ( $log->error_log ?? '' ),
+				];
+			}
+		} catch ( \Exception ) {}
+
+		$latest = $importLog[0] ?? null;
+		$syncHealth = 'healthy';
+		$syncTitle  = 'Feed is healthy';
+		$syncSub    = 'Ready to import when your feed updates';
+		if ( !$latest ) {
+			$syncHealth = 'warn';
+			$syncTitle  = 'Feed not configured yet';
+			$syncSub    = 'Enter your feed URL below to start syncing';
+		} elseif ( $latest['status'] === 'failed' ) {
+			$syncHealth = 'error';
+			$syncTitle  = 'Last import failed';
+			$syncSub    = $latest['when_ago'] . ' — ' . ( $latest['error'] ?: 'Check configuration' );
+		} elseif ( $latest['status'] === 'partial' ) {
+			$syncHealth = 'warn';
+			$syncTitle  = 'Last import was partial';
+			$syncSub    = $latest['when_ago'];
+		} else {
+			$syncTitle  = 'Feed is healthy';
+			$syncSub    = 'Last imported ' . $latest['when_ago'];
 		}
 
-		$importUrl = (string) \IPS\Http\Url::internal(
-			'app=gddealer&module=dealers&controller=dashboard&do=manualImport'
-		)->csrf();
+		$data = [
+			'dealer'       => $this->dealerSummary(),
+			'tab_urls'     => $this->tabUrls(),
+			'form'         => (string) $form,
+			'import_log'   => $importLog,
+			'latest'       => $latest,
+			'sync_health'  => $syncHealth,
+			'sync_title'   => $syncTitle,
+			'sync_sub'     => $syncSub,
+		];
 
-		$this->output( 'feedSettings', \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )->feedSettings(
-			$this->dealerSummary(),
-			(string) $form,
-			$logs,
-			$importUrl,
-			$this->tabUrls()
-		) );
+		$this->output( 'feedSettings',
+			\IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )->feedSettings( $data )
+		);
 	}
 
 	/** Runs a feed import on demand from the Feed Settings tab. */
