@@ -22,6 +22,10 @@ These are the high-friction spots that have broken production deploys multiple t
 - `app_long_version` stuck at a low value so upgrades never run — always check the DB row before debugging "my upgrade step didn't execute"
 - `\IPS\Db::i()->insertId()` does not exist — `insert()` returns the ID directly (rule #20)
 - Adding `app_version` fields to `data/application.json` triggers "Unknown column" on upgrade — only `data/versions.json` holds versions (rule #23)
+- `setup/templates_XXXXX.php` using regex extraction from `install.php` silently corrupts newlines — see rule #28
+- `\IPS\Output::i()->headCss[]` does not exist — silently ignored or throws — see rule #29
+- Template calls `{template="otherTemplate"}` but the referenced template was never seeded — EX0 with no log — see rule #30
+- Task declared complete after `php -l` passes, but page throws EX0 at runtime — see rule #31
 
 ## Tech stack
 - **Platform:** IPS Community Suite (self-hosted)
@@ -182,6 +186,49 @@ These were learned by comparing against a working IPS v5 plugin. They apply to e
     class upgrade extends _upgrade {}
     ```
     Every step must return `TRUE` to advance; returning anything else tells IPS to re-run the same step. Pre-build verification: `grep -c "class _upgrade" setup/upg_XXXXX/upgrade.php` must return `1`. If the upgrade exists solely to re-seed templates, it still needs the class wrapper AND the `require_once 'templates_XXXXX.php'` — without the require, the seed never runs even when the class loads correctly. Reference: `upg_10047`, `upg_10048`, `upg_10050`.
+28. **Template seeds must embed content literally via nowdoc — never extract from other files at runtime** — `setup/templates_XXXXX.php` files must declare each template's full `template_content` as an inline nowdoc heredoc (`<<<'TEMPLATE_EOT'`) in the same file. Do NOT use `file_get_contents( install.php )`, regex extraction, or any form of "read the template from another file and re-insert it." Regex extraction over PHP-quoted strings silently converts real `\n` newlines into the two-character escape sequence `\n`, which IPS's template compiler does not unescape — the rendered page shows raw backslash-n text and/or throws on unparsed control flow tags. Reference check after any seed runs:
+
+    ```sql
+    SELECT template_name, template_content LIKE '%\\\\n%' AS has_literal_backslash_n
+    FROM core_theme_templates
+    WHERE template_app='<app>';
+    ```
+
+    The `has_literal_backslash_n` column must be `0` for every row. If it is `1` the seed is corrupt even if the PHP ran without errors. Symptom: EX0 "Something went wrong" on pages that use the affected template, with no log entry.
+29. **IPS 5 Output API — `\IPS\Output::i()->headCss[]` does not exist** — the `headCss` property was never defined on `\IPS\Output`. Assigning to `$headCss[]` silently creates a dynamic property in PHP 8.1 (deprecation warning), is entirely ignored by the template renderer, and in some request contexts throws. To include application-specific CSS in IPS 5, either (a) seed the CSS into `core_theme_css` via `data/css.json` + the standard IPS theme resource import, or (b) for prototype work only, prepend an inline `<style>` block to `\IPS\Output::i()->output` just before it goes to the client. Never write to a property on `\IPS\Output::i()` without first confirming the property exists in `system/Output/Output.php`.
+30. **When a seeded template references another template, EVERY referenced template must be seeded in the same transaction** — `{template="otherTemplate" group="..." app="..."}` tags in IPS templates are resolved at render time against `core_theme_templates`. If the referenced template is missing the page throws EX0 with no log entry (the template compiler fails silently). Before declaring a seed task complete, run this verification against the DB:
+
+    ```sql
+    SELECT template_name FROM core_theme_templates
+    WHERE template_app='<app>'
+      AND template_name IN (<every template touched by this version>);
+    ```
+
+    Every name passed in must come back. Missing names = broken deploy. "The seed file mentions all three" is not sufficient; the DB is the source of truth.
+31. **Before declaring any runtime-visible task complete, exercise the actual user path — PHP lint is not enough** — `php -l` only catches syntax errors. IPS-specific bugs (missing template dependencies, non-existent `Output` properties, malformed seed content, autoload misses, wrong parameter types passed to IPS helpers) only surface when the page is actually rendered. Verification steps for every completed task:
+
+    1. Open the page as the target user role in a browser
+    2. Check response is 200 and has expected content (not EX0)
+    3. For server-side verification when a browser isn't available:
+    ```bash
+    php -d display_errors=1 -r 'require "<path>/init.php"; require "<affected-file>";'
+    ```
+        Confirm both require statements complete without output.
+    4. If the task touched DB seeds, verify the seeded rows exist with `SELECT template_name, LENGTH(template_content) FROM core_theme_templates WHERE ...`.
+
+    A task that passes lint but throws EX0 at runtime is not complete.
+32. **Diagnosing EX0 — find the actual exception before writing a fix** — `Error code: EX0` is IPS's generic "unhandled exception" page. It logs nothing by default. The real exception message must be obtained before writing any fix. Primary sources to check in order:
+
+    1. `core_error_logs` table: `SELECT FROM_UNIXTIME(log_date), log_error_code, log_request_uri, LEFT(log_error, 3000) FROM core_error_logs ORDER BY log_date DESC LIMIT 5\G`
+    2. `uploads/logs/YYYY_MM_DD_uncaught_exception.php` files
+    3. Force the error with `IN_DEV => true` in `conf_global.php` and reload — IPS prints the full trace inline
+    4. CLI-trigger the path:
+    ```bash
+    php -d display_errors=1 -r '$_SERVER["REQUEST_METHOD"]="GET"; $_SERVER["QUERY_STRING"]="<route>"; require "<path>/init.php"; try { \IPS\Dispatcher\Front::i()->run(); } catch (\Throwable $e) { echo $e->getMessage()."\n".$e->getFile().":".$e->getLine()."\n".$e->getTraceAsString(); }'
+    ```
+
+    Do not propose fixes based on guessing what the exception might be. "Same error" reports with no trace are not actionable.
+33. **Large phased structural changes — stop at every phase boundary and verify production works** — a change that touches 15+ files, introduces new templates, rewrites shells, or migrates CSS into new locations must be broken into phases that each land independently in production. After each phase: deploy to the real server, load the affected pages in a browser, confirm no regressions, get user sign-off, THEN proceed to the next phase. "Ship all of v1.0.71 through v1.0.77 in one session" is not permitted. If the current session is building toward a multi-phase change, explicitly stop at the boundary and ask before proceeding. Phase 1 delivers a testable shell. Phase 2+ each adds one testable page body. Each phase is one tar, one version bump, one deploy, one verification cycle.
 
 ## Full specification
 Read `GunRack_Spec_v2.9.16.md` for complete specs on all 12 plugins, database schemas, acceptance criteria, server setup (Appendix B), security requirements (Appendix C), and Phase 2 roadmap (Section 19).
