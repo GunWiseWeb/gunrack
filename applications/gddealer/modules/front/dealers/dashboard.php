@@ -539,18 +539,61 @@ class _dashboard extends \IPS\Dispatcher\Controller
 			'app=gddealer&module=dealers&controller=dashboard&do=listings&filter=' . rawurlencode( $filter ) . '&q=' . rawurlencode( $search )
 		);
 
-		$this->output( 'listings', \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )->listings(
-			$this->dealerSummary(),
-			$rows,
-			$total,
-			$page,
-			$pages,
-			$baseUrl,
-			$filter,
-			$search,
-			$exportUrl,
-			$this->tabUrls()
-		) );
+		$statusCounts = [
+			'all'          => 0,
+			'active'       => 0,
+			'out_of_stock' => 0,
+			'suspended'    => 0,
+			'discontinued' => 0,
+		];
+		try {
+			$statusCounts['all'] = (int) \IPS\Db::i()->select( 'COUNT(*)', 'gd_dealer_listings',
+				[ 'dealer_id=?', (int) $dealer->dealer_id ]
+			)->first();
+			foreach ( \IPS\Db::i()->select( 'listing_status, COUNT(*) AS cnt', 'gd_dealer_listings',
+				[ 'dealer_id=?', (int) $dealer->dealer_id ],
+				null, null, 'listing_status'
+			) as $row ) {
+				$k = (string) $row['listing_status'];
+				if ( isset( $statusCounts[$k] ) ) {
+					$statusCounts[$k] = (int) $row['cnt'];
+				}
+			}
+		} catch ( \Exception ) {}
+
+		$filterUrls = [
+			'all'          => (string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dashboard&do=listings' ),
+			'active'       => (string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dashboard&do=listings&filter=active' ),
+			'out_of_stock' => (string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dashboard&do=listings&filter=out_of_stock' ),
+			'suspended'    => (string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dashboard&do=listings&filter=suspended' ),
+			'discontinued' => (string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dashboard&do=listings&filter=discontinued' ),
+		];
+
+		if ( $search !== '' ) {
+			foreach ( $filterUrls as $k => $u ) {
+				$filterUrls[$k] = $u . ( str_contains( $u, '?' ) ? '&' : '?' ) . 'q=' . rawurlencode( $search );
+			}
+		}
+
+		$data = [
+			'dealer'         => $this->dealerSummary(),
+			'tab_urls'       => $this->tabUrls(),
+			'rows'           => $rows,
+			'total'          => $total,
+			'page'           => $page,
+			'pages'          => $pages,
+			'base_url'       => $baseUrl,
+			'active_filter'  => $filter ?: 'all',
+			'search'         => $search,
+			'export_url'     => $exportUrl,
+			'status_counts'  => $statusCounts,
+			'filter_urls'    => $filterUrls,
+			'per_page'       => $perPage,
+		];
+
+		$this->output( 'listings',
+			\IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )->listings( $data )
+		);
 	}
 
 	/** Stream a CSV export of the current listing query. */
@@ -617,12 +660,17 @@ class _dashboard extends \IPS\Dispatcher\Controller
 			'app=gddealer&module=dealers&controller=dashboard&do=unmatched&export=1'
 		);
 
-		$this->output( 'unmatched', \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )->unmatched(
-			$this->dealerSummary(),
-			$out,
-			$exportUrl,
-			$this->tabUrls()
-		) );
+		$data = [
+			'dealer'     => $this->dealerSummary(),
+			'tab_urls'   => $this->tabUrls(),
+			'rows'       => $out,
+			'total'      => \count( $out ),
+			'export_url' => $exportUrl,
+		];
+
+		$this->output( 'unmatched',
+			\IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )->unmatched( $data )
+		);
 	}
 
 	protected function excludeUnmatched()

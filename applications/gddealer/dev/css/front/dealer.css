@@ -783,3 +783,253 @@ body:has(.gdDealerApp) .ipsMobileFooter { display: none !important; }
 @media (max-width: 480px) {
     .gdSyncStats { grid-template-columns: 1fr; }
 }
+
+/* =============================================
+   FILTER BAR + FILTER PILLS (Listings, Reviews, etc.)
+   ============================================= */
+.gdFilterBar {
+    background: var(--gd-surface);
+    border: 1px solid var(--gd-border);
+    border-radius: var(--gd-r-lg);
+    padding: 12px 16px;
+    margin-bottom: 16px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.gdFilterBar__search {
+    flex: 1 1 240px;
+    min-width: 200px;
+    position: relative;
+}
+.gdFilterBar__search svg {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 14px;
+    height: 14px;
+    color: var(--gd-text-faint);
+    pointer-events: none;
+}
+.gdFilterBar__search input {
+    width: 100%;
+    font-family: inherit;
+    font-size: 13px;
+    padding: 8px 12px 8px 36px;
+    border-radius: var(--gd-r-md);
+    border: 1px solid var(--gd-border);
+    background: var(--gd-surface);
+    color: var(--gd-text);
+    box-sizing: border-box;
+}
+.gdFilterBar__search input:focus {
+    outline: none;
+    border-color: var(--gd-brand);
+    box-shadow: 0 0 0 3px var(--gd-brand-light);
+}
+.gdFilterTabs {
+    display: inline-flex;
+    gap: 2px;
+    padding: 2px;
+    background: var(--gd-border-subtle);
+    border-radius: var(--gd-r-md);
+    flex-wrap: wrap;
+}
+.gdFilterTab {
+    font-family: inherit;
+    font-size: 12px;
+    padding: 6px 12px;
+    border-radius: 4px;
+    background: transparent;
+    color: var(--gd-text-subtle);
+    font-weight: 500;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: all 0.1s;
+}
+.gdFilterTab:hover { color: var(--gd-text); }
+.gdFilterTab.is-active {
+    background: var(--gd-surface);
+    color: var(--gd-text);
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+}
+.gdFilterTab__count {
+    font-size: 10px;
+    padding: 1px 6px;
+    border-radius: var(--gd-r-pill);
+    background: var(--gd-border);
+    color: var(--gd-text-muted);
+    font-weight: 600;
+    font-variant-numeric: tabular-nums;
+}
+.gdFilterTab.is-active .gdFilterTab__count {
+    background: var(--gd-brand-light);
+    color: var(--gd-brand);
+}
+
+/* =============================================
+   LISTINGS TABLE (also reused by Unmatched)
+   ============================================= */
+.gdPanel--tableShell { padding: 0; overflow: hidden; }
+.gdListingsTable {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+.gdListingsTable thead th {
+    text-align: left;
+    font-weight: 600;
+    color: var(--gd-text-subtle);
+    padding: 12px 14px;
+    font-size: 11px;
+    border-bottom: 1px solid var(--gd-border);
+    background: var(--gd-surface-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+.gdListingsTable thead th.is-num { text-align: right; }
+.gdListingsTable tbody td {
+    padding: 14px;
+    border-bottom: 1px solid var(--gd-border-subtle);
+    vertical-align: middle;
+}
+.gdListingsTable tbody td.is-num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+.gdListingsTable tbody tr:last-child td { border-bottom: none; }
+.gdListingsTable tbody tr:hover { background: var(--gd-surface-alt); }
+.gdListingsTable__upc {
+    font-family: var(--gd-font-mono);
+    font-size: 12px;
+    color: var(--gd-text);
+}
+
+/* Status pills */
+.gdStatusPill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    padding: 3px 9px;
+    border-radius: var(--gd-r-pill);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+.gdStatusPill::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+}
+.gdStatusPill--active      { background: var(--gd-success-bg); color: var(--gd-success); }
+.gdStatusPill--outofstock  { background: var(--gd-warn-bg);    color: var(--gd-warn); }
+.gdStatusPill--suspended   { background: var(--gd-danger-bg);  color: var(--gd-danger); }
+.gdStatusPill--discontinued{ background: var(--gd-border-subtle); color: var(--gd-text-subtle); }
+.gdStatusPill--muted       { background: var(--gd-border-subtle); color: var(--gd-text-subtle); }
+
+/* =============================================
+   PAGINATION
+   ============================================= */
+.gdPagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 4px;
+    flex-wrap: wrap;
+}
+.gdPagination__info {
+    font-size: 12px;
+    color: var(--gd-text-subtle);
+    font-variant-numeric: tabular-nums;
+}
+.gdPagination__controls {
+    display: inline-flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.gdPagination__page {
+    font-size: 13px;
+    color: var(--gd-text-muted);
+    font-weight: 500;
+    padding: 0 8px;
+    font-variant-numeric: tabular-nums;
+}
+.gdBtn--sm {
+    font-size: 12px;
+    padding: 6px 10px;
+}
+
+/* =============================================
+   PAGE HEADER — title badge + empty state
+   ============================================= */
+.gdPageHeader__titleBadge {
+    font-size: 13px;
+    padding: 3px 10px;
+    border-radius: var(--gd-r-pill);
+    background: var(--gd-danger-bg);
+    color: var(--gd-danger);
+    font-weight: 600;
+    vertical-align: middle;
+    margin-left: 8px;
+}
+.gdEmptyState { padding: 40px 24px; text-align: center; }
+
+/* Info panel variant */
+.gdPanel--info {
+    background: var(--gd-info-bg);
+    border-color: var(--gd-brand-border);
+}
+
+/* Ghost button variant */
+.gdBtn--ghost {
+    background: transparent;
+    border: 1px solid var(--gd-border);
+    color: var(--gd-text-subtle);
+}
+.gdBtn--ghost:hover {
+    background: var(--gd-surface-muted);
+    color: var(--gd-text);
+    border-color: var(--gd-border);
+}
+
+/* Mobile adaptations for listings/unmatched */
+@media (max-width: 767px) {
+    .gdFilterBar { padding: 10px 12px; }
+    .gdFilterTabs { width: 100%; justify-content: stretch; }
+    .gdFilterTab { flex: 1 1 auto; justify-content: center; font-size: 11px; padding: 6px 8px; }
+
+    .gdListingsTable thead { display: none; }
+    .gdListingsTable, .gdListingsTable tbody, .gdListingsTable tr, .gdListingsTable td { display: block; }
+    .gdListingsTable tbody tr {
+        padding: 12px;
+        border-bottom: 1px solid var(--gd-border);
+    }
+    .gdListingsTable tbody tr:last-child { border-bottom: none; }
+    .gdListingsTable tbody td {
+        padding: 4px 0;
+        border: none;
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+    }
+    .gdListingsTable tbody td::before {
+        content: attr(data-label);
+        font-size: 11px;
+        color: var(--gd-text-subtle);
+        text-transform: uppercase;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+    }
+    .gdListingsTable tbody td.is-num { text-align: left; }
+    .gdPagination { flex-direction: column; align-items: flex-start; }
+}
