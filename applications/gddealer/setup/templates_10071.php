@@ -1,29 +1,22 @@
 <?php
-/**
- * v1.0.71: Seed dealerShell, dealerSidebar, dealerNavIcon templates
- * for the left-sidebar dashboard redesign.
- *
- * Direct inserts — does NOT rely on regex extraction from install.php.
- */
-
 namespace IPS\gddealer\setup;
-
-if ( !\defined( '\IPS\SUITE_UNIQUE_KEY' ) )
-{
-	header( ( $_SERVER['SERVER_PROTOCOL'] ?? 'HTTP/1.0' ) . ' 403 Forbidden' );
-	exit;
+use function defined;
+if ( !defined( '\IPS\SUITE_UNIQUE_KEY' ) ) {
+    header( ( $_SERVER['SERVER_PROTOCOL'] ?? 'HTTP/1.0' ) . ' 403 Forbidden' );
+    exit;
 }
 
-$templates = [];
+$gddealerV10071Templates = [];
 
-$templates[] = [
-	'template_set_id' => 1,
-	'template_app'    => 'gddealer',
-	'template_location' => 'front',
-	'template_group'  => 'dealers',
-	'template_name'   => 'dealerShell',
-	'template_data'   => '$dealer, $activeTab, $nav, $body',
-	'template_content' => <<<'TEMPLATE_EOT'
+/* dealerShell */
+$gddealerV10071Templates[] = [
+    'set_id'            => 1,
+    'app'               => 'gddealer',
+    'location'          => 'front',
+    'group'             => 'dealers',
+    'template_name'     => 'dealerShell',
+    'template_data'     => '$dealer, $activeTab, $nav, $body',
+    'template_content'  => <<<'TEMPLATE_EOT'
 <div class="gdDealerApp">
 
     <div class="gdMobileBar">
@@ -57,17 +50,18 @@ $templates[] = [
     </div>
 
 </div>
-TEMPLATE_EOT,
+TEMPLATE_EOT
 ];
 
-$templates[] = [
-	'template_set_id' => 1,
-	'template_app'    => 'gddealer',
-	'template_location' => 'front',
-	'template_group'  => 'dealers',
-	'template_name'   => 'dealerSidebar',
-	'template_data'   => '$dealer, $activeTab, $nav',
-	'template_content' => <<<'TEMPLATE_EOT'
+/* dealerSidebar */
+$gddealerV10071Templates[] = [
+    'set_id'            => 1,
+    'app'               => 'gddealer',
+    'location'          => 'front',
+    'group'             => 'dealers',
+    'template_name'     => 'dealerSidebar',
+    'template_data'     => '$dealer, $activeTab, $nav',
+    'template_content'  => <<<'TEMPLATE_EOT'
 <div class="gdSidebar__brand">
     <span class="gdSidebar__brandMark">GD</span>
     <div>
@@ -106,17 +100,18 @@ $templates[] = [
         </div>
     </div>
 </div>
-TEMPLATE_EOT,
+TEMPLATE_EOT
 ];
 
-$templates[] = [
-	'template_set_id' => 1,
-	'template_app'    => 'gddealer',
-	'template_location' => 'front',
-	'template_group'  => 'dealers',
-	'template_name'   => 'dealerNavIcon',
-	'template_data'   => '$icon',
-	'template_content' => <<<'TEMPLATE_EOT'
+/* dealerNavIcon */
+$gddealerV10071Templates[] = [
+    'set_id'            => 1,
+    'app'               => 'gddealer',
+    'location'          => 'front',
+    'group'             => 'dealers',
+    'template_name'     => 'dealerNavIcon',
+    'template_data'     => '$icon',
+    'template_content'  => <<<'TEMPLATE_EOT'
 {{if $icon === 'dashboard'}}
 <svg class="gdNavItem__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
 {{elseif $icon === 'listings'}}
@@ -136,10 +131,27 @@ $templates[] = [
 {{elseif $icon === 'support'}}
 <svg class="gdNavItem__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
 {{endif}}
-TEMPLATE_EOT,
+TEMPLATE_EOT
 ];
 
-foreach ( $templates as $row )
-{
-	\IPS\Db::i()->replace( 'core_theme_templates', $row );
+/* Seed/replace each template — compute a master_key that matches IPS 5's pattern. */
+foreach ( $gddealerV10071Templates as $tpl ) {
+    $masterKey = md5( $tpl['app'] . ';' . $tpl['location'] . ';' . $tpl['group'] . ';' . $tpl['template_name'] );
+
+    \IPS\Db::i()->replace( 'core_theme_templates', [
+        'template_set_id'        => $tpl['set_id'],
+        'template_app'           => $tpl['app'],
+        'template_location'      => $tpl['location'],
+        'template_group'         => $tpl['group'],
+        'template_name'          => $tpl['template_name'],
+        'template_data'          => $tpl['template_data'],
+        'template_content'       => $tpl['template_content'],
+        'template_master_key'    => $masterKey,
+        'template_updated'       => time(),
+    ] );
 }
+
+/* Clear theme caches so new templates take effect */
+try { \IPS\Theme::master()->recompileTemplates(); } catch ( \Throwable ) {}
+try { \IPS\Data\Cache::i()->clearAll(); } catch ( \Throwable ) {}
+try { \IPS\Data\Store::i()->clearAll(); } catch ( \Throwable ) {}
