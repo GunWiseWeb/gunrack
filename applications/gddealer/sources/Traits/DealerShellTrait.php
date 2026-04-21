@@ -3,9 +3,10 @@
  * @brief  GD Dealer Manager — DealerShell Trait
  *
  * Shared helpers for front-end controllers that render inside the dealer
- * dashboard shell (nav bar, QUICK LINKS sidebar). Consumers must set
- * $this->dealer (of type \IPS\gddealer\Dealer\Dealer) before calling
- * output() / dealerSummary(). Extracted from dashboard.php in v1.0.55.
+ * dashboard shell (left sidebar nav). Consumers must set $this->dealer
+ * (of type \IPS\gddealer\Dealer\Dealer) before calling output() /
+ * dealerSummary(). Extracted from dashboard.php in v1.0.55, redesigned
+ * in v1.0.71 to use a SaaS-style left-sidebar layout.
  */
 
 namespace IPS\gddealer\Traits;
@@ -26,15 +27,19 @@ trait DealerShellTrait
 	 */
 	protected function output( string $activeTab, string $body ): void
 	{
-		$canSupport = Dealer::canAccessSupport( \IPS\Member::loggedIn() );
+		/* Include dealer design-system CSS */
+		$cssPath = \IPS\ROOT_PATH . '/applications/gddealer/dev/css/front/dealer.css';
+		if ( file_exists( $cssPath ) )
+		{
+			\IPS\Output::i()->headCss[] = file_get_contents( $cssPath );
+		}
+
 		\IPS\Output::i()->title  = \IPS\Member::loggedIn()->language()->addToStack( 'gddealer_frontend_dashboard_title' );
-		\IPS\Output::i()->output = $this->themeVars() . \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )->dealerShell(
+		\IPS\Output::i()->output = \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )->dealerShell(
 			$this->dealerSummary(),
 			$activeTab,
-			$this->tabUrls(),
-			$body,
-			$canSupport,
-			$canSupport ? $this->supportUrl() : ''
+			$this->sidebarNav(),
+			$body
 		);
 	}
 
@@ -121,338 +126,67 @@ trait DealerShellTrait
 	}
 
 	/**
-	 * Admin-configurable theme variables injected at the top of every
-	 * dealer page. CSS rules target the gdDealerWrapper / gdDealerTabs /
-	 * gdStatCard / gdDealerCoverFallback classes to override any inline
-	 * color fallbacks left over in the templates.
+	 * Returns the nav structure consumed by the new dealerShell template.
 	 */
-	protected function themeVars(): string
+	protected function sidebarNav(): array
 	{
-		$s = \IPS\Settings::i();
-		return '<style>
-:root {
-	--gd-primary:            ' . ( $s->gddealer_color_primary ?: '#2563eb' ) . ';
-	--gd-primary-text:       ' . ( $s->gddealer_color_primary_text ?: '#ffffff' ) . ';
-	--gd-tab-active-bg:      ' . ( $s->gddealer_color_active_tab_bg ?: '#1e3a5f' ) . ';
-	--gd-tab-active-text:    ' . ( $s->gddealer_color_active_tab_text ?: '#ffffff' ) . ';
-	--gd-tab-inactive-text:  ' . ( $s->gddealer_color_inactive_tab_text ?: '#374151' ) . ';
-	--gd-accent:             ' . ( $s->gddealer_color_accent ?: '#16a34a' ) . ';
-	--gd-warning:            ' . ( $s->gddealer_color_warning ?: '#d97706' ) . ';
-	--gd-danger:             ' . ( $s->gddealer_color_danger ?: '#dc2626' ) . ';
-	--gd-header-bg:          ' . ( $s->gddealer_color_header_bg ?: '#1e3a5f' ) . ';
-}
-.gdDealerTabs .ipsTabs__tab[aria-selected="true"] {
-	background: var(--gd-tab-active-bg) !important;
-	color: var(--gd-tab-active-text) !important;
-	border-color: var(--gd-tab-active-bg) !important;
-}
-.gdDealerTabs .ipsTabs__tab[aria-selected="false"] {
-	color: var(--gd-tab-inactive-text) !important;
-}
-.gdDealerWrapper .ipsButton--primary {
-	background: var(--gd-primary) !important;
-	color: var(--gd-primary-text) !important;
-	border-color: var(--gd-primary) !important;
-}
-.gdDealerCoverFallback {
-	background: var(--gd-header-bg) !important;
-}
+		$urls        = $this->tabUrls();
+		$summary     = $this->dealerSummary();
+		$canSupport  = Dealer::canAccessSupport( \IPS\Member::loggedIn() );
+		$supportUrl  = $canSupport ? $this->supportUrl() : '';
 
-/* ─── Mobile & tablet (≤768px) ─── */
-@media (max-width: 768px) {
-  .gdDealerWrapper { padding: 0 !important; }
-  .gdDealerWrapper > * { margin-left: 12px !important; margin-right: 12px !important; }
+		$unmatched = 0;
+		try
+		{
+			$unmatched = (int) \IPS\Db::i()->select( 'COUNT(*)', 'gd_unmatched_upcs',
+				[ 'dealer_id=? AND status=?', (int) $this->dealer->dealer_id, 'pending' ]
+			)->first();
+		}
+		catch ( \Exception ) {}
 
-  .gdDealerWrapper .ipsPageHeader .ipsCoverPhoto__container { height: 100px !important; }
-  .gdDealerWrapper .ipsPageHeader .ipsCoverPhoto { min-height: 100px !important; }
-  .gdDealerWrapper .ipsCoverPhotoMeta {
-    padding: 0 14px 14px !important;
-    gap: 12px !important;
-    flex-direction: column !important;
-    align-items: flex-start !important;
-  }
-  .gdDealerWrapper .ipsCoverPhoto__avatar {
-    margin-top: -32px !important;
-    margin-bottom: 0 !important;
-    position: relative !important;
-    z-index: 2 !important;
-  }
-  .gdDealerWrapper .ipsCoverPhoto__avatar .ipsUserPhoto img {
-    width: 64px !important;
-    height: 64px !important;
-    border: 3px solid #fff !important;
-    border-radius: 50% !important;
-    background: #fff !important;
-  }
-  .gdDealerWrapper .ipsCoverPhoto__titles {
-    width: 100% !important;
-    margin-top: 4px !important;
-  }
-  .gdDealerWrapper .ipsCoverPhoto__titles h1 { font-size: 1.2em !important; }
-  .gdDealerWrapper .ipsCoverPhoto__buttons { width: 100%; }
-  .gdDealerWrapper .ipsCoverPhoto__buttons .ipsButton { width: 100%; justify-content: center; }
+		$lang = \IPS\Member::loggedIn()->language();
 
-  .gdDealerWrapper > div[style*="#fefce8"] {
-    flex-direction: column !important;
-    align-items: stretch !important;
-    gap: 10px !important;
-  }
-  .gdDealerWrapper > div[style*="#fefce8"] .ipsButton { width: 100%; justify-content: center; }
-
-  .gdShellTabs [role="tablist"] {
-    overflow-x: auto !important;
-    overflow-y: hidden !important;
-    scroll-snap-type: x proximity !important;
-    -webkit-overflow-scrolling: touch !important;
-    scrollbar-width: none !important;
-    flex-wrap: nowrap !important;
-    position: relative !important;
-    padding: 0 !important;
-    mask-image: linear-gradient(90deg, transparent 0, #000 20px, #000 calc(100% - 20px), transparent 100%) !important;
-  }
-  .gdShellTabs [role="tablist"]::-webkit-scrollbar { display: none !important; }
-  .gdShellTabs [role="tablist"] a {
-    flex: 0 0 auto !important;
-    scroll-snap-align: start !important;
-    padding: 14px 16px !important;
-    font-size: 14px !important;
-    min-height: 44px !important;
-    display: flex !important;
-    align-items: center !important;
-  }
-  .gdShellTabs [role="tablist"] a[aria-selected="true"] { scroll-snap-align: center !important; }
-
-  #elDealerTabs_content {
-    padding: 16px !important;
-    border-left: none !important;
-    border-right: none !important;
-    border-radius: 0 !important;
-  }
-
-  .gdStatCards, .gdOverviewStats, .gdRatingCards {
-    display: grid !important;
-    grid-template-columns: 1fr !important;
-    gap: 10px !important;
-  }
-
-  .gdHelpLayout {
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 16px !important;
-    align-items: stretch !important;
-    margin: 0 12px !important;
-    padding: 0 !important;
-  }
-  .gdHelpContent,
-  .gdHelpMain {
-    order: 1 !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    min-width: 0 !important;
-    flex: 0 0 auto !important;
-  }
-  .gdHelpSidebar {
-    order: 2 !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    min-width: 0 !important;
-    flex: 0 0 auto !important;
-    position: static !important;
-    top: auto !important;
-    flex-shrink: 1 !important;
-  }
-  .gdHelpSidebar > div {
-    margin-bottom: 12px !important;
-  }
-  .gdHelpSidebar table {
-    font-size: 14px !important;
-  }
-  .gdHelpSidebar table td {
-    padding: 8px 0 !important;
-  }
-  .gdDealerWrapper > h2,
-  .gdDealerWrapper > p {
-    margin-left: 12px !important;
-    margin-right: 12px !important;
-  }
-
-  .gdTableWrap table, .gdResponsiveTable {
-    display: block !important;
-  }
-  .gdTableWrap thead, .gdResponsiveTable thead { display: none !important; }
-  .gdTableWrap tbody, .gdResponsiveTable tbody { display: block !important; }
-  .gdTableWrap tr, .gdResponsiveTable tr {
-    display: block !important;
-    border: 1px solid #e5e7eb !important;
-    border-radius: 10px !important;
-    padding: 12px 14px !important;
-    margin-bottom: 10px !important;
-    background: #fff !important;
-  }
-  .gdTableWrap td, .gdResponsiveTable td {
-    display: flex !important;
-    justify-content: space-between !important;
-    align-items: flex-start !important;
-    padding: 6px 0 !important;
-    border: none !important;
-    font-size: 14px !important;
-    gap: 14px !important;
-  }
-  .gdTableWrap td::before, .gdResponsiveTable td::before {
-    content: attr(data-label);
-    font-weight: 600;
-    color: #64748b;
-    min-width: 100px;
-    flex-shrink: 0;
-  }
-
-  .gdSupportList__grid { display: block !important; }
-  .gdSupportList__header { display: none !important; }
-  .gdSupportList__row {
-    display: block !important;
-    padding: 14px !important;
-  }
-  .gdSupportList__row .gdSupportList__iconCell {
-    display: inline-block !important;
-    margin-right: 10px !important;
-    vertical-align: middle !important;
-  }
-  .gdSupportList__row .gdSupportList__subject {
-    display: inline-block !important;
-    vertical-align: middle !important;
-    max-width: calc(100% - 50px);
-  }
-  .gdSupportList__row .gdSupportList__meta {
-    display: flex !important;
-    flex-wrap: wrap !important;
-    gap: 6px !important;
-    margin-top: 10px !important;
-    font-size: 12px !important;
-  }
-
-  .gdTicketHistory > div {
-    flex-direction: column !important;
-    gap: 2px !important;
-    padding-bottom: 10px !important;
-    border-bottom: 1px solid #f1f5f9;
-  }
-  .gdTicketHistory > div > span:first-child {
-    width: 100% !important;
-    font-size: 11px !important;
-    color: #94a3b8 !important;
-  }
-
-  .gdSubNav {
-    overflow-x: auto !important;
-    -webkit-overflow-scrolling: touch !important;
-    scrollbar-width: none !important;
-    white-space: nowrap !important;
-    padding-bottom: 2px !important;
-  }
-  .gdSubNav::-webkit-scrollbar { display: none !important; }
-  .gdSubNav a, .gdSubNav button { flex-shrink: 0 !important; }
-
-  .gdFilterBar {
-    flex-direction: column !important;
-    align-items: stretch !important;
-    gap: 8px !important;
-  }
-  .gdFilterBar > * { width: 100% !important; }
-  .gdFilterBar select, .gdFilterBar input[type="text"], .gdFilterBar input[type="search"] {
-    min-height: 44px !important;
-    font-size: 16px !important;
-  }
-  .gdFilterBar button { min-height: 44px !important; }
-
-  .gdDealerWrapper form input[type="text"],
-  .gdDealerWrapper form input[type="email"],
-  .gdDealerWrapper form select,
-  .gdDealerWrapper form textarea {
-    font-size: 16px !important;
-    min-height: 44px !important;
-    box-sizing: border-box !important;
-  }
-  .gdDealerWrapper form textarea { min-height: 120px !important; }
-  .gdDealerWrapper form button[type="submit"],
-  .gdDealerWrapper form input[type="submit"] {
-    width: 100% !important;
-    min-height: 48px !important;
-    font-size: 15px !important;
-  }
-
-  .gdFormGrid2 {
-    grid-template-columns: 1fr !important;
-    gap: 12px !important;
-  }
-
-  .gdReplyCard {
-    padding: 14px !important;
-    border-radius: 8px !important;
-  }
-  .gdReplyCard > div:first-child {
-    flex-wrap: wrap !important;
-    gap: 6px !important;
-  }
-
-  .gdReviewCard {
-    padding: 14px !important;
-  }
-  .gdReviewCard__header {
-    flex-direction: column !important;
-    align-items: flex-start !important;
-    gap: 6px !important;
-  }
-  .gdReviewCard__ratings {
-    flex-wrap: wrap !important;
-    gap: 6px 12px !important;
-  }
-
-  .gdPagination a, .gdPagination span {
-    min-width: 40px !important;
-    min-height: 40px !important;
-    display: inline-flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    padding: 8px 12px !important;
-  }
-
-  body > footer[style*="#1e3a5f"] > div > div {
-    grid-template-columns: 1fr !important;
-    gap: 28px !important;
-  }
-}
-
-/* ─── Phone-only tightening (≤480px) ─── */
-@media (max-width: 480px) {
-  .gdShellTabs [role="tablist"] a {
-    padding: 12px 14px !important;
-    font-size: 13px !important;
-  }
-  .gdDealerWrapper .ipsPageHeader .ipsCoverPhoto__container { height: 80px !important; }
-  .gdDealerWrapper .ipsCoverPhoto__avatar { margin-top: -28px !important; }
-  .gdDealerWrapper .ipsCoverPhoto__avatar .ipsUserPhoto img {
-    width: 56px !important;
-    height: 56px !important;
-    border: 3px solid #fff !important;
-    border-radius: 50% !important;
-    background: #fff !important;
-  }
-  .gdDealerWrapper .ipsCoverPhoto__titles h1 { font-size: 1.1em !important; }
-  #elDealerTabs_content { padding: 12px !important; }
-
-  .gdStatCards .gdStatCard__value,
-  .gdOverviewStats .gdStatCard__value,
-  .gdRatingCards .gdStatCard__value {
-    font-size: 28px !important;
-  }
-}
-
-/* ─── Tablet only (481–768px) — 2-column stat grid ─── */
-@media (min-width: 481px) and (max-width: 768px) {
-  .gdStatCards, .gdOverviewStats, .gdRatingCards {
-    grid-template-columns: 1fr 1fr !important;
-  }
-}
-</style>';
+		return [
+			'main' => [
+				'label' => 'Main',
+				'items' => [
+					[ 'key' => 'overview',  'label' => $lang->addToStack('gddealer_front_tab_overview'),
+					  'url' => $urls['overview'],  'icon' => 'dashboard', 'badge' => null ],
+					[ 'key' => 'listings',  'label' => $lang->addToStack('gddealer_front_tab_listings'),
+					  'url' => $urls['listings'],  'icon' => 'listings',  'badge' => null ],
+					[ 'key' => 'reviews',   'label' => $lang->addToStack('gddealer_front_tab_reviews'),
+					  'url' => $urls['reviews'],   'icon' => 'reviews',
+					  'badge' => $summary['new_reviews'] > 0 ? [ 'count' => $summary['new_reviews'], 'variant' => 'warn' ] : null ],
+				]
+			],
+			'catalog' => [
+				'label' => 'Catalog',
+				'items' => [
+					[ 'key' => 'feedSettings', 'label' => $lang->addToStack('gddealer_front_tab_feed'),
+					  'url' => $urls['feedSettings'], 'icon' => 'feed', 'badge' => null ],
+					[ 'key' => 'unmatched', 'label' => $lang->addToStack('gddealer_front_tab_unmatched'),
+					  'url' => $urls['unmatched'], 'icon' => 'unmatched',
+					  'badge' => $unmatched > 0 ? [ 'count' => $unmatched, 'variant' => 'urgent' ] : null ],
+				]
+			],
+			'growth' => [
+				'label' => 'Growth',
+				'items' => [
+					[ 'key' => 'analytics', 'label' => $lang->addToStack('gddealer_front_tab_analytics'),
+					  'url' => $urls['analytics'], 'icon' => 'analytics', 'badge' => null ],
+				]
+			],
+			'account' => [
+				'label' => 'Account',
+				'items' => array_values( array_filter( [
+					[ 'key' => 'subscription', 'label' => $lang->addToStack('gddealer_front_tab_subscription'),
+					  'url' => $urls['subscription'], 'icon' => 'billing', 'badge' => null ],
+					[ 'key' => 'help', 'label' => $lang->addToStack('gddealer_front_tab_help'),
+					  'url' => $urls['help'], 'icon' => 'help', 'badge' => null ],
+					$canSupport ? [ 'key' => 'support', 'label' => $lang->addToStack('gddealer_support_nav'),
+					  'url' => $supportUrl, 'icon' => 'support', 'badge' => null ] : null,
+				] ) )
+			],
+		];
 	}
 }

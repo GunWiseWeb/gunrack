@@ -866,90 +866,129 @@ TEMPLATE_EOT,
 TEMPLATE_EOT,
 	],
 
-	/* ===== FRONT: dealerShell (tab wrapper) ===== */
+	/* ===== FRONT: dealerShell (sidebar layout wrapper) ===== */
 	[
 		'set_id'        => 1,
 		'app'           => 'gddealer',
 		'location'      => 'front',
 		'group'         => 'dealers',
 		'template_name' => 'dealerShell',
-		'template_data' => '$dealer, $activeTab, $tabUrls, $body, $can_access_support, $support_url',
+		'template_data' => '$dealer, $activeTab, $nav, $body',
 		'template_content' => <<<'TEMPLATE_EOT'
-<div class="gdDealerWrapper" style="width:100%;box-sizing:border-box">
+<div class="gdDealerApp">
 
-	<header class="ipsPageHeader ipsBox ipsBox--profileHeader ipsPull i-margin-bottom_block" style="width:100%;box-sizing:border-box;border-radius:8px;overflow:hidden;margin-bottom:16px">
-		<div class="ipsCoverPhoto ipsCoverPhoto--profile" style="position:relative;overflow:hidden;min-height:160px">
-			<div class="ipsCoverPhoto__container" style="width:100%;height:160px;overflow:hidden">
-				{{if $dealer['cover_photo_url']}}
-					<img src="{$dealer['cover_photo_url']}" class="ipsCoverPhoto__image" alt="" loading="lazy" style="width:100%;height:100%;object-fit:cover">
-				{{else}}
-					<div class="ipsFallbackImage gdDealerCoverFallback" style="background:linear-gradient(135deg,#1e3a5f 0%,#2563eb 100%);width:100%;height:160px"></div>
-				{{endif}}
+	<div class="gdMobileBar">
+		<div class="gdMobileBar__brand">
+			<span class="gdSidebar__brandMark">GD</span>
+			<div>
+				<div class="gdSidebar__brandText">{$dealer['dealer_name']}</div>
+				<div class="gdSidebar__brandSub">{$dealer['tier_label']}</div>
 			</div>
 		</div>
-		<div class="ipsCoverPhotoMeta" style="background:#fff;border-top:none;padding:16px 20px;display:flex;gap:16px;align-items:center;flex-wrap:wrap">
-			{{if $dealer['avatar_url']}}
-			<div class="ipsCoverPhoto__avatar" id="elProfilePhoto" style="margin-top:-50px">
-				<span class="ipsUserPhoto ipsUserPhoto--xlarge">
-					<img src="{$dealer['avatar_url']}" alt="" loading="lazy" onerror="this.style.display='none'">
-				</span>
-			</div>
-			{{endif}}
-			<div class="ipsCoverPhoto__titles" style="flex:1;min-width:200px">
-				<div class="ipsCoverPhoto__title">
-					<h1 style="margin:0;font-size:1.4em;font-weight:800">{$dealer['dealer_name']}</h1>
-				</div>
-				<div class="ipsCoverPhoto__desc" style="margin-top:4px">
-					<span style="background:{$dealer['tier_color']};color:#fff;padding:2px 10px;border-radius:20px;font-size:0.8em;font-weight:700">{$dealer['tier_label']}</span>
-					{{if $dealer['suspended']}}
-					<span style="background:#dc2626;color:#fff;padding:2px 10px;border-radius:20px;font-size:0.8em;font-weight:700;margin-left:6px">Suspended</span>
-					{{endif}}
-				</div>
-			</div>
-			<div class="ipsCoverPhoto__buttons">
-				<a href="{$tabUrls['subscription']}" class="ipsButton ipsButton--inherit ipsButton--small">
-					<i class="fa-solid fa-credit-card" aria-hidden="true"></i>
-					<span>{lang="gddealer_front_tab_subscription"}</span>
-				</a>
-			</div>
-		</div>
-	</header>
-
-	{{if $dealer['onboarding_incomplete']}}
-	<div style="background:#fefce8;border:1px solid #fde047;border-radius:8px;padding:14px 18px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
-		<div>
-			<strong style="color:#854d0e">Complete Your Setup</strong>
-			<span style="color:#713f12;margin-left:6px">&mdash; Your account is active but your product feed hasn't been configured yet.</span>
-		</div>
-		<a href="{$tabUrls['feedSettings']}" class="ipsButton ipsButton--normal ipsButton--small">
-			<i class="fa-solid fa-gear" aria-hidden="true"></i>
-			<span>Configure Feed Now</span>
+		<a href="#gdDrawer" class="gdMobileBar__menuBtn" aria-label="Open menu">
+			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
 		</a>
 	</div>
-	{{endif}}
 
-	<div class="ipsPwaStickyFix ipsPwaStickyFix--ipsTabs"></div>
-	<i-tabs class="ipsTabs ipsTabs--sticky ipsTabs--profile ipsTabs--stretch gdShellTabs gdDealerTabs">
-		<div role="tablist" style="display:flex;gap:0;border-bottom:1px solid var(--i-border-color,#e0e0e0);overflow-x:auto;background:#fff;border-radius:8px 8px 0 0">
-			<a href="{$tabUrls['overview']}" class="ipsTabs__tab {expression="$activeTab === 'overview' ? 'ipsTabs__activeTab' : ''"}" role="tab" aria-selected="{expression="$activeTab === 'overview' ? 'true' : 'false'"}" style="padding:12px 20px;text-decoration:none;font-weight:600;color:{expression="$activeTab === 'overview' ? '#2563eb' : '#475569'"};border-bottom:2px solid {expression="$activeTab === 'overview' ? '#2563eb' : 'transparent'"};white-space:nowrap">{lang="gddealer_front_tab_overview"}</a>
-			<a href="{$tabUrls['feedSettings']}" class="ipsTabs__tab {expression="$activeTab === 'feedSettings' ? 'ipsTabs__activeTab' : ''"}" role="tab" aria-selected="{expression="$activeTab === 'feedSettings' ? 'true' : 'false'"}" style="padding:12px 20px;text-decoration:none;font-weight:600;color:{expression="$activeTab === 'feedSettings' ? '#2563eb' : '#475569'"};border-bottom:2px solid {expression="$activeTab === 'feedSettings' ? '#2563eb' : 'transparent'"};white-space:nowrap">{lang="gddealer_front_tab_feed"}</a>
-			<a href="{$tabUrls['listings']}" class="ipsTabs__tab {expression="$activeTab === 'listings' ? 'ipsTabs__activeTab' : ''"}" role="tab" aria-selected="{expression="$activeTab === 'listings' ? 'true' : 'false'"}" style="padding:12px 20px;text-decoration:none;font-weight:600;color:{expression="$activeTab === 'listings' ? '#2563eb' : '#475569'"};border-bottom:2px solid {expression="$activeTab === 'listings' ? '#2563eb' : 'transparent'"};white-space:nowrap">{lang="gddealer_front_tab_listings"}</a>
-			<a href="{$tabUrls['unmatched']}" class="ipsTabs__tab {expression="$activeTab === 'unmatched' ? 'ipsTabs__activeTab' : ''"}" role="tab" aria-selected="{expression="$activeTab === 'unmatched' ? 'true' : 'false'"}" style="padding:12px 20px;text-decoration:none;font-weight:600;color:{expression="$activeTab === 'unmatched' ? '#2563eb' : '#475569'"};border-bottom:2px solid {expression="$activeTab === 'unmatched' ? '#2563eb' : 'transparent'"};white-space:nowrap">{lang="gddealer_front_tab_unmatched"}</a>
-			<a href="{$tabUrls['analytics']}" class="ipsTabs__tab {expression="$activeTab === 'analytics' ? 'ipsTabs__activeTab' : ''"}" role="tab" aria-selected="{expression="$activeTab === 'analytics' ? 'true' : 'false'"}" style="padding:12px 20px;text-decoration:none;font-weight:600;color:{expression="$activeTab === 'analytics' ? '#2563eb' : '#475569'"};border-bottom:2px solid {expression="$activeTab === 'analytics' ? '#2563eb' : 'transparent'"};white-space:nowrap">{lang="gddealer_front_tab_analytics"}</a>
-			<a href="{$tabUrls['reviews']}" class="ipsTabs__tab {expression="$activeTab === 'reviews' ? 'ipsTabs__activeTab' : ''"}" role="tab" aria-selected="{expression="$activeTab === 'reviews' ? 'true' : 'false'"}" style="padding:12px 20px;text-decoration:none;font-weight:600;color:{expression="$activeTab === 'reviews' ? '#2563eb' : '#475569'"};border-bottom:2px solid {expression="$activeTab === 'reviews' ? '#2563eb' : 'transparent'"};white-space:nowrap">{lang="gddealer_front_tab_reviews"}{{if $dealer['new_reviews'] > 0}} <span style="background:#dc2626;color:#fff;border-radius:10px;padding:1px 6px;font-size:0.7em;font-weight:700;margin-left:4px">{$dealer['new_reviews']}</span>{{endif}}</a>
-			<a href="{$tabUrls['help']}" class="ipsTabs__tab {expression="$activeTab === 'help' ? 'ipsTabs__activeTab' : ''"}" role="tab" aria-selected="{expression="$activeTab === 'help' ? 'true' : 'false'"}" style="padding:12px 20px;text-decoration:none;font-weight:600;color:{expression="$activeTab === 'help' ? '#2563eb' : '#475569'"};border-bottom:2px solid {expression="$activeTab === 'help' ? '#2563eb' : 'transparent'"};white-space:nowrap">{lang="gddealer_front_tab_help"}</a>
-			{{if $can_access_support}}
-			<a href="{$support_url}" class="ipsTabs__tab {expression="$activeTab === 'support' ? 'ipsTabs__activeTab' : ''"}" role="tab" aria-selected="{expression="$activeTab === 'support' ? 'true' : 'false'"}" style="padding:12px 20px;text-decoration:none;font-weight:600;color:{expression="$activeTab === 'support' ? '#2563eb' : '#475569'"};border-bottom:2px solid {expression="$activeTab === 'support' ? '#2563eb' : 'transparent'"};white-space:nowrap">{lang="gddealer_support_nav"}</a>
-			{{endif}}
+	<div class="gdDrawer" id="gdDrawer">
+		<div class="gdDrawer__panel">
+			<a href="#" class="gdDrawer__close" aria-label="Close">&times;</a>
+			{template="dealerSidebar" group="dealers" app="gddealer" params="$dealer, $activeTab, $nav"}
 		</div>
-	</i-tabs>
-	<div id="elDealerTabs_content" class="ipsTabs__panels ipsTabs__panels--profile" style="background:#fff;border:1px solid var(--i-border-color,#e0e0e0);border-top:none;border-radius:0 0 8px 8px;padding:24px">
-		<div class="ipsTabs__panel">
+	</div>
+
+	<div class="gdDealerShell">
+		<aside class="gdSidebar">
+			{template="dealerSidebar" group="dealers" app="gddealer" params="$dealer, $activeTab, $nav"}
+		</aside>
+
+		<main class="gdMain">
 			{$body|raw}
-		</div>
+		</main>
 	</div>
 
 </div>
+TEMPLATE_EOT,
+	],
+
+	/* ===== FRONT: dealerSidebar (reused in sidebar + mobile drawer) ===== */
+	[
+		'set_id'        => 1,
+		'app'           => 'gddealer',
+		'location'      => 'front',
+		'group'         => 'dealers',
+		'template_name' => 'dealerSidebar',
+		'template_data' => '$dealer, $activeTab, $nav',
+		'template_content' => <<<'TEMPLATE_EOT'
+<div class="gdSidebar__brand">
+	<span class="gdSidebar__brandMark">GD</span>
+	<div>
+		<div class="gdSidebar__brandText">gunrack.deals</div>
+		<div class="gdSidebar__brandSub">Dealer Dashboard</div>
+	</div>
+</div>
+
+{{foreach $nav as $groupKey => $group}}
+<div class="gdNavGroup">
+	<div class="gdNavGroup__label">{$group['label']}</div>
+	{{foreach $group['items'] as $item}}
+	<a href="{$item['url']}" class="gdNavItem {expression="$activeTab === $item['key'] ? 'is-active' : ''"}">
+		{template="dealerNavIcon" group="dealers" app="gddealer" params="$item['icon']"}
+		<span class="gdNavItem__label">{$item['label']}</span>
+		{{if $item['badge']}}
+		<span class="gdNavItem__count is-{$item['badge']['variant']}">{$item['badge']['count']}</span>
+		{{endif}}
+	</a>
+	{{endforeach}}
+</div>
+{{endforeach}}
+
+<div class="gdSidebar__footer">
+	<div class="gdSidebar__user">
+		<span class="gdSidebar__avatar">
+			{{if $dealer['avatar_url']}}
+				<img src="{$dealer['avatar_url']}" alt="">
+			{{else}}
+				{expression="mb_substr($dealer['dealer_name'], 0, 2)"}
+			{{endif}}
+		</span>
+		<div class="gdSidebar__userInfo">
+			<div class="gdSidebar__userName">{$dealer['dealer_name']}</div>
+			<div class="gdSidebar__userRole">{$dealer['tier_label']} dealer</div>
+		</div>
+	</div>
+</div>
+TEMPLATE_EOT,
+	],
+
+	/* ===== FRONT: dealerNavIcon (SVG icon map for sidebar nav) ===== */
+	[
+		'set_id'        => 1,
+		'app'           => 'gddealer',
+		'location'      => 'front',
+		'group'         => 'dealers',
+		'template_name' => 'dealerNavIcon',
+		'template_data' => '$icon',
+		'template_content' => <<<'TEMPLATE_EOT'
+{{if $icon === 'dashboard'}}
+<svg class="gdNavItem__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="16" width="7" height="5"/></svg>
+{{elseif $icon === 'listings'}}
+<svg class="gdNavItem__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7h-9"/><path d="M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg>
+{{elseif $icon === 'reviews'}}
+<svg class="gdNavItem__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+{{elseif $icon === 'feed'}}
+<svg class="gdNavItem__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+{{elseif $icon === 'unmatched'}}
+<svg class="gdNavItem__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+{{elseif $icon === 'analytics'}}
+<svg class="gdNavItem__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+{{elseif $icon === 'billing'}}
+<svg class="gdNavItem__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+{{elseif $icon === 'help'}}
+<svg class="gdNavItem__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+{{elseif $icon === 'support'}}
+<svg class="gdNavItem__icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+{{endif}}
 TEMPLATE_EOT,
 	],
 
