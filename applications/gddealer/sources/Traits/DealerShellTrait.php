@@ -27,15 +27,13 @@ trait DealerShellTrait
 	 */
 	protected function output( string $activeTab, string $body ): void
 	{
-		/* Include dealer design-system CSS */
+		$css = '';
 		$cssPath = \IPS\ROOT_PATH . '/applications/gddealer/dev/css/front/dealer.css';
-		if ( file_exists( $cssPath ) )
-		{
-			\IPS\Output::i()->headCss[] = file_get_contents( $cssPath );
+		if ( file_exists( $cssPath ) ) {
+			$css = '<style>' . file_get_contents( $cssPath ) . '</style>';
 		}
-
 		\IPS\Output::i()->title  = \IPS\Member::loggedIn()->language()->addToStack( 'gddealer_frontend_dashboard_title' );
-		\IPS\Output::i()->output = \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )->dealerShell(
+		\IPS\Output::i()->output = $css . \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )->dealerShell(
 			$this->dealerSummary(),
 			$activeTab,
 			$this->sidebarNav(),
