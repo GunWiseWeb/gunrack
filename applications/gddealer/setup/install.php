@@ -2478,6 +2478,11 @@ TEMPLATE_EOT,
 								</select>
 							</div>
 						</div>
+						<div style="margin-bottom:16px">
+							<label style="display:block;font-size:0.85em;font-weight:600;margin-bottom:6px">Product UPC <span style="font-weight:400;color:#6b7280">(optional)</span></label>
+							<input type="text" name="upc" value="" placeholder="e.g. 798681234567" pattern="[0-9]{8,14}" style="width:100%;max-width:280px;padding:8px 12px;font-size:14px;font-family:monospace;border:1px solid #d1d5db;border-radius:8px;background:#fff;color:#111827;box-sizing:border-box">
+							<div style="font-size:12px;color:#6b7280;margin-top:4px">Enter the UPC of the product you purchased so other shoppers can find your review.</div>
+						</div>
 						<div style="margin-bottom:12px">{$reviewBodyEditorHtml|raw}</div>
 						<div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
 							<span style="font-size:0.8em;color:#666">By submitting you agree to our <a href="{$guidelinesUrl}" style="color:#2563eb">review guidelines</a>.</span>

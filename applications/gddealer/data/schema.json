@@ -1124,7 +1124,9 @@
 			"dispute_deadline":     { "name": "dispute_deadline", "type": "DATETIME", "allow_null": true },
 			"dispute_resolved_by":  { "name": "dispute_resolved_by", "type": "INT", "allow_null": true },
 			"dispute_resolved_at":  { "name": "dispute_resolved_at", "type": "DATETIME", "allow_null": true },
-			"dispute_outcome":      { "name": "dispute_outcome", "type": "VARCHAR", "length": 30, "allow_null": true }
+			"dispute_outcome":      { "name": "dispute_outcome", "type": "VARCHAR", "length": 30, "allow_null": true },
+			"upc":                  { "name": "upc", "type": "VARCHAR", "length": 20, "allow_null": true, "default": null },
+			"verified_buyer":       { "name": "verified_buyer", "type": "TINYINT", "length": 1, "allow_null": false, "default": 0 }
 		},
 		"indexes": {
 			"PRIMARY":           { "type": "primary", "name": "PRIMARY", "length": [null], "columns": ["id"] },

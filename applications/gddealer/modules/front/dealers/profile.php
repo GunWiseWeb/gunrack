@@ -711,6 +711,20 @@ class _profile extends \IPS\Dispatcher\Controller
 		$service  = max( 1, min( 5, (int) ( \IPS\Request::i()->rating_service ?? 0 ) ) );
 		$bodyRaw  = (string) ( \IPS\Request::i()->gddealer_review_body ?? '' );
 
+		$upcRaw = trim( (string) ( \IPS\Request::i()->upc ?? '' ) );
+		$upc    = preg_match( '/^[0-9]{8,14}$/', $upcRaw ) ? $upcRaw : null;
+
+		$verifiedBuyer = 0;
+		if ( $upc !== null ) {
+			try {
+				$clickCount = (int) \IPS\Db::i()->select(
+					'COUNT(*)', 'gd_click_log',
+					[ 'member_id=? AND dealer_id=? AND upc=? AND clicked_at > DATE_SUB(NOW(), INTERVAL 90 DAY)', (int) $member->member_id, $dealerId, $upc ]
+				)->first();
+				if ( $clickCount > 0 ) { $verifiedBuyer = 1; }
+			} catch ( \Exception ) {}
+		}
+
 		$profileUrl = \IPS\Http\Url::internal(
 			'app=gddealer&module=dealers&controller=profile&dealer_slug=' . urlencode( $slug )
 		);
@@ -721,10 +735,6 @@ class _profile extends \IPS\Dispatcher\Controller
 			return;
 		}
 
-		/* Insert without body first so we have a review id for the
-		   attachIds pair, then parse + claim attachments + update.
-		   \IPS\Db::i()->insert() returns the new row id directly; there
-		   is no separate insertId() method in IPS 5. */
 		$newReviewId = 0;
 		try
 		{
@@ -738,6 +748,8 @@ class _profile extends \IPS\Dispatcher\Controller
 				'created_at'      => date( 'Y-m-d H:i:s' ),
 				'status'          => 'approved',
 				'dispute_status'  => 'none',
+				'upc'             => $upc,
+				'verified_buyer'  => $verifiedBuyer,
 			]);
 		}
 		catch ( \Exception ) {}

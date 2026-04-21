@@ -1155,6 +1155,17 @@ class _dashboard extends \IPS\Dispatcher\Controller
 					'edit_editor_html'    => $editEditorHtml,
 					'dispute_reason_editor_html'   => $disputeReasonEditorHtml,
 					'dispute_evidence_editor_html' => $disputeEvidenceEditorHtml,
+					'upc'                   => (string) ( $r['upc'] ?? '' ),
+					'verified_buyer'        => (int) ( $r['verified_buyer'] ?? 0 ) === 1,
+					'dispute_reason'        => (string) ( $r['dispute_reason'] ?? '' ),
+					'dispute_evidence'      => (string) ( $r['dispute_evidence'] ?? '' ),
+					'customer_response'     => (string) ( $r['customer_response'] ?? '' ),
+					'customer_evidence'     => (string) ( $r['customer_evidence'] ?? '' ),
+					'dispute_at'            => (string) ( $r['dispute_at'] ?? '' ),
+					'customer_responded_at' => (string) ( $r['customer_responded_at'] ?? '' ),
+					'dispute_resolved_at'   => (string) ( $r['dispute_resolved_at'] ?? '' ),
+					'created_at_display'    => $createdTs ? (string) \IPS\DateTime::ts( $createdTs )->relative() : '',
+					'response_at_display'   => $responseTs ? (string) \IPS\DateTime::ts( $responseTs )->relative() : '',
 				];
 
 				$rowRef =& $rows[ count( $rows ) - 1 ];
@@ -1189,15 +1200,84 @@ class _dashboard extends \IPS\Dispatcher\Controller
 				}
 			} catch ( \Exception ) {}
 		}
+
+		$upcList = array_unique( array_filter( array_column( $rows, 'upc' ) ) );
+		$productNames = [];
+		if ( $upcList ) {
+			try {
+				foreach ( \IPS\Db::i()->select( 'upc, title', 'gd_catalog', \IPS\Db::i()->in( 'upc', $upcList ) ) as $_p ) {
+					$productNames[ (string) $_p['upc'] ] = (string) $_p['title'];
+				}
+			} catch ( \Exception ) {}
+		}
+
 		foreach ( $rows as &$_row ) {
 			$_row['author_name'] = $memberNames[ $_row['member_id'] ] ?? 'Customer';
+			$name = $_row['author_name'];
+			$parts = explode( ' ', trim( $name ) );
+			$_row['customer_initials'] = mb_strtoupper( mb_substr( $parts[0], 0, 1 ) . ( isset( $parts[1] ) ? mb_substr( $parts[1], 0, 1 ) : '' ) );
+
+			$_row['product_name'] = $_row['upc'] !== '' ? ( $productNames[ $_row['upc'] ] ?? '' ) : '';
+
 			$_row['dispute_status_label'] = match( $_row['dispute_status'] ) {
 				'pending_customer'  => 'Waiting on customer',
 				'pending_admin'     => 'Under admin review',
 				'resolved_dealer'   => 'Resolved in your favor',
 				'resolved_customer' => 'Resolved for customer',
+				'dismissed'         => 'Dismissed',
 				default             => 'No dispute',
 			};
+
+			$_row['deadline_display']  = '';
+			$_row['deadline_days_left'] = -1;
+			if ( $_row['dispute_status'] === 'pending_customer' && $_row['dispute_deadline'] !== '' ) {
+				$dlTs = strtotime( (string) \IPS\Db::i()->select( 'dispute_deadline', 'gd_dealer_ratings', [ 'id=?', $_row['id'] ] )->first() );
+				if ( $dlTs ) {
+					$daysLeft = (int) ceil( ( $dlTs - time() ) / 86400 );
+					$_row['deadline_display']  = (string) \IPS\DateTime::ts( $dlTs )->localeDate();
+					$_row['deadline_days_left'] = max( 0, $daysLeft );
+				}
+			}
+
+			$_row['dispute_at_display']             = '';
+			$_row['customer_responded_at_display']   = '';
+			$_row['dispute_resolved_at_display']     = '';
+			if ( $_row['dispute_at'] !== '' ) {
+				$dts = strtotime( $_row['dispute_at'] );
+				if ( $dts ) { $_row['dispute_at_display'] = (string) \IPS\DateTime::ts( $dts )->relative(); }
+			}
+			if ( $_row['customer_responded_at'] !== '' ) {
+				$crts = strtotime( $_row['customer_responded_at'] );
+				if ( $crts ) { $_row['customer_responded_at_display'] = (string) \IPS\DateTime::ts( $crts )->relative(); }
+			}
+			if ( $_row['dispute_resolved_at'] !== '' ) {
+				$drts = strtotime( $_row['dispute_resolved_at'] );
+				if ( $drts ) { $_row['dispute_resolved_at_display'] = (string) \IPS\DateTime::ts( $drts )->relative(); }
+			}
+
+			$activity = [];
+			$activity[] = [ 'type' => 'review', 'label' => 'Review submitted', 'time' => $_row['created_at_display'], 'color' => 'blue' ];
+			if ( $_row['response_at_display'] !== '' ) {
+				$activity[] = [ 'type' => 'response', 'label' => 'You responded', 'time' => $_row['response_at_display'], 'color' => 'green' ];
+			}
+			if ( $_row['dispute_at_display'] !== '' ) {
+				$activity[] = [ 'type' => 'dispute', 'label' => 'Dispute filed', 'time' => $_row['dispute_at_display'], 'color' => 'amber' ];
+			}
+			if ( $_row['customer_responded_at_display'] !== '' ) {
+				$activity[] = [ 'type' => 'customer_reply', 'label' => 'Customer replied', 'time' => $_row['customer_responded_at_display'], 'color' => 'purple' ];
+			}
+			if ( $_row['dispute_resolved_at_display'] !== '' ) {
+				$resolveColor = $_row['dispute_status'] === 'resolved_dealer' ? 'green' : 'red';
+				$activity[] = [ 'type' => 'resolved', 'label' => 'Dispute resolved', 'time' => $_row['dispute_resolved_at_display'], 'color' => $resolveColor ];
+			}
+			if ( !empty( $_row['events'] ) ) {
+				foreach ( $_row['events'] as $ev ) {
+					$evTs = isset( $ev['created_at'] ) ? strtotime( (string) $ev['created_at'] ) : 0;
+					$evTime = $evTs ? (string) \IPS\DateTime::ts( $evTs )->relative() : '';
+					$activity[] = [ 'type' => 'event', 'label' => (string) ( $ev['event_type'] ?? 'Event' ), 'time' => $evTime, 'color' => 'gray' ];
+				}
+			}
+			$_row['activity'] = $activity;
 		}
 		unset( $_row );
 
