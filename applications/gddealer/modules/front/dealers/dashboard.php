@@ -1180,6 +1180,27 @@ class _dashboard extends \IPS\Dispatcher\Controller
 		}
 		catch ( \Exception ) {}
 
+		$memberIds = array_unique( array_filter( array_column( $rows, 'member_id' ) ) );
+		$memberNames = [];
+		if ( $memberIds ) {
+			try {
+				foreach ( \IPS\Db::i()->select( 'member_id, name', 'core_members', \IPS\Db::i()->in( 'member_id', $memberIds ) ) as $_m ) {
+					$memberNames[ (int) $_m['member_id'] ] = (string) $_m['name'];
+				}
+			} catch ( \Exception ) {}
+		}
+		foreach ( $rows as &$_row ) {
+			$_row['author_name'] = $memberNames[ $_row['member_id'] ] ?? 'Customer';
+			$_row['dispute_status_label'] = match( $_row['dispute_status'] ) {
+				'pending_customer'  => 'Waiting on customer',
+				'pending_admin'     => 'Under admin review',
+				'resolved_dealer'   => 'Resolved in your favor',
+				'resolved_customer' => 'Resolved for customer',
+				default             => 'No dispute',
+			};
+		}
+		unset( $_row );
+
 		$avgPricing  = 0.0;
 		$avgShipping = 0.0;
 		$avgService  = 0.0;
@@ -1198,6 +1219,21 @@ class _dashboard extends \IPS\Dispatcher\Controller
 			$avgService  = round( (float) $agg['sv'], 1 );
 		}
 		catch ( \Exception ) {}
+
+		$starDistribution = [ 5 => 0, 4 => 0, 3 => 0, 2 => 0, 1 => 0 ];
+		try {
+			foreach ( \IPS\Db::i()->select(
+				'ROUND((rating_pricing + rating_shipping + rating_service) / 3) AS star, COUNT(*) AS cnt',
+				'gd_dealer_ratings',
+				[ 'dealer_id=? AND status=?', $dealerId, 'approved' ],
+				null, null, 'star'
+			) as $_s ) {
+				$_star = (int) $_s['star'];
+				if ( $_star >= 1 && $_star <= 5 ) {
+					$starDistribution[$_star] = (int) $_s['cnt'];
+				}
+			}
+		} catch ( \Exception ) {}
 
 		$tier     = (string) $this->dealer->subscription_tier;
 		$limit    = self::$disputeLimits[ $tier ] ?? 2;
@@ -1272,41 +1308,52 @@ class _dashboard extends \IPS\Dispatcher\Controller
 			}
 		}
 
+		$reviewTabUrls = [];
+		foreach ( $subNav as $_nav ) {
+			$reviewTabUrls[ $_nav['key'] ] = $_nav['url'];
+		}
+
+		$pagesArray = [];
+		$prevUrl = '';
+		$nextUrl = '';
+		foreach ( $pageLinks as $_pl ) {
+			if ( $_pl['label'] === "\xC2\xAB Prev" )       { $prevUrl = $_pl['url']; continue; }
+			if ( $_pl['label'] === "Next \xC2\xBB" )       { $nextUrl = $_pl['url']; continue; }
+			if ( $_pl['disabled'] || $_pl['label'] === '...' ) { continue; }
+			$pagesArray[] = [ 'num' => (int) $_pl['label'], 'url' => $_pl['url'], 'is_current' => $_pl['active'] ];
+		}
+
 		$data = [
-			'rows'               => $rows,
-			'total'              => $total,
-			'avg_pricing'        => $avgPricing,
-			'avg_shipping'       => $avgShipping,
-			'avg_service'        => $avgService,
-			'avg_overall'        => $avgOverall,
-			'rating_color'       => self::ratingColor( (float) $avgOverall ),
-			'rating_label'       => self::ratingLabel( (float) $avgOverall ),
-			'color_pricing'      => self::ratingColor( (float) $avgPricing ),
-			'color_shipping'     => self::ratingColor( (float) $avgShipping ),
-			'color_service'      => self::ratingColor( (float) $avgService ),
-			'disputes_remaining' => $remaining,
-			'disputes_unlimited' => $remaining === -1,
-			'guidelines_url'     => (string) \IPS\Http\Url::internal(
-				'app=gddealer&module=dealers&controller=profile&do=guidelines',
-				'front', 'dealers_review_guidelines'
-			),
-			'disputes_suspended' => (bool) ( $this->dealer->disputes_suspended ?? 0 ),
-			'help_email'         => (string) ( \IPS\Settings::i()->gddealer_help_contact ?: 'dealers@gunrack.deals' ),
-			'subNav'             => $subNav,
-			'filterFormUrl'      => (string) $base,
-			'activeTab'          => $activeTab,
-			'ratingFilter'       => $ratingFilter,
-			'dateFilter'         => $dateFilter,
-			'search'             => $search,
-			'page'               => $page,
-			'totalPages'         => $totalPages,
-			'totalCount'         => $totalCount,
-			'pageLinks'          => $pageLinks,
+			'dealer'          => $this->dealerSummary(),
+			'tab_urls'        => $this->tabUrls(),
+			'summary'         => [
+				'count'        => $total,
+				'average'      => $avgOverall,
+				'distribution' => $starDistribution,
+				'avg_pricing'  => $avgPricing,
+				'avg_shipping' => $avgShipping,
+				'avg_service'  => $avgService,
+			],
+			'counts'          => $counts,
+			'active_tab'      => $activeTab,
+			'rating_filter'   => $ratingFilter,
+			'date_filter'     => $dateFilter,
+			'search'          => $search,
+			'reviews'         => $rows,
+			'page'            => $page,
+			'total_pages'     => $totalPages,
+			'total_count'     => $totalCount,
+			'review_tab_urls' => $reviewTabUrls,
+			'pages_array'     => $pagesArray,
+			'prev_url'        => $prevUrl,
+			'next_url'        => $nextUrl,
+			'five'            => [ 1, 2, 3, 4, 5 ],
+			'five_rev'        => [ 5, 4, 3, 2, 1 ],
 		];
 
-		$csrfKey = (string) \IPS\Session::i()->csrfKey;
-
-		$this->output( 'reviews', \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )->dealerReviews( $data, $csrfKey ) );
+		$this->output( 'reviews',
+			\IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )->reviews( $data )
+		);
 	}
 
 	protected function _countReviews( int $dealerId, string $tab ): int
