@@ -187,6 +187,36 @@ return [
 .gdDealerPage .review-dispute-badge.removed { background: var(--gd-danger-bg); color: var(--gd-danger); }
 .gdDealerPage .review-own-actions { display: flex; gap: 8px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--gd-border-subtle); }
 .gdDealerPage .review-score-num { font-variant-numeric: tabular-nums; }
+.gdDealerPage .sidebar-card { background: var(--gd-surface); border: 1px solid var(--gd-border); border-radius: var(--gd-r-lg); padding: 1.25rem; margin-bottom: 1rem; }
+.gdDealerPage .sidebar-title { font-size: 14px; font-weight: 600; margin-bottom: 14px; color: var(--gd-text); }
+.gdDealerPage .info-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--gd-border-subtle); font-size: 13px; gap: 12px; }
+.gdDealerPage .info-row:last-child { border-bottom: none; padding-bottom: 0; }
+.gdDealerPage .info-row:first-child { padding-top: 0; }
+.gdDealerPage .info-label { color: var(--gd-text-subtle); flex-shrink: 0; }
+.gdDealerPage .info-value { color: var(--gd-text); font-weight: 500; text-align: right; word-break: break-word; min-width: 0; }
+.gdDealerPage .info-value.mono { font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: 12px; }
+.gdDealerPage .info-value a { color: var(--gd-brand); }
+.gdDealerPage .info-value a:hover { text-decoration: underline; }
+
+.gdDealerPage .leave-review { background: linear-gradient(180deg, var(--gd-brand-light) 0%, var(--gd-surface) 100%); border: 1px solid var(--gd-brand-border); border-radius: var(--gd-r-lg); padding: 1.25rem; margin-bottom: 1rem; }
+.gdDealerPage .leave-review-title { font-size: 14px; font-weight: 600; margin-bottom: 6px; color: var(--gd-text); }
+.gdDealerPage .leave-review-sub { font-size: 12px; color: var(--gd-text-muted); line-height: 1.5; margin-bottom: 12px; }
+.gdDealerPage .leave-review-btn { width: 100%; justify-content: center; }
+.gdDealerPage .guidelines-link { font-size: 12px; color: var(--gd-text-subtle); display: inline-flex; align-items: center; gap: 4px; }
+.gdDealerPage .guidelines-link:hover { color: var(--gd-text); text-decoration: underline; }
+
+.gdDealerPage .about-body { font-size: 13px; color: var(--gd-text-muted); line-height: 1.6; word-wrap: break-word; }
+.gdDealerPage .about-body p { margin: 0 0 0.5em 0; }
+.gdDealerPage .about-body p:last-child { margin-bottom: 0; }
+
+.gdDealerPage .review-form-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; font-size: 13px; gap: 12px; }
+.gdDealerPage .review-form-row > label { color: var(--gd-text-muted); font-weight: 500; }
+.gdDealerPage .star-input { display: inline-flex; gap: 2px; direction: rtl; }
+.gdDealerPage .star-input input[type="radio"] { display: none; }
+.gdDealerPage .star-input label { cursor: pointer; padding: 0; margin: 0; color: #D1D5DB; font-size: 20px; line-height: 1; }
+.gdDealerPage .star-input label:hover,
+.gdDealerPage .star-input label:hover ~ label,
+.gdDealerPage .star-input input[type="radio"]:checked ~ label { color: var(--gd-star); }
 
 @media (max-width: 960px) {
 	.gdDealerPage .rating-breakdown { grid-template-columns: 1fr; }
@@ -440,7 +470,137 @@ return [
 			{{endif}}
 		</div>
 		<div>
-			<!-- Part 4 (sidebar) inserts here -->
+			{{if $data['can_rate']}}
+			<div class="leave-review" id="gd-leave-review">
+				<div class="leave-review-title">Had an experience with {$data['dealer']['dealer_name']}?</div>
+				<div class="leave-review-sub">Help other buyers by sharing your experience. Only verified customers can leave reviews.</div>
+				<form action="{$data['rate_url']}" method="post">
+					<input type="hidden" name="csrfKey" value="{$data['csrf_key']}">
+					<div class="review-form-row">
+						<label>Pricing</label>
+						<span class="star-input">
+							{{for $i=5; $i>=1; $i--}}
+								<input type="radio" name="rating_pricing" id="{expression="'rp' . $i"}" value="{$i}"{{if $i === 5}} checked{{endif}}>
+								<label for="{expression="'rp' . $i"}">★</label>
+							{{endfor}}
+						</span>
+					</div>
+					<div class="review-form-row">
+						<label>Shipping</label>
+						<span class="star-input">
+							{{for $i=5; $i>=1; $i--}}
+								<input type="radio" name="rating_shipping" id="{expression="'rs' . $i"}" value="{$i}"{{if $i === 5}} checked{{endif}}>
+								<label for="{expression="'rs' . $i"}">★</label>
+							{{endfor}}
+						</span>
+					</div>
+					<div class="review-form-row">
+						<label>Service</label>
+						<span class="star-input">
+							{{for $i=5; $i>=1; $i--}}
+								<input type="radio" name="rating_service" id="{expression="'rsv' . $i"}" value="{$i}"{{if $i === 5}} checked{{endif}}>
+								<label for="{expression="'rsv' . $i"}">★</label>
+							{{endfor}}
+						</span>
+					</div>
+					<div style="margin-top: 12px;">
+						{$data['review_body_editor_html']|raw}
+					</div>
+					<button type="submit" class="btn btn-primary leave-review-btn" style="margin-top: 12px;">Submit review</button>
+				</form>
+				<div style="margin-top: 10px; text-align: center;">
+					<a class="guidelines-link" href="{$data['guidelines_url']}">Read review guidelines</a>
+				</div>
+			</div>
+			{{elseif $data['already_rated']}}
+			<div class="leave-review">
+				<div class="leave-review-title">You've already reviewed this dealer</div>
+				<div class="leave-review-sub">Thanks for your feedback. Each customer can leave one review per dealer.</div>
+			</div>
+			{{elseif $data['login_required']}}
+			<div class="leave-review">
+				<div class="leave-review-title">Had an experience with {$data['dealer']['dealer_name']}?</div>
+				<div class="leave-review-sub">Sign in to leave a review. Only verified customers can rate dealers.</div>
+				<a href="{$data['login_url']}" class="btn btn-primary leave-review-btn">Sign in</a>
+			</div>
+			{{endif}}
+
+			{{if $data['customer_dispute']}}
+			<div class="sidebar-card" style="background: var(--gd-warn-bg); border-color: #FDE68A;">
+				<div class="sidebar-title" style="color: var(--gd-warn);">A dealer disputed your review</div>
+				<p style="font-size: 12px; color: var(--gd-warn); line-height: 1.5; margin-bottom: 10px;">The dealer has contested your review. Please respond{{if $data['customer_dispute']['deadline_formatted']}} by {$data['customer_dispute']['deadline_formatted']}{{endif}}.</p>
+				<a href="{$data['customer_dispute']['respond_url']}" class="btn btn-primary leave-review-btn">Respond now</a>
+			</div>
+			{{endif}}
+
+			<div class="sidebar-card">
+				<div class="sidebar-title">Dealer details</div>
+				{{if $data['dealer']['public_email'] || $data['dealer']['contact_email']}}
+				<div class="info-row">
+					<span class="info-label">Contact</span>
+					<span class="info-value"><a href="{expression="'mailto:' . ( $data['dealer']['public_email'] ?: $data['dealer']['contact_email'] )"}">{expression="$data['dealer']['public_email'] ?: $data['dealer']['contact_email']"}</a></span>
+				</div>
+				{{endif}}
+				{{if $data['dealer']['public_phone']}}
+				<div class="info-row">
+					<span class="info-label">Phone</span>
+					<span class="info-value">{$data['dealer']['public_phone']}</span>
+				</div>
+				{{endif}}
+				<div class="info-row">
+					<span class="info-label">Listings</span>
+					<span class="info-value">{expression="number_format( (int) $data['dealer']['active_listings'] )"} active</span>
+				</div>
+				{{if $data['dealer']['address_city_state']}}
+				<div class="info-row">
+					<span class="info-label">Location</span>
+					<span class="info-value">{{if $data['dealer']['address_public'] && $data['dealer']['address_line']}}{$data['dealer']['address_line']}{{else}}{$data['dealer']['address_city_state']}{{endif}}</span>
+				</div>
+				{{endif}}
+				{{if $data['dealer']['member_since']}}
+				<div class="info-row">
+					<span class="info-label">Member since</span>
+					<span class="info-value">{$data['dealer']['member_since']}</span>
+				</div>
+				{{endif}}
+				{{if $data['dealer']['has_hours']}}
+				<div class="info-row">
+					<span class="info-label">Hours</span>
+					<span class="info-value" style="font-size: 12px; white-space: pre-line;">{$data['dealer']['hours']}</span>
+				</div>
+				{{endif}}
+			</div>
+
+			{{if $data['dealer']['about']}}
+			<div class="sidebar-card">
+				<div class="sidebar-title">About this dealer</div>
+				<div class="about-body">{$data['dealer']['about']|raw}</div>
+			</div>
+			{{endif}}
+
+			{{if $data['dealer']['shipping_policy'] || $data['dealer']['return_policy']}}
+			<div class="sidebar-card">
+				<div class="sidebar-title">Policies</div>
+				{{if $data['dealer']['shipping_policy']}}
+				<div style="margin-bottom: 12px;">
+					<div style="font-size: 12px; color: var(--gd-text-subtle); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; margin-bottom: 4px;">Shipping</div>
+					<div class="about-body">{$data['dealer']['shipping_policy']|raw}</div>
+				</div>
+				{{endif}}
+				{{if $data['dealer']['return_policy']}}
+				<div>
+					<div style="font-size: 12px; color: var(--gd-text-subtle); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; margin-bottom: 4px;">Returns</div>
+					<div class="about-body">{$data['dealer']['return_policy']|raw}</div>
+				</div>
+				{{endif}}
+			</div>
+			{{endif}}
+
+			<div class="sidebar-card" style="background: var(--gd-warn-bg); border-color: #FDE68A;">
+				<div class="sidebar-title" style="color: var(--gd-warn);">Review policy</div>
+				<p style="font-size: 12px; color: var(--gd-warn); line-height: 1.5; margin-bottom: 10px;">Reviews are verified against real transactions. Dealers can contest reviews that violate our guidelines. All contested reviews are reviewed by our team.</p>
+				<a class="guidelines-link" href="{$data['guidelines_url']}" style="color: var(--gd-warn);">Full review guidelines</a>
+			</div>
 		</div>
 	</div>
 
