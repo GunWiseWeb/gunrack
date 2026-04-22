@@ -2436,3 +2436,24 @@ body:has(.gdDealerApp) .ipsMobileFooter { display: none !important; }
 .gdProgressNav {
     border-color: var(--gd-border-subtle);
 }
+
+/* =============================================
+   HELP PAGE — v1.0.86 lighter code blocks
+   ============================================= */
+.gdCodeBlock {
+    background: #F1F5F9;
+    color: #0F172A;
+    border: 1px solid var(--gd-border);
+}
+.gdCodeBlock pre {
+    color: #0F172A;
+}
+.gdCodeBlock__copy {
+    background: rgba(15, 23, 42, 0.04);
+    border: 1px solid var(--gd-border);
+    color: var(--gd-text-muted);
+}
+.gdCodeBlock__copy:hover {
+    background: rgba(15, 23, 42, 0.08);
+    color: var(--gd-text);
+}
