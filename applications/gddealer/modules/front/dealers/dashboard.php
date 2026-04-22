@@ -745,12 +745,12 @@ class _dashboard extends \IPS\Dispatcher\Controller
 			$clicksNow = (int) \IPS\Db::i()->select( 'COALESCE(SUM(click_count),0)', 'gd_click_daily',
 				[ 'dealer_id=? AND click_date >= ? AND click_date <= ?', $dealerId, $startDate, $endDate ]
 			)->first();
-		} catch ( \Exception ) {}
+		} catch ( \Throwable ) {}
 		try {
 			$clicksPrev = (int) \IPS\Db::i()->select( 'COALESCE(SUM(click_count),0)', 'gd_click_daily',
 				[ 'dealer_id=? AND click_date >= ? AND click_date <= ?', $dealerId, $prevStart, $prevEnd ]
 			)->first();
-		} catch ( \Exception ) {}
+		} catch ( \Throwable ) {}
 		$clickDeltaPct = $clicksPrev > 0 ? (int) round( ( ( $clicksNow - $clicksPrev ) / $clicksPrev ) * 100 ) : null;
 
 		$latestSnapDate = null;
@@ -758,7 +758,7 @@ class _dashboard extends \IPS\Dispatcher\Controller
 			$latestSnapDate = (string) \IPS\Db::i()->select( 'MAX(snapshot_date)', 'gd_dealer_rank_snapshot',
 				[ 'dealer_id=?', $dealerId ]
 			)->first();
-		} catch ( \Exception ) {}
+		} catch ( \Throwable ) {}
 
 		$tierCounts    = [ 'lowest' => 0, 'close' => 0, 'overpriced' => 0, 'only' => 0 ];
 		$snapshotTotal = 0;
@@ -772,7 +772,7 @@ class _dashboard extends \IPS\Dispatcher\Controller
 					if ( isset( $tierCounts[ $t ] ) ) { $tierCounts[ $t ] = (int) $row['cnt']; }
 					$snapshotTotal += (int) $row['cnt'];
 				}
-			} catch ( \Exception ) {}
+			} catch ( \Throwable ) {}
 		}
 
 		$lowestCount     = $tierCounts['lowest'] + $tierCounts['only'];
@@ -781,31 +781,30 @@ class _dashboard extends \IPS\Dispatcher\Controller
 		$priceDrops = 0;
 		try {
 			$prefix = \IPS\Db::i()->prefix;
-			$result = \IPS\Db::i()->query(
+			$rangeStart = $startDate . ' 00:00:00';
+			$rangeEnd   = $endDate . ' 23:59:59';
+			$stmt = \IPS\Db::i()->preparedQuery(
 				"SELECT COUNT(*) AS cnt FROM (
 					SELECT ph.upc,
 						( SELECT h1.price FROM {$prefix}gd_price_history h1
 						  WHERE h1.dealer_id = ph.dealer_id AND h1.upc = ph.upc
-							AND h1.recorded_at >= " . \IPS\Db::i()->addQuote( $startDate . ' 00:00:00' ) . "
-							AND h1.recorded_at <= " . \IPS\Db::i()->addQuote( $endDate . ' 23:59:59' ) . "
+							AND h1.recorded_at >= ? AND h1.recorded_at <= ?
 						  ORDER BY h1.recorded_at ASC LIMIT 1 ) AS first_price,
 						( SELECT h2.price FROM {$prefix}gd_price_history h2
 						  WHERE h2.dealer_id = ph.dealer_id AND h2.upc = ph.upc
-							AND h2.recorded_at >= " . \IPS\Db::i()->addQuote( $startDate . ' 00:00:00' ) . "
-							AND h2.recorded_at <= " . \IPS\Db::i()->addQuote( $endDate . ' 23:59:59' ) . "
+							AND h2.recorded_at >= ? AND h2.recorded_at <= ?
 						  ORDER BY h2.recorded_at DESC LIMIT 1 ) AS last_price
 					FROM {$prefix}gd_price_history ph
-					WHERE ph.dealer_id = " . (int) $dealerId . "
-					  AND ph.recorded_at >= " . \IPS\Db::i()->addQuote( $startDate . ' 00:00:00' ) . "
-					  AND ph.recorded_at <= " . \IPS\Db::i()->addQuote( $endDate . ' 23:59:59' ) . "
+					WHERE ph.dealer_id = ? AND ph.recorded_at >= ? AND ph.recorded_at <= ?
 					GROUP BY ph.upc
 					HAVING last_price < first_price
-				) sub"
+				) sub",
+				[ $rangeStart, $rangeEnd, $rangeStart, $rangeEnd, $dealerId, $rangeStart, $rangeEnd ]
 			);
-			if ( $result && $r = $result->fetch_assoc() ) {
+			if ( $stmt && $r = $stmt->fetch_assoc() ) {
 				$priceDrops = (int) $r['cnt'];
 			}
-		} catch ( \Exception ) {}
+		} catch ( \Throwable ) {}
 
 		$days = [];
 		for ( $i = 0; $i < $rangeDays; $i++ ) {
@@ -822,7 +821,7 @@ class _dashboard extends \IPS\Dispatcher\Controller
 				$d = (string) $row['click_date'];
 				if ( isset( $days[ $d ] ) ) { $days[ $d ] = (int) $row['daily']; }
 			}
-		} catch ( \Exception ) {}
+		} catch ( \Throwable ) {}
 
 		$chartSeries = [];
 		foreach ( $days as $d => $n ) {
@@ -863,15 +862,14 @@ class _dashboard extends \IPS\Dispatcher\Controller
 		$topListings = [];
 		try {
 			$prefix = \IPS\Db::i()->prefix;
-			$stmt = \IPS\Db::i()->query(
+			$stmt = \IPS\Db::i()->preparedQuery(
 				"SELECT cl.upc, COUNT(*) AS clicks
 				 FROM {$prefix}gd_click_log cl
-				 WHERE cl.dealer_id = " . (int) $dealerId . "
-				   AND cl.clicked_at >= " . \IPS\Db::i()->addQuote( $startDate . ' 00:00:00' ) . "
-				   AND cl.clicked_at <= " . \IPS\Db::i()->addQuote( $endDate . ' 23:59:59' ) . "
+				 WHERE cl.dealer_id = ? AND cl.clicked_at >= ? AND cl.clicked_at <= ?
 				 GROUP BY cl.upc
 				 ORDER BY clicks DESC
-				 LIMIT 10"
+				 LIMIT 10",
+				[ $dealerId, $startDate . ' 00:00:00', $endDate . ' 23:59:59' ]
 			);
 			$i = 0;
 			while ( $stmt && $row = $stmt->fetch_assoc() ) {
@@ -880,7 +878,7 @@ class _dashboard extends \IPS\Dispatcher\Controller
 					$productName = (string) \IPS\Db::i()->select( 'title', 'gd_catalog',
 						[ 'upc=?', (string) $row['upc'] ], null, [ 0, 1 ]
 					)->first();
-				} catch ( \Exception ) {}
+				} catch ( \Throwable ) {}
 				$topListings[] = [
 					'rank'   => ++$i,
 					'upc'    => (string) $row['upc'],
@@ -888,22 +886,21 @@ class _dashboard extends \IPS\Dispatcher\Controller
 					'clicks' => (int) $row['clicks'],
 				];
 			}
-		} catch ( \Exception ) {}
+		} catch ( \Throwable ) {}
 
 		$geoDistribution = [];
 		$geoTotal = 0;
 		try {
 			$prefix = \IPS\Db::i()->prefix;
-			$stmt = \IPS\Db::i()->query(
+			$stmt = \IPS\Db::i()->preparedQuery(
 				"SELECT user_state, COUNT(*) AS clicks
 				 FROM {$prefix}gd_click_log
-				 WHERE dealer_id = " . (int) $dealerId . "
-				   AND clicked_at >= " . \IPS\Db::i()->addQuote( $startDate . ' 00:00:00' ) . "
-				   AND clicked_at <= " . \IPS\Db::i()->addQuote( $endDate . ' 23:59:59' ) . "
+				 WHERE dealer_id = ? AND clicked_at >= ? AND clicked_at <= ?
 				   AND user_state IS NOT NULL AND user_state != ''
 				 GROUP BY user_state
 				 ORDER BY clicks DESC
-				 LIMIT 10"
+				 LIMIT 10",
+				[ $dealerId, $startDate . ' 00:00:00', $endDate . ' 23:59:59' ]
 			);
 			while ( $stmt && $row = $stmt->fetch_assoc() ) {
 				$geoTotal += (int) $row['clicks'];
@@ -919,7 +916,7 @@ class _dashboard extends \IPS\Dispatcher\Controller
 				}
 				unset( $g );
 			}
-		} catch ( \Exception ) {}
+		} catch ( \Throwable ) {}
 
 		$rangeUrls = [];
 		foreach ( [ '7', '30', '90', 'ytd' ] as $r ) {

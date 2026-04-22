@@ -11,7 +11,7 @@ class _ComputeRankSnapshots extends \IPS\Task
         $prefix = \IPS\Db::i()->prefix;
 
         try {
-            \IPS\Db::i()->query(
+            \IPS\Db::i()->preparedQuery(
                 "INSERT INTO {$prefix}gd_dealer_rank_snapshot
                     (dealer_id, upc, rank_position, competitor_ct, dealer_price, min_price, price_delta_pct, tier, snapshot_date)
                 SELECT
@@ -37,27 +37,29 @@ class _ComputeRankSnapshots extends \IPS\Task
                     ),
                     0,
                     'unknown',
-                    " . \IPS\Db::i()->addQuote( $today ) . "
+                    ?
                 FROM {$prefix}gd_dealer_listings l
                 WHERE l.listing_status = 'active'
                 ON DUPLICATE KEY UPDATE
                     rank_position = VALUES(rank_position),
                     competitor_ct = VALUES(competitor_ct),
                     dealer_price  = VALUES(dealer_price),
-                    min_price     = VALUES(min_price)"
+                    min_price     = VALUES(min_price)",
+                [ $today ]
             );
-        } catch ( \Exception $e ) {
+        } catch ( \Throwable $e ) {
             return 'Rank snapshot insert failed: ' . $e->getMessage();
         }
 
         try {
-            \IPS\Db::i()->query(
+            \IPS\Db::i()->preparedQuery(
                 "UPDATE {$prefix}gd_dealer_rank_snapshot
                  SET price_delta_pct = CASE WHEN min_price > 0 THEN ROUND((dealer_price - min_price) / min_price * 100, 2) ELSE 0 END
-                 WHERE snapshot_date = " . \IPS\Db::i()->addQuote( $today )
+                 WHERE snapshot_date = ?",
+                [ $today ]
             );
 
-            \IPS\Db::i()->query(
+            \IPS\Db::i()->preparedQuery(
                 "UPDATE {$prefix}gd_dealer_rank_snapshot
                  SET tier = CASE
                      WHEN competitor_ct = 1                               THEN 'only'
@@ -66,9 +68,10 @@ class _ComputeRankSnapshots extends \IPS\Task
                      WHEN rank_position > 1 AND price_delta_pct > 10      THEN 'overpriced'
                      ELSE 'unknown'
                  END
-                 WHERE snapshot_date = " . \IPS\Db::i()->addQuote( $today )
+                 WHERE snapshot_date = ?",
+                [ $today ]
             );
-        } catch ( \Exception $e ) {
+        } catch ( \Throwable $e ) {
             return 'Tier computation failed: ' . $e->getMessage();
         }
 
@@ -76,7 +79,7 @@ class _ComputeRankSnapshots extends \IPS\Task
             \IPS\Db::i()->delete( 'gd_dealer_rank_snapshot',
                 [ 'snapshot_date < ?', date( 'Y-m-d', strtotime( '-90 days' ) ) ]
             );
-        } catch ( \Exception ) {}
+        } catch ( \Throwable ) {}
 
         return null;
     }
