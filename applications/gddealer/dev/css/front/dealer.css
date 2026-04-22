@@ -1714,3 +1714,104 @@ body:has(.gdDealerApp) .ipsMobileFooter { display: none !important; }
     .gdGeoRow { grid-template-columns: 40px 1fr auto; }
     .gdGeoRow__pct { display: none; }
 }
+
+/* =============================================
+   SUPPORT TICKET LIST
+   ============================================= */
+.gdTicketList {
+    display: flex;
+    flex-direction: column;
+}
+.gdTicketRow {
+    display: grid;
+    grid-template-columns: 40px 1fr auto auto 100px 14px;
+    gap: 16px;
+    align-items: center;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--gd-border-subtle);
+    text-decoration: none;
+    color: inherit;
+    transition: background 0.1s;
+}
+.gdTicketRow:hover { background: var(--gd-surface-alt); }
+.gdTicketRow:last-child { border-bottom: none; }
+.gdTicketRow--attention {
+    background: linear-gradient(90deg, rgba(234, 88, 12, 0.04) 0%, transparent 4%);
+    border-left: 3px solid #F59E0B;
+    padding-left: 17px;
+}
+.gdTicketRow--attention:hover { background: linear-gradient(90deg, rgba(234, 88, 12, 0.08) 0%, var(--gd-surface-alt) 4%); }
+
+.gdTicketRow__icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.gdTicketRow__body { min-width: 0; }
+.gdTicketRow__subject {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--gd-text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    margin-bottom: 3px;
+}
+.gdTicketRow__meta {
+    font-size: 12px;
+    color: var(--gd-text-subtle);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    align-items: center;
+}
+.gdTicketRow__sep { color: var(--gd-text-faint); }
+
+.gdPriorityPill {
+    display: inline-block;
+    font-size: 11px;
+    padding: 3px 9px;
+    border-radius: var(--gd-r-pill);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+}
+
+.gdTicketRow__updated {
+    font-size: 12px;
+    color: var(--gd-text-subtle);
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.gdTicketRow__chevron {
+    color: var(--gd-text-faint);
+    flex-shrink: 0;
+}
+
+@media (max-width: 900px) {
+    .gdTicketRow {
+        grid-template-columns: 36px 1fr auto;
+        gap: 12px;
+        row-gap: 4px;
+    }
+    .gdTicketRow__updated,
+    .gdTicketRow__chevron,
+    .gdPriorityPill { display: none; }
+}
+@media (max-width: 600px) {
+    .gdTicketRow {
+        grid-template-columns: 36px 1fr;
+    }
+    .gdStatusPill { display: none; }
+    .gdTicketRow__meta { font-size: 11px; }
+}
