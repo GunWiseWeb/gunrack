@@ -1132,9 +1132,11 @@ class _dashboard extends \IPS\Dispatcher\Controller
 					'response_at'      => $responseTs
 						? (string) \IPS\DateTime::ts( $responseTs )->localeDate() . ' · ' . (string) \IPS\DateTime::ts( $responseTs )->localeTime()
 						: '',
+					'response_at_raw'  => (string) ( $r['response_at'] ?? '' ),
 					'created_at'       => $createdTs
 						? (string) \IPS\DateTime::ts( $createdTs )->localeDate()
 						: '',
+					'created_at_raw'   => (string) ( $r['created_at'] ?? '' ),
 					'dispute_status'   => (string) ( $r['dispute_status'] ?? 'none' ),
 					'dispute_outcome'  => (string) ( $r['dispute_outcome'] ?? '' ),
 					'dispute_deadline' => $deadlineTs
@@ -1183,9 +1185,6 @@ class _dashboard extends \IPS\Dispatcher\Controller
 					foreach ( $atts as $a ) { if ( $a['is_image'] ) { $hasImg = true; break; } }
 					$rowRef[ $field . '_has_unembedded_images' ] = $hasImg && !preg_match( '/<img/i', (string) ( $rowRef[ $field ] ?? '' ) );
 				}
-				$rowRef['events'] = ( (string) ( $r['dispute_status'] ?? 'none' ) !== 'none' )
-					? EventLogger::getEvents( (int) $r['id'] )
-					: [];
 				unset( $rowRef );
 			}
 		}
@@ -1240,43 +1239,91 @@ class _dashboard extends \IPS\Dispatcher\Controller
 			}
 
 			$_row['dispute_at_display']             = '';
+			$_row['dispute_at_date']                = '';
 			$_row['customer_responded_at_display']   = '';
+			$_row['customer_responded_at_date']      = '';
 			$_row['dispute_resolved_at_display']     = '';
 			if ( $_row['dispute_at'] !== '' ) {
 				$dts = strtotime( $_row['dispute_at'] );
-				if ( $dts ) { $_row['dispute_at_display'] = (string) \IPS\DateTime::ts( $dts )->relative(); }
+				if ( $dts ) {
+					$_row['dispute_at_display'] = (string) \IPS\DateTime::ts( $dts )->relative();
+					$_row['dispute_at_date']    = (string) \IPS\DateTime::ts( $dts )->localeDate();
+				}
 			}
 			if ( $_row['customer_responded_at'] !== '' ) {
 				$crts = strtotime( $_row['customer_responded_at'] );
-				if ( $crts ) { $_row['customer_responded_at_display'] = (string) \IPS\DateTime::ts( $crts )->relative(); }
+				if ( $crts ) {
+					$_row['customer_responded_at_display'] = (string) \IPS\DateTime::ts( $crts )->relative();
+					$_row['customer_responded_at_date']    = (string) \IPS\DateTime::ts( $crts )->localeDate();
+				}
 			}
 			if ( $_row['dispute_resolved_at'] !== '' ) {
 				$drts = strtotime( $_row['dispute_resolved_at'] );
 				if ( $drts ) { $_row['dispute_resolved_at_display'] = (string) \IPS\DateTime::ts( $drts )->relative(); }
 			}
 
+			$customerName = $_row['author_name'];
 			$activity = [];
-			$activity[] = [ 'type' => 'review', 'label' => 'Review submitted', 'time' => $_row['created_at_display'], 'color' => 'blue' ];
-			if ( $_row['response_at_display'] !== '' ) {
-				$activity[] = [ 'type' => 'response', 'label' => 'You responded', 'time' => $_row['response_at_display'], 'color' => 'green' ];
+
+			if ( !empty( $_row['created_at_raw'] ) ) {
+				$ts = strtotime( (string) $_row['created_at_raw'] );
+				$activity[] = [
+					'ts'    => $ts ?: 0,
+					'dot'   => 'neutral',
+					'label' => \IPS\Member::loggedIn()->language()->addToStack( 'gddealer_front_activity_review_posted', false, [ 'sprintf' => [ $customerName ] ] ),
+					'time'  => $ts ? (string) \IPS\DateTime::ts( $ts )->localeDate() . ' · ' . (string) \IPS\DateTime::ts( $ts )->localeTime() : '',
+				];
 			}
-			if ( $_row['dispute_at_display'] !== '' ) {
-				$activity[] = [ 'type' => 'dispute', 'label' => 'Dispute filed', 'time' => $_row['dispute_at_display'], 'color' => 'amber' ];
+
+			if ( !empty( $_row['response_at_raw'] ) ) {
+				$ts = strtotime( (string) $_row['response_at_raw'] );
+				$activity[] = [
+					'ts'    => $ts ?: 0,
+					'dot'   => 'info',
+					'label' => \IPS\Member::loggedIn()->language()->addToStack( 'gddealer_front_activity_dealer_responded' ),
+					'time'  => $ts ? (string) \IPS\DateTime::ts( $ts )->localeDate() . ' · ' . (string) \IPS\DateTime::ts( $ts )->localeTime() : '',
+				];
 			}
-			if ( $_row['customer_responded_at_display'] !== '' ) {
-				$activity[] = [ 'type' => 'customer_reply', 'label' => 'Customer replied', 'time' => $_row['customer_responded_at_display'], 'color' => 'purple' ];
-			}
-			if ( $_row['dispute_resolved_at_display'] !== '' ) {
-				$resolveColor = $_row['dispute_status'] === 'resolved_dealer' ? 'green' : 'red';
-				$activity[] = [ 'type' => 'resolved', 'label' => 'Dispute resolved', 'time' => $_row['dispute_resolved_at_display'], 'color' => $resolveColor ];
-			}
-			if ( !empty( $_row['events'] ) ) {
-				foreach ( $_row['events'] as $ev ) {
-					$evTs = isset( $ev['created_at'] ) ? strtotime( (string) $ev['created_at'] ) : 0;
-					$evTime = $evTs ? (string) \IPS\DateTime::ts( $evTs )->relative() : '';
-					$activity[] = [ 'type' => 'event', 'label' => (string) ( $ev['event_type'] ?? 'Event' ), 'time' => $evTime, 'color' => 'gray' ];
+
+			try {
+				foreach ( \IPS\Db::i()->select( '*', 'gd_dealer_dispute_events',
+					[ 'review_id=?', (int) $_row['id'] ],
+					'created_at ASC'
+				) as $ev ) {
+					$eventType = (string) $ev['event_type'];
+					$dot = match ( $eventType ) {
+						'dispute_opened'       => 'warn',
+						'customer_responded'   => 'info',
+						'admin_edit_requested' => 'neutral',
+						'dispute_resolved', 'admin_upheld', 'admin_dismissed' => 'success',
+						default                => 'neutral',
+					};
+					$langKey = 'gddealer_front_activity_event_' . $eventType;
+					$label = \IPS\Member::loggedIn()->language()->addToStack( $langKey );
+
+					$actorName = '';
+					if ( !empty( $ev['actor_id'] ) ) {
+						try {
+							$a = \IPS\Member::load( (int) $ev['actor_id'] );
+							if ( $a->member_id ) { $actorName = (string) $a->name; }
+						} catch ( \Exception ) {}
+					}
+
+					$ts = strtotime( (string) $ev['created_at'] );
+					$activity[] = [
+						'ts'         => $ts ?: 0,
+						'dot'        => $dot,
+						'label'      => $label,
+						'note'       => (string) ( $ev['note'] ?? '' ),
+						'actor_name' => $actorName,
+						'time'       => $ts ? (string) \IPS\DateTime::ts( $ts )->localeDate() . ' · ' . (string) \IPS\DateTime::ts( $ts )->localeTime() : '',
+					];
 				}
-			}
+			} catch ( \Exception ) {}
+
+			usort( $activity, fn( $a, $b ) => $a['ts'] <=> $b['ts'] );
+			foreach ( $activity as &$_ev ) { unset( $_ev['ts'] ); }
+			unset( $_ev );
 			$_row['activity'] = $activity;
 		}
 		unset( $_row );

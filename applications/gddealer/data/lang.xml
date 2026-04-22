@@ -385,5 +385,23 @@
     <word key="gddealer_notif_support_reply_to_dealer_desc"><![CDATA[When staff reply to your support ticket]]></word>
     <word key="gddealer_notif_support_reply_to_admin"><![CDATA[Dealer reply on support ticket]]></word>
     <word key="gddealer_notif_support_reply_to_admin_desc"><![CDATA[When a dealer replies to a support ticket]]></word>
+    <word key="gddealer_front_activity_review_posted"><![CDATA[Review posted by %s]]></word>
+    <word key="gddealer_front_activity_dealer_responded"><![CDATA[You posted a public response]]></word>
+    <word key="gddealer_front_activity_event_dispute_opened"><![CDATA[You contested the review]]></word>
+    <word key="gddealer_front_activity_event_customer_responded"><![CDATA[Customer replied to your contest]]></word>
+    <word key="gddealer_front_activity_event_admin_edit_requested"><![CDATA[Our team requested edits from the customer]]></word>
+    <word key="gddealer_front_activity_event_dispute_resolved"><![CDATA[Dispute resolved]]></word>
+    <word key="gddealer_front_activity_event_reopened"><![CDATA[Dispute reopened]]></word>
+    <word key="gddealer_front_activity_event_admin_review_started"><![CDATA[Admin review started]]></word>
+    <word key="gddealer_front_fold_pending_customer"><![CDATA[Awaiting customer reply]]></word>
+    <word key="gddealer_front_fold_pending_admin"><![CDATA[Under admin review]]></word>
+    <word key="gddealer_front_fold_resolved_dealer"><![CDATA[Resolved in your favor]]></word>
+    <word key="gddealer_front_fold_resolved_customer"><![CDATA[Resolved for customer]]></word>
+    <word key="gddealer_front_fold_dispute_details"><![CDATA[Dispute details]]></word>
+    <word key="gddealer_front_fold_customer_replied"><![CDATA[Customer replied]]></word>
+    <word key="gddealer_front_fold_deadline"><![CDATA[Deadline: %s]]></word>
+    <word key="gddealer_front_fold_days_left"><![CDATA[%d days left]]></word>
+    <word key="gddealer_front_fold_activity_events"><![CDATA[%d events]]></word>
+    <word key="gddealer_front_fold_activity_event"><![CDATA[%d event]]></word>
   </app>
 </language>

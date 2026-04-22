@@ -1415,3 +1415,153 @@ body:has(.gdDealerApp) .ipsMobileFooter { display: none !important; }
     .gdContestBlock { padding: 10px 12px; }
     .gdTimeline__item { font-size: 11px; }
 }
+
+/* ==============================================
+   v1.0.77 — Foldable contest + activity sections
+   ============================================= */
+.gdReviewCard__contestFold {
+    margin-top: 14px;
+}
+.gdReviewCard__contestFoldSummary {
+    list-style: none;
+    cursor: pointer;
+    padding: 10px 14px;
+    background: var(--gd-surface-muted);
+    border: 1px solid var(--gd-border);
+    border-radius: var(--gd-r-md);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 13px;
+    user-select: none;
+    transition: background 0.1s;
+    flex-wrap: wrap;
+}
+.gdReviewCard__contestFoldSummary::-webkit-details-marker { display: none; }
+.gdReviewCard__contestFoldSummary::marker { content: ''; }
+.gdReviewCard__contestFoldSummary:hover { background: var(--gd-surface-alt, #f9fafb); }
+.gdReviewCard__contestFoldSummary:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px var(--gd-brand-light, rgba(37,99,235,0.15));
+}
+
+.gdReviewCard__contestFoldBadge {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 9px;
+    border-radius: 999px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+}
+.gdReviewCard__contestFoldBadge--pending_customer { background: var(--gd-warn-bg, #FFFBEB); color: var(--gd-warn, #D97706); }
+.gdReviewCard__contestFoldBadge--pending_admin    { background: #DBEAFE; color: #1D4ED8; }
+.gdReviewCard__contestFoldBadge--resolved_dealer  { background: #D1FAE5; color: #065F46; }
+.gdReviewCard__contestFoldBadge--resolved_customer{ background: #FEE2E2; color: #991B1B; }
+.gdReviewCard__contestFoldBadge--none             { background: var(--gd-border-subtle, #e5e7eb); color: var(--gd-text-muted, #6b7280); }
+.gdReviewCard__contestFoldBadge--dismissed        { background: var(--gd-border-subtle, #e5e7eb); color: var(--gd-text-muted, #6b7280); }
+
+.gdReviewCard__contestFoldMeta {
+    font-size: 12px;
+    color: var(--gd-text-subtle);
+    flex: 1;
+    min-width: 0;
+}
+
+.gdReviewCard__contestFoldChevron {
+    color: var(--gd-text-subtle);
+    transition: transform 0.2s;
+    flex-shrink: 0;
+    margin-left: auto;
+}
+.gdReviewCard__contestFold[open] .gdReviewCard__contestFoldChevron {
+    transform: rotate(180deg);
+}
+
+.gdReviewCard__contestFold[open] .gdReviewCard__contestFoldSummary {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border-bottom-color: var(--gd-border-subtle);
+}
+
+.gdReviewCard__contestFoldBody {
+    border: 1px solid var(--gd-border);
+    border-top: none;
+    border-bottom-left-radius: var(--gd-r-md);
+    border-bottom-right-radius: var(--gd-r-md);
+    padding: 14px;
+    background: var(--gd-surface);
+}
+.gdReviewCard__contestFoldBody .gdContestBlock {
+    margin-top: 0;
+    margin-bottom: 12px;
+}
+.gdReviewCard__contestFoldBody .gdContestBlock:last-child {
+    margin-bottom: 0;
+}
+.gdReviewCard__contestFoldBody .gdContestBlock__nextSteps {
+    margin-top: 12px;
+}
+
+.gdReviewCard__activityFold {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid var(--gd-border-subtle);
+}
+.gdReviewCard__activityFoldSummary {
+    list-style: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    user-select: none;
+    padding: 4px 0;
+}
+.gdReviewCard__activityFoldSummary::-webkit-details-marker { display: none; }
+.gdReviewCard__activityFoldSummary::marker { content: ''; }
+.gdReviewCard__activityFoldLabel {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--gd-text-subtle);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+.gdReviewCard__activityFoldChevron {
+    color: var(--gd-text-subtle);
+    transition: transform 0.2s;
+    margin-left: auto;
+}
+.gdReviewCard__activityFold[open] .gdReviewCard__activityFoldChevron {
+    transform: rotate(180deg);
+}
+.gdReviewCard__activityFold[open] .gdTimeline {
+    margin-top: 10px;
+}
+
+.gdTimeline { list-style: none; padding: 0; margin: 0; }
+.gdTimeline__body { flex: 1; min-width: 0; }
+.gdTimeline__label { font-weight: 500; color: var(--gd-text); }
+.gdTimeline__note {
+    font-size: 12px;
+    color: var(--gd-text-muted, #6b7280);
+    font-style: italic;
+    margin-top: 2px;
+}
+.gdTimeline__time {
+    font-size: 11px;
+    color: var(--gd-text-subtle);
+    font-variant-numeric: tabular-nums;
+}
+
+.gdTimeline__dot--neutral { background: #9CA3AF; }
+.gdTimeline__dot--info    { background: #3B82F6; }
+.gdTimeline__dot--warn    { background: #F59E0B; }
+.gdTimeline__dot--success { background: #10B981; }
+
+@media (max-width: 767px) {
+    .gdReviewCard__contestFoldSummary { padding: 8px 10px; font-size: 12px; }
+    .gdReviewCard__contestFoldBody { padding: 10px; }
+    .gdReviewCard__activityFoldLabel { font-size: 10px; }
+    .gdTimeline__item { font-size: 11px; }
+    .gdTimeline__label { font-size: 12px; }
+}
