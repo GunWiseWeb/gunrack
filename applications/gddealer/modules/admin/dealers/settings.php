@@ -100,6 +100,31 @@ class _settings extends \IPS\Dispatcher\Controller
 		$form->add( new \IPS\Helpers\Form\Text( 'gddealer_help_contact',
 			(string) ( $settings->gddealer_help_contact ?? '' ), FALSE ) );
 
+		$form->addHeader( 'gddealer_help_step2_code_header' );
+
+		$form->add( new \IPS\Helpers\Form\TextArea( 'gddealer_help_step2_csv',
+			(string) ( $settings->gddealer_help_step2_csv ?? '' ), FALSE,
+			[ 'rows' => 6 ] ) );
+
+		$form->add( new \IPS\Helpers\Form\TextArea( 'gddealer_help_step2_json',
+			(string) ( $settings->gddealer_help_step2_json ?? '' ), FALSE,
+			[ 'rows' => 10 ] ) );
+
+		$form->add( new \IPS\Helpers\Form\TextArea( 'gddealer_help_step2_xml',
+			(string) ( $settings->gddealer_help_step2_xml ?? '' ), FALSE,
+			[ 'rows' => 10 ] ) );
+
+		$form->addHeader( 'gddealer_help_sync_header' );
+
+		$form->add( new \IPS\Helpers\Form\Text( 'gddealer_help_sync_basic',
+			(string) ( $settings->gddealer_help_sync_basic ?? 'Every 6 hours' ), FALSE ) );
+
+		$form->add( new \IPS\Helpers\Form\Text( 'gddealer_help_sync_pro',
+			(string) ( $settings->gddealer_help_sync_pro ?? 'Every 30 minutes' ), FALSE ) );
+
+		$form->add( new \IPS\Helpers\Form\Text( 'gddealer_help_sync_enterprise',
+			(string) ( $settings->gddealer_help_sync_enterprise ?? 'Every 15 minutes' ), FALSE ) );
+
 		$form->addHeader( 'gddealer_settings_guidelines' );
 
 		$form->add( new \IPS\Helpers\Form\Text( 'gddealer_guidelines_buyer_title',
@@ -249,6 +274,12 @@ class _settings extends \IPS\Dispatcher\Controller
 				'gddealer_help_step5'                 => (string) $values['gddealer_help_step5'],
 				'gddealer_help_requirements'          => (string) $values['gddealer_help_requirements'],
 				'gddealer_help_contact'               => (string) $values['gddealer_help_contact'],
+				'gddealer_help_step2_csv'             => (string) $values['gddealer_help_step2_csv'],
+				'gddealer_help_step2_json'            => (string) $values['gddealer_help_step2_json'],
+				'gddealer_help_step2_xml'             => (string) $values['gddealer_help_step2_xml'],
+				'gddealer_help_sync_basic'            => (string) $values['gddealer_help_sync_basic'],
+				'gddealer_help_sync_pro'              => (string) $values['gddealer_help_sync_pro'],
+				'gddealer_help_sync_enterprise'       => (string) $values['gddealer_help_sync_enterprise'],
 				'gddealer_guidelines_buyer_title'     => (string) $values['gddealer_guidelines_buyer_title'],
 				'gddealer_guidelines_buyer_body'      => (string) $values['gddealer_guidelines_buyer_body'],
 				'gddealer_guidelines_dispute_title'   => (string) $values['gddealer_guidelines_dispute_title'],

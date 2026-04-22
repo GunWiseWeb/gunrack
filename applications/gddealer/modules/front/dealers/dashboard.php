@@ -974,14 +974,23 @@ class _dashboard extends \IPS\Dispatcher\Controller
 		) );
 
 		$helpData = [
+			'dealer'       => $this->dealerSummary(),
+			'tab_urls'     => $this->tabUrls(),
+			'support_url'  => $this->supportUrl(),
 			'intro'        => (string) ( $s->gddealer_help_intro ?? '' ),
 			'step1'        => (string) ( $s->gddealer_help_step1 ?? '' ),
 			'step2'        => (string) ( $s->gddealer_help_step2 ?? '' ),
 			'step3'        => (string) ( $s->gddealer_help_step3 ?? '' ),
 			'step4'        => (string) ( $s->gddealer_help_step4 ?? '' ),
 			'step5'        => (string) ( $s->gddealer_help_step5 ?? '' ),
+			'step2_csv'    => (string) ( $s->gddealer_help_step2_csv ?? '' ),
+			'step2_json'   => (string) ( $s->gddealer_help_step2_json ?? '' ),
+			'step2_xml'    => (string) ( $s->gddealer_help_step2_xml ?? '' ),
 			'requirements' => array_values( $requirements ),
-			'contact'      => (string) ( $s->gddealer_help_contact ?? '' ),
+			'contact'      => (string) ( $s->gddealer_help_contact ?? 'dealers@gunrack.deals' ),
+			'sync_basic'   => (string) ( $s->gddealer_help_sync_basic ?? 'Every 6 hours' ),
+			'sync_pro'     => (string) ( $s->gddealer_help_sync_pro ?? 'Every 30 minutes' ),
+			'sync_ent'     => (string) ( $s->gddealer_help_sync_enterprise ?? 'Every 15 minutes' ),
 		];
 
 		$this->output( 'help', \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )->help( $helpData ) );
