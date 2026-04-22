@@ -335,24 +335,32 @@ class _profile extends \IPS\Dispatcher\Controller
 					);
 				}
 
+				$reviewerInitials = strtoupper( substr( $reviewerName, 0, 2 ) );
+				$ratingOverall    = (int) round( $avg );
+
 				$reviews[] = [
 					'id'                   => (int) $r['id'],
 					'member_id'            => $reviewMemberId,
 					'rating_pricing'       => $pricing,
 					'rating_shipping'      => $shipping,
 					'rating_service'       => $service,
+					'rating_overall'       => $ratingOverall,
 					'review_body'          => (string) ( $r['review_body'] ?? '' ),
 					'dealer_response'      => (string) ( $r['dealer_response'] ?? '' ),
 					'dealer_name'          => (string) ( $dealerRow['dealer_name'] ?? '' ),
 					'created_at'           => $createdAt,
 					'created_at_formatted' => $createdTs ? (string) \IPS\DateTime::ts( $createdTs )->localeDate() : '',
+					'created_at_display'   => $createdTs ? (string) \IPS\DateTime::ts( $createdTs )->localeDate() : '',
 					'response_at'          => $responseTs ? (string) \IPS\DateTime::ts( $responseTs )->localeDate() : '',
 					'dispute_status'       => $rowDisputeStatus,
 					'dispute_outcome'      => (string) ( $r['dispute_outcome'] ?? '' ),
 					'avg_score'            => $avg,
 					'avg_color'            => self::ratingColor( (float) $avg ),
+					'customer_name'        => $reviewerName,
+					'customer_initials'    => $reviewerInitials,
 					'reviewer_name'        => $reviewerName,
 					'reviewer_avatar'      => $reviewerAvatar,
+					'verified_buyer'       => (bool) ( $r['verified_buyer'] ?? 0 ),
 					'stars_pricing'        => str_repeat( '★', $pricing ) . str_repeat( '☆', 5 - $pricing ),
 					'stars_shipping'       => str_repeat( '★', $shipping ) . str_repeat( '☆', 5 - $shipping ),
 					'stars_service'        => str_repeat( '★', $service ) . str_repeat( '☆', 5 - $service ),
@@ -574,23 +582,133 @@ class _profile extends \IPS\Dispatcher\Controller
 			$contactEmail = (string) ( \IPS\Settings::i()->gddealer_help_contact ?: 'dealers@gunrack.deals' );
 		}
 
+		/* Hours JSON decode */
+		$hours = [];
+		$hoursRaw = (string) ( $dealerRow['hours_json'] ?? '' );
+		if ( $hoursRaw !== '' )
+		{
+			$decoded = json_decode( $hoursRaw, true );
+			if ( is_array( $decoded ) ) { $hours = $decoded; }
+		}
+
+		$dayLabels = [ 'mon' => 'Monday', 'tue' => 'Tuesday', 'wed' => 'Wednesday', 'thu' => 'Thursday', 'fri' => 'Friday', 'sat' => 'Saturday', 'sun' => 'Sunday' ];
+		$todayKey  = strtolower( substr( date( 'D' ), 0, 3 ) );
+		$hoursDisplay = [];
+		$anyHoursSet  = false;
+		foreach ( [ 'mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun' ] as $d )
+		{
+			$dayData = $hours[ $d ] ?? null;
+			$closed  = (bool) ( $dayData['closed'] ?? false );
+			$open    = (string) ( $dayData['open']  ?? '' );
+			$close   = (string) ( $dayData['close'] ?? '' );
+
+			if ( $closed || ( $open !== '' && $close !== '' ) ) { $anyHoursSet = true; }
+
+			$hoursDisplay[] = [
+				'key'       => $d,
+				'label'     => $dayLabels[ $d ],
+				'closed'    => $closed,
+				'open'      => $open !== '' ? date( 'g:i A', strtotime( $open ) ) : '',
+				'close'     => $close !== '' ? date( 'g:i A', strtotime( $close ) ) : '',
+				'is_today'  => $d === $todayKey,
+			];
+		}
+
+		/* Payment methods CSV → array of label objects */
+		$pmLabels = [
+			'visa'      => [ 'label' => 'Visa',        'short' => 'Visa' ],
+			'mc'        => [ 'label' => 'Mastercard',  'short' => 'MC' ],
+			'amex'      => [ 'label' => 'Amex',        'short' => 'Amex' ],
+			'discover'  => [ 'label' => 'Discover',    'short' => 'Disc' ],
+			'check'     => [ 'label' => 'Check',       'short' => 'Check' ],
+			'mo'        => [ 'label' => 'Money Order', 'short' => 'MO' ],
+			'cash'      => [ 'label' => 'Cash',        'short' => 'Cash' ],
+			'layaway'   => [ 'label' => 'Layaway',     'short' => 'Layaway' ],
+			'financing' => [ 'label' => 'Financing',   'short' => 'Finance' ],
+		];
+		$pmRaw = (string) ( $dealerRow['payment_methods'] ?? '' );
+		$paymentMethods = [];
+		if ( $pmRaw !== '' )
+		{
+			foreach ( array_filter( array_map( 'trim', explode( ',', $pmRaw ) ) ) as $pmKey )
+			{
+				if ( isset( $pmLabels[ $pmKey ] ) )
+				{
+					$paymentMethods[] = [ 'key' => $pmKey ] + $pmLabels[ $pmKey ];
+				}
+			}
+		}
+
+		/* Socials — only keep non-empty */
+		$socials = [];
+		foreach ( [ 'facebook', 'instagram', 'youtube', 'twitter', 'tiktok' ] as $net )
+		{
+			$url = (string) ( $dealerRow[ 'social_' . $net ] ?? '' );
+			if ( $url !== '' ) { $socials[] = [ 'network' => $net, 'url' => $url ]; }
+		}
+
+		/* Address — honor address_public flag */
+		$addressPublic    = (int) ( $dealerRow['address_public'] ?? 1 ) === 1;
+		$addressStreet    = (string) ( $dealerRow['address_street'] ?? '' );
+		$addressCity      = (string) ( $dealerRow['address_city']   ?? '' );
+		$addressState     = (string) ( $dealerRow['address_state']  ?? '' );
+		$addressZip       = (string) ( $dealerRow['address_zip']    ?? '' );
+		$addressCityState = trim( $addressCity . ( ( $addressCity && $addressState ) ? ', ' : '' ) . $addressState );
+		$addressLine      = '';
+		if ( $addressPublic && $addressStreet !== '' )
+		{
+			$addressLine = trim( $addressStreet . ( $addressCityState ? ', ' . $addressCityState : '' ) . ( $addressZip ? ' ' . $addressZip : '' ) );
+		}
+		else
+		{
+			$addressLine = $addressCityState ?: '';
+		}
+
+		$brandColor = (string) ( $dealerRow['brand_color'] ?? '#1E40AF' );
+		if ( !preg_match( '/^#[0-9A-Fa-f]{6}$/', $brandColor ) ) { $brandColor = '#1E40AF'; }
+
 		$dealer = [
-			'dealer_id'       => $dealerId,
-			'dealer_name'     => (string) $dealerRow['dealer_name'],
-			'dealer_slug'     => (string) $dealerRow['dealer_slug'],
-			'member_since'    => $memberSince,
-			'is_active'       => $isActive,
-			'avatar_url'      => $avatarUrl,
-			'cover_photo_url' => $coverPhotoUrl,
-			'cover_offset'    => $coverOffset,
-			'tier'            => $tier,
-			'tier_label'      => $tierLabel,
-			'tier_color'      => $tierColor,
-			'active_listings' => $activeListings,
-			'listing_count'   => $activeListings,
-			'contact_email'   => $contactEmail,
+			'dealer_id'        => $dealerId,
+			'dealer_name'      => (string) $dealerRow['dealer_name'],
+			'dealer_slug'      => (string) $dealerRow['dealer_slug'],
+			'member_since'     => $memberSince,
+			'is_active'        => $isActive,
+			'avatar_url'       => $avatarUrl,
+			'cover_photo_url'  => $coverPhotoUrl,
+			'cover_offset'     => $coverOffset,
+			'tier'             => $tier,
+			'tier_label'       => $tierLabel,
+			'tier_color'       => $tierColor,
+			'active_listings'  => $activeListings,
+			'listing_count'    => $activeListings,
+			'contact_email'    => $contactEmail,
+
+			'tagline'            => (string) ( $dealerRow['tagline']        ?? '' ),
+			'about'              => (string) ( $dealerRow['about']          ?? '' ),
+			'logo_url'           => (string) ( $dealerRow['logo_url']       ?? '' ),
+			'cover_url_custom'   => (string) ( $dealerRow['cover_url']      ?? '' ),
+			'public_phone'       => (string) ( $dealerRow['public_phone']   ?? '' ),
+			'public_email'       => (string) ( $dealerRow['public_email']   ?? '' ),
+			'website_url'        => (string) ( $dealerRow['website_url']    ?? '' ),
+			'address_line'       => $addressLine,
+			'address_public'     => $addressPublic,
+			'address_city_state' => $addressCityState,
+			'hours'              => $hoursDisplay,
+			'has_hours'          => $anyHoursSet,
+			'socials'            => $socials,
+			'payment_methods'    => $paymentMethods,
+			'shipping_policy'    => (string) ( $dealerRow['shipping_policy']  ?? '' ),
+			'return_policy'      => (string) ( $dealerRow['return_policy']    ?? '' ),
+			'additional_notes'   => (string) ( $dealerRow['additional_notes'] ?? '' ),
+			'brand_color'        => $brandColor,
 		];
 
+		if ( $dealer['cover_url_custom'] !== '' )
+		{
+			$dealer['cover_photo_url'] = $dealer['cover_url_custom'];
+		}
+
+		$stats['count']        = $stats['total'];
 		$stats['pct_pricing']  = $stats['avg_pricing']  > 0 ? (int) round( ( $stats['avg_pricing']  / 5 ) * 100 ) : 0;
 		$stats['pct_shipping'] = $stats['avg_shipping'] > 0 ? (int) round( ( $stats['avg_shipping'] / 5 ) * 100 ) : 0;
 		$stats['pct_service']  = $stats['avg_service']  > 0 ? (int) round( ( $stats['avg_service']  / 5 ) * 100 ) : 0;
@@ -617,9 +735,31 @@ class _profile extends \IPS\Dispatcher\Controller
 
 		$totalInFilter = (int) ( $starCounts[ $starKey ] ?? $starCounts['all'] );
 
+		$data = [
+			'dealer'                  => $dealer,
+			'stats'                   => $stats,
+			'reviews'                 => $reviews,
+			'can_rate'                => $canRate,
+			'already_rated'           => $alreadyRated,
+			'login_required'          => $loginRequired,
+			'rate_url'                => $rateUrl,
+			'csrf_key'                => $csrfKey,
+			'login_url'               => $loginUrl,
+			'customer_dispute'        => $customerDispute,
+			'guidelines_url'          => $guidelinesUrl,
+			'review_body_editor_html' => $reviewBodyEditorHtml,
+			'sort_key'                => $sortKey,
+			'star_key'                => $starKey,
+			'star_counts'             => $starCounts,
+			'star_options'            => $starOptions,
+			'sort_options'            => $sortOptions,
+			'clear_filters_url'       => $clearFiltersUrl,
+			'total_in_filter'         => $totalInFilter,
+		];
+
 		\IPS\Output::i()->title  = $dealer['dealer_name'];
 		\IPS\Output::i()->output = $this->themeVars() . \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )
-			->dealerProfile( $dealer, $stats, $reviews, $canRate, $alreadyRated, $loginRequired, $rateUrl, $csrfKey, $loginUrl, $customerDispute, $guidelinesUrl, $reviewBodyEditorHtml, $sortKey, $starKey, $starCounts, $starOptions, $sortOptions, $clearFiltersUrl, $totalInFilter );
+			->dealerProfile( $data );
 	}
 
 	/**

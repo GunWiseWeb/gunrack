@@ -2852,3 +2852,38 @@ body:has(.gdDealerApp) .ipsMobileFooter { display: none !important; }
     text-decoration: none;
 }
 .gdProfileForm__footerLink:hover { color: var(--gd-brand); }
+
+/* ── Public profile hero ────────────────────────── */
+.gdHero { background: #fff; border: 1px solid var(--i-border-color, #e0e0e0); border-radius: 8px; overflow: hidden; margin-bottom: 16px; }
+.gdHero__cover { position: relative; overflow: hidden; height: 200px; }
+.gdHero__cover img { width: 100%; height: 100%; object-fit: cover; }
+.gdHero__coverFallback { width: 100%; height: 100%; }
+.gdHero__body { display: flex; gap: 20px; align-items: flex-end; padding: 0 24px 20px; flex-wrap: wrap; }
+.gdHero__logoWrap { margin-top: -48px; flex-shrink: 0; }
+.gdHero__logo { width: 96px; height: 96px; border-radius: 12px; border: 4px solid #fff; overflow: hidden; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+.gdHero__logo img { width: 100%; height: 100%; object-fit: contain; }
+.gdHero__avatar { width: 96px; height: 96px; border-radius: 50%; border: 4px solid #fff; overflow: hidden; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+.gdHero__avatar img { width: 100%; height: 100%; object-fit: cover; }
+.gdHero__info { flex: 1; min-width: 200px; padding-top: 16px; }
+.gdHero__name { margin: 0; font-size: 1.6em; font-weight: 800; }
+.gdHero__tier { display: inline-block; color: #fff; padding: 2px 10px; border-radius: 20px; font-size: 0.78em; font-weight: 700; }
+.gdHero__tagline { margin: 6px 0 0; color: #6b7280; font-size: 0.95em; }
+.gdHero__meta { display: flex; gap: 16px; margin-top: 8px; flex-wrap: wrap; font-size: 0.85em; color: #6b7280; }
+.gdHero__meta a { color: var(--gd-dealer-brand, var(--gd-brand, #2563eb)); }
+.gdHero__rating { text-align: center; flex-shrink: 0; padding-top: 16px; }
+.gdHero__ratingValue { font-size: 2em; font-weight: 800; line-height: 1; }
+.gdHero__ratingLabel { font-size: 0.78em; font-weight: 600; margin-top: 2px; }
+.gdHero__ratingCount { font-size: 0.75em; color: #9ca3af; margin-top: 2px; }
+
+@media (max-width: 768px) {
+    .gdHero__cover { height: 160px; }
+    .gdHero__body { flex-direction: column; align-items: center; text-align: center; }
+    .gdHero__meta { justify-content: center; }
+    .gdHero__rating { margin-top: 12px; }
+}
+@media (max-width: 480px) {
+    .gdHero__cover { height: 120px; }
+    .gdHero__logo, .gdHero__avatar { width: 72px; height: 72px; }
+    .gdHero__logoWrap { margin-top: -36px; }
+    .gdHero__name { font-size: 1.3em; }
+}
