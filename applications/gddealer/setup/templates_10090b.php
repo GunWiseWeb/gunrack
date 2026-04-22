@@ -159,6 +159,34 @@ return [
 .gdDealerPage .empty { text-align: center; padding: 3rem 2rem; background: var(--gd-surface); border: 1px dashed var(--gd-border-strong); border-radius: var(--gd-r-lg); }
 .gdDealerPage .empty-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; color: var(--gd-text); }
 .gdDealerPage .empty-sub { font-size: 13px; color: var(--gd-text-subtle); max-width: 360px; margin: 0 auto; }
+.gdDealerPage .review { background: var(--gd-surface); border: 1px solid var(--gd-border); border-radius: var(--gd-r-lg); padding: 1.25rem 1.5rem; margin-bottom: 12px; }
+.gdDealerPage .review-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 10px; flex-wrap: wrap; }
+.gdDealerPage .review-reviewer { display: flex; gap: 10px; align-items: center; }
+.gdDealerPage .review-avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #818CF8, #6366F1); color: #fff; display: inline-flex; align-items: center; justify-content: center; font-weight: 600; font-size: 13px; flex-shrink: 0; overflow: hidden; line-height: 1; }
+.gdDealerPage .review-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.gdDealerPage .review-name { font-size: 14px; font-weight: 600; margin-bottom: 2px; color: var(--gd-text); }
+.gdDealerPage .review-name .verified-tag { font-size: 11px; color: var(--gd-success); margin-left: 6px; font-weight: 500; }
+.gdDealerPage .review-date { font-size: 12px; color: var(--gd-text-subtle); }
+.gdDealerPage .review-score { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; background: var(--gd-surface-muted); border-radius: var(--gd-r-pill); font-size: 12px; font-weight: 600; flex-wrap: wrap; }
+.gdDealerPage .review-dimensions { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 12px; padding: 10px 12px; background: var(--gd-surface-muted); border-radius: var(--gd-r-md); }
+.gdDealerPage .review-dim { display: flex; align-items: center; gap: 6px; font-size: 12px; }
+.gdDealerPage .review-dim-label { color: var(--gd-text-subtle); }
+.gdDealerPage .review-dim-stars { color: var(--gd-star); font-size: 13px; letter-spacing: 1px; }
+.gdDealerPage .review-body { font-size: 14px; line-height: 1.6; color: var(--gd-text); margin-bottom: 12px; word-wrap: break-word; }
+.gdDealerPage .review-body p { margin: 0 0 0.5em 0; }
+.gdDealerPage .review-body p:last-child { margin-bottom: 0; }
+.gdDealerPage .review-response { background: var(--gd-brand-light); border-left: 3px solid var(--gd-brand); border-radius: 0 var(--gd-r-md) var(--gd-r-md) 0; padding: 12px 14px; margin-top: 12px; }
+.gdDealerPage .review-response-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; font-size: 12px; flex-wrap: wrap; gap: 6px; }
+.gdDealerPage .review-response-label { color: var(--gd-brand); font-weight: 600; }
+.gdDealerPage .review-response-date { color: var(--gd-text-subtle); }
+.gdDealerPage .review-response-body { font-size: 13px; color: var(--gd-text-muted); line-height: 1.6; word-wrap: break-word; }
+.gdDealerPage .review-response-body p { margin: 0 0 0.5em 0; }
+.gdDealerPage .review-response-body p:last-child { margin-bottom: 0; }
+.gdDealerPage .review-dispute-badge { font-size: 11px; padding: 3px 10px; border-radius: var(--gd-r-pill); background: var(--gd-warn-bg); color: var(--gd-warn); font-weight: 500; }
+.gdDealerPage .review-dispute-badge.resolved { background: var(--gd-success-bg); color: var(--gd-success); }
+.gdDealerPage .review-dispute-badge.removed { background: var(--gd-danger-bg); color: var(--gd-danger); }
+.gdDealerPage .review-own-actions { display: flex; gap: 8px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--gd-border-subtle); }
+.gdDealerPage .review-score-num { font-variant-numeric: tabular-nums; }
 
 @media (max-width: 960px) {
 	.gdDealerPage .rating-breakdown { grid-template-columns: 1fr; }
@@ -335,7 +363,81 @@ return [
 			</div>
 			{{endif}}
 
-			<!-- Part 3 (reviews loop) inserts here -->
+			{{if \count( $data['reviews'] )}}
+				{{foreach $data['reviews'] as $review}}
+				<div class="review" id="{expression="'review-' . (int) $review['id']"}">
+					<div class="review-head">
+						<div class="review-reviewer">
+							<div class="review-avatar">
+								{{if $review['reviewer_avatar']}}
+									<img src="{$review['reviewer_avatar']}" alt="{$review['reviewer_name']}">
+								{{else}}
+									{$review['customer_initials']}
+								{{endif}}
+							</div>
+							<div>
+								<div class="review-name">{$review['reviewer_name']}{{if $review['verified_buyer']}}<span class="verified-tag">✓ Verified buyer</span>{{endif}}</div>
+								<div class="review-date">{$review['created_at_formatted']}</div>
+							</div>
+						</div>
+						<div class="review-score">
+							<span class="review-score-num" style="{expression="'color: ' . ( $review['avg_color'] ?? '#16A34A' )"}">{$review['avg_score']}</span>
+							<span style="color: var(--gd-text-subtle);">/ 5</span>
+							{{if $review['dispute_status'] === 'pending_admin'}}
+							<span class="review-dispute-badge">Under admin review</span>
+							{{elseif $review['dispute_status'] === 'pending_customer'}}
+							<span class="review-dispute-badge">Awaiting customer reply</span>
+							{{elseif $review['dispute_status'] === 'resolved'}}
+							<span class="review-dispute-badge resolved">Dispute resolved</span>
+							{{endif}}
+						</div>
+					</div>
+					<div class="review-dimensions">
+						<span class="review-dim">
+							<span class="review-dim-label">Pricing</span>
+							<span class="review-dim-stars">{$review['stars_pricing']}</span>
+						</span>
+						<span class="review-dim">
+							<span class="review-dim-label">Shipping</span>
+							<span class="review-dim-stars">{$review['stars_shipping']}</span>
+						</span>
+						<span class="review-dim">
+							<span class="review-dim-label">Service</span>
+							<span class="review-dim-stars">{$review['stars_service']}</span>
+						</span>
+					</div>
+					{{if $review['review_body']}}
+					<div class="review-body">{$review['review_body']|raw}</div>
+					{{endif}}
+					{{if $review['dealer_response']}}
+					<div class="review-response">
+						<div class="review-response-head">
+							<span class="review-response-label">Response from {$review['dealer_name']}</span>
+							{{if $review['response_at']}}
+							<span class="review-response-date">{$review['response_at']}</span>
+							{{endif}}
+						</div>
+						<div class="review-response-body">{$review['dealer_response']|raw}</div>
+					</div>
+					{{endif}}
+					{{if $review['is_own_review'] && ( $review['edit_review_url'] || $review['dispute_respond_url'] )}}
+					<div class="review-own-actions">
+						{{if $review['edit_review_url']}}
+						<a class="btn btn-ghost" href="{$review['edit_review_url']}">Edit review</a>
+						{{endif}}
+						{{if $review['dispute_respond_url']}}
+						<a class="btn btn-ghost" href="{$review['dispute_respond_url']}">Respond to dispute</a>
+						{{endif}}
+					</div>
+					{{endif}}
+				</div>
+				{{endforeach}}
+			{{elseif $data['stats']['total'] > 0}}
+				<div class="empty">
+					<div class="empty-title">No reviews match this filter</div>
+					<div class="empty-sub"><a href="{$data['clear_filters_url']}" style="color: var(--gd-brand);">Clear filters</a></div>
+				</div>
+			{{endif}}
 		</div>
 		<div>
 			<!-- Part 4 (sidebar) inserts here -->
