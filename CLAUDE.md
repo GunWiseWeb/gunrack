@@ -162,6 +162,40 @@ These were learned by comparing against a working IPS v5 plugin. They apply to e
     - `data/lang.xml` — must define `r__{permission_key}` for every permission key (shown in the ACP permission editor).
 
     Audit command: `jq -r 'to_entries[].value | to_entries[].value | to_entries[].key' applications/*/data/acprestrictions.json | sort -u` lists every declared permission; every `checkAcpPermission(` string and every `"restriction"` value in `acpmenu.json` across the app must be present in that list.
+18. **Template upgrade integrity — use `Db::i()->update()`, never `Db::i()->replace()` with `template_set_id=0`, and always rotate cache keys + delete compiled files after a signature change.** When modifying a template that was originally seeded by `setup/install.php` or a prior upgrade step, the upgrade step must `UPDATE` the existing `core_theme_templates` row(s) keyed on `(template_app, template_location, template_group, template_name)` — with NO `template_set_id` in the WHERE clause so every set's row gets patched. Never use `\IPS\Db::i()->replace()` with `template_set_id = 0` for a pre-existing template: `replace()` inserts a second row at `set_id=0` alongside the original `set_id=1` row from `install.php`. `\IPS\Theme::getAllTemplates()` selects both rows with no `set_id` filter and keys the result array by `[app][location][group][name]`, so during compilation the stale `set_id=1` row overwrites the new `set_id=0` row and the compiled class is emitted with the OLD signature. Result: `ArgumentCountError: Too few arguments to function IPS\Theme\class_{app}_front_{group}::{name}(), N passed and M expected` — surfaced to the user as the generic "Template is throwing an error" via `SandboxedTemplate`.
+
+    Correct upgrade pattern for any existing template:
+
+    ```php
+    \IPS\Db::i()->update( 'core_theme_templates',
+        [
+            'template_data'    => '$data',
+            'template_content' => $newContent,
+            'template_updated' => time(),
+        ],
+        [ 'template_app=? AND template_location=? AND template_group=? AND template_name=?',
+          'gddealer', 'front', 'dealers', 'dealerProfile' ]
+    );
+    ```
+
+    Reserve `\IPS\Db::i()->replace()` with `template_set_id = 0` ONLY for brand-new templates that have never been seeded before.
+
+    After any template signature change (parameter list differs from the compiled version), the upgrade step MUST rotate IPS's compiled-file lookup key and delete stale on-disk compiled files — `deleteCompiledTemplate()` alone does NOT clear the FileSystem store's actual files, because the default Store backend writes `datastore/template_{theme_id}_{md5_hash}_{group}.{SUITE_UNIQUE_KEY}.php` and `deleteCompiledTemplate()` only unsets the in-memory Store key:
+
+    ```php
+    \IPS\Db::i()->update( 'core_themes', [ 'set_cache_key' => md5( microtime() . mt_rand() ) ] );
+    try { \IPS\Theme::deleteCompiledTemplate( 'gddealer', 'front', 'dealers' ); } catch ( \Throwable ) {}
+    try { \IPS\Data\Store::i()->clearAll(); }                                     catch ( \Throwable ) {}
+    try { \IPS\Data\Cache::i()->clearAll(); }                                     catch ( \Throwable ) {}
+    /* FileSystem store — deleteCompiledTemplate does NOT unlink on-disk files */
+    foreach ( glob( \IPS\ROOT_PATH . '/datastore/template_*_dealers.*.php' ) ?: [] as $f ) {
+        @unlink( $f );
+    }
+    ```
+
+    If opcache is enabled (production always is), compiled template classes are `eval()`-d into worker memory and will not pick up the new signature until workers restart. Instruct the admin to reload PHP-FPM across every installed PHP version (`systemctl reload php-fpm74 php-fpm80 php-fpm81 php-fpm82 php-fpm83` on AlmaLinux/DirectAdmin) after running the upgrade. An upgrade step that skips the FPM reload will appear to "do nothing" on first load and then fix itself after the next deploy — hours of lost debugging time.
+
+    Audit rule: `grep -rn "replace( 'core_theme_templates'" applications/` must return only occurrences in `setup/install.php` (the initial seed). Any match inside `setup/upg_*` or `setup/templates_*` is a bug — convert it to `update()` keyed on the four template columns.
 
 ## Full specification
 Read `GunRack_Spec_v2.9.16.md` for complete specs on all 12 plugins, database schemas, acceptance criteria, server setup (Appendix B), security requirements (Appendix C), and Phase 2 roadmap (Section 19).
