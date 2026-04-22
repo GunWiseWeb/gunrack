@@ -1164,5 +1164,26 @@
 			"PRIMARY":   { "type": "primary", "name": "PRIMARY",   "length": [null], "columns": ["id"] },
 			"review_id": { "type": "key",     "name": "review_id", "length": [null], "columns": ["review_id"] }
 		}
+	},
+	"gd_dealer_rank_snapshot": {
+		"name": "gd_dealer_rank_snapshot",
+		"columns": {
+			"id":              { "name": "id",              "type": "BIGINT",   "length": 20, "unsigned": true, "allow_null": false, "auto_increment": true },
+			"dealer_id":       { "name": "dealer_id",       "type": "INT",      "length": 10, "unsigned": true, "allow_null": false, "default": 0 },
+			"upc":             { "name": "upc",             "type": "VARCHAR",  "length": 20, "allow_null": false, "default": "" },
+			"rank_position":   { "name": "rank_position",   "type": "SMALLINT", "length": 5,  "unsigned": true, "allow_null": false, "default": 0 },
+			"competitor_ct":   { "name": "competitor_ct",   "type": "SMALLINT", "length": 5,  "unsigned": true, "allow_null": false, "default": 0 },
+			"dealer_price":    { "name": "dealer_price",    "type": "DECIMAL",  "length": "10,2", "allow_null": false, "default": "0.00" },
+			"min_price":       { "name": "min_price",       "type": "DECIMAL",  "length": "10,2", "allow_null": false, "default": "0.00" },
+			"price_delta_pct": { "name": "price_delta_pct", "type": "DECIMAL",  "length": "6,2",  "allow_null": false, "default": "0.00" },
+			"tier":            { "name": "tier",            "type": "VARCHAR",  "length": 20, "allow_null": false, "default": "unknown" },
+			"snapshot_date":   { "name": "snapshot_date",   "type": "DATE",     "allow_null": false }
+		},
+		"indexes": {
+			"PRIMARY":            { "type": "primary", "name": "PRIMARY",            "length": [null],       "columns": ["id"] },
+			"idx_dealer_date":    { "type": "key",     "name": "idx_dealer_date",    "length": [null, null], "columns": ["dealer_id", "snapshot_date"] },
+			"idx_upc_date":       { "type": "key",     "name": "idx_upc_date",       "length": [null, null], "columns": ["upc", "snapshot_date"] },
+			"uq_dealer_upc_date": { "type": "unique",  "name": "uq_dealer_upc_date", "length": [null, null, null], "columns": ["dealer_id", "upc", "snapshot_date"] }
+		}
 	}
 }

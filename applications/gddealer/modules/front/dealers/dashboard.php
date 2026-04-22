@@ -721,136 +721,250 @@ class _dashboard extends \IPS\Dispatcher\Controller
 
 	/* ---------------- Tab: Analytics (Pro / Enterprise) ---------------- */
 
-	protected function analytics()
+	protected function analytics(): void
 	{
-		$dealer = $this->dealer;
-		$tier   = (string) $dealer->subscription_tier;
-		$gated  = !in_array( $tier, [ Dealer::TIER_PRO, Dealer::TIER_ENTERPRISE, Dealer::TIER_FOUNDING ], true );
+		$dealer   = $this->dealer;
+		$dealerId = (int) $dealer->dealer_id;
 
-		$analytics    = [ 'comp_lowest' => 0, 'comp_mid' => 0, 'comp_high' => 0, 'comp_only' => 0, 'price_drop_count' => 0 ];
-		$topClicked   = [];
-		$opportunities = [];
+		$range = (string) ( \IPS\Request::i()->range ?? '30' );
+		if ( !in_array( $range, [ '7', '30', '90', 'ytd' ], true ) ) { $range = '30'; }
 
-		if ( !$gated )
-		{
-			/* ---- 1. Load this dealer's active listings ---- */
-			$myListings = [];
-			try
-			{
-				foreach ( \IPS\Db::i()->select(
-					'upc, dealer_price, shipping_cost, click_count_30d, click_count_7d, in_stock',
-					'gd_dealer_listings',
-					[ 'dealer_id=? AND listing_status=?', (int) $dealer->dealer_id, Listing::STATUS_ACTIVE ]
-				) as $r ) {
-					$myListings[ (string) $r['upc'] ] = $r;
+		switch ( $range ) {
+			case '7':   $startDate = date( 'Y-m-d', strtotime( '-6 days' ) );  $rangeDays = 7;  break;
+			case '90':  $startDate = date( 'Y-m-d', strtotime( '-89 days' ) ); $rangeDays = 90; break;
+			case 'ytd': $startDate = date( 'Y-01-01' );                        $rangeDays = (int) ( ( strtotime( 'today' ) - strtotime( $startDate ) ) / 86400 ) + 1; break;
+			default:    $startDate = date( 'Y-m-d', strtotime( '-29 days' ) ); $rangeDays = 30;
+		}
+		$endDate   = date( 'Y-m-d' );
+		$prevStart = date( 'Y-m-d', strtotime( $startDate . ' -' . $rangeDays . ' days' ) );
+		$prevEnd   = date( 'Y-m-d', strtotime( $startDate . ' -1 day' ) );
+
+		$clicksNow = 0;
+		$clicksPrev = 0;
+		try {
+			$clicksNow = (int) \IPS\Db::i()->select( 'COALESCE(SUM(click_count),0)', 'gd_click_daily',
+				[ 'dealer_id=? AND click_date >= ? AND click_date <= ?', $dealerId, $startDate, $endDate ]
+			)->first();
+		} catch ( \Exception ) {}
+		try {
+			$clicksPrev = (int) \IPS\Db::i()->select( 'COALESCE(SUM(click_count),0)', 'gd_click_daily',
+				[ 'dealer_id=? AND click_date >= ? AND click_date <= ?', $dealerId, $prevStart, $prevEnd ]
+			)->first();
+		} catch ( \Exception ) {}
+		$clickDeltaPct = $clicksPrev > 0 ? (int) round( ( ( $clicksNow - $clicksPrev ) / $clicksPrev ) * 100 ) : null;
+
+		$latestSnapDate = null;
+		try {
+			$latestSnapDate = (string) \IPS\Db::i()->select( 'MAX(snapshot_date)', 'gd_dealer_rank_snapshot',
+				[ 'dealer_id=?', $dealerId ]
+			)->first();
+		} catch ( \Exception ) {}
+
+		$tierCounts    = [ 'lowest' => 0, 'close' => 0, 'overpriced' => 0, 'only' => 0 ];
+		$snapshotTotal = 0;
+		if ( $latestSnapDate ) {
+			try {
+				foreach ( \IPS\Db::i()->select( 'tier, COUNT(*) AS cnt', 'gd_dealer_rank_snapshot',
+					[ 'dealer_id=? AND snapshot_date=?', $dealerId, $latestSnapDate ],
+					null, null, 'tier'
+				) as $row ) {
+					$t = (string) $row['tier'];
+					if ( isset( $tierCounts[ $t ] ) ) { $tierCounts[ $t ] = (int) $row['cnt']; }
+					$snapshotTotal += (int) $row['cnt'];
 				}
-			}
-			catch ( \Exception ) {}
-
-			/* ---- 2. Price competitiveness — min price from OTHER dealers per UPC ---- */
-			$otherMins = [];
-			if ( !empty( $myListings ) )
-			{
-				try
-				{
-					foreach ( \IPS\Db::i()->select(
-						'upc, MIN(dealer_price + COALESCE(shipping_cost, 0)) as min_total',
-						'gd_dealer_listings',
-						[
-							\IPS\Db::i()->in( 'upc', array_keys( $myListings ) ) . ' AND dealer_id!=? AND listing_status=?',
-							(int) $dealer->dealer_id,
-							Listing::STATUS_ACTIVE,
-						],
-						null, null, 'upc'
-					) as $r ) {
-						$otherMins[ (string) $r['upc'] ] = (float) $r['min_total'];
-					}
-				}
-				catch ( \Exception ) {}
-
-				$rawOpportunities = [];
-				foreach ( $myListings as $upc => $mine )
-				{
-					$myTotal = (float) $mine['dealer_price'] + (float) ( $mine['shipping_cost'] ?? 0 );
-
-					if ( !isset( $otherMins[ $upc ] ) )
-					{
-						$analytics['comp_only']++;
-					}
-					elseif ( $myTotal <= $otherMins[ $upc ] )
-					{
-						$analytics['comp_lowest']++;
-					}
-					elseif ( $myTotal <= $otherMins[ $upc ] * 1.10 )
-					{
-						$analytics['comp_mid']++;
-						$rawOpportunities[] = [
-							'upc'            => (string) $upc,
-							'your_price'     => $myTotal,
-							'lowest_price'   => $otherMins[ $upc ],
-							'gap'            => $myTotal - $otherMins[ $upc ],
-							'click_count_30d'=> (int) $mine['click_count_30d'],
-						];
-					}
-					else
-					{
-						$analytics['comp_high']++;
-						$rawOpportunities[] = [
-							'upc'            => (string) $upc,
-							'your_price'     => $myTotal,
-							'lowest_price'   => $otherMins[ $upc ],
-							'gap'            => $myTotal - $otherMins[ $upc ],
-							'click_count_30d'=> (int) $mine['click_count_30d'],
-						];
-					}
-				}
-
-				usort( $rawOpportunities, function ( $a, $b ) { return $b['gap'] <=> $a['gap']; } );
-				$opportunities = array_slice( $rawOpportunities, 0, 20 );
-			}
-
-			/* ---- 3. Top 20 most-clicked ---- */
-			try
-			{
-				foreach ( \IPS\Db::i()->select(
-					'upc, dealer_price, click_count_30d, click_count_7d, in_stock',
-					'gd_dealer_listings',
-					[ 'dealer_id=? AND click_count_30d>? AND listing_status=?', (int) $dealer->dealer_id, 0, Listing::STATUS_ACTIVE ],
-					'click_count_30d DESC',
-					[ 0, 20 ]
-				) as $r ) {
-					$topClicked[] = [
-						'upc'            => (string) $r['upc'],
-						'dealer_price'   => (float) $r['dealer_price'],
-						'click_count_30d'=> (int) $r['click_count_30d'],
-						'click_count_7d' => (int) $r['click_count_7d'],
-						'in_stock'       => (bool) $r['in_stock'],
-					];
-				}
-			}
-			catch ( \Exception ) {}
-
-			/* ---- 4. Price-drop count (last 30 days of imports) ---- */
-			try
-			{
-				$thirtyDaysAgo = date( 'Y-m-d H:i:s', time() - ( 30 * 86400 ) );
-				$analytics['price_drop_count'] = (int) \IPS\Db::i()->select(
-					'COALESCE(SUM(price_drops), 0)',
-					'gd_dealer_import_log',
-					[ 'dealer_id=? AND run_start>?', (int) $dealer->dealer_id, $thirtyDaysAgo ]
-				)->first();
-			}
-			catch ( \Exception ) {}
+			} catch ( \Exception ) {}
 		}
 
-		$this->output( 'analytics', \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )->analytics(
-			$this->dealerSummary(),
-			$gated,
-			$analytics,
-			$topClicked,
-			$opportunities,
-			$this->tabUrls()
-		) );
+		$lowestCount     = $tierCounts['lowest'] + $tierCounts['only'];
+		$overpricedCount = $tierCounts['overpriced'];
+
+		$priceDrops = 0;
+		try {
+			$prefix = \IPS\Db::i()->prefix;
+			$result = \IPS\Db::i()->query(
+				"SELECT COUNT(*) AS cnt FROM (
+					SELECT ph.upc,
+						( SELECT h1.price FROM {$prefix}gd_price_history h1
+						  WHERE h1.dealer_id = ph.dealer_id AND h1.upc = ph.upc
+							AND h1.recorded_at >= " . \IPS\Db::i()->addQuote( $startDate . ' 00:00:00' ) . "
+							AND h1.recorded_at <= " . \IPS\Db::i()->addQuote( $endDate . ' 23:59:59' ) . "
+						  ORDER BY h1.recorded_at ASC LIMIT 1 ) AS first_price,
+						( SELECT h2.price FROM {$prefix}gd_price_history h2
+						  WHERE h2.dealer_id = ph.dealer_id AND h2.upc = ph.upc
+							AND h2.recorded_at >= " . \IPS\Db::i()->addQuote( $startDate . ' 00:00:00' ) . "
+							AND h2.recorded_at <= " . \IPS\Db::i()->addQuote( $endDate . ' 23:59:59' ) . "
+						  ORDER BY h2.recorded_at DESC LIMIT 1 ) AS last_price
+					FROM {$prefix}gd_price_history ph
+					WHERE ph.dealer_id = " . (int) $dealerId . "
+					  AND ph.recorded_at >= " . \IPS\Db::i()->addQuote( $startDate . ' 00:00:00' ) . "
+					  AND ph.recorded_at <= " . \IPS\Db::i()->addQuote( $endDate . ' 23:59:59' ) . "
+					GROUP BY ph.upc
+					HAVING last_price < first_price
+				) sub"
+			);
+			if ( $result && $r = $result->fetch_assoc() ) {
+				$priceDrops = (int) $r['cnt'];
+			}
+		} catch ( \Exception ) {}
+
+		$days = [];
+		for ( $i = 0; $i < $rangeDays; $i++ ) {
+			$d = date( 'Y-m-d', strtotime( $startDate . ' +' . $i . ' days' ) );
+			$days[ $d ] = 0;
+		}
+		try {
+			foreach ( \IPS\Db::i()->select(
+				'click_date, SUM(click_count) AS daily',
+				'gd_click_daily',
+				[ 'dealer_id=? AND click_date >= ? AND click_date <= ?', $dealerId, $startDate, $endDate ],
+				'click_date ASC', null, 'click_date'
+			) as $row ) {
+				$d = (string) $row['click_date'];
+				if ( isset( $days[ $d ] ) ) { $days[ $d ] = (int) $row['daily']; }
+			}
+		} catch ( \Exception ) {}
+
+		$chartSeries = [];
+		foreach ( $days as $d => $n ) {
+			$chartSeries[] = [ 'date' => $d, 'label' => date( 'M j', strtotime( $d ) ), 'count' => $n ];
+		}
+		$chartMax = max( 1, !empty( $chartSeries ) ? max( array_column( $chartSeries, 'count' ) ) : 0 );
+
+		$chartPoints = [];
+		$plotLeft = 40; $plotRight = 590; $plotTop = 30; $plotBottom = 180;
+		$plotW = $plotRight - $plotLeft; $plotH = $plotBottom - $plotTop;
+		$n = count( $chartSeries );
+		foreach ( $chartSeries as $i => $pt ) {
+			$x = $plotLeft + ( $n <= 1 ? 0 : ( $i / ( $n - 1 ) ) * $plotW );
+			$y = $plotBottom - ( $pt['count'] / $chartMax ) * $plotH;
+			$chartPoints[] = round( $x, 1 ) . ',' . round( $y, 1 );
+		}
+		$chartPolyline = implode( ' ', $chartPoints );
+		$chartArea = count( $chartPoints ) > 0
+			? $chartPoints[0] . ' ' . implode( ' ', array_slice( $chartPoints, 1 ) ) . ' ' . $plotRight . ',' . $plotBottom . ' ' . $plotLeft . ',' . $plotBottom
+			: '';
+
+		$chartXLabels = [];
+		if ( $n >= 2 ) {
+			$labelIdxs = $n >= 5 ? [ 0, (int) ( $n * 0.25 ), (int) ( $n * 0.5 ), (int) ( $n * 0.75 ), $n - 1 ] : range( 0, $n - 1 );
+			foreach ( $labelIdxs as $idx ) {
+				$x = $plotLeft + ( $idx / ( $n - 1 ) ) * $plotW;
+				$chartXLabels[] = [ 'x' => round( $x, 1 ), 'label' => $chartSeries[ $idx ]['label'] ];
+			}
+		}
+
+		$chartYLabels = [];
+		for ( $t = 0; $t <= 4; $t++ ) {
+			$value = $chartMax * ( 1 - $t / 4 );
+			$y = $plotTop + ( $t * $plotH / 4 );
+			$chartYLabels[] = [ 'y' => round( $y, 1 ) + 4, 'label' => number_format( round( $value ) ) ];
+		}
+
+		$topListings = [];
+		try {
+			$prefix = \IPS\Db::i()->prefix;
+			$stmt = \IPS\Db::i()->query(
+				"SELECT cl.upc, COUNT(*) AS clicks
+				 FROM {$prefix}gd_click_log cl
+				 WHERE cl.dealer_id = " . (int) $dealerId . "
+				   AND cl.clicked_at >= " . \IPS\Db::i()->addQuote( $startDate . ' 00:00:00' ) . "
+				   AND cl.clicked_at <= " . \IPS\Db::i()->addQuote( $endDate . ' 23:59:59' ) . "
+				 GROUP BY cl.upc
+				 ORDER BY clicks DESC
+				 LIMIT 10"
+			);
+			$i = 0;
+			while ( $stmt && $row = $stmt->fetch_assoc() ) {
+				$productName = '';
+				try {
+					$productName = (string) \IPS\Db::i()->select( 'title', 'gd_catalog',
+						[ 'upc=?', (string) $row['upc'] ], null, [ 0, 1 ]
+					)->first();
+				} catch ( \Exception ) {}
+				$topListings[] = [
+					'rank'   => ++$i,
+					'upc'    => (string) $row['upc'],
+					'name'   => $productName !== '' ? $productName : ( 'UPC ' . $row['upc'] ),
+					'clicks' => (int) $row['clicks'],
+				];
+			}
+		} catch ( \Exception ) {}
+
+		$geoDistribution = [];
+		$geoTotal = 0;
+		try {
+			$prefix = \IPS\Db::i()->prefix;
+			$stmt = \IPS\Db::i()->query(
+				"SELECT user_state, COUNT(*) AS clicks
+				 FROM {$prefix}gd_click_log
+				 WHERE dealer_id = " . (int) $dealerId . "
+				   AND clicked_at >= " . \IPS\Db::i()->addQuote( $startDate . ' 00:00:00' ) . "
+				   AND clicked_at <= " . \IPS\Db::i()->addQuote( $endDate . ' 23:59:59' ) . "
+				   AND user_state IS NOT NULL AND user_state != ''
+				 GROUP BY user_state
+				 ORDER BY clicks DESC
+				 LIMIT 10"
+			);
+			while ( $stmt && $row = $stmt->fetch_assoc() ) {
+				$geoTotal += (int) $row['clicks'];
+				$geoDistribution[] = [
+					'state'  => (string) $row['user_state'],
+					'clicks' => (int) $row['clicks'],
+					'pct'    => 0,
+				];
+			}
+			if ( $geoTotal > 0 ) {
+				foreach ( $geoDistribution as &$g ) {
+					$g['pct'] = round( ( $g['clicks'] / $geoTotal ) * 100, 1 );
+				}
+				unset( $g );
+			}
+		} catch ( \Exception ) {}
+
+		$rangeUrls = [];
+		foreach ( [ '7', '30', '90', 'ytd' ] as $r ) {
+			$rangeUrls[ $r ] = (string) \IPS\Http\Url::internal(
+				'app=gddealer&module=dealers&controller=dashboard&do=analytics&range=' . $r
+			);
+		}
+
+		$data = [
+			'dealer'            => $this->dealerSummary(),
+			'tab_urls'          => $this->tabUrls(),
+			'active_range'      => $range,
+			'range_urls'        => $rangeUrls,
+			'range_label'       => $range === 'ytd' ? 'Year to date' : ( 'Last ' . $range . ' days' ),
+			'clicks_now'        => $clicksNow,
+			'clicks_prev'       => $clicksPrev,
+			'clicks_delta_pct'  => $clickDeltaPct,
+			'lowest_count'      => $lowestCount,
+			'overpriced_count'  => $overpricedCount,
+			'price_drops'       => $priceDrops,
+			'tier_counts'       => $tierCounts,
+			'snapshot_total'    => $snapshotTotal,
+			'snapshot_date'     => $latestSnapDate,
+			'chart_series'      => $chartSeries,
+			'chart_polyline'    => $chartPolyline,
+			'chart_area'        => $chartArea,
+			'chart_y_labels'    => $chartYLabels,
+			'chart_x_labels'    => $chartXLabels,
+			'top_listings'      => $topListings,
+			'geo_distribution'  => $geoDistribution,
+			'geo_total'         => $geoTotal,
+		];
+
+		$data['tier_pct'] = [];
+		if ( $snapshotTotal > 0 ) {
+			foreach ( $tierCounts as $k => $v ) {
+				$data['tier_pct'][ $k ] = round( ( $v / $snapshotTotal ) * 100, 1 );
+			}
+		} else {
+			$data['tier_pct'] = [ 'lowest' => 0, 'close' => 0, 'overpriced' => 0, 'only' => 0 ];
+		}
+
+		$this->output( 'analytics',
+			\IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )->analytics( $data )
+		);
 	}
 
 	/* ---------------- Tab: Help ---------------- */
