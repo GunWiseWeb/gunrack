@@ -418,5 +418,6 @@
     <word key="gddealer_front_fold_activity_events"><![CDATA[%d events]]></word>
     <word key="gddealer_front_fold_activity_event"><![CDATA[%d event]]></word>
     <word key="gddealer_front_profile_saved"><![CDATA[Your dealer profile has been saved.]]></word>
+    <word key="gddealer_front_tab_edit_profile"><![CDATA[Edit profile]]></word>
   </app>
 </language>

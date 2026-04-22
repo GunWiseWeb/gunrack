@@ -114,6 +114,7 @@ trait DealerShellTrait
 			'analytics'    => (string) \IPS\Http\Url::internal( $base . 'analytics' ),
 			'reviews'      => (string) \IPS\Http\Url::internal( $base . 'reviews' ),
 			'subscription' => (string) \IPS\Http\Url::internal( $base . 'subscription' ),
+			'customize'    => (string) \IPS\Http\Url::internal( $base . 'customize' ),
 			'help'         => (string) \IPS\Http\Url::internal( $base . 'help' ),
 		];
 	}
@@ -177,6 +178,8 @@ trait DealerShellTrait
 			'account' => [
 				'label' => 'Account',
 				'items' => array_values( array_filter( [
+					[ 'key' => 'customize', 'label' => $lang->addToStack('gddealer_front_tab_edit_profile'),
+					  'url' => $urls['customize'], 'icon' => 'profile', 'badge' => null ],
 					[ 'key' => 'subscription', 'label' => $lang->addToStack('gddealer_front_tab_subscription'),
 					  'url' => $urls['subscription'], 'icon' => 'billing', 'badge' => null ],
 					[ 'key' => 'help', 'label' => $lang->addToStack('gddealer_front_tab_help'),
