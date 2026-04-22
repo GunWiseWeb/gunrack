@@ -220,11 +220,87 @@ class _dashboard extends \IPS\Dispatcher\Controller
 		);
 	}
 
-	/* ---------------- Tab: Customize Dashboard ---------------- */
+	/* ---------------- Tab: Edit Dealer Profile (was Customize) ---------------- */
 
 	protected function customize(): void
 	{
+		$dealer   = $this->dealer;
+		$dealerId = (int) $dealer->dealer_id;
+
+		$profile = [
+			'dealer_name'      => (string) ( $dealer->dealer_name ?? '' ),
+			'dealer_slug'      => (string) ( $dealer->dealer_slug ?? '' ),
+			'tagline'          => (string) ( $dealer->tagline ?? '' ),
+			'about'            => (string) ( $dealer->about ?? '' ),
+			'logo_url'         => (string) ( $dealer->logo_url ?? '' ),
+			'cover_url'        => (string) ( $dealer->cover_url ?? '' ),
+			'public_phone'     => (string) ( $dealer->public_phone ?? '' ),
+			'public_email'     => (string) ( $dealer->public_email ?? '' ),
+			'website_url'      => (string) ( $dealer->website_url ?? '' ),
+			'address_street'   => (string) ( $dealer->address_street ?? '' ),
+			'address_city'     => (string) ( $dealer->address_city ?? '' ),
+			'address_state'    => (string) ( $dealer->address_state ?? '' ),
+			'address_zip'      => (string) ( $dealer->address_zip ?? '' ),
+			'address_public'   => (int) ( $dealer->address_public ?? 1 ) === 1,
+			'social_facebook'  => (string) ( $dealer->social_facebook ?? '' ),
+			'social_instagram' => (string) ( $dealer->social_instagram ?? '' ),
+			'social_youtube'   => (string) ( $dealer->social_youtube ?? '' ),
+			'social_twitter'   => (string) ( $dealer->social_twitter ?? '' ),
+			'social_tiktok'    => (string) ( $dealer->social_tiktok ?? '' ),
+			'shipping_policy'  => (string) ( $dealer->shipping_policy ?? '' ),
+			'return_policy'    => (string) ( $dealer->return_policy ?? '' ),
+			'additional_notes' => (string) ( $dealer->additional_notes ?? '' ),
+			'brand_color'      => (string) ( $dealer->brand_color ?? '#1E40AF' ),
+		];
+
+		$pmRaw = (string) ( $dealer->payment_methods ?? '' );
+		$profile['payment_methods'] = $pmRaw !== '' ? array_filter( array_map( 'trim', explode( ',', $pmRaw ) ) ) : [];
+
+		$hoursRaw = (string) ( $dealer->hours_json ?? '' );
+		$hours = [];
+		if ( $hoursRaw !== '' )
+		{
+			$decoded = json_decode( $hoursRaw, true );
+			if ( is_array( $decoded ) ) { $hours = $decoded; }
+		}
+		$days = [ 'mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun' ];
+		$dayLabels = [ 'mon' => 'Monday', 'tue' => 'Tuesday', 'wed' => 'Wednesday', 'thu' => 'Thursday', 'fri' => 'Friday', 'sat' => 'Saturday', 'sun' => 'Sunday' ];
+		$profile['hours'] = [];
+		foreach ( $days as $d )
+		{
+			$profile['hours'][ $d ] = [
+				'label'  => $dayLabels[ $d ],
+				'open'   => (string) ( $hours[ $d ]['open']   ?? '09:00' ),
+				'close'  => (string) ( $hours[ $d ]['close']  ?? '17:00' ),
+				'closed' => (bool)   ( $hours[ $d ]['closed'] ?? ( $d === 'sun' ) ),
+			];
+		}
+
 		$prefs = $this->dashboardPrefs();
+
+		$states = [ 'AL'=>'Alabama','AK'=>'Alaska','AZ'=>'Arizona','AR'=>'Arkansas','CA'=>'California','CO'=>'Colorado','CT'=>'Connecticut','DE'=>'Delaware','DC'=>'District of Columbia','FL'=>'Florida','GA'=>'Georgia','HI'=>'Hawaii','ID'=>'Idaho','IL'=>'Illinois','IN'=>'Indiana','IA'=>'Iowa','KS'=>'Kansas','KY'=>'Kentucky','LA'=>'Louisiana','ME'=>'Maine','MD'=>'Maryland','MA'=>'Massachusetts','MI'=>'Michigan','MN'=>'Minnesota','MS'=>'Mississippi','MO'=>'Missouri','MT'=>'Montana','NE'=>'Nebraska','NV'=>'Nevada','NH'=>'New Hampshire','NJ'=>'New Jersey','NM'=>'New Mexico','NY'=>'New York','NC'=>'North Carolina','ND'=>'North Dakota','OH'=>'Ohio','OK'=>'Oklahoma','OR'=>'Oregon','PA'=>'Pennsylvania','RI'=>'Rhode Island','SC'=>'South Carolina','SD'=>'South Dakota','TN'=>'Tennessee','TX'=>'Texas','UT'=>'Utah','VT'=>'Vermont','VA'=>'Virginia','WA'=>'Washington','WV'=>'West Virginia','WI'=>'Wisconsin','WY'=>'Wyoming' ];
+
+		$paymentOptions = [
+			'visa'      => 'Visa',
+			'mc'        => 'Mastercard',
+			'amex'      => 'American Express',
+			'discover'  => 'Discover',
+			'check'     => 'Check',
+			'mo'        => 'Money order',
+			'cash'      => 'Cash',
+			'layaway'   => 'Layaway',
+			'financing' => 'Financing',
+		];
+
+		$forumProfileUrl = (string) \IPS\Http\Url::internal(
+			'app=core&module=members&controller=profile&id=' . (int) \IPS\Member::loggedIn()->member_id,
+			'front', 'profile', [ \IPS\Member::loggedIn()->members_seo_name ]
+		);
+
+		$publicProfileUrl = (string) \IPS\Http\Url::internal(
+			'app=gddealer&module=dealers&controller=profile&dealer_slug=' . urlencode( (string) $dealer->dealer_slug )
+		);
+
 		$saveUrl = (string) \IPS\Http\Url::internal(
 			'app=gddealer&module=dealers&controller=dashboard&do=saveCustomize'
 		)->csrf();
@@ -233,20 +309,31 @@ class _dashboard extends \IPS\Dispatcher\Controller
 		);
 		$csrfKey = (string) \IPS\Session::i()->csrfKey;
 
-		$this->output( 'overview', \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )->dashboardCustomize(
-			$prefs, $saveUrl, $cancelUrl, $csrfKey
-		) );
+		$data = [
+			'dealer'             => $this->dealerSummary(),
+			'tab_urls'           => $this->tabUrls(),
+			'profile'            => $profile,
+			'prefs'              => $prefs,
+			'states'             => $states,
+			'payment_options'    => $paymentOptions,
+			'forum_profile_url'  => $forumProfileUrl,
+			'public_profile_url' => $publicProfileUrl,
+			'save_url'           => $saveUrl,
+			'cancel_url'         => $cancelUrl,
+			'csrf_key'           => $csrfKey,
+		];
+
+		$this->output( 'overview', \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )->dashboardCustomize( $data ) );
 	}
 
 	protected function saveCustomize(): void
 	{
 		\IPS\Session::i()->csrfCheck();
-
 		$req      = \IPS\Request::i();
-		$theme    = (string) ( $req->card_theme ?? 'default' );
-		$validTh  = [ 'default', 'dark', 'accent' ];
-		if ( !in_array( $theme, $validTh, true ) ) { $theme = 'default'; }
+		$dealerId = (int) $this->dealer->dealer_id;
 
+		$theme = (string) ( $req->card_theme ?? 'default' );
+		if ( !in_array( $theme, [ 'default', 'dark', 'accent' ], true ) ) { $theme = 'default'; }
 		$prefs = [
 			'show_active'      => (bool) ( $req->show_active      ?? false ),
 			'show_outofstock'  => (bool) ( $req->show_outofstock  ?? false ),
@@ -258,18 +345,64 @@ class _dashboard extends \IPS\Dispatcher\Controller
 			'card_theme'       => $theme,
 		];
 
+		$days = [ 'mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun' ];
+		$hoursOut = [];
+		foreach ( $days as $d )
+		{
+			$closed = (bool) ( $req->{'hours_' . $d . '_closed'} ?? false );
+			$open   = (string) ( $req->{'hours_' . $d . '_open'}  ?? '09:00' );
+			$close  = (string) ( $req->{'hours_' . $d . '_close'} ?? '17:00' );
+			if ( !preg_match( '/^\d{2}:\d{2}$/', $open ) )  { $open  = '09:00'; }
+			if ( !preg_match( '/^\d{2}:\d{2}$/', $close ) ) { $close = '17:00'; }
+			$hoursOut[ $d ] = [ 'open' => $open, 'close' => $close, 'closed' => $closed ];
+		}
+
+		$validPM = [ 'visa','mc','amex','discover','check','mo','cash','layaway','financing' ];
+		$pmIn  = (array) ( $req->payment_methods ?? [] );
+		$pmOut = implode( ',', array_values( array_intersect( $validPM, $pmIn ) ) );
+
+		$brandColor = (string) ( $req->brand_color ?? '#1E40AF' );
+		if ( !preg_match( '/^#[0-9A-Fa-f]{6}$/', $brandColor ) ) { $brandColor = '#1E40AF'; }
+
+		$state = strtoupper( substr( (string) ( $req->address_state ?? '' ), 0, 2 ) );
+		if ( $state !== '' && !preg_match( '/^[A-Z]{2}$/', $state ) ) { $state = ''; }
+
+		$update = [
+			'dealer_name'            => substr( (string) ( $req->dealer_name ?? '' ), 0, 150 ),
+			'tagline'                => substr( (string) ( $req->tagline     ?? '' ), 0, 160 ),
+			'about'                  => (string) ( $req->about ?? '' ),
+			'logo_url'               => substr( (string) ( $req->logo_url ?? '' ), 0, 500 ),
+			'cover_url'              => substr( (string) ( $req->cover_url ?? '' ), 0, 500 ),
+			'public_phone'           => substr( (string) ( $req->public_phone ?? '' ), 0, 32 ),
+			'public_email'           => substr( (string) ( $req->public_email ?? '' ), 0, 160 ),
+			'website_url'            => substr( (string) ( $req->website_url ?? '' ), 0, 500 ),
+			'address_street'         => substr( (string) ( $req->address_street ?? '' ), 0, 255 ),
+			'address_city'           => substr( (string) ( $req->address_city ?? '' ), 0, 100 ),
+			'address_state'          => $state,
+			'address_zip'            => substr( (string) ( $req->address_zip ?? '' ), 0, 10 ),
+			'address_public'         => (bool) ( $req->address_public ?? false ) ? 1 : 0,
+			'hours_json'             => json_encode( $hoursOut ),
+			'social_facebook'        => substr( (string) ( $req->social_facebook ?? '' ), 0, 500 ),
+			'social_instagram'       => substr( (string) ( $req->social_instagram ?? '' ), 0, 500 ),
+			'social_youtube'         => substr( (string) ( $req->social_youtube ?? '' ), 0, 500 ),
+			'social_twitter'         => substr( (string) ( $req->social_twitter ?? '' ), 0, 500 ),
+			'social_tiktok'          => substr( (string) ( $req->social_tiktok ?? '' ), 0, 500 ),
+			'shipping_policy'        => (string) ( $req->shipping_policy ?? '' ),
+			'return_policy'          => (string) ( $req->return_policy ?? '' ),
+			'additional_notes'       => (string) ( $req->additional_notes ?? '' ),
+			'payment_methods'        => $pmOut,
+			'brand_color'            => $brandColor,
+			'dealer_dashboard_prefs' => json_encode( $prefs ),
+		];
+
 		try
 		{
-			\IPS\Db::i()->update( 'gd_dealer_feed_config',
-				[ 'dealer_dashboard_prefs' => json_encode( $prefs ) ],
-				[ 'dealer_id=?', (int) $this->dealer->dealer_id ]
-			);
+			\IPS\Db::i()->update( 'gd_dealer_feed_config', $update, [ 'dealer_id=?', $dealerId ] );
 		}
-		catch ( \Exception ) {}
+		catch ( \Throwable ) {}
 
 		\IPS\Output::i()->redirect(
-			\IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dashboard&do=overview' ),
-			'gddealer_front_customize_saved'
+			\IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dashboard&do=customize' )
 		);
 	}
 

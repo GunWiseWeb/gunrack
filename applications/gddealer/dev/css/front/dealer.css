@@ -2733,3 +2733,122 @@ body:has(.gdDealerApp) .ipsMobileFooter { display: none !important; }
     padding: 16px 0;
     border-top: 1px solid var(--gd-border-subtle);
 }
+
+/* =============================================
+   EDIT DEALER PROFILE
+   ============================================= */
+.gdProfileForm .gdPanel { padding: 20px 24px; }
+
+.gdField--split,
+.gdField--split3 {
+    display: flex;
+    gap: 12px;
+}
+.gdField--split > div,
+.gdField--split3 > div { flex: 1; min-width: 0; }
+@media (max-width: 640px) {
+    .gdField--split,
+    .gdField--split3 { flex-direction: column; }
+}
+
+.gdColorPicker {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+.gdColorPicker__swatch {
+    width: 44px;
+    height: 36px;
+    padding: 2px;
+    border: 1px solid var(--gd-border);
+    border-radius: var(--gd-r-md);
+    cursor: pointer;
+    background: transparent;
+}
+
+.gdCheckbox {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--gd-text);
+}
+.gdCheckbox input[type="checkbox"] {
+    width: 16px; height: 16px;
+    accent-color: var(--gd-brand);
+    cursor: pointer;
+}
+.gdCheckbox--inline { font-size: 12px; color: var(--gd-text-muted); }
+.gdCheckbox--card {
+    padding: 10px 14px;
+    border: 1.5px solid var(--gd-border);
+    border-radius: var(--gd-r-md);
+    background: var(--gd-surface);
+    transition: all 0.15s;
+}
+.gdCheckbox--card:hover { border-color: var(--gd-border-strong); }
+.gdCheckbox--card:has(input:checked) {
+    border-color: var(--gd-brand);
+    background: var(--gd-brand-light);
+}
+
+.gdCheckboxGrid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 8px;
+}
+
+/* Hours grid */
+.gdHoursGrid { display: flex; flex-direction: column; gap: 8px; }
+.gdHoursRow {
+    display: grid;
+    grid-template-columns: 110px 110px 1fr 20px 1fr;
+    gap: 10px;
+    align-items: center;
+    padding: 8px 0;
+}
+.gdHoursRow__day {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--gd-text);
+}
+.gdHoursRow__sep {
+    text-align: center;
+    color: var(--gd-text-faint);
+    font-size: 12px;
+}
+.gdInput--sm { padding: 7px 10px; font-size: 13px; }
+@media (max-width: 700px) {
+    .gdHoursRow {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+    .gdHoursRow__day { grid-column: 1 / -1; font-weight: 600; }
+    .gdHoursRow__sep { display: none; }
+}
+
+.gdSubsection__label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--gd-text-subtle);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 10px;
+}
+
+.gdProfileForm__footer {
+    padding: 16px 0;
+    text-align: center;
+    border-top: 1px solid var(--gd-border-subtle);
+    margin-top: 4px;
+}
+.gdProfileForm__footerLink {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--gd-text-muted);
+    text-decoration: none;
+}
+.gdProfileForm__footerLink:hover { color: var(--gd-brand); }

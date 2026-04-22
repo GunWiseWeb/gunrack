@@ -417,5 +417,6 @@
     <word key="gddealer_front_fold_days_left"><![CDATA[%d days left]]></word>
     <word key="gddealer_front_fold_activity_events"><![CDATA[%d events]]></word>
     <word key="gddealer_front_fold_activity_event"><![CDATA[%d event]]></word>
+    <word key="gddealer_front_profile_saved"><![CDATA[Your dealer profile has been saved.]]></word>
   </app>
 </language>
