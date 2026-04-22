@@ -126,7 +126,44 @@ return [
 .gdDealerPage .btn-ghost { background: transparent; color: var(--gd-text-muted); border-color: var(--gd-border); }
 
 .gdDealerPage .gd-grid { display: grid; grid-template-columns: 1fr 320px; gap: 1.5rem; align-items: start; }
+.gdDealerPage .card { background: var(--gd-surface); border: 1px solid var(--gd-border); border-radius: var(--gd-r-lg); padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; }
+.gdDealerPage .card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; flex-wrap: wrap; gap: 8px; }
+.gdDealerPage .card-title { font-size: 16px; font-weight: 600; color: var(--gd-text); }
+.gdDealerPage .card-sub { font-size: 13px; color: var(--gd-text-subtle); margin-top: 2px; }
 
+.gdDealerPage .rating-breakdown { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+.gdDealerPage .rating-summary { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 1rem 0; }
+.gdDealerPage .rating-big-number { font-size: 56px; font-weight: 600; letter-spacing: -0.03em; line-height: 1; margin-bottom: 8px; }
+.gdDealerPage .rating-total-count { font-size: 13px; color: var(--gd-text-subtle); }
+.gdDealerPage .rating-label { font-size: 13px; font-weight: 600; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.04em; }
+.gdDealerPage .rating-bars { display: flex; flex-direction: column; gap: 10px; padding: 1rem 0; }
+.gdDealerPage .rating-bar-row { display: grid; grid-template-columns: 70px 1fr 50px; align-items: center; gap: 10px; font-size: 13px; }
+.gdDealerPage .rating-bar-label { color: var(--gd-text-muted); font-weight: 500; }
+.gdDealerPage .rating-bar-track { height: 8px; background: var(--gd-border-subtle); border-radius: var(--gd-r-pill); overflow: hidden; }
+.gdDealerPage .rating-bar-fill { height: 100%; background: var(--gd-star); border-radius: var(--gd-r-pill); }
+.gdDealerPage .rating-bar-count { text-align: right; color: var(--gd-text-subtle); font-size: 12px; font-variant-numeric: tabular-nums; }
+.gdDealerPage .rating-dimensions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; border-top: 1px solid var(--gd-border-subtle); padding-top: 1.25rem; margin-top: 1.25rem; }
+.gdDealerPage .rating-dim { text-align: center; }
+.gdDealerPage .rating-dim-label { font-size: 12px; color: var(--gd-text-subtle); font-weight: 500; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px; }
+.gdDealerPage .rating-dim-value { font-size: 22px; font-weight: 600; margin-bottom: 2px; }
+
+.gdDealerPage .filter-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 16px; background: var(--gd-surface); border: 1px solid var(--gd-border); border-radius: var(--gd-r-lg); margin-bottom: 1rem; flex-wrap: wrap; }
+.gdDealerPage .filter-left { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.gdDealerPage .filter-right { display: flex; gap: 8px; align-items: center; }
+.gdDealerPage .filter-chip { font-size: 12px; padding: 5px 12px; border-radius: var(--gd-r-pill); background: var(--gd-surface-muted); color: var(--gd-text-muted); cursor: pointer; font-weight: 500; border: 1px solid transparent; display: inline-flex; align-items: center; gap: 4px; text-decoration: none; }
+.gdDealerPage .filter-chip:hover { background: var(--gd-border-subtle); color: var(--gd-text); }
+.gdDealerPage .filter-chip.active { background: var(--gd-brand-light); color: var(--gd-brand); border-color: var(--gd-brand-border); }
+.gdDealerPage .filter-chip-count { font-size: 11px; opacity: 0.7; font-variant-numeric: tabular-nums; }
+.gdDealerPage .select-sm { font-family: inherit; font-size: 12px; padding: 6px 10px; border-radius: var(--gd-r-md); border: 1px solid var(--gd-border); background: var(--gd-surface); cursor: pointer; color: var(--gd-text); }
+
+.gdDealerPage .empty { text-align: center; padding: 3rem 2rem; background: var(--gd-surface); border: 1px dashed var(--gd-border-strong); border-radius: var(--gd-r-lg); }
+.gdDealerPage .empty-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; color: var(--gd-text); }
+.gdDealerPage .empty-sub { font-size: 13px; color: var(--gd-text-subtle); max-width: 360px; margin: 0 auto; }
+
+@media (max-width: 960px) {
+	.gdDealerPage .rating-breakdown { grid-template-columns: 1fr; }
+	.gdDealerPage .rating-dimensions { grid-template-columns: 1fr; gap: 0.75rem; }
+}
 @media (max-width: 960px) {
 	.gdDealerPage .gd-grid { grid-template-columns: 1fr; }
 	.gdDealerPage .hero-stats { grid-template-columns: 1fr 1fr; gap: 1rem; }
@@ -229,7 +266,75 @@ return [
 
 	<div class="gd-grid">
 		<div>
-			<!-- Part 2 (ratings card) inserts here -->
+			<div class="card">
+				<div class="card-header">
+					<div>
+						<div class="card-title">Ratings &amp; reviews</div>
+						<div class="card-sub">{expression="'Based on ' . (int) $data['stats']['total'] . ' verified transaction' . ( (int) $data['stats']['total'] === 1 ? '' : 's' )"}</div>
+					</div>
+				</div>
+				{{if $data['stats']['total'] > 0}}
+				<div class="rating-breakdown">
+					<div class="rating-summary">
+						<div class="rating-big-number" style="{expression="'color: ' . ( $data['stats']['rating_color'] ?? '#16A34A' )"}">{$data['stats']['avg_overall']}</div>
+						<div class="rating-total-count">{$data['stats']['total']} reviews</div>
+						<div class="rating-label" style="{expression="'color: ' . ( $data['stats']['rating_color'] ?? '#16A34A' )"}">{$data['stats']['rating_label']}</div>
+					</div>
+					<div class="rating-bars">
+						{{foreach array( '5', '4', '3', '2', '1' ) as $stars}}
+						<div class="rating-bar-row">
+							<span class="rating-bar-label">{$stars} {expression="$stars === '1' ? 'star' : 'stars'"}</span>
+							<div class="rating-bar-track"><div class="rating-bar-fill" style="{expression="'width: ' . ( (int) $data['stats']['total'] > 0 ? (int) round( ( (int) ( $data['star_counts'][ $stars ] ?? 0 ) / (int) $data['stats']['total'] ) * 100 ) : 0 ) . '%'"}"></div></div>
+							<span class="rating-bar-count">{expression="(int) ( $data['star_counts'][ $stars ] ?? 0 )"}</span>
+						</div>
+						{{endforeach}}
+					</div>
+				</div>
+				<div class="rating-dimensions">
+					<div class="rating-dim">
+						<div class="rating-dim-label">Pricing</div>
+						<div class="rating-dim-value" style="{expression="'color: ' . ( $data['stats']['color_pricing'] ?? '#16A34A' )"}">{$data['stats']['avg_pricing']}</div>
+					</div>
+					<div class="rating-dim">
+						<div class="rating-dim-label">Shipping</div>
+						<div class="rating-dim-value" style="{expression="'color: ' . ( $data['stats']['color_shipping'] ?? '#16A34A' )"}">{$data['stats']['avg_shipping']}</div>
+					</div>
+					<div class="rating-dim">
+						<div class="rating-dim-label">Service</div>
+						<div class="rating-dim-value" style="{expression="'color: ' . ( $data['stats']['color_service'] ?? '#16A34A' )"}">{$data['stats']['avg_service']}</div>
+					</div>
+				</div>
+				{{else}}
+				<div class="empty">
+					<div class="empty-title">No reviews yet</div>
+					<div class="empty-sub">Be the first to share your experience with this dealer.</div>
+				</div>
+				{{endif}}
+			</div>
+
+			{{if $data['stats']['total'] > 0}}
+			<div class="filter-row">
+				<div class="filter-left">
+					<a class="{expression="'filter-chip' . ( $data['star_key'] === 'all' ? ' active' : '' )"}" href="{$data['star_options']['all']}">
+						All <span class="filter-chip-count">{expression="(int) ( $data['star_counts']['all'] ?? 0 )"}</span>
+					</a>
+					{{foreach array( '5', '4', '3', '2', '1' ) as $stars}}
+					<a class="{expression="'filter-chip' . ( $data['star_key'] === $stars ? ' active' : '' )"}" href="{$data['star_options'][ $stars ]}">
+						{$stars}★ <span class="filter-chip-count">{expression="(int) ( $data['star_counts'][ $stars ] ?? 0 )"}</span>
+					</a>
+					{{endforeach}}
+				</div>
+				<div class="filter-right">
+					<select class="select-sm" onchange="if(this.value){window.location=this.value;}">
+						<option value="{$data['sort_options']['newest']}"{{if $data['sort_key'] === 'newest'}} selected{{endif}}>Newest first</option>
+						<option value="{$data['sort_options']['oldest']}"{{if $data['sort_key'] === 'oldest'}} selected{{endif}}>Oldest first</option>
+						<option value="{$data['sort_options']['highest']}"{{if $data['sort_key'] === 'highest'}} selected{{endif}}>Highest rated</option>
+						<option value="{$data['sort_options']['lowest']}"{{if $data['sort_key'] === 'lowest'}} selected{{endif}}>Lowest rated</option>
+					</select>
+				</div>
+			</div>
+			{{endif}}
+
 			<!-- Part 3 (reviews loop) inserts here -->
 		</div>
 		<div>
