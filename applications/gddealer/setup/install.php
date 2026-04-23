@@ -2774,7 +2774,15 @@ TEMPLATE_EOT,
 				{{if $data['dealer']['has_hours']}}
 				<div class="info-row">
 					<span class="info-label">Hours</span>
-					<span class="info-value" style="font-size: 12px; white-space: pre-line;">{expression="is_array( $data['dealer']['hours'] ) ? implode( \"\n\", array_map( function( $h ) { return is_array( $h ) ? ( ( $h['day'] ?? '' ) . ': ' . ( $h['display'] ?? ( ( $h['open'] ?? '' ) . '-' . ( $h['close'] ?? '' ) ) ) ) : (string) $h; }, $data['dealer']['hours'] ) ) : (string) ( $data['dealer']['hours'] ?? '' )"}</span>
+					<span class="info-value" style="font-size: 12px; line-height: 1.6;">
+						{{if is_array( $data['dealer']['hours'] )}}
+							{{foreach $data['dealer']['hours'] as $hr}}
+								<div{{if $hr['is_today']}} style="font-weight: 600;"{{endif}}>
+									{$hr['label']}: {{if $hr['closed']}}Closed{{elseif $hr['open'] && $hr['close']}}{$hr['open']} – {$hr['close']}{{else}}—{{endif}}
+								</div>
+							{{endforeach}}
+						{{endif}}
+					</span>
 				</div>
 				{{endif}}
 			</div>
