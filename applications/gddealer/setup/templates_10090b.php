@@ -534,7 +534,7 @@ $newContent = <<<'TEMPLATE_EOT'
 				{{if $data['dealer']['has_hours']}}
 				<div class="info-row">
 					<span class="info-label">Hours</span>
-					<span class="info-value" style="font-size: 12px; white-space: pre-line;">{$data['dealer']['hours']}</span>
+					<span class="info-value" style="font-size: 12px; white-space: pre-line;">{expression="is_array( $data['dealer']['hours'] ) ? implode( \"\n\", array_map( function( $h ) { return is_array( $h ) ? ( ( $h['day'] ?? '' ) . ': ' . ( $h['display'] ?? ( ( $h['open'] ?? '' ) . '-' . ( $h['close'] ?? '' ) ) ) ) : (string) $h; }, $data['dealer']['hours'] ) ) : (string) ( $data['dealer']['hours'] ?? '' )"}</span>
 				</div>
 				{{endif}}
 			</div>
