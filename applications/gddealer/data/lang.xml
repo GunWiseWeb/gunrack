@@ -436,5 +436,13 @@
     <word key="gddealer_front_fold_activity_event"><![CDATA[%d event]]></word>
     <word key="gddealer_front_profile_saved"><![CDATA[Your dealer profile has been saved.]]></word>
     <word key="gddealer_front_tab_edit_profile"><![CDATA[Edit profile]]></word>
+    <word key="gddealer_notif_ffl_verified"><![CDATA[FFL License Verified]]></word>
+    <word key="gddealer_notif_ffl_verified_desc"><![CDATA[When your FFL license is verified by GunRack staff]]></word>
+    <word key="gddealer_notif_ffl_rejected"><![CDATA[FFL Submission Rejected]]></word>
+    <word key="gddealer_notif_ffl_rejected_desc"><![CDATA[When your FFL submission is rejected and needs re-submission]]></word>
+    <word key="mailsub__gddealer_notification_gddealer_ffl_verified"><![CDATA[Your FFL license has been verified]]></word>
+    <word key="mailsub__gddealer_notification_gddealer_ffl_rejected"><![CDATA[Your FFL submission was rejected]]></word>
+    <word key="mailani__gddealer_notification_gddealer_ffl_verified"><![CDATA[Your FFL license has been verified by GunRack Deals staff. The FFL Verified badge now appears on your profile.]]></word>
+    <word key="mailani__gddealer_notification_gddealer_ffl_rejected"><![CDATA[Your FFL submission was rejected. Please review the reason and re-submit from your dashboard.]]></word>
   </app>
 </language>

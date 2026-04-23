@@ -3291,6 +3291,8 @@ $notificationDefaults = [
 	'support_ticket_new'         => [ 'default' => 'inline,email', 'disabled' => '' ],
 	'support_reply_to_dealer'    => [ 'default' => 'inline,email', 'disabled' => '' ],
 	'support_reply_to_admin'     => [ 'default' => 'inline,email', 'disabled' => '' ],
+	'gddealer_ffl_verified'      => [ 'default' => 'inline,email', 'disabled' => '' ],
+	'gddealer_ffl_rejected'      => [ 'default' => 'inline,email', 'disabled' => '' ],
 ];
 
 foreach ( $notificationDefaults as $key => $data )

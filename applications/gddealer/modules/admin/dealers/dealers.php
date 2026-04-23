@@ -1575,6 +1575,22 @@ class _dealers extends \IPS\Dispatcher\Controller
 		}
 		catch ( \Throwable ) {}
 
+		/* Bell notification — independent try/catch per Rule 25. */
+		try
+		{
+			if ( !isset( $dealerMember ) || !$dealerMember->member_id )
+			{
+				$dealerMember = \IPS\Member::load( (int) $dealer['dealer_id'] );
+			}
+			if ( $dealerMember->member_id )
+			{
+				$notification = new \IPS\Notification( \IPS\Application::load( 'gddealer' ), 'gddealer_ffl_verified', NULL, [ $dealerMember ] );
+				$notification->recipients->attach( $dealerMember );
+				$notification->send();
+			}
+		}
+		catch ( \Throwable ) {}
+
 		\IPS\Session::i()->log( 'acplog__gddealer_ffl_verified', [ $dealer['dealer_name'] => FALSE ] );
 
 		\IPS\Output::i()->redirect(
@@ -1665,6 +1681,22 @@ class _dealers extends \IPS\Dispatcher\Controller
 						'rejection_count' => $newRejectionCount,
 						'customize_url'   => $customizeUrl,
 					], \IPS\Email::TYPE_TRANSACTIONAL )->send( $dealerMember );
+				}
+			}
+			catch ( \Throwable ) {}
+
+			/* Bell notification — independent try/catch per Rule 25. */
+			try
+			{
+				if ( !isset( $dealerMember ) || !$dealerMember->member_id )
+				{
+					$dealerMember = \IPS\Member::load( (int) $dealer['dealer_id'] );
+				}
+				if ( $dealerMember->member_id )
+				{
+					$notification = new \IPS\Notification( \IPS\Application::load( 'gddealer' ), 'gddealer_ffl_rejected', NULL, [ $dealerMember ], [ 'reason' => $reasonText ] );
+					$notification->recipients->attach( $dealerMember );
+					$notification->send();
 				}
 			}
 			catch ( \Throwable ) {}

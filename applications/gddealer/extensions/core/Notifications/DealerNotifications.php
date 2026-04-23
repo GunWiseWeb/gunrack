@@ -143,6 +143,24 @@ class DealerNotifications extends NotificationsAbstract
 				'default'           => [ 'inline', 'email' ],
 				'disabled'          => [],
 			],
+			'gddealer_ffl_verified' => [
+				'type'              => 'standard',
+				'notificationTypes' => [ 'gddealer_ffl_verified' ],
+				'title'             => 'gddealer_notif_ffl_verified',
+				'showTitle'         => true,
+				'description'       => 'gddealer_notif_ffl_verified_desc',
+				'default'           => [ 'inline', 'email' ],
+				'disabled'          => [],
+			],
+			'gddealer_ffl_rejected' => [
+				'type'              => 'standard',
+				'notificationTypes' => [ 'gddealer_ffl_rejected' ],
+				'title'             => 'gddealer_notif_ffl_rejected',
+				'showTitle'         => true,
+				'description'       => 'gddealer_notif_ffl_rejected_desc',
+				'default'           => [ 'inline', 'email' ],
+				'disabled'          => [],
+			],
 		];
 	}
 
@@ -313,6 +331,27 @@ class DealerNotifications extends NotificationsAbstract
 			'title'   => 'Staff replied to your ticket: ' . (string) ( $extra['subject'] ?? '' ),
 			'url'     => $url,
 			'content' => 'Click to view the reply.',
+			'author'  => NULL,
+		];
+	}
+
+	public function parse_gddealer_ffl_verified( Inline $notification, bool $htmlEscape = TRUE ): array
+	{
+		return [
+			'title'   => 'Your FFL license has been verified',
+			'url'     => \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dashboard' ),
+			'content' => 'The green FFL Verified badge now appears on your public dealer profile.',
+			'author'  => NULL,
+		];
+	}
+
+	public function parse_gddealer_ffl_rejected( Inline $notification, bool $htmlEscape = TRUE ): array
+	{
+		$extra = $notification->extra ?: [];
+		return [
+			'title'   => 'Your FFL submission needs attention',
+			'url'     => \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dashboard&do=customize' ),
+			'content' => isset( $extra['reason'] ) ? 'Reason: ' . $extra['reason'] : 'Please review and re-submit your FFL from the dashboard.',
 			'author'  => NULL,
 		];
 	}
