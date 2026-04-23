@@ -582,25 +582,45 @@ class _profile extends \IPS\Dispatcher\Controller
 		}
 		catch ( \Exception ) {}
 
-		/* Tier derives from the dealer's IPS user group, not from any column.
-		   Group IDs: 7=Dealers-Founding, 8=Dealers-Basic, 9=Dealers-Pro, 10=Dealers-Enterprise. */
-		$dealerGroupId = 0;
+		/* Tier derives from the dealer's IPS user groups (primary OR secondary).
+		   Group IDs: 7=Dealers-Founding, 8=Dealers-Basic, 9=Dealers-Pro, 10=Dealers-Enterprise.
+		   On this site the primary group is typically 3 (Members), with the dealer tier
+		   in mgroup_others (CSV string). Highest-tier wins if multiple are set. */
+		$dealerGroupIds = [];
 		try
 		{
 			if ( isset( $ipsMember ) && $ipsMember->member_id )
 			{
-				$dealerGroupId = (int) $ipsMember->member_group_id;
+				$dealerGroupIds[] = (int) $ipsMember->member_group_id;
+
+				$secondary = (string) ( $ipsMember->mgroup_others ?? '' );
+				foreach ( array_filter( array_map( 'trim', explode( ',', $secondary ) ) ) as $gid )
+				{
+					$dealerGroupIds[] = (int) $gid;
+				}
 			}
 		}
 		catch ( \Exception ) {}
 
-		$tier = match( $dealerGroupId )
+		/* Pick the highest-priority dealer tier present in any of the member's groups.
+		   Priority: founding (7) > enterprise (10) > pro (9) > basic (8). */
+		$tier = 'basic';
+		if ( in_array( 7, $dealerGroupIds, true ) )
 		{
-			7       => 'founding',
-			9       => 'pro',
-			10      => 'enterprise',
-			default => 'basic',
-		};
+			$tier = 'founding';
+		}
+		elseif ( in_array( 10, $dealerGroupIds, true ) )
+		{
+			$tier = 'enterprise';
+		}
+		elseif ( in_array( 9, $dealerGroupIds, true ) )
+		{
+			$tier = 'pro';
+		}
+		elseif ( in_array( 8, $dealerGroupIds, true ) )
+		{
+			$tier = 'basic';
+		}
 		$tierLabel = match( $tier )
 		{
 			'founding'   => 'Founding Dealer',
