@@ -153,9 +153,20 @@ class _dashboard extends \IPS\Dispatcher\Controller
 		$setupSteps = [
 			[
 				'key'   => 'ffl',
-				'label' => 'Verify FFL license',
-				'done'  => !empty( $dealer->ffl_verified_at ?? null ),
-				'hint'  => 'Pending — we\'ll add verification in an upcoming release',
+				'label' => self::fflStatusKey( $dealer ) === 'verified'
+				            ? 'FFL verified'
+				            : ( self::fflStatusKey( $dealer ) === 'pending'
+				                ? 'FFL verification pending'
+				                : 'Upload FFL license for verification' ),
+				'done'  => self::fflStatusKey( $dealer ) === 'verified',
+				'hint'  => match( self::fflStatusKey( $dealer ) )
+				{
+					'pending'  => 'Submitted — awaiting admin review (usually within 24 hours)',
+					'rejected' => 'Rejected: ' . (string) ( $dealer->ffl_rejection_reason ?? '' ),
+					'blocked'  => 'Blocked after 3 rejections — contact support',
+					'verified' => '',
+					default    => 'Submit your FFL number + license URL on the Edit profile page',
+				},
 			],
 			[
 				'key'   => 'business',
@@ -261,6 +272,15 @@ class _dashboard extends \IPS\Dispatcher\Controller
 			'return_policy'    => (string) ( $dealer->return_policy ?? '' ),
 			'additional_notes' => (string) ( $dealer->additional_notes ?? '' ),
 			'brand_color'      => (string) ( $dealer->brand_color ?? '#1E40AF' ),
+			'ffl_number'           => (string) ( $dealer->ffl_number ?? '' ),
+			'ffl_license_url'      => (string) ( $dealer->ffl_license_url ?? '' ),
+			'ffl_submitted_at'     => (int) ( $dealer->ffl_submitted_at ?? 0 ),
+			'ffl_verified_at'      => (int) ( $dealer->ffl_verified_at ?? 0 ),
+			'ffl_rejection_reason' => (string) ( $dealer->ffl_rejection_reason ?? '' ),
+			'ffl_rejection_count'  => (int) ( $dealer->ffl_rejection_count ?? 0 ),
+			'ffl_status'           => self::fflStatusKey( $dealer ),
+			'ffl_status_label'     => self::fflStatusLabel( $dealer ),
+			'ffl_blocked'          => (int) ( $dealer->ffl_rejection_count ?? 0 ) >= 3,
 		];
 
 		$pmRaw = (string) ( $dealer->payment_methods ?? '' );
@@ -377,6 +397,41 @@ class _dashboard extends \IPS\Dispatcher\Controller
 		$state = strtoupper( substr( (string) ( $req->address_state ?? '' ), 0, 2 ) );
 		if ( $state !== '' && !preg_match( '/^[A-Z]{2}$/', $state ) ) { $state = ''; }
 
+		/* FFL fields — dealer can update ffl_number and ffl_license_url until they
+		   hit the 3-rejection cap. Submitting/changing EITHER field resets status
+		   to "pending" (wipes rejection reason, increments submitted_at, verified_at
+		   stays null until admin approves). */
+		$newFflNumber     = substr( trim( (string) ( $req->ffl_number ?? '' ) ), 0, 32 );
+		$newFflLicenseUrl = substr( trim( (string) ( $req->ffl_license_url ?? '' ) ), 0, 500 );
+
+		/* Validate format: \d-\d{2}-\d{5} (e.g. 3-37-06855). Empty is OK (dealer cleared). */
+		if ( $newFflNumber !== '' && !preg_match( '/^\d-\d{2}-\d{5}$/', $newFflNumber ) )
+		{
+			\IPS\Output::i()->error(
+				'FFL number must match the format X-XX-XXXXX (for example, 3-37-06855). You can find this on your Federal Firearms License.',
+				'3S103/F', 400, ''
+			);
+			return;
+		}
+
+		$blocked = (int) ( $dealer->ffl_rejection_count ?? 0 ) >= 3;
+		$changed = ( $newFflNumber !== (string) ( $dealer->ffl_number ?? '' ) )
+		        || ( $newFflLicenseUrl !== (string) ( $dealer->ffl_license_url ?? '' ) );
+
+		if ( !$blocked && $changed )
+		{
+			$dealer->ffl_number            = $newFflNumber !== '' ? $newFflNumber : null;
+			$dealer->ffl_license_url       = $newFflLicenseUrl !== '' ? $newFflLicenseUrl : null;
+			/* Only move to "pending" if both fields are provided. Partial entries stay unverified but don't trigger review. */
+			if ( $newFflNumber !== '' && $newFflLicenseUrl !== '' )
+			{
+				$dealer->ffl_submitted_at     = time();
+				$dealer->ffl_verified_at      = null;
+				$dealer->ffl_verified_by      = null;
+				$dealer->ffl_rejection_reason = null;
+			}
+		}
+
 		$update = [
 			'dealer_name'            => substr( (string) ( $req->dealer_name ?? '' ), 0, 150 ),
 			'tagline'                => substr( (string) ( $req->tagline     ?? '' ), 0, 160 ),
@@ -404,6 +459,19 @@ class _dashboard extends \IPS\Dispatcher\Controller
 			'brand_color'            => $brandColor,
 			'dealer_dashboard_prefs' => json_encode( $prefs ),
 		];
+
+		if ( !$blocked && $changed )
+		{
+			$update['ffl_number']      = $dealer->ffl_number;
+			$update['ffl_license_url'] = $dealer->ffl_license_url;
+			if ( $newFflNumber !== '' && $newFflLicenseUrl !== '' )
+			{
+				$update['ffl_submitted_at']     = $dealer->ffl_submitted_at;
+				$update['ffl_verified_at']      = null;
+				$update['ffl_verified_by']      = null;
+				$update['ffl_rejection_reason'] = null;
+			}
+		}
 
 		try
 		{
@@ -2258,6 +2326,46 @@ class _dashboard extends \IPS\Dispatcher\Controller
 		}
 
 		\IPS\Output::i()->redirect( $redirectUrl, 'gddealer_front_dispute_submitted' );
+	}
+	/**
+	 * Current FFL verification state for a dealer, one of:
+	 *   'none'      → nothing submitted yet
+	 *   'pending'   → submitted, awaiting admin review
+	 *   'verified'  → admin approved
+	 *   'rejected'  → admin rejected (reason in ffl_rejection_reason)
+	 *   'blocked'   → 3 or more rejections, dealer cannot re-submit
+	 */
+	protected static function fflStatusKey( $dealer ): string
+	{
+		if ( (int) ( $dealer->ffl_rejection_count ?? 0 ) >= 3 )
+		{
+			return 'blocked';
+		}
+		if ( !empty( $dealer->ffl_verified_at ) )
+		{
+			return 'verified';
+		}
+		if ( !empty( $dealer->ffl_rejection_reason ) )
+		{
+			return 'rejected';
+		}
+		if ( !empty( $dealer->ffl_submitted_at ) && !empty( $dealer->ffl_number ) && !empty( $dealer->ffl_license_url ) )
+		{
+			return 'pending';
+		}
+		return 'none';
+	}
+
+	protected static function fflStatusLabel( $dealer ): string
+	{
+		return match( self::fflStatusKey( $dealer ) )
+		{
+			'verified' => 'FFL verified',
+			'pending'  => 'FFL verification pending (usually within 24 hours)',
+			'rejected' => 'FFL verification rejected — see reason below and re-submit',
+			'blocked'  => 'FFL verification blocked after 3 rejections — contact support',
+			default    => 'Upload FFL license for verification',
+		};
 	}
 }
 
