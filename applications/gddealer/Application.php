@@ -69,6 +69,18 @@ class _Application extends \IPS\Application
 			catch ( \Exception ) { return 0; }
 		}
 
+		if ( $controller === 'dealers' && $do === 'fflVerifications' )
+		{
+			try
+			{
+				/* Pending = submitted but not yet verified and not yet rejected. */
+				return (int) \IPS\Db::i()->select( 'COUNT(*)', 'gd_dealer_feed_config',
+					[ 'ffl_submitted_at IS NOT NULL AND ffl_verified_at IS NULL AND ffl_rejection_reason IS NULL AND ffl_rejection_count < ?', 3 ]
+				)->first();
+			}
+			catch ( \Exception ) { return 0; }
+		}
+
 		return 0;
 	}
 }

@@ -1440,6 +1440,214 @@ class _dealers extends \IPS\Dispatcher\Controller
 			'gddealer_disputes_granted'
 		);
 	}
+	/**
+	 * AdminCP FFL verifications queue. Filterable by status
+	 * (pending/verified/rejected/all). Default: pending.
+	 */
+	protected function fflVerifications()
+	{
+		\IPS\Dispatcher::i()->checkAcpPermission( 'dealer_manage' );
+
+		$filter = (string) ( \IPS\Request::i()->filter ?? 'pending' );
+		if ( !in_array( $filter, [ 'pending', 'verified', 'rejected', 'all' ], TRUE ) )
+		{
+			$filter = 'pending';
+		}
+
+		/* Build the WHERE clause per filter. */
+		$whereByFilter = [
+			'pending'  => [ 'ffl_submitted_at IS NOT NULL AND ffl_verified_at IS NULL AND ffl_rejection_reason IS NULL AND ffl_rejection_count < ?', 3 ],
+			'verified' => [ 'ffl_verified_at IS NOT NULL' ],
+			'rejected' => [ 'ffl_rejection_reason IS NOT NULL AND ffl_verified_at IS NULL' ],
+			'all'      => [ 'ffl_submitted_at IS NOT NULL' ],
+		];
+		$where = $whereByFilter[ $filter ];
+
+		/* Precompute counts for the filter tab badges. */
+		$counts = [ 'pending' => 0, 'verified' => 0, 'rejected' => 0, 'all' => 0 ];
+		foreach ( $whereByFilter as $k => $w )
+		{
+			try { $counts[ $k ] = (int) \IPS\Db::i()->select( 'COUNT(*)', 'gd_dealer_feed_config', $w )->first(); }
+			catch ( \Exception ) {}
+		}
+
+		$rows = [];
+		try
+		{
+			foreach ( \IPS\Db::i()->select( '*', 'gd_dealer_feed_config',
+				$where,
+				'ffl_submitted_at DESC',
+				[ 0, 200 ]
+			) as $r )
+			{
+				$rows[] = [
+					'dealer_id'            => (int) $r['dealer_id'],
+					'dealer_name'          => (string) $r['dealer_name'],
+					'dealer_slug'          => (string) $r['dealer_slug'],
+					'ffl_number'           => (string) ( $r['ffl_number'] ?? '' ),
+					'ffl_license_url'      => (string) ( $r['ffl_license_url'] ?? '' ),
+					'ffl_submitted_at'     => (int) ( $r['ffl_submitted_at'] ?? 0 ),
+					'ffl_submitted_label'  => !empty( $r['ffl_submitted_at'] ) ? \IPS\DateTime::ts( (int) $r['ffl_submitted_at'] )->relative() : '',
+					'ffl_verified_at'      => (int) ( $r['ffl_verified_at'] ?? 0 ),
+					'ffl_verified_label'   => !empty( $r['ffl_verified_at'] ) ? \IPS\DateTime::ts( (int) $r['ffl_verified_at'] )->relative() : '',
+					'ffl_rejection_reason' => (string) ( $r['ffl_rejection_reason'] ?? '' ),
+					'ffl_rejection_count'  => (int) ( $r['ffl_rejection_count'] ?? 0 ),
+					'status'               => !empty( $r['ffl_verified_at'] ) ? 'verified' : ( !empty( $r['ffl_rejection_reason'] ) ? 'rejected' : 'pending' ),
+					'verify_url'           => (string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dealers&do=fflVerify&dealer_id=' . (int) $r['dealer_id'] )->csrf(),
+					'reject_url'           => (string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dealers&do=fflReject&dealer_id=' . (int) $r['dealer_id'] ),
+				];
+			}
+		}
+		catch ( \Exception ) {}
+
+		$filterUrls = [];
+		foreach ( array_keys( $counts ) as $f )
+		{
+			$filterUrls[ $f ] = (string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dealers&do=fflVerifications&filter=' . $f );
+		}
+
+		\IPS\Output::i()->title  = \IPS\Member::loggedIn()->language()->addToStack( 'gddealer_acp_ffl_title' );
+		\IPS\Output::i()->output = \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'admin' )->fflVerifications( [
+			'filter'      => $filter,
+			'counts'      => $counts,
+			'filter_urls' => $filterUrls,
+			'rows'        => $rows,
+		] );
+	}
+
+	/**
+	 * AdminCP action: mark a dealer's FFL submission as verified.
+	 * Only reachable by admins with dealer_manage restriction.
+	 */
+	protected function fflVerify()
+	{
+		\IPS\Dispatcher::i()->checkAcpPermission( 'dealer_manage' );
+		\IPS\Session::i()->csrfCheck();
+
+		$dealerId = (int) ( \IPS\Request::i()->dealer_id ?? 0 );
+		if ( $dealerId <= 0 )
+		{
+			\IPS\Output::i()->error( 'Invalid dealer_id', '2S301/F', 400 );
+			return;
+		}
+
+		try
+		{
+			$dealer = \IPS\Db::i()->select( '*', 'gd_dealer_feed_config', [ 'dealer_id=?', $dealerId ] )->first();
+		}
+		catch ( \Exception )
+		{
+			\IPS\Output::i()->error( 'Dealer not found', '2S301/F', 404 );
+			return;
+		}
+
+		if ( empty( $dealer['ffl_submitted_at'] ) )
+		{
+			\IPS\Output::i()->error( 'This dealer has not submitted an FFL for review.', '2S301/F', 400 );
+			return;
+		}
+
+		\IPS\Db::i()->update( 'gd_dealer_feed_config',
+			[
+				'ffl_verified_at'      => time(),
+				'ffl_verified_by'      => (int) \IPS\Member::loggedIn()->member_id,
+				'ffl_rejection_reason' => null,
+			],
+			[ 'dealer_id=?', $dealerId ]
+		);
+
+		\IPS\Session::i()->log( 'acplog__gddealer_ffl_verified', [ $dealer['dealer_name'] => FALSE ] );
+
+		\IPS\Output::i()->redirect(
+			\IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dealers&do=fflVerifications' ),
+			\IPS\Member::loggedIn()->language()->addToStack( 'gddealer_acp_ffl_verified_flash', FALSE, [ 'sprintf' => [ $dealer['dealer_name'] ] ] )
+		);
+	}
+
+	/**
+	 * AdminCP action: reject a dealer's FFL submission with a reason.
+	 * Two-phase: GET renders a reason picker; POST performs the rejection.
+	 */
+	protected function fflReject()
+	{
+		\IPS\Dispatcher::i()->checkAcpPermission( 'dealer_manage' );
+
+		$dealerId = (int) ( \IPS\Request::i()->dealer_id ?? 0 );
+		if ( $dealerId <= 0 )
+		{
+			\IPS\Output::i()->error( 'Invalid dealer_id', '2S302/F', 400 );
+			return;
+		}
+
+		try
+		{
+			$dealer = \IPS\Db::i()->select( '*', 'gd_dealer_feed_config', [ 'dealer_id=?', $dealerId ] )->first();
+		}
+		catch ( \Exception )
+		{
+			\IPS\Output::i()->error( 'Dealer not found', '2S302/F', 404 );
+			return;
+		}
+
+		if ( empty( $dealer['ffl_submitted_at'] ) )
+		{
+			\IPS\Output::i()->error( 'This dealer has not submitted an FFL for review.', '2S302/F', 400 );
+			return;
+		}
+
+		/* POST: perform the rejection. */
+		if ( \IPS\Request::i()->requestMethod() === 'POST' )
+		{
+			\IPS\Session::i()->csrfCheck();
+
+			$reasonKey   = (string) ( \IPS\Request::i()->reason_key ?? '' );
+			$otherReason = trim( (string) ( \IPS\Request::i()->reason_other ?? '' ) );
+
+			$lang = \IPS\Member::loggedIn()->language();
+			$reasonText = match( $reasonKey )
+			{
+				'illegible' => (string) $lang->addToStack( 'gddealer_ffl_rejection_illegible' ),
+				'expired'   => (string) $lang->addToStack( 'gddealer_ffl_rejection_expired' ),
+				'mismatch'  => (string) $lang->addToStack( 'gddealer_ffl_rejection_mismatch' ),
+				'other'     => $otherReason !== '' ? $otherReason : (string) $lang->addToStack( 'gddealer_ffl_rejection_other' ),
+				default     => '',
+			};
+
+			if ( $reasonText === '' )
+			{
+				\IPS\Output::i()->error( 'Select a rejection reason.', '2S302/F', 400 );
+				return;
+			}
+
+			$newRejectionCount = (int) ( $dealer['ffl_rejection_count'] ?? 0 ) + 1;
+
+			\IPS\Db::i()->update( 'gd_dealer_feed_config',
+				[
+					'ffl_rejection_reason' => $reasonText,
+					'ffl_rejection_count'  => $newRejectionCount,
+					'ffl_verified_at'      => null,
+					'ffl_verified_by'      => null,
+				],
+				[ 'dealer_id=?', $dealerId ]
+			);
+
+			\IPS\Session::i()->log( 'acplog__gddealer_ffl_rejected', [ $dealer['dealer_name'] => FALSE ] );
+
+			\IPS\Output::i()->redirect(
+				\IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dealers&do=fflVerifications' ),
+				\IPS\Member::loggedIn()->language()->addToStack( 'gddealer_acp_ffl_rejected_flash', FALSE, [ 'sprintf' => [ $dealer['dealer_name'] ] ] )
+			);
+			return;
+		}
+
+		/* GET: render the rejection form inline. */
+		\IPS\Output::i()->title  = 'Reject FFL — ' . (string) $dealer['dealer_name'];
+		\IPS\Output::i()->output = \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'admin' )->fflRejectForm( [
+			'dealer'      => $dealer,
+			'post_url'    => (string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dealers&do=fflReject&dealer_id=' . $dealerId )->csrf(),
+			'cancel_url'  => (string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dealers&do=fflVerifications' ),
+		] );
+	}
 }
 
 class dealers extends _dealers {}

@@ -4,6 +4,7 @@
 		"dealers":      { "dealer_manage": "dealer_manage" },
 		"mrr":          { "dealer_manage": "dealer_manage" },
 		"unmatched":    { "dealer_manage": "dealer_manage" },
+		"fflVerifications":  { "dealer_manage": "dealer_manage" },
 		"settings":     { "dealer_manage": "dealer_manage" }
 	}
 }

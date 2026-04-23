@@ -30,6 +30,12 @@
 			"do": "disputes",
 			"restriction": "dealer_manage"
 		},
+		"fflVerifications": {
+			"tab": "gddealer",
+			"controller": "dealers",
+			"do": "fflVerifications",
+			"restriction": "dealer_manage"
+		},
 		"reviews": {
 			"tab": "gddealer",
 			"controller": "dealers",
