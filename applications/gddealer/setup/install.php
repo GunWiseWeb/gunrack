@@ -2304,7 +2304,18 @@ TEMPLATE_EOT,
 .gdDealerPage .hero-actions { padding-top: 50px; }
 .gdDealerPage .hero-avatar { width: 92px; height: 92px; border-radius: var(--gd-r-xl); background: var(--gd-brand); color: white; display: inline-flex; align-items: center; justify-content: center; font-weight: 600; font-size: 32px; border: 4px solid var(--gd-surface); flex-shrink: 0; box-shadow: 0 4px 12px rgba(0,0,0,0.08); overflow: hidden; line-height: 1; }
 .gdDealerPage .hero-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.gdDealerPage .hero-name-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
+.gdDealerPage .hero-name-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; row-gap: 6px; }
+.gdDealerPage .hero-name-meta { display: inline-flex; align-items: center; gap: 12px; flex-wrap: wrap; font-size: 13px; color: var(--gd-text-subtle); margin-left: 4px; }
+.gdDealerPage .hero-name-meta .hero-meta-item { gap: 5px; }
+.gdDealerPage .hero-name-meta .hero-meta-icon { width: 18px; height: 18px; border-radius: 5px; }
+.gdDealerPage .hero-name-meta .hero-meta-icon svg { width: 10px; height: 10px; }
+.gdDealerPage .hero-rating-stars { display: inline-flex; gap: 2px; vertical-align: middle; margin-left: 6px; }
+.gdDealerPage .hero-rating-stars svg { width: 16px; height: 16px; }
+.gdDealerPage .rating-stars-row { display: inline-flex; gap: 3px; align-items: center; vertical-align: middle; margin-left: 10px; }
+.gdDealerPage .rating-stars-row svg { width: 22px; height: 22px; color: var(--gd-star); }
+@media (max-width: 640px) {
+	.gdDealerPage .hero-name-meta { width: 100%; margin-left: 0; }
+}
 .gdDealerPage .hero-name { font-size: 28px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.2; color: var(--gd-text); }
 .gdDealerPage .hero-tagline { font-size: 14px; color: var(--gd-text-muted); margin-bottom: 6px; }
 .gdDealerPage .hero-meta { display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; font-size: 13px; color: var(--gd-text-subtle); }
@@ -2503,32 +2514,30 @@ TEMPLATE_EOT,
 						{{if !$data['dealer']['is_active']}}
 						<span class="badge badge-inactive">Inactive</span>
 						{{endif}}
+						<span class="hero-name-meta">
+							{{if $data['dealer']['address_city_state']}}
+							<span class="hero-meta-item">
+								<span class="hero-meta-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 7-8 12-8 12s-8-5-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
+								{$data['dealer']['address_city_state']}
+							</span>
+							{{endif}}
+							{{if $data['dealer']['member_since']}}
+							<span class="hero-meta-item">
+								<span class="hero-meta-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
+								Since {$data['dealer']['member_since']}
+							</span>
+							{{endif}}
+							{{if $data['dealer']['website_url']}}
+							<span class="hero-meta-item">
+								<span class="hero-meta-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></span>
+								<a href="{$data['dealer']['website_url']}" target="_blank" rel="nofollow noopener" style="color: var(--gd-brand);">Website</a>
+							</span>
+							{{endif}}
+						</span>
 					</div>
 					{{if $data['dealer']['tagline']}}
 					<div class="hero-tagline">{$data['dealer']['tagline']}</div>
 					{{endif}}
-					<div class="hero-meta">
-						{{if $data['dealer']['address_city_state']}}
-						<span class="hero-meta-item">
-							<span class="hero-meta-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 7-8 12-8 12s-8-5-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
-							{$data['dealer']['address_city_state']}
-						</span>
-						{{endif}}
-						{{if $data['dealer']['member_since']}}
-						{{if $data['dealer']['address_city_state']}}<span class="hero-meta-sep">·</span>{{endif}}
-						<span class="hero-meta-item">
-							<span class="hero-meta-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
-							Member since {$data['dealer']['member_since']}
-						</span>
-						{{endif}}
-						{{if $data['dealer']['website_url']}}
-						<span class="hero-meta-sep">·</span>
-						<span class="hero-meta-item">
-							<span class="hero-meta-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></span>
-							<a href="{$data['dealer']['website_url']}" target="_blank" rel="nofollow noopener" style="color: var(--gd-brand);">Website</a>
-						</span>
-						{{endif}}
-					</div>
 				</div>
 				<div class="hero-actions">
 					{{if $data['dealer']['can_follow']}}
@@ -2551,7 +2560,18 @@ TEMPLATE_EOT,
 			<div class="hero-stats">
 				<div class="hero-stat">
 					<div class="hero-stat-label">Overall rating</div>
-					<div class="hero-stat-value" style="{expression="'color: ' . ( $data['stats']['rating_color'] ?? '#16A34A' )"}">{$data['stats']['avg_overall']}</div>
+					<div class="hero-stat-value" style="{expression="'color: ' . ( $data['stats']['rating_color'] ?? '#16A34A' )"}">
+						<span>{$data['stats']['avg_overall']}</span>
+						<span class="hero-rating-stars">
+							{{for $i=1; $i<=5; $i++}}
+								{{if $i <= (int) $data['stats']['avg_overall']}}
+									<svg viewBox="0 0 24 24" fill="var(--gd-star)" stroke="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+								{{else}}
+									<svg viewBox="0 0 24 24" fill="#E5E7EB" stroke="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+								{{endif}}
+							{{endfor}}
+						</span>
+					</div>
 					<div class="hero-stat-sub">{$data['stats']['total']} reviews · {$data['stats']['rating_label']}</div>
 				</div>
 				<div class="hero-stat">
@@ -2586,7 +2606,18 @@ TEMPLATE_EOT,
 				{{if $data['stats']['total'] > 0}}
 				<div class="rating-breakdown">
 					<div class="rating-summary">
-						<div class="rating-big-number" style="{expression="'color: ' . ( $data['stats']['rating_color'] ?? '#16A34A' )"}">{$data['stats']['avg_overall']}</div>
+						<div class="rating-big-number" style="{expression="'color: ' . ( $data['stats']['rating_color'] ?? '#16A34A' )"}">
+							{$data['stats']['avg_overall']}
+							<span class="rating-stars-row">
+								{{for $i=1; $i<=5; $i++}}
+									{{if $i <= (int) $data['stats']['avg_overall']}}
+										<svg viewBox="0 0 24 24" fill="var(--gd-star)" stroke="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+									{{else}}
+										<svg viewBox="0 0 24 24" fill="#E5E7EB" stroke="none"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+									{{endif}}
+								{{endfor}}
+							</span>
+						</div>
 						<div class="rating-total-count">{$data['stats']['total']} reviews</div>
 						<div class="rating-label" style="{expression="'color: ' . ( $data['stats']['rating_color'] ?? '#16A34A' )"}">{$data['stats']['rating_label']}</div>
 					</div>
