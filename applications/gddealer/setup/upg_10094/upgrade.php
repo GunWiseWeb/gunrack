@@ -12,14 +12,18 @@ class _upgrade
         $templatesFile = \IPS\ROOT_PATH . '/applications/gddealer/setup/templates_10090b.php';
         $newContent    = null;
 
-        if ( is_file( $templatesFile ) )
+        try
         {
-            $raw = @file_get_contents( $templatesFile );
-            if ( $raw !== false && preg_match( "/<<<'TEMPLATE_EOT'\n(.*?)\nTEMPLATE_EOT;/s", $raw, $m ) )
+            if ( is_file( $templatesFile ) )
             {
-                $newContent = $m[1];
+                $raw = @file_get_contents( $templatesFile );
+                if ( $raw !== false && preg_match( "/<<<'TEMPLATE_EOT'\n(.*?)\nTEMPLATE_EOT;/s", $raw, $m ) )
+                {
+                    $newContent = $m[1];
+                }
             }
         }
+        catch ( \Throwable $e ) { $errors[] = 'template read failed: ' . $e->getMessage(); }
 
         if ( $newContent === null || $newContent === '' )
         {
