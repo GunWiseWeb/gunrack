@@ -2483,7 +2483,7 @@ TEMPLATE_EOT,
 <div class="gdDealerPage">
 
 	<nav class="gd-breadcrumbs">
-		<a href="{parse url="app=gddealer&module=dealers&controller=list" seoTemplate="gddealer_list"}">Dealers</a>
+		<a href='{parse url="app=gddealer&module=dealers&controller=list" seoTemplate="gddealer_list"}'>Dealers</a>
 		<span class="sep">/</span>
 		<span>{$data['dealer']['dealer_name']}</span>
 	</nav>
@@ -2494,7 +2494,9 @@ TEMPLATE_EOT,
 
 			<div class="hero-identity">
 				<div class="hero-avatar">
-					{{if $data['dealer']['avatar_url']}}
+					{{if $data['dealer']['logo_url']}}
+						<img src="{$data['dealer']['logo_url']}" alt="{$data['dealer']['dealer_name']}">
+					{{elseif $data['dealer']['avatar_url']}}
 						<img src="{$data['dealer']['avatar_url']}" alt="{$data['dealer']['dealer_name']}">
 					{{else}}
 						{expression="mb_strtoupper( mb_substr( $data['dealer']['dealer_name'], 0, 1 ) )"}

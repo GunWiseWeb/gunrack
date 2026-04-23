@@ -109,7 +109,7 @@ class _profile extends \IPS\Dispatcher\Controller
 	{
 		return match( $tier )
 		{
-			'founding'   => 'Founding member',
+			'founding'   => 'Founding dealer',
 			'enterprise' => 'Custom features',
 			'pro'        => 'Priority placement',
 			'basic'      => 'Standard listing',
@@ -582,8 +582,32 @@ class _profile extends \IPS\Dispatcher\Controller
 		}
 		catch ( \Exception ) {}
 
-		$tier      = (string) ( $dealerRow['subscription_tier'] ?? 'basic' );
-		$tierLabel = ucfirst( $tier );
+		/* Tier derives from the dealer's IPS user group, not from any column.
+		   Group IDs: 7=Dealers-Founding, 8=Dealers-Basic, 9=Dealers-Pro, 10=Dealers-Enterprise. */
+		$dealerGroupId = 0;
+		try
+		{
+			if ( isset( $ipsMember ) && $ipsMember->member_id )
+			{
+				$dealerGroupId = (int) $ipsMember->member_group_id;
+			}
+		}
+		catch ( \Exception ) {}
+
+		$tier = match( $dealerGroupId )
+		{
+			7       => 'founding',
+			9       => 'pro',
+			10      => 'enterprise',
+			default => 'basic',
+		};
+		$tierLabel = match( $tier )
+		{
+			'founding'   => 'Founding Dealer',
+			'pro'        => 'Pro Dealer',
+			'enterprise' => 'Enterprise Dealer',
+			default      => 'Basic Dealer',
+		};
 		$tierColor = match( $tier ) {
 			'founding'   => (string) ( \IPS\Settings::i()->gddealer_founding_badge_color   ?: '#b45309' ),
 			'pro'        => (string) ( \IPS\Settings::i()->gddealer_pro_badge_color        ?: '#2563eb' ),
