@@ -102,6 +102,21 @@ class _profile extends \IPS\Dispatcher\Controller
 	 * Default: render the public profile for the dealer identified by
 	 * the {dealer_slug} URL segment.
 	 */
+	/**
+	 * Human-readable perk text for a tier slug.
+	 */
+	protected static function tierPerkLabel( string $tier ): string
+	{
+		return match( $tier )
+		{
+			'founding'   => 'Founding member',
+			'enterprise' => 'Custom features',
+			'pro'        => 'Priority placement',
+			'basic'      => 'Standard listing',
+			default      => '',
+		};
+	}
+
 	protected function manage(): void
 	{
 		$member = \IPS\Member::loggedIn();
@@ -701,12 +716,23 @@ class _profile extends \IPS\Dispatcher\Controller
 			'return_policy'      => (string) ( $dealerRow['return_policy']    ?? '' ),
 			'additional_notes'   => (string) ( $dealerRow['additional_notes'] ?? '' ),
 			'brand_color'        => $brandColor,
+			'verified'           => $isActive,
+			'tier_perk'          => self::tierPerkLabel( $tier ),
+			'response_rate'      => null,
+			'response_window'    => null,
+			'listings_updated'   => null,
+			'can_follow'         => true,
 		];
 
 		if ( $dealer['cover_url_custom'] !== '' )
 		{
 			$dealer['cover_photo_url'] = $dealer['cover_url_custom'];
 		}
+
+		$dealer['follow_url'] = (string) \IPS\Http\Url::internal(
+			'app=gddealer&module=dealers&controller=profile&do=follow&dealer_slug=' . urlencode( $slug )
+		)->csrf();
+		$dealer['is_following'] = false;
 
 		$stats['count']        = $stats['total'];
 		$stats['pct_pricing']  = $stats['avg_pricing']  > 0 ? (int) round( ( $stats['avg_pricing']  / 5 ) * 100 ) : 0;

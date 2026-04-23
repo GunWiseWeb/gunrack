@@ -230,6 +230,11 @@ $newContent = <<<'TEMPLATE_EOT'
 				<div class="hero-name-block">
 					<div class="hero-name-row">
 						<h1 class="hero-name">{$data['dealer']['dealer_name']}</h1>
+						{{if $data['dealer']['verified']}}
+						<span title="Verified FFL on file" style="display: inline-flex; align-items: center; color: var(--gd-brand);">
+							<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 4 5v6c0 5.5 3.8 10.7 8 12 4.2-1.3 8-6.5 8-12V5l-8-3zm-1.4 14.2L7 12.6l1.4-1.4 2.2 2.2 4.4-4.4L16.4 10l-5.8 6.2z"/></svg>
+						</span>
+						{{endif}}
 						{{if $data['dealer']['tier_label']}}
 						<span class="{expression="'badge badge-' . $data['dealer']['tier']"}">{$data['dealer']['tier_label']}</span>
 						{{endif}}
@@ -255,6 +260,12 @@ $newContent = <<<'TEMPLATE_EOT'
 					</div>
 				</div>
 				<div class="hero-actions">
+					{{if $data['dealer']['can_follow']}}
+					<a class="btn btn-secondary" href="{$data['dealer']['follow_url']}">
+						<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+						{{if $data['dealer']['is_following']}}Following{{else}}Follow{{endif}}
+					</a>
+					{{endif}}
 					{{if $data['dealer']['contact_email']}}
 					<a class="btn btn-secondary" href="{expression="'mailto:' . $data['dealer']['contact_email']"}">Contact</a>
 					{{endif}}
@@ -270,22 +281,22 @@ $newContent = <<<'TEMPLATE_EOT'
 				<div class="hero-stat">
 					<div class="hero-stat-label">Overall rating</div>
 					<div class="hero-stat-value" style="{expression="'color: ' . ( $data['stats']['rating_color'] ?? '#16A34A' )"}">{$data['stats']['avg_overall']}</div>
-					<div class="hero-stat-sub">{$data['stats']['rating_label']}</div>
-				</div>
-				<div class="hero-stat">
-					<div class="hero-stat-label">Reviews</div>
-					<div class="hero-stat-value">{$data['stats']['total']}</div>
-					<div class="hero-stat-sub">Verified transactions</div>
+					<div class="hero-stat-sub">{$data['stats']['total']} reviews · {$data['stats']['rating_label']}</div>
 				</div>
 				<div class="hero-stat">
 					<div class="hero-stat-label">Active listings</div>
 					<div class="hero-stat-value">{expression="number_format( (int) $data['dealer']['active_listings'] )"}</div>
-					<div class="hero-stat-sub">&nbsp;</div>
+					<div class="hero-stat-sub">{{if $data['dealer']['listings_updated']}}Updated {$data['dealer']['listings_updated']}{{else}}&nbsp;{{endif}}</div>
+				</div>
+				<div class="hero-stat">
+					<div class="hero-stat-label">Response rate</div>
+					<div class="hero-stat-value">{{if $data['dealer']['response_rate']}}{$data['dealer']['response_rate']}%{{else}}—{{endif}}</div>
+					<div class="hero-stat-sub">{{if $data['dealer']['response_window']}}Within {$data['dealer']['response_window']}{{else}}&nbsp;{{endif}}</div>
 				</div>
 				<div class="hero-stat">
 					<div class="hero-stat-label">Tier</div>
 					<div class="hero-stat-value" style="font-size: 20px;">{$data['dealer']['tier_label']}</div>
-					<div class="hero-stat-sub">&nbsp;</div>
+					<div class="hero-stat-sub">{{if $data['dealer']['tier_perk']}}{$data['dealer']['tier_perk']}{{else}}&nbsp;{{endif}}</div>
 				</div>
 			</div>
 
@@ -505,10 +516,16 @@ $newContent = <<<'TEMPLATE_EOT'
 
 			<div class="sidebar-card">
 				<div class="sidebar-title">Dealer details</div>
-				{{if $data['dealer']['public_email'] || $data['dealer']['contact_email']}}
+				{{if $data['dealer']['contact_email']}}
 				<div class="info-row">
 					<span class="info-label">Contact</span>
-					<span class="info-value"><a href="{expression="'mailto:' . ( $data['dealer']['public_email'] ?: $data['dealer']['contact_email'] )"}">{expression="$data['dealer']['public_email'] ?: $data['dealer']['contact_email']"}</a></span>
+					<span class="info-value"><a href="{expression="'mailto:' . $data['dealer']['contact_email']"}" style="color: var(--gd-brand);">Contact dealer</a></span>
+				</div>
+				{{endif}}
+				{{if $data['dealer']['response_window']}}
+				<div class="info-row">
+					<span class="info-label">Response time</span>
+					<span class="info-value">Usually within {$data['dealer']['response_window']}</span>
 				</div>
 				{{endif}}
 				{{if $data['dealer']['public_phone']}}
@@ -552,7 +569,10 @@ $newContent = <<<'TEMPLATE_EOT'
 			{{if $data['dealer']['about']}}
 			<div class="sidebar-card">
 				<div class="sidebar-title">About this dealer</div>
-				<div class="about-body">{$data['dealer']['about']|raw}</div>
+				<input type="checkbox" id="gd-about-toggle" style="display: none;">
+				<div class="about-body" id="gd-about-body" style="max-height: 120px; overflow: hidden; position: relative;">{$data['dealer']['about']|raw}</div>
+				<label for="gd-about-toggle" id="gd-about-label" style="font-size: 12px; color: var(--gd-brand); font-weight: 500; cursor: pointer; display: inline-block; margin-top: 8px;">Read more →</label>
+				<style>#gd-about-toggle:checked ~ #gd-about-body { max-height: none; } #gd-about-toggle:checked ~ #gd-about-label { display: none; }</style>
 			</div>
 			{{endif}}
 
