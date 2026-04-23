@@ -333,7 +333,7 @@ class _dashboard extends \IPS\Dispatcher\Controller
 			'csrf_key'           => $csrfKey,
 		];
 
-		$this->output( 'overview', \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )->dashboardCustomize( $data ) );
+		$this->output( 'customize', \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )->dashboardCustomize( $data ) );
 	}
 
 	protected function saveCustomize(): void

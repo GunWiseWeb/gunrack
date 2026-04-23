@@ -96,6 +96,18 @@ trait DealerShellTrait
 			'cover_photo_url'       => $coverPhotoUrl,
 			'cover_offset'          => $coverOffset,
 			'new_reviews'           => $newReviews,
+			'card_theme'            => (function() use ( $d ) {
+				try {
+					$raw = (string) ( $d->dealer_dashboard_prefs ?? '' );
+					if ( $raw !== '' ) {
+						$stored = json_decode( $raw, true );
+						if ( is_array( $stored ) && isset( $stored['card_theme'] ) ) {
+							return (string) $stored['card_theme'];
+						}
+					}
+				} catch ( \Throwable ) {}
+				return 'default';
+			})(),
 		];
 	}
 
