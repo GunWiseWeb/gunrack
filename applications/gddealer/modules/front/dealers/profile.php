@@ -350,7 +350,15 @@ class _profile extends \IPS\Dispatcher\Controller
 					);
 				}
 
-				$reviewerInitials = strtoupper( substr( $reviewerName, 0, 2 ) );
+				$reviewerInitials = '';
+				foreach ( preg_split( '/\s+/', trim( (string) $reviewerName ) ) ?: [] as $part )
+				{
+					if ( $part !== '' && strlen( $reviewerInitials ) < 2 )
+					{
+						$reviewerInitials .= mb_strtoupper( mb_substr( $part, 0, 1 ) );
+					}
+				}
+				if ( $reviewerInitials === '' ) { $reviewerInitials = '?'; }
 				$ratingOverall    = (int) round( $avg );
 
 				$reviews[] = [

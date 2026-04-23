@@ -2308,7 +2308,9 @@ TEMPLATE_EOT,
 .gdDealerPage .hero-name { font-size: 28px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.2; color: var(--gd-text); }
 .gdDealerPage .hero-tagline { font-size: 14px; color: var(--gd-text-muted); margin-bottom: 6px; }
 .gdDealerPage .hero-meta { display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; font-size: 13px; color: var(--gd-text-subtle); }
-.gdDealerPage .hero-meta-item { display: inline-flex; align-items: center; gap: 5px; }
+.gdDealerPage .hero-meta-item { display: inline-flex; align-items: center; gap: 6px; }
+.gdDealerPage .hero-meta-icon { width: 22px; height: 22px; border-radius: 6px; background: var(--gd-brand-light); color: var(--gd-brand); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.gdDealerPage .hero-meta-icon svg { width: 12px; height: 12px; }
 .gdDealerPage .hero-meta-sep { color: var(--gd-text-faint); }
 .gdDealerPage .hero-actions { display: flex; gap: 8px; flex-shrink: 0; flex-wrap: wrap; align-items: flex-start; }
 
@@ -2401,7 +2403,9 @@ TEMPLATE_EOT,
 .gdDealerPage .info-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--gd-border-subtle); font-size: 13px; gap: 12px; }
 .gdDealerPage .info-row:last-child { border-bottom: none; padding-bottom: 0; }
 .gdDealerPage .info-row:first-child { padding-top: 0; }
-.gdDealerPage .info-label { color: var(--gd-text-subtle); flex-shrink: 0; }
+.gdDealerPage .info-label { color: var(--gd-text-subtle); flex-shrink: 0; display: inline-flex; align-items: center; gap: 8px; }
+.gdDealerPage .info-label-icon { width: 16px; height: 16px; color: var(--gd-text-faint); display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.gdDealerPage .info-label-icon svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
 .gdDealerPage .info-value { color: var(--gd-text); font-weight: 500; text-align: right; word-break: break-word; min-width: 0; }
 .gdDealerPage .info-value.mono { font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: 12px; }
 .gdDealerPage .info-value a { color: var(--gd-brand); }
@@ -2434,16 +2438,34 @@ TEMPLATE_EOT,
 @media (max-width: 960px) {
 	.gdDealerPage .gd-grid { grid-template-columns: 1fr; }
 	.gdDealerPage .hero-stats { grid-template-columns: 1fr 1fr; gap: 1rem; }
-	.gdDealerPage .hero-stat { border-right: none; padding: 0.75rem 0; }
+	.gdDealerPage .hero-stat { border-right: none; padding: 0.75rem 0.5rem; text-align: left; }
+	.gdDealerPage .hero-stat:first-child, .gdDealerPage .hero-stat:nth-child(2) { border-bottom: 1px solid var(--gd-border-subtle); }
 	.gdDealerPage .hero-identity { grid-template-columns: 1fr; }
 	.gdDealerPage .hero-name-block { padding-top: 0.75rem; }
-	.gdDealerPage .hero-actions { width: 100%; padding-top: 0; }
-	.gdDealerPage .hero-actions .btn { flex: 1; justify-content: center; }
+	.gdDealerPage .hero-actions { width: 100%; padding-top: 0.75rem; flex-wrap: wrap; }
+	.gdDealerPage .hero-actions .btn { flex: 1 1 auto; justify-content: center; min-width: 110px; }
+	.gdDealerPage .hero-meta { gap: 0.75rem; }
+	.gdDealerPage .hero-meta-sep { display: none; }
+	.gdDealerPage .review-head { flex-direction: column; align-items: flex-start; }
+	.gdDealerPage .review-score { align-self: flex-start; }
+	.gdDealerPage .review-dimensions { gap: 12px; }
+	.gdDealerPage .filter-row { flex-direction: column; align-items: stretch; gap: 10px; }
+	.gdDealerPage .filter-right { justify-content: flex-end; }
+	.gdDealerPage .select-sm { width: 100%; }
 }
 @media (max-width: 640px) {
-	.gdDealerPage { padding: 1rem; }
-	.gdDealerPage .hero-body { padding: 0 1.25rem 1.25rem; }
+	.gdDealerPage { padding: 0.75rem; }
+	.gdDealerPage .hero-body { padding: 0 1rem 1rem; }
+	.gdDealerPage .hero-cover { height: 120px; }
 	.gdDealerPage .hero-stats { grid-template-columns: 1fr; }
+	.gdDealerPage .hero-stat { border-bottom: 1px solid var(--gd-border-subtle); }
+	.gdDealerPage .hero-stat:last-child { border-bottom: none; }
+	.gdDealerPage .hero-name { font-size: 22px; }
+	.gdDealerPage .hero-avatar { width: 72px; height: 72px; font-size: 26px; }
+	.gdDealerPage .card { padding: 1rem; }
+	.gdDealerPage .review { padding: 1rem; }
+	.gdDealerPage .rating-big-number { font-size: 44px; }
+	.gdDealerPage .info-row { font-size: 12px; }
 }
 </style>
 
@@ -2487,15 +2509,24 @@ TEMPLATE_EOT,
 					{{endif}}
 					<div class="hero-meta">
 						{{if $data['dealer']['address_city_state']}}
-						<span class="hero-meta-item">{$data['dealer']['address_city_state']}</span>
+						<span class="hero-meta-item">
+							<span class="hero-meta-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 7-8 12-8 12s-8-5-8-12a8 8 0 0 1 16 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
+							{$data['dealer']['address_city_state']}
+						</span>
 						{{endif}}
 						{{if $data['dealer']['member_since']}}
 						{{if $data['dealer']['address_city_state']}}<span class="hero-meta-sep">·</span>{{endif}}
-						<span class="hero-meta-item">Member since {$data['dealer']['member_since']}</span>
+						<span class="hero-meta-item">
+							<span class="hero-meta-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
+							Member since {$data['dealer']['member_since']}
+						</span>
 						{{endif}}
 						{{if $data['dealer']['website_url']}}
 						<span class="hero-meta-sep">·</span>
-						<span class="hero-meta-item"><a href="{$data['dealer']['website_url']}" target="_blank" rel="nofollow noopener" style="color: var(--gd-brand);">Website</a></span>
+						<span class="hero-meta-item">
+							<span class="hero-meta-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg></span>
+							<a href="{$data['dealer']['website_url']}" target="_blank" rel="nofollow noopener" style="color: var(--gd-brand);">Website</a>
+						</span>
 						{{endif}}
 					</div>
 				</div>
@@ -2758,41 +2789,62 @@ TEMPLATE_EOT,
 				<div class="sidebar-title">Dealer details</div>
 				{{if $data['dealer']['contact_email']}}
 				<div class="info-row">
-					<span class="info-label">Contact</span>
+					<span class="info-label">
+						<span class="info-label-icon"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg></span>
+						Contact
+					</span>
 					<span class="info-value"><a href="{expression="'mailto:' . $data['dealer']['contact_email']"}" style="color: var(--gd-brand);">Contact dealer</a></span>
 				</div>
 				{{endif}}
 				{{if $data['dealer']['response_window']}}
 				<div class="info-row">
-					<span class="info-label">Response time</span>
+					<span class="info-label">
+						<span class="info-label-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
+						Response time
+					</span>
 					<span class="info-value">Usually within {$data['dealer']['response_window']}</span>
 				</div>
 				{{endif}}
 				{{if $data['dealer']['public_phone']}}
 				<div class="info-row">
-					<span class="info-label">Phone</span>
+					<span class="info-label">
+						<span class="info-label-icon"><svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg></span>
+						Phone
+					</span>
 					<span class="info-value">{$data['dealer']['public_phone']}</span>
 				</div>
 				{{endif}}
 				<div class="info-row">
-					<span class="info-label">Listings</span>
+					<span class="info-label">
+						<span class="info-label-icon"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg></span>
+						Listings
+					</span>
 					<span class="info-value">{expression="number_format( (int) $data['dealer']['active_listings'] )"} active</span>
 				</div>
 				{{if $data['dealer']['address_city_state']}}
 				<div class="info-row">
-					<span class="info-label">Location</span>
+					<span class="info-label">
+						<span class="info-label-icon"><svg viewBox="0 0 24 24"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="3"/></svg></span>
+						Location
+					</span>
 					<span class="info-value">{{if $data['dealer']['address_public'] && $data['dealer']['address_line']}}{$data['dealer']['address_line']}{{else}}{$data['dealer']['address_city_state']}{{endif}}</span>
 				</div>
 				{{endif}}
 				{{if $data['dealer']['member_since']}}
 				<div class="info-row">
-					<span class="info-label">Member since</span>
+					<span class="info-label">
+						<span class="info-label-icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
+						Member since
+					</span>
 					<span class="info-value">{$data['dealer']['member_since']}</span>
 				</div>
 				{{endif}}
 				{{if $data['dealer']['has_hours']}}
-				<div class="info-row">
-					<span class="info-label">Hours</span>
+				<div class="info-row" style="align-items: flex-start;">
+					<span class="info-label">
+						<span class="info-label-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></span>
+						Hours
+					</span>
 					<span class="info-value" style="font-size: 12px; line-height: 1.6;">
 						{{if is_array( $data['dealer']['hours'] )}}
 							{{foreach $data['dealer']['hours'] as $hr}}
