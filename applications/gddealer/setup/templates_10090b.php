@@ -41,7 +41,7 @@ $newContent = <<<'TEMPLATE_EOT'
 	color: var(--gd-text);
 	font-size: 14px;
 	line-height: 1.5;
-	max-width: 1200px;
+	max-width: 1446px;
 	margin: 0 auto;
 	padding: 1.5rem;
 	box-sizing: border-box;
@@ -57,19 +57,20 @@ $newContent = <<<'TEMPLATE_EOT'
 .gdDealerPage .gd-breadcrumbs .sep { color: var(--gd-text-faint); }
 
 .gdDealerPage .hero { background: var(--gd-surface); border: 1px solid var(--gd-border); border-radius: var(--gd-r-xl); overflow: hidden; margin-bottom: 1.5rem; }
-.gdDealerPage .hero-cover { height: 140px; background: linear-gradient(135deg, var(--gd-brand) 0%, #3B82F6 100%); position: relative; background-size: cover; background-position: center; }
+.gdDealerPage .hero-cover { height: 180px; background: var(--gd-brand); background-image: linear-gradient(135deg, var(--gd-brand) 0%, color-mix(in srgb, var(--gd-brand) 70%, white) 100%); position: relative; background-size: cover; background-position: center; }
 .gdDealerPage .hero-body { padding: 0 2rem 1.5rem; position: relative; }
-.gdDealerPage .hero-identity { display: flex; gap: 1.25rem; align-items: flex-end; margin-top: -40px; margin-bottom: 1.25rem; position: relative; z-index: 1; }
+.gdDealerPage .hero-identity { display: grid; grid-template-columns: auto 1fr auto; gap: 1.25rem; align-items: start; margin-top: -46px; margin-bottom: 1.25rem; position: relative; z-index: 1; }
+.gdDealerPage .hero-name-block { padding-top: 50px; min-width: 0; }
+.gdDealerPage .hero-actions { padding-top: 50px; }
 .gdDealerPage .hero-avatar { width: 92px; height: 92px; border-radius: var(--gd-r-xl); background: var(--gd-brand); color: white; display: inline-flex; align-items: center; justify-content: center; font-weight: 600; font-size: 32px; border: 4px solid var(--gd-surface); flex-shrink: 0; box-shadow: 0 4px 12px rgba(0,0,0,0.08); overflow: hidden; line-height: 1; }
 .gdDealerPage .hero-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.gdDealerPage .hero-name-block { padding-bottom: 8px; flex: 1; min-width: 0; }
 .gdDealerPage .hero-name-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 4px; }
 .gdDealerPage .hero-name { font-size: 28px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.2; color: var(--gd-text); }
 .gdDealerPage .hero-tagline { font-size: 14px; color: var(--gd-text-muted); margin-bottom: 6px; }
 .gdDealerPage .hero-meta { display: flex; gap: 1rem; flex-wrap: wrap; align-items: center; font-size: 13px; color: var(--gd-text-subtle); }
 .gdDealerPage .hero-meta-item { display: inline-flex; align-items: center; gap: 5px; }
 .gdDealerPage .hero-meta-sep { color: var(--gd-text-faint); }
-.gdDealerPage .hero-actions { display: flex; gap: 8px; padding-bottom: 12px; flex-shrink: 0; flex-wrap: wrap; }
+.gdDealerPage .hero-actions { display: flex; gap: 8px; flex-shrink: 0; flex-wrap: wrap; align-items: flex-start; }
 
 .gdDealerPage .badge { font-size: 11px; padding: 3px 10px; border-radius: var(--gd-r-pill); font-weight: 600; display: inline-flex; align-items: center; gap: 4px; text-transform: uppercase; }
 .gdDealerPage .badge-founding { background: var(--gd-tier-founding-bg); color: var(--gd-tier-founding); }
@@ -194,8 +195,9 @@ $newContent = <<<'TEMPLATE_EOT'
 	.gdDealerPage .gd-grid { grid-template-columns: 1fr; }
 	.gdDealerPage .hero-stats { grid-template-columns: 1fr 1fr; gap: 1rem; }
 	.gdDealerPage .hero-stat { border-right: none; padding: 0.75rem 0; }
-	.gdDealerPage .hero-identity { flex-direction: column; align-items: flex-start; }
-	.gdDealerPage .hero-actions { width: 100%; }
+	.gdDealerPage .hero-identity { grid-template-columns: 1fr; }
+	.gdDealerPage .hero-name-block { padding-top: 0.75rem; }
+	.gdDealerPage .hero-actions { width: 100%; padding-top: 0; }
 	.gdDealerPage .hero-actions .btn { flex: 1; justify-content: center; }
 }
 @media (max-width: 640px) {
