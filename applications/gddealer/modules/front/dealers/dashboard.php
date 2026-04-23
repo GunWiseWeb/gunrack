@@ -160,7 +160,7 @@ class _dashboard extends \IPS\Dispatcher\Controller
 			[
 				'key'   => 'business',
 				'label' => 'Add business details',
-				'done'  => !empty( $dealer->dealer_name ) && !empty( $dealer->business_phone ?? null ),
+				'done'  => !empty( $dealer->dealer_name ) && !empty( $dealer->public_phone ?? null ),
 				'hint'  => '',
 			],
 			[
@@ -178,7 +178,7 @@ class _dashboard extends \IPS\Dispatcher\Controller
 			[
 				'key'   => 'shipping',
 				'label' => 'Set shipping rules',
-				'done'  => false, /* TODO Phase 4: wire to gd_dealer_shipping table once it exists */
+				'done'  => !empty( trim( (string) ( $dealer->shipping_policy ?? '' ) ) ),
 				'hint'  => '',
 			],
 		];

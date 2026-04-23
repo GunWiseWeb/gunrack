@@ -149,14 +149,14 @@
 /* ─── Tablet (<1024px) — collapse sidebar to icons only ─── */
 @media (max-width: 1023px) {
   .gdDealerShell { grid-template-columns: 60px minmax(0, 1fr); }
-  .gdSidebar__brandText, .gdSidebar__brandSub { display: none; }
-  .gdSidebar__brand { padding: 0 14px 20px; justify-content: center; }
-  .gdNavGroup { padding: 0 8px; }
-  .gdNavGroup__label { display: none; }
-  .gdNavItem { justify-content: center; padding: 10px; }
-  .gdNavItem__label, .gdNavItem__count { display: none; }
-  .gdSidebar__user { justify-content: center; padding: 6px; }
-  .gdSidebar__userInfo { display: none; }
+  .gdSidebar .gdSidebar__brandText, .gdSidebar .gdSidebar__brandSub { display: none; }
+  .gdSidebar .gdSidebar__brand { padding: 0 14px 20px; justify-content: center; }
+  .gdSidebar .gdNavGroup { padding: 0 8px; }
+  .gdSidebar .gdNavGroup__label { display: none; }
+  .gdSidebar .gdNavItem { justify-content: center; padding: 10px; }
+  .gdSidebar .gdNavItem__label, .gdSidebar .gdNavItem__count { display: none; }
+  .gdSidebar .gdSidebar__user { justify-content: center; padding: 6px; }
+  .gdSidebar .gdSidebar__userInfo { display: none; }
   .gdMain { padding: 20px; }
 }
 
@@ -194,6 +194,15 @@
     display: flex; flex-direction: column;
     overflow-y: auto;
   }
+  .gdDrawer__panel .gdNavItem { justify-content: flex-start !important; padding: 7px 10px !important; }
+  .gdDrawer__panel .gdNavItem__label,
+  .gdDrawer__panel .gdNavItem__count { display: inline-flex !important; }
+  .gdDrawer__panel .gdNavGroup__label { display: block !important; }
+  .gdDrawer__panel .gdSidebar__brand { justify-content: flex-start !important; padding: 0 20px 20px !important; }
+  .gdDrawer__panel .gdSidebar__brandText,
+  .gdDrawer__panel .gdSidebar__brandSub { display: block !important; }
+  .gdDrawer__panel .gdSidebar__user { justify-content: flex-start !important; padding: 6px 20px !important; }
+  .gdDrawer__panel .gdSidebar__userInfo { display: block !important; }
   .gdDrawer__panel .gdSidebar__brandText,
   .gdDrawer__panel .gdSidebar__userName { color: #0F172A !important; }
   .gdDrawer__panel .gdSidebar__brandSub,
