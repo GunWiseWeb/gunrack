@@ -197,6 +197,8 @@ class _dashboard extends \IPS\Dispatcher\Controller
 			'app=gddealer&module=dealers&controller=profile&dealer_slug=' . urlencode( (string) $dealer->dealer_slug )
 		);
 
+		$prefs = $this->dashboardPrefs();
+
 		$data = [
 			'dealer'             => $this->dealerSummary(),
 			'tab_urls'           => $this->tabUrls(),
@@ -213,6 +215,14 @@ class _dashboard extends \IPS\Dispatcher\Controller
 			'steps_total'        => $stepsTotal,
 			'steps_pct'          => $stepsPct,
 			'public_profile_url' => $publicProfileUrl,
+			'prefs'              => $prefs,
+			'card_theme'         => (string) ( $prefs['card_theme'] ?? 'default' ),
+			'card_styles'        => [
+				'bg'     => (string) ( $prefs['card_bg']     ?? '#ffffff' ),
+				'border' => (string) ( $prefs['card_border'] ?? '#e0e0e0' ),
+				'color'  => (string) ( $prefs['card_color']  ?? '#111827' ),
+				'label'  => (string) ( $prefs['card_label']  ?? '#6b7280' ),
+			],
 		];
 
 		$this->output( 'overview',
