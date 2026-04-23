@@ -248,7 +248,7 @@ $newContent = <<<'TEMPLATE_EOT'
 <div class="gdDealerPage">
 
 	<nav class="gd-breadcrumbs">
-		<a href="{expression="(string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=list', 'front', 'gddealer_list' )"}">Dealers</a>
+		<a href="{expression="(string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=directory', 'front', 'dealers_directory' )"}">Dealers</a>
 		<span class="sep">/</span>
 		<span>{$data['dealer']['dealer_name']}</span>
 	</nav>
