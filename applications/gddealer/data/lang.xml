@@ -397,6 +397,10 @@
     <word key="gddealer_ffl_rejection_other"><![CDATA[Other (see admin notes)]]></word>
     <word key="gddealer_acp_ffl_verified_flash"><![CDATA[FFL for %s has been verified.]]></word>
     <word key="gddealer_acp_ffl_rejected_flash"><![CDATA[FFL for %s has been rejected.]]></word>
+    <word key="gddealer_ffl_verified_badge"><![CDATA[FFL Verified]]></word>
+    <word key="gddealer_ffl_unverified_badge"><![CDATA[Unverified]]></word>
+    <word key="gddealer_ffl_verified_email_subject"><![CDATA[Your FFL has been verified]]></word>
+    <word key="gddealer_ffl_rejected_email_subject"><![CDATA[FFL submission needs attention]]></word>
     <word key="gddealer_stock_reply_body"><![CDATA[Reply body]]></word>
     <word key="gddealer_stock_action_body"><![CDATA[Action reply body]]></word>
     <word key="gddealer_support_title"><![CDATA[Support Tickets]]></word>

@@ -768,7 +768,7 @@ class _profile extends \IPS\Dispatcher\Controller
 			'return_policy'      => (string) ( $dealerRow['return_policy']    ?? '' ),
 			'additional_notes'   => (string) ( $dealerRow['additional_notes'] ?? '' ),
 			'brand_color'        => $brandColor,
-			'verified'           => $isActive,
+			'verified'           => !empty( $dealerRow['ffl_verified_at'] ),
 			'tier_perk'          => self::tierPerkLabel( $tier ),
 			'response_rate'      => null,
 			'response_window'    => null,

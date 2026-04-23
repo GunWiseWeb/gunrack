@@ -271,8 +271,14 @@ $newContent = <<<'TEMPLATE_EOT'
 					<div class="hero-name-row">
 						<h1 class="hero-name">{$data['dealer']['dealer_name']}</h1>
 						{{if $data['dealer']['verified']}}
-						<span title="Verified FFL on file" style="display: inline-flex; align-items: center; color: var(--gd-brand);">
-							<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2 4 5v6c0 5.5 3.8 10.7 8 12 4.2-1.3 8-6.5 8-12V5l-8-3zm-1.4 14.2L7 12.6l1.4-1.4 2.2 2.2 4.4-4.4L16.4 10l-5.8 6.2z"/></svg>
+						<span title="FFL verified by GunRack Deals staff" style="display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase; background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7;">
+							<svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M9 16.2 4.8 12l-1.4 1.4L9 19 21 7l-1.4-1.4z"/></svg>
+							FFL Verified
+						</span>
+						{{else}}
+						<span title="This dealer has not submitted proof of FFL licensing" style="display: inline-flex; align-items: center; gap: 4px; padding: 3px 9px; border-radius: 999px; font-size: 11px; font-weight: 600; letter-spacing: 0.03em; text-transform: uppercase; background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0;">
+							<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+							Unverified
 						</span>
 						{{endif}}
 						{{if $data['dealer']['tier_label']}}

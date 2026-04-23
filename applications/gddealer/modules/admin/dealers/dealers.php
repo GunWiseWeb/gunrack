@@ -1556,6 +1556,25 @@ class _dealers extends \IPS\Dispatcher\Controller
 			[ 'dealer_id=?', $dealerId ]
 		);
 
+		/* Email the dealer that their FFL was verified. */
+		try
+		{
+			$dealerMember = \IPS\Member::load( (int) $dealer['dealer_id'] );
+			if ( $dealerMember->member_id )
+			{
+				$profileUrl = (string) \IPS\Http\Url::internal(
+					'app=gddealer&module=dealers&controller=profile&dealer_slug=' . urlencode( (string) $dealer['dealer_slug'] )
+				);
+				\IPS\Email::buildFromTemplate( 'gddealer', 'gddealer_ffl_verified', [
+					'name'        => $dealerMember->name,
+					'ffl_number'  => (string) ( $dealer['ffl_number'] ?? '' ),
+					'verified_on' => \IPS\DateTime::ts( time() )->localeDate(),
+					'profile_url' => $profileUrl,
+				], \IPS\Email::TYPE_TRANSACTIONAL )->send( $dealerMember );
+			}
+		}
+		catch ( \Throwable ) {}
+
 		\IPS\Session::i()->log( 'acplog__gddealer_ffl_verified', [ $dealer['dealer_name'] => FALSE ] );
 
 		\IPS\Output::i()->redirect(
@@ -1630,6 +1649,25 @@ class _dealers extends \IPS\Dispatcher\Controller
 				],
 				[ 'dealer_id=?', $dealerId ]
 			);
+
+			/* Email the dealer that their FFL was rejected with the reason. */
+			try
+			{
+				$dealerMember = \IPS\Member::load( (int) $dealer['dealer_id'] );
+				if ( $dealerMember->member_id )
+				{
+					$customizeUrl = (string) \IPS\Http\Url::internal(
+						'app=gddealer&module=dealers&controller=dashboard&do=customize'
+					);
+					\IPS\Email::buildFromTemplate( 'gddealer', 'gddealer_ffl_rejected', [
+						'name'            => $dealerMember->name,
+						'reason'          => $reasonText,
+						'rejection_count' => $newRejectionCount,
+						'customize_url'   => $customizeUrl,
+					], \IPS\Email::TYPE_TRANSACTIONAL )->send( $dealerMember );
+				}
+			}
+			catch ( \Throwable ) {}
 
 			\IPS\Session::i()->log( 'acplog__gddealer_ffl_rejected', [ $dealer['dealer_name'] => FALSE ] );
 
