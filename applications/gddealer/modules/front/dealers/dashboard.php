@@ -397,14 +397,16 @@ class _dashboard extends \IPS\Dispatcher\Controller
 		$state = strtoupper( substr( (string) ( $req->address_state ?? '' ), 0, 2 ) );
 		if ( $state !== '' && !preg_match( '/^[A-Z]{2}$/', $state ) ) { $state = ''; }
 
-		/* FFL fields — dealer can update ffl_number and ffl_license_url until they
-		   hit the 3-rejection cap. Submitting/changing EITHER field resets status
-		   to "pending" (wipes rejection reason, increments submitted_at, verified_at
-		   stays null until admin approves). */
-		$newFflNumber     = substr( trim( (string) ( $req->ffl_number ?? '' ) ), 0, 32 );
-		$newFflLicenseUrl = substr( trim( (string) ( $req->ffl_license_url ?? '' ) ), 0, 500 );
+		/* FFL verification fields. Format validation happens here (before $update
+		   is built). Submitting/changing either field resets status to pending
+		   (wipes rejection reason, sets submitted_at). Dealers at 3+ rejections
+		   are blocked — we silently skip their FFL updates. */
+		$newFflNumber     = trim( (string) ( $req->ffl_number ?? '' ) );
+		$newFflNumber     = substr( $newFflNumber, 0, 32 );
+		$newFflLicenseUrl = trim( (string) ( $req->ffl_license_url ?? '' ) );
+		$newFflLicenseUrl = substr( $newFflLicenseUrl, 0, 500 );
 
-		/* Validate format: \d-\d{2}-\d{5} (e.g. 3-37-06855). Empty is OK (dealer cleared). */
+		/* Validate FFL number format: X-XX-XXXXX (e.g. 3-37-06855). Empty is OK. */
 		if ( $newFflNumber !== '' && !preg_match( '/^\d-\d{2}-\d{5}$/', $newFflNumber ) )
 		{
 			\IPS\Output::i()->error(
@@ -414,21 +416,26 @@ class _dashboard extends \IPS\Dispatcher\Controller
 			return;
 		}
 
-		$blocked = (int) ( $dealer->ffl_rejection_count ?? 0 ) >= 3;
-		$changed = ( $newFflNumber !== (string) ( $dealer->ffl_number ?? '' ) )
-		        || ( $newFflLicenseUrl !== (string) ( $dealer->ffl_license_url ?? '' ) );
+		$currentFflNumber     = (string) ( $this->dealer->ffl_number ?? '' );
+		$currentFflLicenseUrl = (string) ( $this->dealer->ffl_license_url ?? '' );
+		$rejectionCount       = (int) ( $this->dealer->ffl_rejection_count ?? 0 );
+		$fflBlocked           = $rejectionCount >= 3;
+		$fflChanged           = ( $newFflNumber !== $currentFflNumber )
+		                    || ( $newFflLicenseUrl !== $currentFflLicenseUrl );
 
-		if ( !$blocked && $changed )
+		$fflUpdate = [];
+		if ( !$fflBlocked && $fflChanged )
 		{
-			$dealer->ffl_number            = $newFflNumber !== '' ? $newFflNumber : null;
-			$dealer->ffl_license_url       = $newFflLicenseUrl !== '' ? $newFflLicenseUrl : null;
-			/* Only move to "pending" if both fields are provided. Partial entries stay unverified but don't trigger review. */
+			$fflUpdate['ffl_number']      = $newFflNumber !== '' ? $newFflNumber : null;
+			$fflUpdate['ffl_license_url'] = $newFflLicenseUrl !== '' ? $newFflLicenseUrl : null;
+
+			/* Both fields provided = full submission, reset to pending for admin review. */
 			if ( $newFflNumber !== '' && $newFflLicenseUrl !== '' )
 			{
-				$dealer->ffl_submitted_at     = time();
-				$dealer->ffl_verified_at      = null;
-				$dealer->ffl_verified_by      = null;
-				$dealer->ffl_rejection_reason = null;
+				$fflUpdate['ffl_submitted_at']     = time();
+				$fflUpdate['ffl_verified_at']      = null;
+				$fflUpdate['ffl_verified_by']      = null;
+				$fflUpdate['ffl_rejection_reason'] = null;
 			}
 		}
 
@@ -460,18 +467,8 @@ class _dashboard extends \IPS\Dispatcher\Controller
 			'dealer_dashboard_prefs' => json_encode( $prefs ),
 		];
 
-		if ( !$blocked && $changed )
-		{
-			$update['ffl_number']      = $dealer->ffl_number;
-			$update['ffl_license_url'] = $dealer->ffl_license_url;
-			if ( $newFflNumber !== '' && $newFflLicenseUrl !== '' )
-			{
-				$update['ffl_submitted_at']     = $dealer->ffl_submitted_at;
-				$update['ffl_verified_at']      = null;
-				$update['ffl_verified_by']      = null;
-				$update['ffl_rejection_reason'] = null;
-			}
-		}
+		/* Merge FFL updates into the main update array (so they save in a single query). */
+		$update = array_merge( $update, $fflUpdate );
 
 		try
 		{
