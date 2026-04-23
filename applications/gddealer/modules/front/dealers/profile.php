@@ -773,18 +773,12 @@ class _profile extends \IPS\Dispatcher\Controller
 			'response_rate'      => null,
 			'response_window'    => null,
 			'listings_updated'   => null,
-			'can_follow'         => true,
 		];
 
 		if ( $dealer['cover_url_custom'] !== '' )
 		{
 			$dealer['cover_photo_url'] = $dealer['cover_url_custom'];
 		}
-
-		$dealer['follow_url'] = (string) \IPS\Http\Url::internal(
-			'app=gddealer&module=dealers&controller=profile&do=follow&dealer_slug=' . urlencode( $slug )
-		)->csrf();
-		$dealer['is_following'] = false;
 
 		$stats['count']        = $stats['total'];
 		$stats['pct_pricing']  = $stats['avg_pricing']  > 0 ? (int) round( ( $stats['avg_pricing']  / 5 ) * 100 ) : 0;
