@@ -48,7 +48,8 @@ class Importer
 
 		try
 		{
-			if ( empty( $dealer->feed_url ) )
+			$mode = (string) ( $dealer->feed_delivery_mode ?? 'url' );
+			if ( $mode === 'url' && empty( $dealer->feed_url ) )
 			{
 				throw new \RuntimeException( 'Feed URL is not configured for this dealer.' );
 			}
@@ -249,6 +250,44 @@ class Importer
 	 */
 	protected static function fetch( Dealer $dealer ): string
 	{
+		$mode = (string) ( $dealer->feed_delivery_mode ?? 'url' );
+
+		if ( $mode === 'manual' )
+		{
+			try
+			{
+				$row = \IPS\Db::i()->select( '*', 'gd_dealer_feed_uploads',
+					[ 'dealer_id=?', (int) $dealer->dealer_id ],
+					'uploaded_at DESC',
+					[ 0, 1 ]
+				)->first();
+			}
+			catch ( \Exception )
+			{
+				throw new \RuntimeException( 'No feed file uploaded yet. Upload a file from the Feed Settings tab.' );
+			}
+
+			$fileUrl = (string) ( $row['file_url'] ?? '' );
+			if ( $fileUrl === '' )
+			{
+				throw new \RuntimeException( 'Latest upload row has no file URL — the file may have been moved or deleted.' );
+			}
+
+			try
+			{
+				$contents = (string) \IPS\File::get( 'gddealer_FeedUpload', $fileUrl )->contents();
+				if ( $contents === '' )
+				{
+					throw new \RuntimeException( 'Uploaded feed file is empty.' );
+				}
+				return $contents;
+			}
+			catch ( \Throwable $e )
+			{
+				throw new \RuntimeException( 'Failed to read uploaded feed file: ' . $e->getMessage() );
+			}
+		}
+
 		$url  = (string) $dealer->feed_url;
 		$auth = $dealer->getCredentials();
 

@@ -183,7 +183,9 @@ class _dashboard extends \IPS\Dispatcher\Controller
 			[
 				'key'   => 'feed',
 				'label' => 'Configure product feed',
-				'done'  => !empty( $dealer->feed_url ),
+				'done'  => ( (string) ( $dealer->feed_delivery_mode ?? 'url' ) === 'manual' )
+				            ? (bool) \IPS\Db::i()->select( 'COUNT(*)', 'gd_dealer_feed_uploads', [ 'dealer_id=?', (int) $dealer->dealer_id ] )->first()
+				            : !empty( $dealer->feed_url ),
 				'hint'  => '',
 			],
 			[
@@ -640,12 +642,20 @@ class _dashboard extends \IPS\Dispatcher\Controller
 	{
 		$dealer = $this->dealer;
 
+		$currentMode = (string) ( $dealer->feed_delivery_mode ?? 'url' );
+
 		$form = new \IPS\Helpers\Form( 'form', 'gddealer_front_feed_save' );
-		$form->add( new \IPS\Helpers\Form\Url( 'gddealer_front_feed_url', $dealer->feed_url, TRUE ) );
+		$form->add( new \IPS\Helpers\Form\Radio( 'gddealer_front_feed_delivery_mode', $currentMode, TRUE, [
+			'options' => [
+				'url'    => 'Hosted URL — system polls your feed on a schedule (Magento, WooCommerce, RSR, custom platforms)',
+				'manual' => 'Manual upload — you upload a file when your data changes (BigCommerce, Square, Shopify Lite, anything without API access)',
+			],
+		] ) );
+		$form->add( new \IPS\Helpers\Form\Url( 'gddealer_front_feed_url', $dealer->feed_url, FALSE ) );
 		$form->add( new \IPS\Helpers\Form\Select( 'gddealer_front_feed_format', $dealer->feed_format, TRUE, [
 			'options' => [ 'xml' => 'XML', 'json' => 'JSON', 'csv' => 'CSV' ],
 		] ) );
-		$form->add( new \IPS\Helpers\Form\Select( 'gddealer_front_auth_type', $dealer->auth_type, TRUE, [
+		$form->add( new \IPS\Helpers\Form\Select( 'gddealer_front_auth_type', $dealer->auth_type, FALSE, [
 			'options' => [ 'none' => 'None', 'basic' => 'Basic Auth', 'apikey' => 'API Key', 'ftp' => 'FTP' ],
 		] ) );
 		$form->add( new \IPS\Helpers\Form\TextArea( 'gddealer_front_auth_credentials', $dealer->getCredentials() ?? '', FALSE, [
@@ -657,6 +667,16 @@ class _dashboard extends \IPS\Dispatcher\Controller
 
 		if ( $values = $form->values() )
 		{
+			$newMode = (string) $values['gddealer_front_feed_delivery_mode'];
+			if ( !in_array( $newMode, [ 'url', 'manual' ], TRUE ) ) { $newMode = 'url'; }
+
+			if ( $newMode === 'url' && trim( (string) $values['gddealer_front_feed_url'] ) === '' )
+			{
+				\IPS\Output::i()->error( 'Hosted URL mode requires a feed URL. Either enter a URL or switch to Manual upload mode.', '3S401/F', 400 );
+				return;
+			}
+
+			$dealer->feed_delivery_mode = $newMode;
 			$dealer->feed_url    = (string) $values['gddealer_front_feed_url'];
 			$dealer->feed_format = $values['gddealer_front_feed_format'];
 			$dealer->auth_type   = $values['gddealer_front_auth_type'];
@@ -679,6 +699,27 @@ class _dashboard extends \IPS\Dispatcher\Controller
 			);
 			return;
 		}
+
+		$recentUploads = [];
+		try
+		{
+			foreach ( \IPS\Db::i()->select( '*', 'gd_dealer_feed_uploads',
+				[ 'dealer_id=?', (int) $dealer->dealer_id ],
+				'uploaded_at DESC',
+				[ 0, 10 ]
+			) as $u )
+			{
+				$recentUploads[] = [
+					'upload_id'       => (int) $u['upload_id'],
+					'upload_format'   => (string) $u['upload_format'],
+					'file_name'       => (string) ( $u['file_name'] ?? '' ),
+					'file_size_bytes' => (int) ( $u['file_size_bytes'] ?? 0 ),
+					'uploaded_at'     => (int) $u['uploaded_at'],
+					'uploaded_ago'    => \IPS\DateTime::ts( (int) $u['uploaded_at'] )->relative(),
+				];
+			}
+		}
+		catch ( \Exception ) {}
 
 		$importLog = [];
 		try {
@@ -704,7 +745,9 @@ class _dashboard extends \IPS\Dispatcher\Controller
 		if ( !$latest ) {
 			$syncHealth = 'warn';
 			$syncTitle  = 'Feed not configured yet';
-			$syncSub    = 'Enter your feed URL below to start syncing';
+			$syncSub    = $currentMode === 'manual'
+				? 'Upload your first feed file to start syncing'
+				: 'Enter your feed URL below to start syncing';
 		} elseif ( $latest['status'] === 'failed' ) {
 			$syncHealth = 'error';
 			$syncTitle  = 'Last import failed';
@@ -719,18 +762,103 @@ class _dashboard extends \IPS\Dispatcher\Controller
 		}
 
 		$data = [
-			'dealer'       => $this->dealerSummary(),
-			'tab_urls'     => $this->tabUrls(),
-			'form'         => (string) $form,
-			'import_log'   => $importLog,
-			'latest'       => $latest,
-			'sync_health'  => $syncHealth,
-			'sync_title'   => $syncTitle,
-			'sync_sub'     => $syncSub,
+			'dealer'         => $this->dealerSummary(),
+			'tab_urls'       => $this->tabUrls(),
+			'form'           => (string) $form,
+			'delivery_mode'  => $currentMode,
+			'import_log'     => $importLog,
+			'recent_uploads' => $recentUploads,
+			'upload_url'     => (string) \IPS\Http\Url::internal(
+				'app=gddealer&module=dealers&controller=dashboard&do=uploadFeed'
+			)->csrf(),
+			'latest'         => $latest,
+			'sync_health'    => $syncHealth,
+			'sync_title'     => $syncTitle,
+			'sync_sub'       => $syncSub,
 		];
 
 		$this->output( 'feedSettings',
 			\IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )->feedSettings( $data )
+		);
+	}
+
+	protected function uploadFeed(): void
+	{
+		\IPS\Session::i()->csrfCheck();
+
+		$dealer = $this->dealer;
+
+		if ( (string) ( $dealer->feed_delivery_mode ?? 'url' ) !== 'manual' )
+		{
+			\IPS\Output::i()->error( 'Switch to Manual upload mode in Feed Settings before uploading a file.', '3S402/F', 400 );
+			return;
+		}
+
+		$form = new \IPS\Helpers\Form( 'gd_feed_upload_form', 'gddealer_front_feed_upload_save' );
+		$form->add( new \IPS\Helpers\Form\Upload( 'gddealer_front_feed_file', NULL, TRUE, [
+			'storageExtension' => 'gddealer_FeedUpload',
+			'allowedFileTypes' => [ 'csv', 'xml', 'json', 'tsv', 'txt' ],
+			'maxFileSize'      => 50,
+		] ) );
+
+		if ( $values = $form->values() )
+		{
+			/** @var \IPS\File $file */
+			$file = $values['gddealer_front_feed_file'];
+			if ( !$file )
+			{
+				\IPS\Output::i()->error( 'No file received.', '3S402/F', 400 );
+				return;
+			}
+
+			$ext = strtolower( pathinfo( (string) $file->originalFilename, PATHINFO_EXTENSION ) );
+			$format = match( $ext )
+			{
+				'xml'         => 'xml',
+				'json'        => 'json',
+				'csv','tsv','txt' => 'csv',
+				default       => (string) ( $dealer->feed_format ?? 'csv' ),
+			};
+
+			try
+			{
+				\IPS\Db::i()->insert( 'gd_dealer_feed_uploads', [
+					'dealer_id'       => (int) $dealer->dealer_id,
+					'upload_format'   => $format,
+					'file_url'        => (string) $file,
+					'file_name'       => (string) ( $file->originalFilename ?? '' ),
+					'file_size_bytes' => (int) ( $file->filesize() ?? 0 ),
+					'uploaded_at'     => time(),
+					'uploaded_by'     => (int) \IPS\Member::loggedIn()->member_id,
+				] );
+
+				if ( (string) $dealer->feed_format !== $format )
+				{
+					$dealer->feed_format = $format;
+					$dealer->save();
+				}
+			}
+			catch ( \Throwable $e )
+			{
+				\IPS\Output::i()->error( 'Failed to record upload: ' . $e->getMessage(), '3S402/F', 500 );
+				return;
+			}
+
+			\IPS\Output::i()->redirect(
+				\IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dashboard&do=feedSettings' ),
+				'Feed file uploaded. The next import cycle will pick it up automatically.'
+			);
+			return;
+		}
+
+		$data = [
+			'dealer'   => $this->dealerSummary(),
+			'tab_urls' => $this->tabUrls(),
+			'form'     => (string) $form,
+		];
+
+		$this->output( 'feedSettings',
+			\IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )->feedUploadForm( $data )
 		);
 	}
 
@@ -740,7 +868,8 @@ class _dashboard extends \IPS\Dispatcher\Controller
 		\IPS\Session::i()->csrfCheck();
 
 		$dealer = $this->dealer;
-		if ( empty( $dealer->feed_url ) )
+		$mode = (string) ( $dealer->feed_delivery_mode ?? 'url' );
+		if ( $mode === 'url' && empty( $dealer->feed_url ) )
 		{
 			\IPS\Output::i()->redirect(
 				\IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dashboard&do=feedSettings' ),

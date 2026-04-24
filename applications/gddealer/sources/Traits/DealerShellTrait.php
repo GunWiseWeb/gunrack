@@ -200,7 +200,9 @@ HTML;
 				'enterprise' => (string) ( \IPS\Settings::i()->gddealer_enterprise_badge_color ?: '#7c3aed' ),
 				default      => (string) ( \IPS\Settings::i()->gddealer_basic_badge_color      ?: '#6b7280' ),
 			},
-			'onboarding_incomplete' => empty( $d->feed_url ),
+			'onboarding_incomplete' => ( (string) ( $d->feed_delivery_mode ?? 'url' ) === 'url' )
+                              ? empty( $d->feed_url )
+                              : !(bool) \IPS\Db::i()->select( 'COUNT(*)', 'gd_dealer_feed_uploads', [ 'dealer_id=?', (int) $d->dealer_id ] )->first(),
 			'suspended'             => (bool) $d->suspended,
 			'disputes_suspended'    => (bool) ( $d->disputes_suspended ?? 0 ),
 			'help_email'            => (string) ( \IPS\Settings::i()->gddealer_help_contact ?: 'dealers@gunrack.deals' ),

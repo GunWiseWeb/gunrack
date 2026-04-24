@@ -820,6 +820,20 @@
 				"values": [],
 				"comment": ""
 			},
+			"feed_delivery_mode": {
+				"name": "feed_delivery_mode",
+				"type": "VARCHAR",
+				"length": 16,
+				"decimals": null,
+				"allow_null": false,
+				"default": "url",
+				"auto_increment": false,
+				"binary": false,
+				"unsigned": false,
+				"zerofill": false,
+				"values": [],
+				"comment": ""
+			},
 			"feed_url": {
 				"name": "feed_url",
 				"type": "VARCHAR",
@@ -1604,6 +1618,23 @@
 			"idx_dealer_date":    { "type": "key",     "name": "idx_dealer_date",    "length": [null, null], "columns": ["dealer_id", "snapshot_date"] },
 			"idx_upc_date":       { "type": "key",     "name": "idx_upc_date",       "length": [null, null], "columns": ["upc", "snapshot_date"] },
 			"uq_dealer_upc_date": { "type": "unique",  "name": "uq_dealer_upc_date", "length": [null, null, null], "columns": ["dealer_id", "upc", "snapshot_date"] }
+		}
+	},
+	"gd_dealer_feed_uploads": {
+		"name": "gd_dealer_feed_uploads",
+		"columns": {
+			"upload_id":       { "name": "upload_id",       "type": "BIGINT",   "length": 20,  "allow_null": false, "auto_increment": true, "unsigned": true },
+			"dealer_id":       { "name": "dealer_id",       "type": "INT",      "length": 10,  "allow_null": false, "default": 0,         "unsigned": true },
+			"upload_format":   { "name": "upload_format",   "type": "VARCHAR",  "length": 8,   "allow_null": false, "default": "csv" },
+			"file_url":        { "name": "file_url",        "type": "TEXT",     "allow_null": false },
+			"file_name":       { "name": "file_name",       "type": "VARCHAR",  "length": 255, "allow_null": true,  "default": null },
+			"file_size_bytes": { "name": "file_size_bytes", "type": "BIGINT",   "length": 20,  "allow_null": true,  "default": null,      "unsigned": true },
+			"uploaded_at":     { "name": "uploaded_at",     "type": "INT",      "length": 10,  "allow_null": false, "default": 0,         "unsigned": true },
+			"uploaded_by":     { "name": "uploaded_by",     "type": "INT",      "length": 10,  "allow_null": true,  "default": null,      "unsigned": true }
+		},
+		"indexes": {
+			"PRIMARY":   { "type": "primary", "name": "PRIMARY",   "columns": [ "upload_id" ] },
+			"dealer_id": { "type": "key",     "name": "dealer_id", "columns": [ "dealer_id", "uploaded_at" ] }
 		}
 	}
 }
