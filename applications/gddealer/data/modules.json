@@ -9,10 +9,6 @@
 		"dealers": {
 			"default_controller": "directory",
 			"protected": false
-		},
-		"badge": {
-			"default_controller": "badge",
-			"protected": false
 		}
 	}
 }

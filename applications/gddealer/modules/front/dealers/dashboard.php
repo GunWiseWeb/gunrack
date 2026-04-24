@@ -268,7 +268,7 @@ class _dashboard extends \IPS\Dispatcher\Controller
 				'label'  => $badgeLabels[ $bid ],
 				'svg'    => (string) \IPS\Http\Url::external(
 					rtrim( (string) \IPS\Settings::i()->base_url, '/' )
-					. '/index.php?app=gddealer&module=badge&controller=badge&do=serve&id=' . urlencode( $bid )
+					. '/applications/gddealer/interface/badge/badge.php?id=' . urlencode( $bid )
 				),
 				'width'  => (int) $badgeSizes[ $bid ][0],
 				'height' => (int) $badgeSizes[ $bid ][1],
