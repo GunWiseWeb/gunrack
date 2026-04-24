@@ -354,7 +354,7 @@ $newContent = <<<'TEMPLATE_EOT'
 				<div class="hero-stat">
 					<div class="hero-stat-label">Tier</div>
 					<div class="hero-stat-value" style="font-size: 20px;">{$data['dealer']['tier_label']}</div>
-					<div class="hero-stat-sub">{{if $data['dealer']['tier_perk']}}{$data['dealer']['tier_perk']}{{else}}&nbsp;{{endif}}</div>
+					<div class="hero-stat-sub">&nbsp;</div>
 				</div>
 			</div>
 
