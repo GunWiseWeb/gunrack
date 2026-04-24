@@ -236,6 +236,55 @@ class _dashboard extends \IPS\Dispatcher\Controller
 			],
 		];
 
+		$badgeIds = [
+			'chip-light-blue', 'chip-light-green', 'chip-dark-blue', 'chip-dark-black',
+			'bar-light-blue', 'bar-light-green', 'bar-dark-blue', 'bar-dark-black',
+		];
+		$badgeLabels = [
+			'chip-light-blue'  => 'Chip · Brand Blue (light)',
+			'chip-light-green' => 'Chip · Green Accent (light)',
+			'chip-dark-blue'   => 'Chip · Dark Slate + Blue',
+			'chip-dark-black'  => 'Chip · Black + Gold',
+			'bar-light-blue'   => 'Bar · Brand Blue (light)',
+			'bar-light-green'  => 'Bar · Green (light)',
+			'bar-dark-blue'    => 'Bar · Solid Brand Blue',
+			'bar-dark-black'   => 'Bar · Black + Gold',
+		];
+		$badgeSizes = [
+			'chip-light-blue'  => [ 220, 56 ],
+			'chip-light-green' => [ 220, 56 ],
+			'chip-dark-blue'   => [ 220, 56 ],
+			'chip-dark-black'  => [ 220, 56 ],
+			'bar-light-blue'   => [ 200, 40 ],
+			'bar-light-green'  => [ 200, 40 ],
+			'bar-dark-blue'    => [ 200, 40 ],
+			'bar-dark-black'   => [ 200, 40 ],
+		];
+		$badges = [];
+		foreach ( $badgeIds as $bid )
+		{
+			$badges[ $bid ] = [
+				'id'     => $bid,
+				'label'  => $badgeLabels[ $bid ],
+				'svg'    => (string) \IPS\Http\Url::external(
+					rtrim( (string) \IPS\Settings::i()->base_url, '/' )
+					. '/applications/gddealer/interface/badges/' . $bid . '.svg'
+				),
+				'width'  => (int) $badgeSizes[ $bid ][0],
+				'height' => (int) $badgeSizes[ $bid ][1],
+			];
+		}
+		$dealerProfileUrl = (string) \IPS\Http\Url::external(
+			rtrim( (string) \IPS\Settings::i()->base_url, '/' )
+			. '/dealers/' . urlencode( (string) ( $this->dealer->dealer_slug ?? '' ) )
+			. '/?utm_source=verified_badge'
+		);
+		$data['verified_badge'] = [
+			'show'        => !empty( $this->dealer->ffl_verified_at ?? null ),
+			'badges'      => $badges,
+			'profile_url' => $dealerProfileUrl,
+		];
+
 		$this->output( 'overview',
 			\IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )->overview( $data )
 		);

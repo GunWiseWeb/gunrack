@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 56" width="220" height="56" role="img" aria-label="Verified Gun Rack Deals dealer">
+  <style>.t{font-family:'Inter','Helvetica Neue',Arial,sans-serif;}</style>
+  <rect x="0.5" y="0.5" width="219" height="55" rx="7.5" ry="7.5" fill="#0a0a0a" stroke="#262626"/>
+  <rect x="0" y="0" width="4" height="56" fill="#fbbf24"/>
+  <circle cx="30" cy="28" r="14" fill="#3a2e0a"/>
+  <path d="M24 28.5l4 4 8-8" fill="none" stroke="#fbbf24" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+  <text class="t" x="54" y="24" font-size="9.5" font-weight="700" letter-spacing="1.4" fill="#fbbf24">GUN RACK DEALS</text>
+  <text class="t" x="54" y="40" font-size="14" font-weight="700" fill="#ffffff">Verified Dealer</text>
+</svg>
