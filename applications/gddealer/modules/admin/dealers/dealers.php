@@ -1495,6 +1495,7 @@ class _dealers extends \IPS\Dispatcher\Controller
 					'status'               => !empty( $r['ffl_verified_at'] ) ? 'verified' : ( !empty( $r['ffl_rejection_reason'] ) ? 'rejected' : 'pending' ),
 					'verify_url'           => (string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dealers&do=fflVerify&dealer_id=' . (int) $r['dealer_id'] )->csrf(),
 					'reject_url'           => (string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dealers&do=fflReject&dealer_id=' . (int) $r['dealer_id'] ),
+					'reset_url'            => (string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dealers&do=fflResetAttempts&dealer_id=' . (int) $r['dealer_id'] )->csrf(),
 				];
 			}
 		}
@@ -1639,14 +1640,42 @@ class _dealers extends \IPS\Dispatcher\Controller
 			$otherReason = trim( (string) ( \IPS\Request::i()->reason_other ?? '' ) );
 
 			$lang = \IPS\Member::loggedIn()->language();
+
+			$fallbacks = [
+				'illegible' => 'License document is illegible',
+				'expired'   => 'License has expired',
+				'mismatch'  => 'Name or address does not match the submitted FFL number',
+				'other'     => 'Other (see admin notes)',
+			];
+
+			$resolveReason = function( string $key ) use ( $lang, $fallbacks ): string
+			{
+				try
+				{
+					$resolved = $lang->get( 'gddealer_ffl_rejection_' . $key );
+					if ( !empty( $resolved ) && stripos( $resolved, 'gddealer_ffl_rejection_' ) === false )
+					{
+						return $resolved;
+					}
+				}
+				catch ( \Throwable ) {}
+				return $fallbacks[ $key ] ?? '';
+			};
+
 			$reasonText = match( $reasonKey )
 			{
-				'illegible' => (string) $lang->addToStack( 'gddealer_ffl_rejection_illegible' ),
-				'expired'   => (string) $lang->addToStack( 'gddealer_ffl_rejection_expired' ),
-				'mismatch'  => (string) $lang->addToStack( 'gddealer_ffl_rejection_mismatch' ),
-				'other'     => $otherReason !== '' ? $otherReason : (string) $lang->addToStack( 'gddealer_ffl_rejection_other' ),
+				'illegible' => $resolveReason( 'illegible' ),
+				'expired'   => $resolveReason( 'expired' ),
+				'mismatch'  => $resolveReason( 'mismatch' ),
+				'other'     => $otherReason !== '' ? $otherReason : $resolveReason( 'other' ),
 				default     => '',
 			};
+
+			if ( preg_match( '/^[0-9a-f]{32,40}$/i', trim( $reasonText ) ) )
+			{
+				$reasonText = $fallbacks[ $reasonKey ] ?? 'Submission rejected (no reason recorded)';
+			}
+			$reasonText = substr( $reasonText, 0, 500 );
 
 			if ( $reasonText === '' )
 			{
@@ -1717,6 +1746,44 @@ class _dealers extends \IPS\Dispatcher\Controller
 			'post_url'    => (string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dealers&do=fflReject&dealer_id=' . $dealerId )->csrf(),
 			'cancel_url'  => (string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dealers&do=fflVerifications' ),
 		] );
+	}
+
+	protected function fflResetAttempts(): void
+	{
+		\IPS\Dispatcher::i()->checkAcpPermission( 'dealer_manage' );
+		\IPS\Session::i()->csrfCheck();
+
+		$dealerId = (int) ( \IPS\Request::i()->dealer_id ?? 0 );
+		if ( $dealerId <= 0 )
+		{
+			\IPS\Output::i()->error( 'Invalid dealer_id', '2S303/F', 400 );
+			return;
+		}
+
+		try
+		{
+			$dealer = \IPS\Db::i()->select( '*', 'gd_dealer_feed_config', [ 'dealer_id=?', $dealerId ] )->first();
+		}
+		catch ( \Exception )
+		{
+			\IPS\Output::i()->error( 'Dealer not found', '2S303/F', 404 );
+			return;
+		}
+
+		\IPS\Db::i()->update( 'gd_dealer_feed_config',
+			[
+				'ffl_rejection_count'  => 0,
+				'ffl_rejection_reason' => null,
+			],
+			[ 'dealer_id=?', $dealerId ]
+		);
+
+		\IPS\Session::i()->log( 'acplog__gddealer_ffl_attempts_reset', [ $dealer['dealer_name'] => FALSE ] );
+
+		\IPS\Output::i()->redirect(
+			\IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dealers&do=fflVerifications' ),
+			'Rejection attempts reset for ' . (string) $dealer['dealer_name'] . '. They can now re-submit.'
+		);
 	}
 }
 
