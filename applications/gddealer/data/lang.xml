@@ -444,5 +444,11 @@
     <word key="mailsub__gddealer_notification_gddealer_ffl_rejected"><![CDATA[Your FFL submission was rejected]]></word>
     <word key="mailani__gddealer_notification_gddealer_ffl_verified"><![CDATA[Your FFL license has been verified by GunRack Deals staff. The FFL Verified badge now appears on your profile.]]></word>
     <word key="mailani__gddealer_notification_gddealer_ffl_rejected"><![CDATA[Your FFL submission was rejected. Please review the reason and re-submit from your dashboard.]]></word>
+    <word key="gddealer_front_feed_delivery_mode"><![CDATA[Feed Delivery Method]]></word>
+    <word key="gddealer_front_feed_delivery_mode_desc"><![CDATA[Choose how your product feed reaches us.]]></word>
+    <word key="gddealer_front_feed_save"><![CDATA[Save Feed Settings]]></word>
+    <word key="gddealer_front_feed_upload_save"><![CDATA[Upload]]></word>
+    <word key="gddealer_front_feed_file"><![CDATA[Feed file (CSV, XML, or JSON)]]></word>
+    <word key="gddealer_front_feed_file_desc"><![CDATA[Maximum 50 MB. Allowed: .csv, .tsv, .xml, .json, .txt]]></word>
   </app>
 </language>
