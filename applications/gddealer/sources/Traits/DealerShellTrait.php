@@ -33,6 +33,12 @@ trait DealerShellTrait
 			$css = '<style>' . file_get_contents( $cssPath ) . '</style>';
 		}
 
+		$js = '';
+		$jsPath = \IPS\ROOT_PATH . '/applications/gddealer/dev/js/front/badge-picker.js';
+		if ( file_exists( $jsPath ) ) {
+			$js = '<script>' . file_get_contents( $jsPath ) . '</script>';
+		}
+
 		$fflOnboardingHtml = $this->fflOnboardingMarkup();
 
 		\IPS\Output::i()->title  = \IPS\Member::loggedIn()->language()->addToStack( 'gddealer_frontend_dashboard_title' );
@@ -43,7 +49,8 @@ trait DealerShellTrait
 				$activeTab,
 				$this->sidebarNav(),
 				$body
-			);
+			)
+			. $js;
 	}
 
 	protected function fflOnboardingMarkup(): string
