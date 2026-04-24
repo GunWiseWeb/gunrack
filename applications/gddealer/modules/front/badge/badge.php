@@ -11,6 +11,7 @@ if ( !defined( '\IPS\SUITE_UNIQUE_KEY' ) )
 
 class _badge extends \IPS\Dispatcher\Controller
 {
+	/* Whitelist of badge IDs we will actually serve. Anything else 404s. */
 	protected static array $allowedBadges = [
 		'chip-light-blue', 'chip-light-green', 'chip-dark-blue', 'chip-dark-black',
 		'bar-light-blue',  'bar-light-green',  'bar-dark-blue',  'bar-dark-black',
@@ -21,46 +22,71 @@ class _badge extends \IPS\Dispatcher\Controller
 		parent::execute();
 	}
 
+	/**
+	 * Default action — serve the requested badge SVG.
+	 */
 	protected function manage(): void
 	{
 		$id = (string) ( \IPS\Request::i()->id ?? '' );
+		/* Strip everything except a-z, 0-9, hyphen. Defeats path traversal early. */
 		$id = preg_replace( '/[^a-z0-9\-]/', '', $id );
 
 		if ( $id === '' || !in_array( $id, self::$allowedBadges, TRUE ) )
 		{
-			\IPS\Output::i()->sendOutput( 'Badge not found', 404, 'text/plain' );
+			$this->sendNotFound();
 			return;
 		}
 
 		$path = \IPS\ROOT_PATH . '/applications/gddealer/interface/badges/' . $id . '.svg';
 		if ( !is_file( $path ) || !is_readable( $path ) )
 		{
-			\IPS\Output::i()->sendOutput( 'Badge file missing', 404, 'text/plain' );
+			$this->sendNotFound();
 			return;
 		}
 
 		$svg = (string) file_get_contents( $path );
 		if ( $svg === '' )
 		{
-			\IPS\Output::i()->sendOutput( 'Badge empty', 500, 'text/plain' );
+			$this->sendNotFound();
 			return;
 		}
 
-		\IPS\Output::i()->sendOutput(
-			$svg,
-			200,
-			'image/svg+xml',
-			[
-				'Cache-Control: public, max-age=2592000, immutable',
-				'Access-Control-Allow-Origin: *',
-				'X-Content-Type-Options: nosniff',
-			]
-		);
+		/* Bypass IPS Output entirely. sendOutput() runs parseOutputForDisplay()
+		   on non-JSON/JS/CSS bodies, which mangles SVG XML and empties our
+		   response (verified by reading system/Output/Output.php:1053). Bare
+		   header()+echo+exit is the cleanest path for static binary assets. */
+		while ( ob_get_level() > 0 ) { @ob_end_clean(); }
+
+		header_remove( 'Set-Cookie' );
+		header( 'Content-Type: image/svg+xml; charset=utf-8' );
+		header( 'Content-Length: ' . strlen( $svg ) );
+		header( 'Cache-Control: public, max-age=2592000, immutable' );
+		header( 'Access-Control-Allow-Origin: *' );
+		header( 'X-Content-Type-Options: nosniff' );
+		echo $svg;
+		exit;
 	}
 
+	/**
+	 * Friendly URL action: /dealers/badge/{id}.svg routes here.
+	 */
 	protected function serve(): void
 	{
 		$this->manage();
+	}
+
+	/**
+	 * Send a clean 404 without going through IPS error templates (which would
+	 * also try to render HTML, doubling the response, etc).
+	 */
+	protected function sendNotFound(): void
+	{
+		while ( ob_get_level() > 0 ) { @ob_end_clean(); }
+		header_remove( 'Set-Cookie' );
+		header( 'HTTP/1.1 404 Not Found' );
+		header( 'Content-Type: text/plain; charset=utf-8' );
+		echo 'Badge not found';
+		exit;
 	}
 }
 
