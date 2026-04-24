@@ -41,7 +41,7 @@ if ( $id === '' || !in_array( $id, $allowed, TRUE ) )
 }
 
 /* Serve from cache store if we previously read this file. */
-$cacheKey = 'gddealer_badge_svg_' . $id;
+$cacheKey = 'gddealer_badge_svg_v126_' . $id;
 try
 {
 	$cached = Store::i()->$cacheKey ?? null;

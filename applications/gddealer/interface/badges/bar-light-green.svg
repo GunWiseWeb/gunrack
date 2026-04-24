@@ -1,8 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 40" width="200" height="40" role="img" aria-label="Verified Gun Rack Deals dealer">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 40" width="200" height="40" role="img" aria-label="Gun Rack Verified Dealer">
   <style>.t{font-family:'Inter','Helvetica Neue',Arial,sans-serif;}</style>
   <rect x="0.5" y="0.5" width="199" height="39" rx="5.5" ry="5.5" fill="#ffffff" stroke="#e2e8f0"/>
   <path d="M6 0 H38 V40 H6 a6 6 0 0 1 -6 -6 V6 a6 6 0 0 1 6 -6 z" fill="#10b981"/>
   <path d="M16 20.5l4 4 8-8" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
-  <text class="t" x="48" y="17" font-size="8" font-weight="700" letter-spacing="1.3" fill="#475569">GUN RACK DEALS</text>
+  <text class="t" x="48" y="17" font-size="8" font-weight="700" letter-spacing="1.3" fill="#475569">GUN RACK</text>
   <text class="t" x="48" y="30" font-size="12" font-weight="700" fill="#0f172a">Verified Dealer</text>
 </svg>
