@@ -238,6 +238,14 @@ These were learned by comparing against a working IPS v5 plugin. They apply to e
 Read `GunRack_Spec_v2.9.16.md` for complete specs on all 12 plugins, database schemas, acceptance criteria, server setup (Appendix B), security requirements (Appendix C), and Phase 2 roadmap (Section 19).
 
 
+## Template and upgrade rules (learned from v1.0.106–v1.0.131 regressions)
+37. **Never use regex to inject HTML into existing template bodies** — if the template needs a new section, write the full clean template in the upgrade.php with a heredoc and overwrite the row. Regex injection into template bodies has caused orphan `{{endif}}` tags and broken compiled template classes multiple times (v1.0.128, v1.0.129).
+38. **Never write a "wrapping" upgrade script that does read-modify-write on a template** — each upgrade that touches a template must replace it with a complete known-good version, not append/prepend to whatever's there. Wrapping scripts (read template → prepend CSS/wrapper → append closing div → write back) stack on every upgrade run, inflating templates exponentially (v1.0.106–v1.0.108 stacked dealerShell to 465KB across 15+ upgrades).
+39. **Every new lang string requires upgrade.php seeding** — `data/lang.xml` only runs on fresh install. For each new lang key in a version, add a block to that version's upgrade.php that inserts into `core_sys_lang_words` for every `lang_id` in `core_sys_lang`. Without this, existing installs render raw lang keys instead of human-readable labels.
+40. **Every upgrade.php that touches templates must end by busting caches** — delete `core_cache`, delete `core_store` rows starting with `theme_` or `template_`, and `unlink()` matching files in `datastore/`. Without this, IPS serves stale compiled templates even after the DB row is updated.
+41. **Reactive UI on form fields = JavaScript inside the template** — IPS form helpers render server-side only. Don't try to make panels appear/disappear by re-fetching the page or by checking DB state at render — use a JS handler on the form input (e.g. `addEventListener('change', sync)` on radio buttons).
+42. **Test each upgrade on a clean checkout before tagging** — specifically: install the previous version, then run the new upgrade. Don't test by re-running the new install on a fresh DB — that path uses `setup/install.php`, not `upgrade.php`. The upgrade path is where all the regressions hide.
+
 ## Server details
 - Primary IP: 108.160.146.199
 - Secondary IP: 162.255.160.38
