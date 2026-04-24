@@ -11,6 +11,11 @@ try
     $shellBody = (string) $row;
     if ( $shellBody === '' ) { return; }
 
+    if ( strpos( $shellBody, 'data-gd-card-theme=' ) !== false )
+    {
+        return;
+    }
+
     /* Strip v10106 injection (header-only color overrides). */
     if ( strpos( $shellBody, 'GD_CARD_THEME_INJECTED_v10106' ) !== false )
     {

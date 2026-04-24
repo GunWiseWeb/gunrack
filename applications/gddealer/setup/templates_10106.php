@@ -11,6 +11,11 @@ try
     $shellBody = (string) $row;
     if ( $shellBody === '' ) { return; }
 
+    if ( strpos( $shellBody, 'data-gd-card-theme=' ) !== false )
+    {
+        return;
+    }
+
     /* Strip the v1.0.105 injection (limited to .gdKpi only) so we can replace
        it with the v1.0.106 expanded version. Idempotent: if v10105 marker
        isn't present we leave the body alone. */
