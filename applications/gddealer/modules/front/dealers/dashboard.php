@@ -279,9 +279,14 @@ class _dashboard extends \IPS\Dispatcher\Controller
 			. '/dealers/' . urlencode( (string) ( $this->dealer->dealer_slug ?? '' ) )
 			. '/?utm_source=verified_badge'
 		);
+		/* Pre-encode the badge map as JSON so the template can drop it directly
+		   into a data-badges='{...|raw}' attribute. IPS template parser handles
+		   the {var|raw} pattern inside single-quoted attributes specifically
+		   for JSON-in-attribute use cases (see system/Theme/Theme.php:4034). */
 		$data['verified_badge'] = [
 			'show'        => !empty( $this->dealer->ffl_verified_at ?? null ),
 			'badges'      => $badges,
+			'badges_json' => (string) json_encode( $badges, JSON_HEX_QUOT | JSON_HEX_APOS | JSON_HEX_TAG | JSON_HEX_AMP ),
 			'profile_url' => $dealerProfileUrl,
 		];
 
