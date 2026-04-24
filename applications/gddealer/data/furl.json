@@ -37,6 +37,10 @@
 			"friendly": "support/{@do}",
 			"real": "app=gddealer&module=dealers&controller=support"
 		},
+		"dealers_badge": {
+			"friendly": "badge/{@id}",
+			"real": "app=gddealer&module=badge&controller=badge&do=serve"
+		},
 		"dealers_profile": {
 			"friendly": "profile/{@dealer_slug}",
 			"real": "app=gddealer&module=dealers&controller=profile"
