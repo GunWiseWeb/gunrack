@@ -420,16 +420,21 @@ class _dashboard extends \IPS\Dispatcher\Controller
 		$currentFflLicenseUrl = (string) ( $this->dealer->ffl_license_url ?? '' );
 		$rejectionCount       = (int) ( $this->dealer->ffl_rejection_count ?? 0 );
 		$fflBlocked           = $rejectionCount >= 3;
-		$fflChanged           = ( $newFflNumber !== $currentFflNumber )
-		                    || ( $newFflLicenseUrl !== $currentFflLicenseUrl );
+
+		$currentlyRejected = !empty( $this->dealer->ffl_rejection_reason ?? '' )
+		                  && empty( $this->dealer->ffl_verified_at ?? null );
+
+		$fflChanged = ( $newFflNumber !== $currentFflNumber )
+		           || ( $newFflLicenseUrl !== $currentFflLicenseUrl );
+
+		$shouldUpdate = !$fflBlocked && ( $fflChanged || $currentlyRejected );
 
 		$fflUpdate = [];
-		if ( !$fflBlocked && $fflChanged )
+		if ( $shouldUpdate )
 		{
 			$fflUpdate['ffl_number']      = $newFflNumber !== '' ? $newFflNumber : null;
 			$fflUpdate['ffl_license_url'] = $newFflLicenseUrl !== '' ? $newFflLicenseUrl : null;
 
-			/* Both fields provided = full submission, reset to pending for admin review. */
 			if ( $newFflNumber !== '' && $newFflLicenseUrl !== '' )
 			{
 				$fflUpdate['ffl_submitted_at']     = time();
