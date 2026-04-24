@@ -32,13 +32,118 @@ trait DealerShellTrait
 		if ( file_exists( $cssPath ) ) {
 			$css = '<style>' . file_get_contents( $cssPath ) . '</style>';
 		}
+
+		$fflOnboardingHtml = $this->fflOnboardingMarkup();
+
 		\IPS\Output::i()->title  = \IPS\Member::loggedIn()->language()->addToStack( 'gddealer_frontend_dashboard_title' );
-		\IPS\Output::i()->output = $css . \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )->dealerShell(
-			$this->dealerSummary(),
-			$activeTab,
-			$this->sidebarNav(),
-			$body
-		);
+		\IPS\Output::i()->output = $css
+			. $fflOnboardingHtml
+			. \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )->dealerShell(
+				$this->dealerSummary(),
+				$activeTab,
+				$this->sidebarNav(),
+				$body
+			);
+	}
+
+	protected function fflOnboardingMarkup(): string
+	{
+		try
+		{
+			$d = $this->dealer ?? null;
+			if ( !$d ) { return ''; }
+
+			$hasNumber = !empty( (string) ( $d->ffl_number ?? '' ) );
+			$hasUrl    = !empty( (string) ( $d->ffl_license_url ?? '' ) );
+			if ( $hasNumber && $hasUrl ) { return ''; }
+
+			$dealerGroupIds = [ 7, 8, 9, 10 ];
+			$me             = \IPS\Member::loggedIn();
+			$myGroups       = [ (int) $me->member_group_id ];
+			foreach ( array_filter( array_map( 'trim', explode( ',', (string) ( $me->mgroup_others ?? '' ) ) ) ) as $gid )
+			{
+				$myGroups[] = (int) $gid;
+			}
+			if ( count( array_intersect( $dealerGroupIds, $myGroups ) ) === 0 ) { return ''; }
+
+			$prefs        = [];
+			$dismissedAt  = 0;
+			$rawPrefs     = (string) ( $d->dealer_dashboard_prefs ?? '' );
+			if ( $rawPrefs !== '' )
+			{
+				$decoded = json_decode( $rawPrefs, true );
+				if ( is_array( $decoded ) ) {
+					$prefs       = $decoded;
+					$dismissedAt = (int) ( $decoded['ffl_modal_dismissed_at'] ?? 0 );
+				}
+			}
+			$modalSuppressed = ( $dismissedAt > 0 ) && ( ( time() - $dismissedAt ) < 86400 );
+
+			$dismissUrl = (string) \IPS\Http\Url::internal(
+				'app=gddealer&module=dealers&controller=dashboard&do=dismissFflModal'
+			)->csrf();
+			$customizeUrl = (string) \IPS\Http\Url::internal(
+				'app=gddealer&module=dealers&controller=dashboard&do=customize'
+			);
+
+			$bannerHtml = <<<HTML
+<div id="gdFflBanner" style="background:#fef3c7;border-bottom:1px solid #fde68a;color:#92400e;padding:10px 20px;display:flex;align-items:center;gap:12px;font-size:13px;">
+	<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+	<span style="flex:1;"><strong>Submit your FFL license</strong> to display the verified badge on your public profile and gain customer trust.</span>
+	<a href="{$customizeUrl}" style="background:#92400e;color:#fff;padding:6px 14px;border-radius:5px;text-decoration:none;font-weight:600;font-size:12px;white-space:nowrap;">Submit FFL</a>
+</div>
+HTML;
+
+			$modalHtml = '';
+			if ( !$modalSuppressed )
+			{
+				$modalHtml = <<<HTML
+<div id="gdFflModalOverlay" onclick="if(event.target===this){document.getElementById('gdFflModalOverlay').style.display='none';fetch('{$dismissUrl}',{method:'POST',credentials:'same-origin'});}" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,23,42,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;">
+	<div role="dialog" aria-labelledby="gdFflModalTitle" style="background:#fff;border-radius:10px;max-width:480px;width:100%;padding:28px;box-shadow:0 20px 25px -5px rgba(0,0,0,0.2);position:relative;">
+		<button type="button" onclick="document.getElementById('gdFflModalOverlay').style.display='none';fetch('{$dismissUrl}',{method:'POST',credentials:'same-origin'});" aria-label="Dismiss" style="position:absolute;top:14px;right:14px;background:none;border:0;color:#94a3b8;cursor:pointer;padding:4px;line-height:0;">
+			<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+		</button>
+
+		<div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+			<svg width="22" height="22" viewBox="0 0 24 24" fill="#1e40af"><path d="M12 2 4 5v6c0 5.5 3.8 10.7 8 12 4.2-1.3 8-6.5 8-12V5l-8-3z"/></svg>
+			<h2 id="gdFflModalTitle" style="margin:0;font-size:18px;font-weight:600;color:#0f172a;">Submit your FFL license</h2>
+		</div>
+		<p style="margin:0 0 18px 0;font-size:13px;color:#64748b;line-height:1.5;">Get the green verified badge on your public profile to build customer trust. Admin reviews submissions within 24 hours.</p>
+
+		<form method="post" action="{$customizeUrl}" id="gdFflModalForm" style="margin-bottom:0;">
+			<input type="hidden" name="csrfKey" value="{$me->csrfKey}">
+			<input type="hidden" name="MAX_FILE_SIZE" value="0">
+
+			<label for="gd_ffl_modal_number" style="display:block;font-size:13px;font-weight:600;color:#0f172a;margin-bottom:6px;">FFL number</label>
+			<input type="text" id="gd_ffl_modal_number" name="ffl_number" pattern="\d-\d{2}-\d{5}" placeholder="3-37-06855" required class="ipsInput ipsInput--text" style="width:100%;font-family:ui-monospace,'SF Mono',Menlo,monospace;box-sizing:border-box;margin-bottom:4px;">
+			<p style="margin:0 0 14px 0;font-size:11px;color:#94a3b8;">Format: X-XX-XXXXX</p>
+
+			<label for="gd_ffl_modal_url" style="display:block;font-size:13px;font-weight:600;color:#0f172a;margin-bottom:6px;">FFL license URL</label>
+			<input type="url" id="gd_ffl_modal_url" name="ffl_license_url" placeholder="https://drive.google.com/..." required class="ipsInput ipsInput--text" style="width:100%;box-sizing:border-box;margin-bottom:4px;">
+			<p style="margin:0 0 18px 0;font-size:11px;color:#94a3b8;">Direct link to your scanned FFL on Dropbox, Google Drive, or your own host.</p>
+
+			<div style="display:flex;gap:10px;justify-content:flex-end;">
+				<a href="#" onclick="event.preventDefault();document.getElementById('gdFflModalOverlay').style.display='none';fetch('{$dismissUrl}',{method:'POST',credentials:'same-origin'});" style="padding:9px 16px;background:#fff;border:1px solid #e5e7eb;color:#475569;border-radius:6px;text-decoration:none;font-size:13px;font-weight:500;">Skip for now</a>
+				<button type="submit" style="padding:9px 18px;background:#1e40af;color:#fff;border:0;border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;">Submit for verification</button>
+			</div>
+		</form>
+	</div>
+</div>
+<script>
+(function(){
+	var ov=document.getElementById('gdFflModalOverlay');if(!ov)return;
+	document.addEventListener('keydown',function(e){if(e.key==='Escape'&&ov.style.display!=='none'){ov.style.display='none';fetch('{$dismissUrl}',{method:'POST',credentials:'same-origin'});}});
+})();
+</script>
+HTML;
+			}
+
+			return $bannerHtml . $modalHtml;
+		}
+		catch ( \Throwable )
+		{
+			return '';
+		}
 	}
 
 	/**

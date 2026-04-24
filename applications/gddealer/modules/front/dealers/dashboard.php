@@ -486,6 +486,34 @@ class _dashboard extends \IPS\Dispatcher\Controller
 		);
 	}
 
+	protected function dismissFflModal(): void
+	{
+		\IPS\Session::i()->csrfCheck();
+
+		try
+		{
+			$prefs = [];
+			$raw   = (string) ( $this->dealer->dealer_dashboard_prefs ?? '' );
+			if ( $raw !== '' )
+			{
+				$decoded = json_decode( $raw, true );
+				if ( is_array( $decoded ) ) { $prefs = $decoded; }
+			}
+			$prefs['ffl_modal_dismissed_at'] = time();
+
+			\IPS\Db::i()->update( 'gd_dealer_feed_config',
+				[ 'dealer_dashboard_prefs' => json_encode( $prefs ) ],
+				[ 'dealer_id=?', (int) $this->dealer->dealer_id ]
+			);
+
+			\IPS\Output::i()->json( [ 'ok' => true ] );
+		}
+		catch ( \Throwable )
+		{
+			\IPS\Output::i()->json( [ 'ok' => false ], 500 );
+		}
+	}
+
 	/**
 	 * Load dashboard preferences for the current dealer. Returns the
 	 * stored JSON merged over the defaults so missing keys never break
