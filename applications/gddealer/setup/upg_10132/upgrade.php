@@ -7,15 +7,19 @@ class _upgrade
 {
     public function step1(): bool
     {
-        $tpl = file_get_contents( __DIR__ . '/dealerDirectory.tpl' );
-        if ( $tpl === false || $tpl === '' )
-        {
-            return TRUE;
-        }
+        $newDirectoryTpl = <<<'TPL'
+<div class="gd-directory">
+<style>
+/* CSS_MARKER */
+</style>
+<!-- HEADER_MARKER -->
+<!-- CARDS_MARKER -->
+</div>
+TPL;
 
         \IPS\Db::i()->update(
             'core_theme_templates',
-            [ 'template_content' => $tpl, 'template_updated' => time() ],
+            [ 'template_content' => $newDirectoryTpl, 'template_updated' => time() ],
             [ 'template_app=? AND template_group=? AND template_name=?', 'gddealer', 'dealers', 'dealerDirectory' ]
         );
 
