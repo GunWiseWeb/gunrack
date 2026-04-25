@@ -156,6 +156,67 @@ class _upgrade
 }
 </style>
 <!-- HEADER_MARKER -->
+
+    <form method="get" action="{$directoryUrl}">
+    <input type="hidden" name="tier" value="{$tier}">
+    <input type="hidden" name="sort" value="{$sort}">
+
+    <div class="directory-hero">
+        <div class="hero-top">
+            <div class="hero-title-block">
+                <div class="hero-eyebrow">Dealer directory</div>
+                <h1 class="hero-title">Find a trusted FFL dealer</h1>
+                <p class="hero-sub">Every dealer on gunrack.deals is a verified FFL holder. Browse, compare, and shop from the dealer that fits your needs.</p>
+            </div>
+            <div class="hero-stats">
+                <div class="hero-stat">
+                    <div class="hero-stat-value">{$total}</div>
+                    <div class="hero-stat-label">Dealers</div>
+                </div>
+            </div>
+        </div>
+        <div class="search-row">
+            <div class="search-input">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" name="search" value="{$search}" placeholder="Search dealers by name&hellip;">
+            </div>
+            <button type="submit" class="search-submit">Search</button>
+        </div>
+    </div>
+    </form>
+
+    <form method="get" action="{$directoryUrl}">
+    <input type="hidden" name="search" value="{$search}">
+
+    <div class="filters-bar">
+        <div class="filters-left">
+            <span class="filter-group-label">Tier</span>
+            <a class="filter-chip{{if $tier === ''}} active{{endif}}" href="{$directoryUrl}?sort={$sort}">All</a>
+            <a class="filter-chip{{if $tier === 'founding'}} active{{endif}}" href="{$directoryUrl}?tier=founding&amp;sort={$sort}">Founding</a>
+            <a class="filter-chip{{if $tier === 'basic'}} active{{endif}}" href="{$directoryUrl}?tier=basic&amp;sort={$sort}">Basic</a>
+            <a class="filter-chip{{if $tier === 'pro'}} active{{endif}}" href="{$directoryUrl}?tier=pro&amp;sort={$sort}">Pro</a>
+            <a class="filter-chip{{if $tier === 'enterprise'}} active{{endif}}" href="{$directoryUrl}?tier=enterprise&amp;sort={$sort}">Enterprise</a>
+        </div>
+        <div class="filters-right">
+            <span class="sort-label">Sort by</span>
+            <input type="hidden" name="tier" value="{$tier}">
+            <select name="sort" class="select-sort" onchange="this.form.submit()">
+                <option value="rating"{{if $sort === 'rating'}} selected{{endif}}>Highest rated</option>
+                <option value="listings"{{if $sort === 'listings'}} selected{{endif}}>Most listings</option>
+                <option value="newest"{{if $sort === 'newest'}} selected{{endif}}>Newest</option>
+                <option value="alpha"{{if $sort === 'alpha'}} selected{{endif}}>A&ndash;Z</option>
+            </select>
+        </div>
+    </div>
+    </form>
+
+    <div class="results-meta">
+        <div class="results-count"><strong>{$total} dealers</strong></div>
+        <div class="view-toggle">
+            <button type="button" class="active">Grid</button>
+            <button type="button">List</button>
+        </div>
+    </div>
 <!-- CARDS_MARKER -->
 </div>
 TPL;
