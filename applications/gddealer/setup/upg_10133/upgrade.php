@@ -9,10 +9,9 @@ class _upgrade
     {
         $errors = [];
 
-        /* Re-seed dealerDirectory with corrected class names and field bindings.
-           v1.0.132 shipped a template whose markup used class names like .card-top
-           that had no matching CSS, plus field names like $d['avatar_url'] that
-           don't exist in the controller's data shape. */
+        /* Re-seed dealerDirectory with corrected class names, field bindings,
+           and the new layout (no tier filter, sort dropdown kept, working
+           grid/list view toggle, 1446px max-width). */
         try
         {
             require_once \IPS\ROOT_PATH . '/applications/gddealer/setup/templates_10133.php';
@@ -22,9 +21,7 @@ class _upgrade
             $errors[] = 'templates_10133.php failed: ' . $e->getMessage();
         }
 
-        /* Bust the IPS template cache (rule #40). The compiled template class
-           lives in core_store; if we don't clear it, IPS keeps serving the
-           old compiled version even though the DB row has the new content. */
+        /* Bust the IPS template cache (rule #40). */
         try { \IPS\Db::i()->delete( 'core_cache' ); } catch ( \Throwable ) {}
         try
         {
@@ -33,7 +30,6 @@ class _upgrade
         }
         catch ( \Throwable ) {}
 
-        /* Datastore file cleanup. */
         foreach ( glob( \IPS\ROOT_PATH . '/datastore/template_*dealers*' ) ?: [] as $f )
         {
             @unlink( $f );
@@ -44,9 +40,6 @@ class _upgrade
         try { unset( \IPS\Data\Store::i()->applications ); } catch ( \Throwable ) {}
         try { \IPS\Data\Cache::i()->clearAll();            } catch ( \Throwable ) {}
 
-        /* Belt-and-suspenders: official IPS API to delete the compiled template
-           cache for every theme set. Wrapped because the method may not exist
-           on older 5.x patches. */
         try
         {
             if ( method_exists( '\IPS\Theme', 'deleteCompiledTemplate' ) )
@@ -67,7 +60,7 @@ class _upgrade
 
     public function step1CustomTitle()
     {
-        return 'Fixing dealer directory class names and field bindings';
+        return 'Rebuilding dealer directory with new design system';
     }
 }
 class upgrade extends _upgrade {}
