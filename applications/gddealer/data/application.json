@@ -3,5 +3,7 @@
 	"app_author": "GunRack",
 	"application_title": "GD Dealer Manager",
 	"app_website": "https://gunrack.deals",
-	"app_update_check": ""
+	"app_update_check": "",
+	"app_version": "1.0.132",
+	"app_long_version": "10132"
 }
