@@ -155,8 +155,6 @@ class _upgrade
     .gd-directory .search-submit { width: 100%; }
 }
 </style>
-<!-- HEADER_MARKER -->
-
     <form method="get" action="{$directoryUrl}">
     <input type="hidden" name="tier" value="{$tier}">
     <input type="hidden" name="sort" value="{$sort}">
@@ -217,7 +215,69 @@ class _upgrade
             <button type="button">List</button>
         </div>
     </div>
-<!-- CARDS_MARKER -->
+{{if count($dealers) === 0}}
+    <div class="gd-empty">
+        <div class="gd-empty-icon">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        </div>
+        <div class="gd-empty-title">No dealers found</div>
+        <div class="gd-empty-sub">Try adjusting your search or filters.</div>
+    </div>
+{{else}}
+    <div class="dealer-grid">
+    {{foreach $dealers as $d}}
+        <div class="dealer-card">
+            <div class="card-top">
+                <img src="{$d['avatar_url']}" alt="" class="card-avatar" loading="lazy">
+                <div class="card-identity">
+                    <a href="{$d['profile_url']}" class="card-name">{$d['name']}</a>
+                    <span class="tier-pill tier-{$d['tier']}">{$d['tier_label']}</span>
+                </div>
+            </div>
+            <div class="card-rating">
+                <div class="card-stars">
+                    <svg viewBox="0 0 20 20" class="star-icon"><polygon points="10,1.5 12.59,7.36 18.9,7.86 14.15,12.04 15.59,18.21 10,14.77 4.41,18.21 5.85,12.04 1.1,7.86 7.41,7.36" fill="var(--gd-accent)"{{if floor($d['avg_overall']) < 1}} opacity="0.3"{{endif}}/></svg>
+                    <svg viewBox="0 0 20 20" class="star-icon"><polygon points="10,1.5 12.59,7.36 18.9,7.86 14.15,12.04 15.59,18.21 10,14.77 4.41,18.21 5.85,12.04 1.1,7.86 7.41,7.36" fill="var(--gd-accent)"{{if floor($d['avg_overall']) < 2}} opacity="0.3"{{endif}}/></svg>
+                    <svg viewBox="0 0 20 20" class="star-icon"><polygon points="10,1.5 12.59,7.36 18.9,7.86 14.15,12.04 15.59,18.21 10,14.77 4.41,18.21 5.85,12.04 1.1,7.86 7.41,7.36" fill="var(--gd-accent)"{{if floor($d['avg_overall']) < 3}} opacity="0.3"{{endif}}/></svg>
+                    <svg viewBox="0 0 20 20" class="star-icon"><polygon points="10,1.5 12.59,7.36 18.9,7.86 14.15,12.04 15.59,18.21 10,14.77 4.41,18.21 5.85,12.04 1.1,7.86 7.41,7.36" fill="var(--gd-accent)"{{if floor($d['avg_overall']) < 4}} opacity="0.3"{{endif}}/></svg>
+                    <svg viewBox="0 0 20 20" class="star-icon"><polygon points="10,1.5 12.59,7.36 18.9,7.86 14.15,12.04 15.59,18.21 10,14.77 4.41,18.21 5.85,12.04 1.1,7.86 7.41,7.36" fill="var(--gd-accent)"{{if floor($d['avg_overall']) < 5}} opacity="0.3"{{endif}}/></svg>
+                </div>
+                <span class="card-rating-value" style="color:{$d['rating_color']}">{expression="number_format($d['avg_overall'],1)"}</span>
+            </div>
+            <div class="card-stats">
+                <div class="card-stat">
+                    <div class="card-stat-value">{expression="number_format($d['listing_count'])"}</div>
+                    <div class="card-stat-label">Listings</div>
+                </div>
+                <div class="card-stat">
+                    <div class="card-stat-value">{$d['member_since']}</div>
+                    <div class="card-stat-label">Member since</div>
+                </div>
+            </div>
+            <div class="card-actions">
+                {{if $loggedIn}}
+                <button type="button" class="btn-follow{{if $d['is_following']}} following{{endif}}" data-dealer="{$d['id']}">
+                    {{if $d['is_following']}}Following{{else}}Follow{{endif}}
+                </button>
+                {{endif}}
+                <a href="{$d['profile_url']}" class="btn-profile">View profile</a>
+            </div>
+        </div>
+    {{endforeach}}
+    </div>
+
+    {{if $pagination}}
+    <div class="gd-pagination">{$pagination|raw}</div>
+    {{endif}}
+{{endif}}
+
+    <div class="join-banner">
+        <div class="join-content">
+            <h2 class="join-title">Are you an FFL dealer?</h2>
+            <p class="join-sub">Join gunrack.deals to list your inventory, reach thousands of buyers, and grow your business.</p>
+        </div>
+        <a href="{$joinUrl}" class="join-cta">Apply to join</a>
+    </div>
 </div>
 TPL;
 
