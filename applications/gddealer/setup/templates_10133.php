@@ -3,12 +3,22 @@ if ( !defined( '\\IPS\\SUITE_UNIQUE_KEY' ) ) { header( ( $_SERVER['SERVER_PROTOC
 
 /**
  * Replaces the dealerDirectory template with the new design system layout.
- * v1.0.132 attempted this but shipped with class-name and field-name mismatches
- * between the markup and the inline CSS, so the page rendered identical to
- * the old design. This is the corrected, verified template.
+ *
+ * v1.0.132 attempted this rebuild but shipped with class-name and field-name
+ * mismatches between the markup and the inline CSS, so the page rendered
+ * identical to the old design. v1.0.133 ships the corrected, verified template
+ * with these additional changes from the v1.0.132 attempt:
+ *
+ *   - Tier filter chips removed entirely. Sort dropdown kept (Highest rated /
+ *     Most listings / Newest / A-Z).
+ *   - Grid / List view toggle now actually works via JS, with localStorage
+ *     persistence so the choice survives sort changes and pagination.
+ *   - Container max-width: 1446px to match the rest of the site.
+ *   - Fully responsive: list view collapses back to vertical cards under
+ *     900px to stay readable on tablet/mobile.
  *
  * Following project rule #28: full template body declared inline as a nowdoc
- * heredoc. Following project rule #19: uses replace() to overwrite existing
+ * heredoc. Following project rule #19: uses update() to overwrite existing
  * row regardless of prior state.
  */
 
@@ -49,9 +59,9 @@ $dealerDirectoryTpl = <<<'TEMPLATE_EOT'
     color: var(--gd-text);
     font-size: 14px;
     line-height: 1.5;
-    max-width: 1200px;
+    max-width: 1446px;
     margin: 0 auto;
-    padding: 2rem;
+    padding: 2rem 24px;
     box-sizing: border-box;
 }
 .gd-directory *, .gd-directory *::before, .gd-directory *::after { box-sizing: border-box; }
@@ -62,7 +72,7 @@ $dealerDirectoryTpl = <<<'TEMPLATE_EOT'
 .gd-directory .directory-hero { background: linear-gradient(135deg, var(--gd-surface) 0%, #EFF4FA 100%); border: 1px solid var(--gd-border); border-radius: var(--gd-r-xl); padding: 2.5rem 2.5rem 2rem; margin-bottom: 1.5rem; position: relative; overflow: hidden; }
 .gd-directory .directory-hero::after { content: ''; position: absolute; top: -40%; right: -10%; width: 420px; height: 420px; background: radial-gradient(circle, rgba(30, 64, 175, 0.08) 0%, transparent 60%); pointer-events: none; }
 .gd-directory .hero-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 2rem; margin-bottom: 1.5rem; position: relative; z-index: 1; }
-.gd-directory .hero-title-block { flex: 1; }
+.gd-directory .hero-title-block { flex: 1; min-width: 0; }
 .gd-directory .hero-eyebrow { font-size: 12px; font-weight: 600; color: var(--gd-brand); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
 .gd-directory .hero-title { font-size: 36px; font-weight: 600; letter-spacing: -0.025em; line-height: 1.15; margin-bottom: 10px; margin-top: 0; }
 .gd-directory .hero-sub { font-size: 15px; color: var(--gd-text-muted); max-width: 560px; line-height: 1.6; margin: 0; }
@@ -72,7 +82,7 @@ $dealerDirectoryTpl = <<<'TEMPLATE_EOT'
 .gd-directory .hero-stat-label { font-size: 11px; color: var(--gd-text-subtle); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; margin-top: 6px; }
 
 .gd-directory .search-row { display: flex; gap: 10px; align-items: center; position: relative; z-index: 1; }
-.gd-directory .search-input { flex: 1; position: relative; }
+.gd-directory .search-input { flex: 1; position: relative; min-width: 0; }
 .gd-directory .search-input input { width: 100%; font-family: inherit; font-size: 14px; padding: 12px 16px 12px 44px; border-radius: var(--gd-r-lg); border: 1px solid var(--gd-border); background: var(--gd-surface); color: var(--gd-text); transition: all 0.15s; box-sizing: border-box; }
 .gd-directory .search-input input:focus { outline: none; border-color: var(--gd-brand); box-shadow: 0 0 0 4px rgba(30, 64, 175, 0.1); }
 .gd-directory .search-input input::placeholder { color: var(--gd-text-faint); }
@@ -80,25 +90,29 @@ $dealerDirectoryTpl = <<<'TEMPLATE_EOT'
 .gd-directory .search-submit { padding: 12px 20px; border-radius: var(--gd-r-lg); background: var(--gd-brand); color: white; border: none; font-family: inherit; font-size: 14px; font-weight: 500; cursor: pointer; transition: background 0.15s; white-space: nowrap; }
 .gd-directory .search-submit:hover { background: var(--gd-brand-hover); }
 
-.gd-directory .filters-bar { background: var(--gd-surface); border: 1px solid var(--gd-border); border-radius: var(--gd-r-lg); padding: 14px 18px; margin-bottom: 1.25rem; display: flex; gap: 16px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
-.gd-directory .filters-left { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-.gd-directory .filter-group-label { font-size: 12px; color: var(--gd-text-subtle); font-weight: 500; margin-right: 4px; }
-.gd-directory .filter-chip { font-size: 12px; padding: 6px 12px; border-radius: var(--gd-r-pill); background: var(--gd-surface-muted); color: var(--gd-text-muted); cursor: pointer; font-weight: 500; border: 1px solid transparent; transition: all 0.15s; display: inline-flex; align-items: center; gap: 4px; text-decoration: none; }
-.gd-directory .filter-chip:hover { background: var(--gd-border-subtle); color: var(--gd-text); }
-.gd-directory .filter-chip.active { background: var(--gd-brand-light); color: var(--gd-brand); border-color: var(--gd-brand-border); }
+.gd-directory .filters-bar { background: var(--gd-surface); border: 1px solid var(--gd-border); border-radius: var(--gd-r-lg); padding: 14px 18px; margin-bottom: 1.25rem; display: flex; gap: 16px; align-items: center; justify-content: flex-end; flex-wrap: wrap; }
 .gd-directory .filters-right { display: flex; gap: 10px; align-items: center; }
 .gd-directory .sort-label { font-size: 12px; color: var(--gd-text-subtle); font-weight: 500; }
-.gd-directory .select-sort { font-family: inherit; font-size: 13px; padding: 7px 28px 7px 10px; border-radius: var(--gd-r-md); border: 1px solid var(--gd-border); background: var(--gd-surface); cursor: pointer; color: var(--gd-text); appearance: none; }
+.gd-directory .select-sort { font-family: inherit; font-size: 13px; padding: 7px 28px 7px 10px; border-radius: var(--gd-r-md); border: 1px solid var(--gd-border); background: var(--gd-surface); cursor: pointer; color: var(--gd-text); appearance: none; -webkit-appearance: none; background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'><path d='M1 1l4 4 4-4' stroke='%2364748B' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>"); background-repeat: no-repeat; background-position: right 10px center; padding-right: 28px; }
 
-.gd-directory .results-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; font-size: 13px; color: var(--gd-text-subtle); }
+.gd-directory .results-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; font-size: 13px; color: var(--gd-text-subtle); gap: 12px; flex-wrap: wrap; }
 .gd-directory .results-count strong { color: var(--gd-text); font-weight: 600; }
 .gd-directory .view-toggle { display: inline-flex; gap: 2px; padding: 2px; background: var(--gd-border-subtle); border-radius: var(--gd-r-md); }
 .gd-directory .view-toggle button { font-family: inherit; font-size: 12px; padding: 5px 10px; border-radius: 4px; border: none; background: transparent; cursor: pointer; color: var(--gd-text-subtle); font-weight: 500; display: inline-flex; align-items: center; gap: 4px; }
 .gd-directory .view-toggle button.active { background: var(--gd-surface); color: var(--gd-text); box-shadow: 0 1px 2px rgba(0,0,0,0.05); }
+.gd-directory .view-toggle button svg { width: 12px; height: 12px; }
 
 .gd-directory .dealer-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; margin-bottom: 2rem; }
+.gd-directory .dealer-grid.list-view { grid-template-columns: 1fr; gap: 12px; }
 .gd-directory .dealer-card { background: var(--gd-surface); border: 1px solid var(--gd-border); border-radius: var(--gd-r-lg); padding: 1.25rem; transition: all 0.15s; display: flex; flex-direction: column; }
 .gd-directory .dealer-card:hover { border-color: var(--gd-border-strong); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.04); }
+
+/* List view: card becomes a horizontal row */
+.gd-directory .dealer-grid.list-view .dealer-card { flex-direction: row; align-items: center; gap: 24px; padding: 1rem 1.25rem; }
+.gd-directory .dealer-grid.list-view .dealer-head { flex: 0 0 280px; margin-bottom: 0; }
+.gd-directory .dealer-grid.list-view .dealer-rating-row { flex: 0 0 200px; margin-bottom: 0; }
+.gd-directory .dealer-grid.list-view .dealer-stats { flex: 1; min-width: 0; padding: 0; border: none; margin-bottom: 0; }
+.gd-directory .dealer-grid.list-view .dealer-actions { flex: 0 0 auto; margin-top: 0; min-width: 240px; }
 
 .gd-directory .dealer-head { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 14px; }
 .gd-directory .dealer-avatar { width: 48px; height: 48px; border-radius: var(--gd-r-lg); background: var(--gd-brand); color: white; display: inline-flex; align-items: center; justify-content: center; font-weight: 600; font-size: 18px; flex-shrink: 0; overflow: hidden; }
@@ -112,7 +126,7 @@ $dealerDirectoryTpl = <<<'TEMPLATE_EOT'
 .gd-directory .dealer-tier-pro { background: var(--gd-tier-pro-bg); color: var(--gd-tier-pro); }
 .gd-directory .dealer-tier-enterprise { background: var(--gd-tier-enterprise-bg); color: var(--gd-tier-enterprise); }
 
-.gd-directory .dealer-rating-row { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; font-size: 13px; }
+.gd-directory .dealer-rating-row { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; font-size: 13px; flex-wrap: wrap; }
 .gd-directory .dealer-rating-stars { display: inline-flex; gap: 2px; color: var(--gd-star); }
 .gd-directory .dealer-rating-stars svg { width: 13px; height: 13px; }
 .gd-directory .dealer-rating-value { font-weight: 600; color: var(--gd-text); font-variant-numeric: tabular-nums; }
@@ -137,34 +151,46 @@ $dealerDirectoryTpl = <<<'TEMPLATE_EOT'
 .gd-directory .gd-empty p { font-size: 13px; margin: 0; }
 
 .gd-directory .join-banner { background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%); border-radius: var(--gd-r-xl); padding: 2rem 2.5rem; margin-top: 2rem; display: flex; justify-content: space-between; align-items: center; gap: 2rem; color: white; }
-.gd-directory .join-banner-content { flex: 1; }
-.gd-directory .join-banner-title { font-size: 20px; font-weight: 600; letter-spacing: -0.015em; margin-bottom: 6px; }
+.gd-directory .join-banner-content { flex: 1; min-width: 0; }
+.gd-directory .join-banner-title { font-size: 20px; font-weight: 600; letter-spacing: -0.015em; margin-bottom: 6px; color: white; }
 .gd-directory .join-banner-sub { font-size: 14px; color: #CBD5E1; line-height: 1.5; max-width: 480px; margin: 0; }
-.gd-directory .join-banner-cta { padding: 10px 20px; background: white; color: var(--gd-text); border-radius: var(--gd-r-md); font-weight: 500; font-size: 14px; text-decoration: none; transition: all 0.15s; white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; }
+.gd-directory .join-banner-cta { padding: 10px 20px; background: white; color: var(--gd-text); border-radius: var(--gd-r-md); font-weight: 500; font-size: 14px; text-decoration: none; transition: all 0.15s; white-space: nowrap; display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0; }
 .gd-directory .join-banner-cta:hover { background: var(--gd-surface-muted); }
 .gd-directory .join-banner-cta svg { width: 14px; height: 14px; }
 
+@media (max-width: 1100px) {
+    .gd-directory .dealer-grid.list-view .dealer-head { flex: 0 0 240px; }
+    .gd-directory .dealer-grid.list-view .dealer-rating-row { flex: 0 0 160px; }
+    .gd-directory .dealer-grid.list-view .dealer-actions { min-width: 200px; }
+}
 @media (max-width: 900px) {
     .gd-directory .hero-top { flex-direction: column; gap: 1.5rem; }
     .gd-directory .hero-stats { width: 100%; justify-content: space-around; }
-    .gd-directory .filters-bar { flex-direction: column; align-items: stretch; }
-    .gd-directory .filters-left, .gd-directory .filters-right { justify-content: flex-start; }
     .gd-directory .join-banner { flex-direction: column; align-items: flex-start; padding: 1.5rem; }
+    /* List view collapses back to vertical card on tablet */
+    .gd-directory .dealer-grid.list-view .dealer-card { flex-direction: column; align-items: stretch; gap: 14px; padding: 1.25rem; }
+    .gd-directory .dealer-grid.list-view .dealer-head,
+    .gd-directory .dealer-grid.list-view .dealer-rating-row,
+    .gd-directory .dealer-grid.list-view .dealer-actions { flex: 1 1 auto; min-width: 0; }
+    .gd-directory .dealer-grid.list-view .dealer-stats { padding: 12px 0; border-top: 1px solid var(--gd-border-subtle); border-bottom: 1px solid var(--gd-border-subtle); }
+    .gd-directory .dealer-grid.list-view .dealer-rating-row,
+    .gd-directory .dealer-grid.list-view .dealer-head { margin-bottom: 0; }
 }
 @media (max-width: 640px) {
     .gd-directory { padding: 1rem; }
     .gd-directory .directory-hero { padding: 1.5rem; }
     .gd-directory .hero-title { font-size: 28px; }
     .gd-directory .dealer-grid { grid-template-columns: 1fr; }
-    .gd-directory .search-row { flex-direction: column; }
+    .gd-directory .search-row { flex-direction: column; align-items: stretch; }
     .gd-directory .search-submit { width: 100%; }
+    .gd-directory .filters-bar { justify-content: stretch; }
+    .gd-directory .filters-right { width: 100%; justify-content: space-between; }
+    .gd-directory .select-sort { flex: 1; }
 }
 </style>
 
     <form method="get" action="{$directoryUrl}">
-    <input type="hidden" name="tier" value="{$tier}">
     <input type="hidden" name="sort" value="{$sort}">
-
     <div class="directory-hero">
         <div class="hero-top">
             <div class="hero-title-block">
@@ -192,17 +218,8 @@ $dealerDirectoryTpl = <<<'TEMPLATE_EOT'
     <form method="get" action="{$directoryUrl}">
     <input type="hidden" name="search" value="{$search}">
     <div class="filters-bar">
-        <div class="filters-left">
-            <span class="filter-group-label">Tier</span>
-            <a class="filter-chip{{if $tier === ''}} active{{endif}}" href="{$directoryUrl}?sort={$sort}">All</a>
-            <a class="filter-chip{{if $tier === 'founding'}} active{{endif}}" href="{$directoryUrl}?tier=founding&amp;sort={$sort}">Founding</a>
-            <a class="filter-chip{{if $tier === 'basic'}} active{{endif}}" href="{$directoryUrl}?tier=basic&amp;sort={$sort}">Basic</a>
-            <a class="filter-chip{{if $tier === 'pro'}} active{{endif}}" href="{$directoryUrl}?tier=pro&amp;sort={$sort}">Pro</a>
-            <a class="filter-chip{{if $tier === 'enterprise'}} active{{endif}}" href="{$directoryUrl}?tier=enterprise&amp;sort={$sort}">Enterprise</a>
-        </div>
         <div class="filters-right">
             <span class="sort-label">Sort by</span>
-            <input type="hidden" name="tier" value="{$tier}">
             <select name="sort" class="select-sort" onchange="this.form.submit()">
                 <option value="rating"{{if $sort === 'rating'}} selected{{endif}}>Highest rated</option>
                 <option value="listings"{{if $sort === 'listings'}} selected{{endif}}>Most listings</option>
@@ -215,9 +232,15 @@ $dealerDirectoryTpl = <<<'TEMPLATE_EOT'
 
     <div class="results-meta">
         <div class="results-count"><strong>{$total} dealers</strong></div>
-        <div class="view-toggle">
-            <button type="button" class="active">Grid</button>
-            <button type="button">List</button>
+        <div class="view-toggle" id="gdDirView">
+            <button type="button" data-view="grid" class="active">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+                Grid
+            </button>
+            <button type="button" data-view="list">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                List
+            </button>
         </div>
     </div>
 
@@ -227,7 +250,7 @@ $dealerDirectoryTpl = <<<'TEMPLATE_EOT'
         <p>Try adjusting your search or filters.</p>
     </div>
 {{else}}
-    <div class="dealer-grid">
+    <div class="dealer-grid" id="gdDirGrid">
     {{foreach $dealers as $d}}
         <div class="dealer-card">
             <div class="dealer-head">
@@ -282,6 +305,37 @@ $dealerDirectoryTpl = <<<'TEMPLATE_EOT'
         </div>
         <a href="{$joinUrl}" class="join-banner-cta">Apply to join</a>
     </div>
+
+<script>
+(function(){
+    var grid = document.getElementById('gdDirGrid');
+    var toggle = document.getElementById('gdDirView');
+    if ( !toggle ) return;
+    var buttons = toggle.querySelectorAll('button[data-view]');
+    var STORAGE_KEY = 'gdDirView';
+    function applyView( view ) {
+        if ( grid ) {
+            if ( view === 'list' ) { grid.classList.add('list-view'); }
+            else { grid.classList.remove('list-view'); }
+        }
+        buttons.forEach(function( b ) {
+            if ( b.getAttribute('data-view') === view ) { b.classList.add('active'); }
+            else { b.classList.remove('active'); }
+        });
+    }
+    var saved = 'grid';
+    try { saved = localStorage.getItem( STORAGE_KEY ) || 'grid'; } catch ( e ) {}
+    applyView( saved );
+    buttons.forEach(function( b ) {
+        b.addEventListener( 'click', function() {
+            var v = b.getAttribute('data-view');
+            applyView( v );
+            try { localStorage.setItem( STORAGE_KEY, v ); } catch ( e ) {}
+        });
+    });
+})();
+</script>
+
 </div>
 TEMPLATE_EOT;
 
