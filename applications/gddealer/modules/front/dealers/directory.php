@@ -61,14 +61,14 @@ class _directory extends \IPS\Dispatcher\Controller
 		}
 		if ( $search !== '' )
 		{
-			$whereMain[]  = [ 'd.dealer_name LIKE ?', '%' . $search . '%' ];
+			$whereMain[]  = [ '[d.dealer](http://d.dealer)_name LIKE ?', '%' . $search . '%' ];
 			$whereCount[] = [ 'dealer_name LIKE ?', '%' . $search . '%' ];
 		}
 
 		$orderBy = match( $sort ) {
 			'listings' => 'listing_count DESC',
 			'newest'   => 'd.created_at DESC',
-			'alpha'    => 'd.dealer_name ASC',
+			'alpha'    => '[d.dealer](http://d.dealer)_name ASC',
 			default    => 'avg_overall DESC, total_reviews DESC',
 		};
 
@@ -83,19 +83,19 @@ class _directory extends \IPS\Dispatcher\Controller
 		try
 		{
 			foreach ( \IPS\Db::i()->select(
-				'd.*, COUNT(DISTINCT l.id) as listing_count, COUNT(DISTINCT r.id) as total_reviews, COALESCE(AVG((r.rating_pricing + r.rating_shipping + r.rating_service) / 3), 0) as avg_overall',
+				'd.*, COUNT(DISTINCT [l.id](http://l.id)) as listing_count, COUNT(DISTINCT [r.id](http://r.id)) as total_reviews, COALESCE(AVG((r.rating_pricing + r.rating_shipping + r.rating_service) / 3), 0) as avg_overall',
 				[ 'gd_dealer_feed_config', 'd' ],
 				$whereMain,
 				$orderBy,
 				[ $offset, $perPage ],
-				'd.dealer_id'
+				'[d.dealer](http://d.dealer)_id'
 			)->join(
 				[ 'gd_dealer_listings', 'l' ],
-				"l.dealer_id = d.dealer_id AND l.listing_status = 'active'",
+				"[l.dealer](http://l.dealer)_id = [d.dealer](http://d.dealer)_id AND l.listing_status = 'active'",
 				'LEFT'
 			)->join(
 				[ 'gd_dealer_ratings', 'r' ],
-				"r.dealer_id = d.dealer_id AND r.status = 'approved'",
+				"[r.dealer](http://r.dealer)_id = [d.dealer](http://d.dealer)_id AND r.status = 'approved'",
 				'LEFT'
 			) as $row )
 			{
@@ -143,10 +143,12 @@ class _directory extends \IPS\Dispatcher\Controller
 					'rating_color'  => $ratingColor,
 					'member_since'  => $ipsMember->joined ? $ipsMember->joined->format( 'M Y' ) : '',
 					'profile_url'   => (string) \IPS\Http\Url::internal(
-						'app=gddealer&module=dealers&controller=profile&dealer_slug=' . urlencode( (string) $row['dealer_slug'] )
+						'app=gddealer&module=dealers&controller=profile&dealer_slug=' . urlencode( (string) $row['dealer_slug'] ),
+						'front', 'dealers_profile', (string) $row['dealer_slug']
 					),
 					'follow_url'    => (string) \IPS\Http\Url::internal(
-						'app=gddealer&module=dealers&controller=directory&do=follow&id=' . (int) $row['dealer_id']
+						'app=gddealer&module=dealers&controller=directory&do=follow&id=' . (int) $row['dealer_id'],
+						'front', 'dealers_directory'
 					)->csrf(),
 					'is_following'  => $isFollowing,
 				];
@@ -158,15 +160,15 @@ class _directory extends \IPS\Dispatcher\Controller
 		if ( $total > $perPage )
 		{
 			$pagination = (string) \IPS\Theme::i()->getTemplate( 'global', 'core', 'front' )->pagination(
-				\IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=directory' ),
+				\IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=directory', 'front', 'dealers_directory' ),
 				(int) ceil( $total / $perPage ),
 				$page,
 				$perPage
 			);
 		}
 
-		$joinUrl      = (string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=join' );
-		$directoryUrl = (string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=directory' );
+		$joinUrl      = (string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=join', 'front', 'dealers_join' );
+		$directoryUrl = (string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=directory', 'front', 'dealers_directory' );
 
 		\IPS\Output::i()->title  = \IPS\Member::loggedIn()->language()->addToStack( 'gddealer_directory_title' );
 		\IPS\Output::i()->output = \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )->dealerDirectory(
@@ -193,7 +195,7 @@ class _directory extends \IPS\Dispatcher\Controller
 		if ( $dealerId <= 0 )
 		{
 			\IPS\Output::i()->redirect(
-				\IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=directory' )
+				\IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=directory', 'front', 'dealers_directory' )
 			);
 			return;
 		}
@@ -205,7 +207,7 @@ class _directory extends \IPS\Dispatcher\Controller
 		catch ( \OutOfRangeException )
 		{
 			\IPS\Output::i()->redirect(
-				\IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=directory' )
+				\IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=directory', 'front', 'dealers_directory' )
 			);
 			return;
 		}
@@ -240,7 +242,7 @@ class _directory extends \IPS\Dispatcher\Controller
 		}
 
 		\IPS\Output::i()->redirect(
-			\IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=directory' ),
+			\IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=directory', 'front', 'dealers_directory' ),
 			$msg
 		);
 	}
