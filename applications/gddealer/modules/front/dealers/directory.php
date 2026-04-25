@@ -61,14 +61,14 @@ class _directory extends \IPS\Dispatcher\Controller
 		}
 		if ( $search !== '' )
 		{
-			$whereMain[]  = [ '[d.dealer](http://d.dealer)_name LIKE ?', '%' . $search . '%' ];
+			$whereMain[]  = [ 'd.dealer_name LIKE ?', '%' . $search . '%' ];
 			$whereCount[] = [ 'dealer_name LIKE ?', '%' . $search . '%' ];
 		}
 
 		$orderBy = match( $sort ) {
 			'listings' => 'listing_count DESC',
 			'newest'   => 'd.created_at DESC',
-			'alpha'    => '[d.dealer](http://d.dealer)_name ASC',
+			'alpha'    => 'd.dealer_name ASC',
 			default    => 'avg_overall DESC, total_reviews DESC',
 		};
 
@@ -83,19 +83,19 @@ class _directory extends \IPS\Dispatcher\Controller
 		try
 		{
 			foreach ( \IPS\Db::i()->select(
-				'd.*, COUNT(DISTINCT [l.id](http://l.id)) as listing_count, COUNT(DISTINCT [r.id](http://r.id)) as total_reviews, COALESCE(AVG((r.rating_pricing + r.rating_shipping + r.rating_service) / 3), 0) as avg_overall',
+				'd.*, COUNT(DISTINCT l.id) as listing_count, COUNT(DISTINCT r.id) as total_reviews, COALESCE(AVG((r.rating_pricing + r.rating_shipping + r.rating_service) / 3), 0) as avg_overall',
 				[ 'gd_dealer_feed_config', 'd' ],
 				$whereMain,
 				$orderBy,
 				[ $offset, $perPage ],
-				'[d.dealer](http://d.dealer)_id'
+				'd.dealer_id'
 			)->join(
 				[ 'gd_dealer_listings', 'l' ],
-				"[l.dealer](http://l.dealer)_id = [d.dealer](http://d.dealer)_id AND l.listing_status = 'active'",
+				"l.dealer_id = d.dealer_id AND l.listing_status = 'active'",
 				'LEFT'
 			)->join(
 				[ 'gd_dealer_ratings', 'r' ],
-				"[r.dealer](http://r.dealer)_id = [d.dealer](http://d.dealer)_id AND r.status = 'approved'",
+				"r.dealer_id = d.dealer_id AND r.status = 'approved'",
 				'LEFT'
 			) as $row )
 			{
