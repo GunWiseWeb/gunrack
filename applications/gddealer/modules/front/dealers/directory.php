@@ -38,7 +38,7 @@ class _directory extends \IPS\Dispatcher\Controller
 
 		$tier   = (string) ( \IPS\Request::i()->tier   ?? '' );
 		$sort   = (string) ( \IPS\Request::i()->sort   ?? 'rating' );
-		$search = trim( (string) ( \IPS\Request::i()->search ?? '' ) );
+		$search = trim( str_replace( '+', ' ', (string) ( \IPS\Request::i()->search ?? '' ) ) );
 
 		$validTiers = [ 'founding', 'basic', 'pro', 'enterprise' ];
 		if ( $tier !== '' && !in_array( $tier, $validTiers, true ) )
