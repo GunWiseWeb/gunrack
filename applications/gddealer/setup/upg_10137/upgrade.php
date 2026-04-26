@@ -7,24 +7,17 @@ class _upgrade
 {
     public function step1(): bool
     {
-        $errors = [];
-
         try
         {
             require_once \IPS\ROOT_PATH . '/applications/gddealer/setup/templates_10137.php';
         }
         catch ( \Throwable $e )
         {
-            $errors[] = 'templates_10137.php failed: ' . $e->getMessage();
+            try { \IPS\Log::log( 'v1.0.137 templates failed: ' . $e->getMessage(), 'gddealer_upg_10137' ); } catch ( \Throwable ) {}
         }
 
         try { \IPS\Db::i()->delete( 'core_cache' ); } catch ( \Throwable ) {}
-        try
-        {
-            \IPS\Db::i()->delete( 'core_store',
-                [ "store_key LIKE 'theme_%' OR store_key LIKE 'template_%'" ] );
-        }
-        catch ( \Throwable ) {}
+        try { \IPS\Db::i()->delete( 'core_store', [ "store_key LIKE 'theme_%' OR store_key LIKE 'template_%'" ] ); } catch ( \Throwable ) {}
 
         foreach ( glob( \IPS\ROOT_PATH . '/datastore/template_*dealers*' ) ?: [] as $f )
         {
@@ -44,18 +37,12 @@ class _upgrade
         }
         catch ( \Throwable ) {}
 
-        if ( !empty( $errors ) )
-        {
-            try { \IPS\Log::log( 'v1.0.137 upgrade errors: ' . implode( ' | ', $errors ), 'gddealer_upg_10137' ); }
-            catch ( \Throwable ) {}
-        }
-
         return TRUE;
     }
 
     public function step1CustomTitle()
     {
-        return 'Fixing markdown autolink corruption in directory controller and template';
+        return 'Fixing markdown corruption in directory controller and template';
     }
 }
 class upgrade extends _upgrade {}
