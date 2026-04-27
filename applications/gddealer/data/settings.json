@@ -14,5 +14,17 @@
 	{
 		"key": "gddealer_click_tracking_enabled",
 		"default": "1"
+	},
+	{
+		"key": "gddealer_commerce_package_basic",
+		"default": "0"
+	},
+	{
+		"key": "gddealer_commerce_package_pro",
+		"default": "0"
+	},
+	{
+		"key": "gddealer_commerce_package_enterprise",
+		"default": "0"
 	}
 ]
