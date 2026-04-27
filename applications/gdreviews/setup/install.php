@@ -10,24 +10,15 @@
  * corrupts nowdoc comment syntax and breaks IPS template compilation.
  *
  * CLAUDE.md Rule #9: IPS templates have no comment syntax. Do not put
- * HTML or double-brace comments inside template_content. Any commentary
- * belongs in this PHP file (like this block), not inside the nowdoc body.
+ * HTML or double-brace comments inside template_content.
  *
- * CLAUDE.md Rule #12: only the proven-safe template patterns are used
- * below — {$var}, {lang="static_key"}, {{if}}, {{foreach}}, and flat
- * {expression="..."} calls. Every URL that requires interpolation is
- * pre-built in the controller and passed as a scalar variable.
+ * CLAUDE.md Rule #12: only the proven-safe template patterns are used.
+ *
+ * CLAUDE.md Rule #20: admin templates use IPS v5 BEM classes
+ * (ipsButton--primary / --normal / --negative / --small) and the
+ * ipsBox ipsPull wrapper. The page <h1> is rendered from
+ * \IPS\Output::i()->title — no ipsBox_title divs in admin templates.
  */
-
-namespace IPS\gdreviews\setup;
-
-use function defined;
-
-if ( !defined( '\IPS\SUITE_UNIQUE_KEY' ) )
-{
-	header( ( $_SERVER['SERVER_PROTOCOL'] ?? 'HTTP/1.0' ) . ' 403 Forbidden' );
-	exit;
-}
 
 $templates = [
 
@@ -40,42 +31,41 @@ $templates = [
 		'template_name' => 'dashboard',
 		'template_data' => '$data',
 		'template_content' => <<<'TEMPLATE_EOT'
-<div class="ipsBox">
-	<div class="ipsBox_title" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
-		<h1 style="margin:0">{lang="gdr_dash_title"}</h1>
-		<a href="{$data['queue_url']}" class="ipsButton ipsButton_primary">{lang="gdr_queue_title"}</a>
+<div class="ipsBox ipsPull">
+	<div style="display:flex;justify-content:flex-end;padding:10px 16px;border-bottom:1px solid var(--i-border-color, #e0e0e0)">
+		<a href="{$data['queue_url']}" class="ipsButton ipsButton--primary ipsButton--small">{lang="gdr_queue_title"}</a>
 	</div>
-	<div class="ipsPad">
+	<div class="ipsBox_body ipsPad">
 
 		<div style="display:flex;gap:16px;margin-bottom:24px;flex-wrap:wrap">
-			<div class="ipsBox" style="flex:1 1 180px;padding:16px;text-align:center">
+			<div style="flex:1 1 180px;padding:16px;text-align:center;border:1px solid var(--i-border-color, #e0e0e0);border-radius:4px">
 				<div style="font-size:2em;font-weight:bold">{expression="number_format( $data['total'] )"}</div>
 				<div>{lang="gdr_dash_total_reviews"}</div>
 			</div>
-			<div class="ipsBox" style="flex:1 1 180px;padding:16px;text-align:center">
+			<div style="flex:1 1 180px;padding:16px;text-align:center;border:1px solid var(--i-border-color, #e0e0e0);border-radius:4px">
 				<div style="font-size:2em;font-weight:bold;color:#d97706">{expression="number_format( $data['pending'] )"}</div>
 				<div>{lang="gdr_dash_pending"}</div>
 			</div>
-			<div class="ipsBox" style="flex:1 1 180px;padding:16px;text-align:center">
+			<div style="flex:1 1 180px;padding:16px;text-align:center;border:1px solid var(--i-border-color, #e0e0e0);border-radius:4px">
 				<div style="font-size:2em;font-weight:bold;color:#dc2626">{expression="number_format( $data['flagged'] )"}</div>
 				<div>{lang="gdr_dash_flagged"}</div>
 			</div>
-			<div class="ipsBox" style="flex:1 1 180px;padding:16px;text-align:center">
+			<div style="flex:1 1 180px;padding:16px;text-align:center;border:1px solid var(--i-border-color, #e0e0e0);border-radius:4px">
 				<div style="font-size:2em;font-weight:bold;color:#16a34a">{expression="number_format( $data['approved'] )"}</div>
 				<div>{lang="gdr_dash_approved"}</div>
 			</div>
-			<div class="ipsBox" style="flex:1 1 180px;padding:16px;text-align:center">
+			<div style="flex:1 1 180px;padding:16px;text-align:center;border:1px solid var(--i-border-color, #e0e0e0);border-radius:4px">
 				<div style="font-size:2em;font-weight:bold">{expression="number_format( $data['rejected'] )"}</div>
 				<div>{lang="gdr_dash_rejected"}</div>
 			</div>
 		</div>
 
 		<div style="display:flex;gap:16px;margin-bottom:24px;flex-wrap:wrap">
-			<div class="ipsBox" style="flex:1 1 260px;padding:16px">
+			<div style="flex:1 1 260px;padding:16px;border:1px solid var(--i-border-color, #e0e0e0);border-radius:4px">
 				<div style="font-size:1.6em;font-weight:bold">{$data['avg_rating']} / 5</div>
 				<div>{lang="gdr_dash_avg_rating"}</div>
 			</div>
-			<div class="ipsBox" style="flex:1 1 260px;padding:16px">
+			<div style="flex:1 1 260px;padding:16px;border:1px solid var(--i-border-color, #e0e0e0);border-radius:4px">
 				<div style="font-size:1.6em;font-weight:bold">{$data['verified_pct']}%</div>
 				<div>{lang="gdr_dash_verified_pct"}</div>
 			</div>
@@ -83,41 +73,43 @@ $templates = [
 
 		<div style="display:flex;gap:24px;flex-wrap:wrap">
 			<div style="flex:2 1 420px">
-				<h3 class="ipsType_sectionHead" style="margin-top:0">{lang="gdr_dash_latest"}</h3>
-				<table class="ipsTable ipsTable_zebra" style="width:100%">
-					<thead><tr><th>{lang="gdr_queue_col_title"}</th><th>{lang="gdr_queue_col_product"}</th><th style="width:80px">{lang="gdr_queue_col_rating"}</th><th style="width:120px">{lang="gdr_queue_col_submitted"}</th></tr></thead>
-					<tbody>
-					{{foreach $data['latest'] as $row}}
-						<tr>
-							<td><strong>{$row['title']}</strong></td>
-							<td><code>{$row['upc']}</code></td>
-							<td>{$row['overall_rating']} &#9733;</td>
-							<td>{$row['created_at']}</td>
-						</tr>
-					{{endforeach}}
-					{{if count( $data['latest'] ) === 0}}
-						<tr><td colspan="4" style="text-align:center;color:#999;padding:24px">{lang="gdr_dash_empty"}</td></tr>
-					{{endif}}
-					</tbody>
-				</table>
+				<h2 class="ipsType_sectionHead" style="margin:0 0 12px">{lang="gdr_dash_latest"}</h2>
+				{{if count($data['latest']) === 0}}
+					<div class="ipsEmptyMessage"><p>{lang="gdr_dash_empty"}</p></div>
+				{{else}}
+					<table class="ipsTable ipsTable_zebra" style="width:100%">
+						<thead><tr><th>{lang="gdr_queue_col_title"}</th><th>{lang="gdr_queue_col_product"}</th><th style="width:80px">{lang="gdr_queue_col_rating"}</th><th style="width:120px">{lang="gdr_queue_col_submitted"}</th></tr></thead>
+						<tbody>
+						{{foreach $data['latest'] as $row}}
+							<tr>
+								<td><strong>{$row['title']}</strong></td>
+								<td><code>{$row['upc']}</code></td>
+								<td>{$row['overall_rating']} &#9733;</td>
+								<td>{$row['created_at']}</td>
+							</tr>
+						{{endforeach}}
+						</tbody>
+					</table>
+				{{endif}}
 			</div>
 
 			<div style="flex:1 1 260px">
-				<h3 class="ipsType_sectionHead" style="margin-top:0">{lang="gdr_dash_top_reviewers"}</h3>
-				<table class="ipsTable ipsTable_zebra" style="width:100%">
-					<thead><tr><th>Member ID</th><th style="width:80px">Count</th></tr></thead>
-					<tbody>
-					{{foreach $data['top_reviewers'] as $row}}
-						<tr>
-							<td>#{$row['member_id']}</td>
-							<td>{$row['count']}</td>
-						</tr>
-					{{endforeach}}
-					{{if count( $data['top_reviewers'] ) === 0}}
-						<tr><td colspan="2" style="text-align:center;color:#999;padding:16px">&mdash;</td></tr>
-					{{endif}}
-					</tbody>
-				</table>
+				<h2 class="ipsType_sectionHead" style="margin:0 0 12px">{lang="gdr_dash_top_reviewers"}</h2>
+				{{if count($data['top_reviewers']) === 0}}
+					<div class="ipsEmptyMessage"><p>&mdash;</p></div>
+				{{else}}
+					<table class="ipsTable ipsTable_zebra" style="width:100%">
+						<thead><tr><th>Member ID</th><th style="width:80px">Count</th></tr></thead>
+						<tbody>
+						{{foreach $data['top_reviewers'] as $row}}
+							<tr>
+								<td>#{$row['member_id']}</td>
+								<td>{$row['count']}</td>
+							</tr>
+						{{endforeach}}
+						</tbody>
+					</table>
+				{{endif}}
 			</div>
 		</div>
 
@@ -135,67 +127,68 @@ TEMPLATE_EOT,
 		'template_name' => 'queue',
 		'template_data' => '$data',
 		'template_content' => <<<'TEMPLATE_EOT'
-<div class="ipsBox">
-	<h1 class="ipsBox_title">{lang="gdr_queue_title"}</h1>
-	<div class="ipsPad">
+<div class="ipsBox ipsPull">
+	<div style="display:flex;justify-content:flex-end;gap:8px;padding:10px 16px;border-bottom:1px solid var(--i-border-color, #e0e0e0)">
+		{{if $data['tab'] === 'pending'}}
+			<a href="{$data['pending_url']}" class="ipsButton ipsButton--primary ipsButton--small">{lang="gdr_queue_tab_pending"}</a>
+			<a href="{$data['flagged_url']}" class="ipsButton ipsButton--normal ipsButton--small">{lang="gdr_queue_tab_flagged"}</a>
+		{{else}}
+			<a href="{$data['pending_url']}" class="ipsButton ipsButton--normal ipsButton--small">{lang="gdr_queue_tab_pending"}</a>
+			<a href="{$data['flagged_url']}" class="ipsButton ipsButton--primary ipsButton--small">{lang="gdr_queue_tab_flagged"}</a>
+		{{endif}}
+	</div>
+	<div class="ipsBox_body ipsPad">
 
 		<p class="ipsType_light">{lang="gdr_queue_intro"}</p>
 
-		<div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
-			{{if $data['tab'] === 'pending'}}
-				<a href="{$data['pending_url']}" class="ipsButton ipsButton_primary">{lang="gdr_queue_tab_pending"}</a>
-				<a href="{$data['flagged_url']}" class="ipsButton ipsButton_medium">{lang="gdr_queue_tab_flagged"}</a>
-			{{else}}
-				<a href="{$data['pending_url']}" class="ipsButton ipsButton_medium">{lang="gdr_queue_tab_pending"}</a>
-				<a href="{$data['flagged_url']}" class="ipsButton ipsButton_primary">{lang="gdr_queue_tab_flagged"}</a>
-			{{endif}}
-		</div>
-
-		<table class="ipsTable ipsTable_zebra" style="width:100%">
-			<thead>
-				<tr>
-					<th>{lang="gdr_queue_col_title"}</th>
-					<th>{lang="gdr_queue_col_product"}</th>
-					<th style="width:80px">{lang="gdr_queue_col_rating"}</th>
-					<th style="width:100px">{lang="gdr_queue_col_verified"}</th>
-					<th style="width:140px">{lang="gdr_queue_col_submitted"}</th>
-					<th style="width:200px">{lang="gdr_queue_col_actions"}</th>
-				</tr>
-			</thead>
-			<tbody>
-			{{foreach $data['rows'] as $row}}
-				<tr>
-					<td><strong>{$row['title']}</strong></td>
-					<td><code>{$row['upc']}</code></td>
-					<td>{$row['overall_rating']} &#9733;</td>
-					<td>
-						{{if $row['verified_purchase']}}
-							<span class="ipsBadge ipsBadge--positive">{lang="gdr_queue_verified_yes"}</span>
-						{{else}}
-							<span class="ipsBadge ipsBadge--neutral">{lang="gdr_queue_verified_no"}</span>
-						{{endif}}
-					</td>
-					<td>{$row['created_at']}</td>
-					<td>
-						<a href="{$row['view_url']}" class="ipsButton ipsButton--small ipsButton--primary">{lang="gdr_queue_view"}</a>
-						<a href="{$row['approve_url']}" class="ipsButton ipsButton--small ipsButton--positive">{lang="gdr_queue_approve"}</a>
-					</td>
-				</tr>
-			{{endforeach}}
-			{{if count( $data['rows'] ) === 0}}
-				<tr><td colspan="6" style="text-align:center;color:#999;padding:24px">
+		{{if count($data['rows']) === 0}}
+			<div class="ipsEmptyMessage">
+				<p>
 					{{if $data['tab'] === 'pending'}}{lang="gdr_queue_empty_pending"}{{else}}{lang="gdr_queue_empty_flagged"}{{endif}}
-				</td></tr>
-			{{endif}}
-			</tbody>
-		</table>
+				</p>
+			</div>
+		{{else}}
+			<table class="ipsTable ipsTable_zebra" style="width:100%">
+				<thead>
+					<tr>
+						<th>{lang="gdr_queue_col_title"}</th>
+						<th>{lang="gdr_queue_col_product"}</th>
+						<th style="width:80px">{lang="gdr_queue_col_rating"}</th>
+						<th style="width:100px">{lang="gdr_queue_col_verified"}</th>
+						<th style="width:140px">{lang="gdr_queue_col_submitted"}</th>
+						<th style="width:220px">{lang="gdr_queue_col_actions"}</th>
+					</tr>
+				</thead>
+				<tbody>
+				{{foreach $data['rows'] as $row}}
+					<tr>
+						<td><strong>{$row['title']}</strong></td>
+						<td><code>{$row['upc']}</code></td>
+						<td>{$row['overall_rating']} &#9733;</td>
+						<td>
+							{{if $row['verified_purchase']}}
+								<span class="ipsBadge ipsBadge--positive">{lang="gdr_queue_verified_yes"}</span>
+							{{else}}
+								<span class="ipsBadge ipsBadge--neutral">{lang="gdr_queue_verified_no"}</span>
+							{{endif}}
+						</td>
+						<td>{$row['created_at']}</td>
+						<td>
+							<a href="{$row['view_url']}" class="ipsButton ipsButton--normal ipsButton--small">{lang="gdr_queue_view"}</a>
+							<a href="{$row['approve_url']}" class="ipsButton ipsButton--primary ipsButton--small">{lang="gdr_queue_approve"}</a>
+						</td>
+					</tr>
+				{{endforeach}}
+				</tbody>
+			</table>
+		{{endif}}
 
 	</div>
 </div>
 TEMPLATE_EOT,
 	],
 
-	/* ===== ADMIN: queue single view + reject form ===== */
+	/* ===== ADMIN: queue single view (detail + approve/reject links) ===== */
 	[
 		'set_id'        => 1,
 		'app'           => 'gdreviews',
@@ -204,61 +197,53 @@ TEMPLATE_EOT,
 		'template_name' => 'queueView',
 		'template_data' => '$data',
 		'template_content' => <<<'TEMPLATE_EOT'
-<div class="ipsBox">
-	<h1 class="ipsBox_title">{lang="gdr_queue_view_title"}</h1>
-	<div class="ipsPad">
-
-		<p><a href="{$data['back_url']}" class="ipsButton ipsButton--small ipsButton--normal">&larr; {lang="gdr_queue_back"}</a></p>
-
-		<div class="ipsBox" style="padding:16px;margin-bottom:16px">
-			<h2 style="margin-top:0">{$data['review']['title']}</h2>
-			<p class="ipsType_light">
-				<code>{$data['review']['upc']}</code> &middot;
-				Member #{$data['review']['member_id']} &middot;
-				{$data['review']['overall_rating']} &#9733; &middot;
-				{$data['review']['created_at']}
-				{{if $data['review']['verified_purchase']}} &middot; <span class="ipsBadge ipsBadge--positive">{lang="gdr_queue_verified_yes"}</span>{{endif}}
-			</p>
-
-			<h3>{lang="gdr_queue_body"}</h3>
-			<p style="white-space:pre-wrap">{$data['review']['body']}</p>
-
-			{{if $data['review']['pros']}}
-				<h3>{lang="gdr_queue_pros"}</h3>
-				<p>{$data['review']['pros']}</p>
-			{{endif}}
-			{{if $data['review']['cons']}}
-				<h3>{lang="gdr_queue_cons"}</h3>
-				<p>{$data['review']['cons']}</p>
-			{{endif}}
-
-			<dl>
-				<dt>{lang="gdr_queue_recommend"}</dt>
-				<dd>
-					{{if $data['review']['would_recommend'] === 1}}{lang="gdr_queue_yes"}{{endif}}
-					{{if $data['review']['would_recommend'] === 0}}{lang="gdr_queue_no"}{{endif}}
-					{{if $data['review']['would_recommend'] === null}}&mdash;{{endif}}
-				</dd>
-				{{if $data['review']['usage_context']}}
-					<dt>{lang="gdr_queue_context"}</dt>
-					<dd>{$data['review']['usage_context']}</dd>
-				{{endif}}
-				{{if $data['review']['time_owned']}}
-					<dt>{lang="gdr_queue_time_owned"}</dt>
-					<dd>{$data['review']['time_owned']}</dd>
-				{{endif}}
-			</dl>
+<div class="ipsBox ipsPull">
+	<div style="display:flex;justify-content:space-between;gap:8px;padding:10px 16px;border-bottom:1px solid var(--i-border-color, #e0e0e0)">
+		<a href="{$data['back_url']}" class="ipsButton ipsButton--normal ipsButton--small">{lang="gdr_queue_back"}</a>
+		<div style="display:flex;gap:8px">
+			<a href="{$data['approve_url']}" class="ipsButton ipsButton--primary ipsButton--small">{lang="gdr_queue_approve"}</a>
+			<a href="{$data['reject_url']}" class="ipsButton ipsButton--negative ipsButton--small">{lang="gdr_queue_reject"}</a>
 		</div>
+	</div>
+	<div class="ipsBox_body ipsPad">
 
-		<div style="display:flex;gap:16px;flex-wrap:wrap">
-			<a href="{$data['approve_url']}" class="ipsButton ipsButton_primary">{lang="gdr_queue_approve"}</a>
+		<h2 class="ipsType_sectionHead" style="margin:0 0 12px">{$data['review']['title']}</h2>
+		<p class="ipsType_light">
+			<code>{$data['review']['upc']}</code> &middot;
+			Member #{$data['review']['member_id']} &middot;
+			{$data['review']['overall_rating']} &#9733; &middot;
+			{$data['review']['created_at']}
+			{{if $data['review']['verified_purchase']}} &middot; <span class="ipsBadge ipsBadge--positive">{lang="gdr_queue_verified_yes"}</span>{{endif}}
+		</p>
 
-			<form method="post" action="{$data['reject_action']}" style="flex:1 1 400px;display:flex;gap:8px;align-items:flex-start">
-				<input type="hidden" name="csrfKey" value="{$data['csrf_key']}" />
-				<textarea name="rejection_reason" placeholder="{lang="gdr_queue_reject_reason"}" rows="2" style="flex:1"></textarea>
-				<button type="submit" class="ipsButton ipsButton_medium ipsButton--negative">{lang="gdr_queue_reject"}</button>
-			</form>
-		</div>
+		<h3>{lang="gdr_queue_body"}</h3>
+		<p style="white-space:pre-wrap">{$data['review']['body']}</p>
+
+		{{if $data['review']['pros']}}
+			<h3>{lang="gdr_queue_pros"}</h3>
+			<p>{$data['review']['pros']}</p>
+		{{endif}}
+		{{if $data['review']['cons']}}
+			<h3>{lang="gdr_queue_cons"}</h3>
+			<p>{$data['review']['cons']}</p>
+		{{endif}}
+
+		<dl>
+			<dt>{lang="gdr_queue_recommend"}</dt>
+			<dd>
+				{{if $data['review']['would_recommend'] === 1}}{lang="gdr_queue_yes"}{{endif}}
+				{{if $data['review']['would_recommend'] === 0}}{lang="gdr_queue_no"}{{endif}}
+				{{if $data['review']['would_recommend'] === null}}&mdash;{{endif}}
+			</dd>
+			{{if $data['review']['usage_context']}}
+				<dt>{lang="gdr_queue_context"}</dt>
+				<dd>{$data['review']['usage_context']}</dd>
+			{{endif}}
+			{{if $data['review']['time_owned']}}
+				<dt>{lang="gdr_queue_time_owned"}</dt>
+				<dd>{$data['review']['time_owned']}</dd>
+			{{endif}}
+		</dl>
 
 	</div>
 </div>
@@ -274,72 +259,116 @@ TEMPLATE_EOT,
 		'template_name' => 'hub',
 		'template_data' => '$data',
 		'template_content' => <<<'TEMPLATE_EOT'
-<div class="ipsBox" style="padding:24px;margin-bottom:24px;text-align:center;background:#111;color:#fff">
-	<h1 class="ipsType_pageTitle" style="color:#fff;margin:0 0 8px 0">{lang="gdr_front_hub_title"}</h1>
-	<p style="margin:0;font-size:1.2em">{lang="gdr_front_hub_hero"}</p>
+<div class="ipsBox ipsPull" style="background:linear-gradient(135deg,#1e3a5f 0%,#2c5282 100%);color:#fff;padding:48px 32px;margin-bottom:24px;text-align:center;border-radius:4px">
+	<h1 class="ipsType_pageTitle" style="color:#fff;margin:0 0 8px 0;font-size:2.2em">{lang="gdr_front_hub_title"}</h1>
+	<p style="margin:0 0 24px 0;font-size:1.15em;opacity:0.92">{lang="gdr_front_hub_hero"}</p>
+
+	<form method="get" action="{$data['search_url']}" style="max-width:560px;margin:0 auto 24px auto;display:flex;gap:8px">
+		<input type="hidden" name="app" value="gdreviews" />
+		<input type="hidden" name="module" value="reviews" />
+		<input type="hidden" name="controller" value="hub" />
+		<input type="text" name="q" placeholder="{lang='gdr_front_hub_search_ph'}" class="ipsField_text" style="flex:1;padding:10px 14px;border:none;border-radius:4px;font-size:1em" />
+		<button type="submit" class="ipsButton ipsButton--primary">{lang="gdr_front_hub_search_btn"}</button>
+	</form>
+
+	<div style="display:flex;gap:32px;justify-content:center;flex-wrap:wrap;margin-top:8px">
+		<div>
+			<div style="font-size:2em;font-weight:bold;line-height:1">{expression="number_format( $data['total_reviews'] )"}</div>
+			<div style="opacity:0.85;font-size:0.9em;margin-top:2px">{lang="gdr_front_hub_stat_reviews"}</div>
+		</div>
+		<div>
+			<div style="font-size:2em;font-weight:bold;line-height:1">{expression="number_format( $data['total_products'] )"}</div>
+			<div style="opacity:0.85;font-size:0.9em;margin-top:2px">{lang="gdr_front_hub_stat_products"}</div>
+		</div>
+		<div>
+			<div style="font-size:2em;font-weight:bold;line-height:1">{expression="number_format( $data['total_verified'] )"}</div>
+			<div style="opacity:0.85;font-size:0.9em;margin-top:2px">{lang="gdr_front_hub_stat_verified"}</div>
+		</div>
+	</div>
 </div>
 
-<div style="display:flex;gap:24px;flex-wrap:wrap">
+{{if $data['featured']}}
+<div class="ipsBox ipsPull" style="padding:20px;margin-bottom:24px;border-left:4px solid #d97706;background:var(--i-color_highlighted, #fff8ec)">
+	<div style="display:flex;align-items:center;gap:12px;margin-bottom:8px">
+		<span class="ipsBadge ipsBadge--warning">{lang="gdr_front_hub_featured"}</span>
+		<strong style="font-size:1.1em">{$data['featured']['title']}</strong>
+		<span style="margin-left:auto;color:#d97706;font-weight:bold">{$data['featured']['overall_rating']} &#9733;</span>
+	</div>
+	<p class="ipsType_light" style="margin:0 0 8px 0;font-size:0.9em">
+		<code>{$data['featured']['upc']}</code> &middot; {lang="gdr_front_by"} #{$data['featured']['member_id']} &middot; {$data['featured']['created_at']}
+		{{if $data['featured']['verified_purchase']}} &middot; <span class="ipsBadge ipsBadge--positive">{lang="gdr_front_verified_badge"}</span>{{endif}}
+	</p>
+	<p style="margin:0">{$data['featured']['excerpt']}</p>
+</div>
+{{endif}}
 
-	<section style="flex:2 1 520px">
-		<h2 class="ipsType_sectionHead">{lang="gdr_front_hub_latest"}</h2>
-		{{foreach $data['latest'] as $row}}
-			<article class="ipsBox" style="padding:16px;margin-bottom:12px">
-				<header style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap">
-					<strong>{$row['title']}</strong>
-					<span>{$row['overall_rating']} &#9733;</span>
-				</header>
-				<p class="ipsType_light" style="margin:4px 0 0 0">
-					<code>{$row['upc']}</code> &middot; {lang="gdr_front_by"} #{$row['member_id']} &middot; {$row['created_at']}
-					{{if $row['verified_purchase']}} &middot; <span class="ipsBadge ipsBadge_positive">{lang="gdr_front_verified_badge"}</span>{{endif}}
-				</p>
-				<p style="margin:8px 0 0 0">{$row['excerpt']}</p>
-			</article>
-		{{endforeach}}
+<div class="ipsGrid ipsGrid_collapsePhone" style="display:flex;gap:24px;flex-wrap:wrap">
+
+	<section class="ipsGrid_span8" style="flex:2 1 520px">
+		<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+			<h2 class="ipsType_sectionHead" style="margin:0">{lang="gdr_front_hub_latest"}</h2>
+			<span class="ipsType_light ipsType_small">{expression="count( $data['latest'] )"} {lang="gdr_front_review_count"}</span>
+		</div>
+
 		{{if count( $data['latest'] ) === 0}}
-			<p class="ipsType_light">{lang="gdr_front_hub_empty_latest"}</p>
+			<div class="ipsEmptyMessage"><p>{lang="gdr_front_hub_empty_latest"}</p></div>
+		{{else}}
+			{{foreach $data['latest'] as $row}}
+				<article class="ipsBox ipsPull" style="padding:16px;margin-bottom:12px;border-left:3px solid var(--i-color_primary, #2c5282)">
+					<header style="display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:baseline">
+						<strong style="font-size:1.05em">{$row['title']}</strong>
+						<span style="color:#d97706;font-weight:bold">{$row['overall_rating']} &#9733;</span>
+					</header>
+					<p class="ipsType_light ipsType_small" style="margin:4px 0 0 0">
+						<code>{$row['upc']}</code> &middot; {lang="gdr_front_by"} #{$row['member_id']} &middot; {$row['created_at']}
+						{{if $row['verified_purchase']}} &middot; <span class="ipsBadge ipsBadge--positive">{lang="gdr_front_verified_badge"}</span>{{endif}}
+					</p>
+					<p style="margin:8px 0 0 0;line-height:1.5">{$row['excerpt']}</p>
+				</article>
+			{{endforeach}}
 		{{endif}}
 	</section>
 
-	<aside style="flex:1 1 260px">
-		<h2 class="ipsType_sectionHead">{lang="gdr_front_hub_featured"}</h2>
-		{{if $data['featured']}}
-			<article class="ipsBox" style="padding:16px;margin-bottom:24px">
-				<strong>{$data['featured']['title']}</strong>
-				<p class="ipsType_light" style="margin:4px 0 0 0"><code>{$data['featured']['upc']}</code> &middot; {$data['featured']['overall_rating']} &#9733;</p>
-				<p style="margin:8px 0 0 0">{$data['featured']['excerpt']}</p>
-			</article>
-		{{else}}
-			<p class="ipsType_light">{lang="gdr_front_hub_no_featured"}</p>
-		{{endif}}
+	<aside class="ipsGrid_span4" style="flex:1 1 260px">
+		<div class="ipsBox ipsPull" style="padding:16px;margin-bottom:16px">
+			<h3 class="ipsType_sectionHead" style="margin:0 0 12px 0;font-size:1.05em">{lang="gdr_front_hub_top_rated"}</h3>
+			{{if count( $data['top_rated'] ) === 0}}
+				<p class="ipsType_light ipsType_small">{lang="gdr_front_hub_empty_top"}</p>
+			{{else}}
+				<ol style="padding-left:20px;margin:0">
+				{{foreach $data['top_rated'] as $row}}
+					<li style="margin-bottom:6px"><code>{$row['upc']}</code><br/><span class="ipsType_light ipsType_small">{$row['avg_rating']} &#9733; &middot; {$row['count']} {lang="gdr_front_review_count"}</span></li>
+				{{endforeach}}
+				</ol>
+			{{endif}}
+		</div>
 
-		<h2 class="ipsType_sectionHead">{lang="gdr_front_hub_top_rated"}</h2>
-		<ol style="padding-left:20px">
-		{{foreach $data['top_rated'] as $row}}
-			<li><code>{$row['upc']}</code> &mdash; {$row['avg_rating']} &#9733; ({$row['count']} {lang="gdr_front_review_count"})</li>
-		{{endforeach}}
-		</ol>
-		{{if count( $data['top_rated'] ) === 0}}
-			<p class="ipsType_light">{lang="gdr_front_hub_empty_top"}</p>
-		{{endif}}
+		<div class="ipsBox ipsPull" style="padding:16px;margin-bottom:16px">
+			<h3 class="ipsType_sectionHead" style="margin:0 0 12px 0;font-size:1.05em">{lang="gdr_front_hub_most_reviewed"}</h3>
+			{{if count( $data['most_reviewed'] ) === 0}}
+				<p class="ipsType_light ipsType_small">{lang="gdr_front_hub_empty_most"}</p>
+			{{else}}
+				<ol style="padding-left:20px;margin:0">
+				{{foreach $data['most_reviewed'] as $row}}
+					<li style="margin-bottom:6px"><code>{$row['upc']}</code><br/><span class="ipsType_light ipsType_small">{$row['count']} {lang="gdr_front_review_count"}</span></li>
+				{{endforeach}}
+				</ol>
+			{{endif}}
+		</div>
 
-		<h2 class="ipsType_sectionHead">{lang="gdr_front_hub_most_reviewed"}</h2>
-		<ol style="padding-left:20px">
-		{{foreach $data['most_reviewed'] as $row}}
-			<li><code>{$row['upc']}</code> &mdash; {$row['count']} {lang="gdr_front_review_count"}</li>
-		{{endforeach}}
-		</ol>
-
-		<h2 class="ipsType_sectionHead">{lang="gdr_front_hub_verified"}</h2>
-		{{foreach $data['verified'] as $row}}
-			<div style="margin-bottom:8px">
-				<strong>{$row['title']}</strong><br/>
-				<span class="ipsType_light"><code>{$row['upc']}</code> &middot; {$row['overall_rating']} &#9733;</span>
-			</div>
-		{{endforeach}}
-		{{if count( $data['verified'] ) === 0}}
-			<p class="ipsType_light">{lang="gdr_front_hub_empty_verified"}</p>
-		{{endif}}
+		<div class="ipsBox ipsPull" style="padding:16px">
+			<h3 class="ipsType_sectionHead" style="margin:0 0 12px 0;font-size:1.05em">{lang="gdr_front_hub_verified"}</h3>
+			{{if count( $data['verified'] ) === 0}}
+				<p class="ipsType_light ipsType_small">{lang="gdr_front_hub_empty_verified"}</p>
+			{{else}}
+				{{foreach $data['verified'] as $row}}
+					<div style="margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--i-border-color, #e0e0e0)">
+						<strong style="font-size:0.95em">{$row['title']}</strong>
+						<div class="ipsType_light ipsType_small"><code>{$row['upc']}</code> &middot; {$row['overall_rating']} &#9733;</div>
+					</div>
+				{{endforeach}}
+			{{endif}}
+		</div>
 	</aside>
 
 </div>
@@ -447,8 +476,8 @@ TEMPLATE_EOT,
 	</div>
 
 	<div class="ipsFieldRow" style="display:flex;gap:8px">
-		<button type="submit" class="ipsButton ipsButton_primary">{lang="gdr_front_submit_submit"}</button>
-		<a href="{$data['cancel_url']}" class="ipsButton ipsButton_medium">{lang="gdr_front_submit_cancel"}</a>
+		<button type="submit" class="ipsButton ipsButton--primary">{lang="gdr_front_submit_submit"}</button>
+		<a href="{$data['cancel_url']}" class="ipsButton ipsButton--normal">{lang="gdr_front_submit_cancel"}</a>
 	</div>
 </form>
 TEMPLATE_EOT,
