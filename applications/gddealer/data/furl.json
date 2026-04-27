@@ -1,45 +1,53 @@
 {
-	"topLevel": "dealers",
-	"pages": {
-		"dealers_directory": {
-			"friendly": "",
-			"real": "app=gddealer&module=dealers&controller=directory"
-		},
-		"dealers_directory_browse": {
-			"friendly": "browse",
-			"real": "app=gddealer&module=dealers&controller=directory"
-		},
-		"dealers_dashboard": {
-			"friendly": "dashboard",
-			"real": "app=gddealer&module=dealers&controller=dashboard"
-		},
-		"dealers_dashboard_tab": {
-			"friendly": "dashboard/{@do}",
-			"real": "app=gddealer&module=dealers&controller=dashboard"
-		},
-		"dealers_join": {
-			"friendly": "join",
-			"real": "app=gddealer&module=dealers&controller=join"
-		},
-		"dealers_join_action": {
-			"friendly": "join/{@do}",
-			"real": "app=gddealer&module=dealers&controller=join"
-		},
-		"dealers_review_guidelines": {
-			"friendly": "review-guidelines",
-			"real": "app=gddealer&module=dealers&controller=profile&do=guidelines"
-		},
-		"dealers_support": {
-			"friendly": "support",
-			"real": "app=gddealer&module=dealers&controller=support"
-		},
-		"dealers_support_action": {
-			"friendly": "support/{@do}",
-			"real": "app=gddealer&module=dealers&controller=support"
-		},
-		"dealers_profile": {
-			"friendly": "profile/{@dealer_slug}",
-			"real": "app=gddealer&module=dealers&controller=profile"
-		}
-	}
+    "topLevel": "dealers",
+    "pages": {
+        "dealers_directory": {
+            "friendly": "",
+            "real": "app=gddealer&module=dealers&controller=directory"
+        },
+        "dealers_directory_browse": {
+            "friendly": "browse",
+            "real": "app=gddealer&module=dealers&controller=directory"
+        },
+        "dealers_dashboard": {
+            "friendly": "dashboard",
+            "real": "app=gddealer&module=dealers&controller=dashboard"
+        },
+        "dealers_dashboard_tab": {
+            "friendly": "dashboard/{@do}",
+            "real": "app=gddealer&module=dealers&controller=dashboard"
+        },
+        "dealers_join": {
+            "friendly": "join",
+            "real": "app=gddealer&module=dealers&controller=join"
+        },
+        "dealers_join_action": {
+            "friendly": "join/{@do}",
+            "real": "app=gddealer&module=dealers&controller=join"
+        },
+        "dealers_review_guidelines": {
+            "friendly": "review-guidelines",
+            "real": "app=gddealer&module=dealers&controller=profile&do=guidelines"
+        },
+        "dealers_support": {
+            "friendly": "support",
+            "real": "app=gddealer&module=dealers&controller=support"
+        },
+        "dealers_support_action": {
+            "friendly": "support/{@do}",
+            "real": "app=gddealer&module=dealers&controller=support"
+        },
+        "dealers_feed_validator": {
+            "friendly": "feed-validator",
+            "real": "app=gddealer&module=dealers&controller=feedvalidator"
+        },
+        "dealers_feed_validator_action": {
+            "friendly": "feed-validator/{@do}",
+            "real": "app=gddealer&module=dealers&controller=feedvalidator"
+        },
+        "dealers_profile": {
+            "friendly": "profile/{@dealer_slug}",
+            "real": "app=gddealer&module=dealers&controller=profile"
+        }
+    }
 }
