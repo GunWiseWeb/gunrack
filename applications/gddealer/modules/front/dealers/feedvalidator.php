@@ -59,33 +59,29 @@ class _feedvalidator extends \IPS\Dispatcher\Controller
      */
     protected function check(): void
     {
-        header( 'Content-Type: application/json; charset=utf-8' );
-
         $format = strtolower( trim( (string) ( \IPS\Request::i()->format ?? '' ) ) );
         $body   = (string) ( \IPS\Request::i()->body ?? '' );
         $body   = trim( $body );
 
         if ( !in_array( $format, [ 'xml', 'json', 'csv' ], true ) )
         {
-            echo json_encode( [
+            \IPS\Output::i()->sendOutput( json_encode( [
                 'valid'    => false,
                 'summary'  => [ 'total_records' => 0, 'valid_records' => 0, 'error_records' => 0, 'warning_records' => 0 ],
                 'errors'   => [ [ 'row' => 0, 'upc' => '', 'field' => '_format', 'message' => "Format must be one of: xml, json, csv (got '{$format}')" ] ],
                 'warnings' => [],
-            ] );
-            \IPS\Output::i()->sendOutput( '', 200, 'application/json' );
+            ] ), 200, 'application/json' );
             return;
         }
 
         if ( $body === '' )
         {
-            echo json_encode( [
+            \IPS\Output::i()->sendOutput( json_encode( [
                 'valid'    => false,
                 'summary'  => [ 'total_records' => 0, 'valid_records' => 0, 'error_records' => 0, 'warning_records' => 0 ],
                 'errors'   => [ [ 'row' => 0, 'upc' => '', 'field' => '_body', 'message' => 'Feed body is empty.' ] ],
                 'warnings' => [],
-            ] );
-            \IPS\Output::i()->sendOutput( '', 200, 'application/json' );
+            ] ), 200, 'application/json' );
             return;
         }
 
@@ -93,13 +89,12 @@ class _feedvalidator extends \IPS\Dispatcher\Controller
            runaway parses on a public endpoint. */
         if ( strlen( $body ) > 10 * 1024 * 1024 )
         {
-            echo json_encode( [
+            \IPS\Output::i()->sendOutput( json_encode( [
                 'valid'    => false,
                 'summary'  => [ 'total_records' => 0, 'valid_records' => 0, 'error_records' => 0, 'warning_records' => 0 ],
                 'errors'   => [ [ 'row' => 0, 'upc' => '', 'field' => '_body', 'message' => 'Feed body exceeds 10 MB limit.' ] ],
                 'warnings' => [],
-            ] );
-            \IPS\Output::i()->sendOutput( '', 200, 'application/json' );
+            ] ), 200, 'application/json' );
             return;
         }
 
@@ -113,20 +108,18 @@ class _feedvalidator extends \IPS\Dispatcher\Controller
         }
         catch ( \Throwable $e )
         {
-            echo json_encode( [
+            \IPS\Output::i()->sendOutput( json_encode( [
                 'valid'    => false,
                 'summary'  => [ 'total_records' => 0, 'valid_records' => 0, 'error_records' => 0, 'warning_records' => 0 ],
                 'errors'   => [ [ 'row' => 0, 'upc' => '', 'field' => '_parse', 'message' => 'Parse error: ' . $e->getMessage() ] ],
                 'warnings' => [],
-            ] );
-            \IPS\Output::i()->sendOutput( '', 200, 'application/json' );
+            ] ), 200, 'application/json' );
             return;
         }
 
         $report = Validator::validate( $records );
 
-        echo json_encode( $report, JSON_UNESCAPED_SLASHES );
-        \IPS\Output::i()->sendOutput( '', 200, 'application/json' );
+        \IPS\Output::i()->sendOutput( json_encode( $report, JSON_UNESCAPED_SLASHES ), 200, 'application/json' );
     }
 }
 
