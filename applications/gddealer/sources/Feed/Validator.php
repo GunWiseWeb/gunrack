@@ -1,32 +1,41 @@
 <?php
 /**
- * @brief       GD Dealer Manager - Feed Validator
+ * @brief       GD Dealer Manager - Feed Validator (Schema v1.1)
  * @package     IPS Community Suite
  * @subpackage  GD Dealer Manager
- * @since       v1.0.139
+ * @since       v1.0.141
  *
  * Validates a parsed GunRack feed (XML / JSON / CSV after going through the
- * format-specific parser) against the v1 schema. Returns a structured report
- * with errors (block import) and warnings (allow with caution).
+ * format-specific parser) against the v1.1 schema. Returns a structured
+ * report with errors (block import) and warnings (allow with caution).
  *
- * Schema reference: see _design/feed-schema-v1.md in the repo for the full
- * documented schema. This class is the authoritative implementation; if the
- * doc and this class disagree, this class wins.
+ * Schema v1.1 changes from v1:
+ *   - Category-specific required fields (caliber for ammo, type for parts,
+ *     etc.) per the gunengine.com-style nested specification.
+ *   - Optional product metadata: name, brand, mpn, image_url.
+ *   - Hybrid format: XmlParser and JsonParser flatten nested category blocks
+ *     to ammo.caliber / firearm.model / etc. before validation. CSV uses
+ *     flat columns natively. The validator only sees flat fields.
  *
- * Required per-listing fields:
- *   upc       - 12 or 13 digit numeric (UPC-A or EAN-13)
- *   category  - one of: firearm, ammo, part, accessory, optic, reloading, knife, apparel
- *   price     - positive decimal, USD
- *   condition - one of: new, used, refurbished
- *   url       - absolute https URL
- *   shipping_cost - present when free_shipping is not 1
- *   free_shipping - 0 or 1 (truthy parseable)
- *   in_stock  - 0 or 1 (truthy parseable)
+ * Required (all categories):
+ *   upc, category, price, condition, url, free_shipping, in_stock,
+ *   shipping_cost (when free_shipping is not 1)
  *
- * Optional:
- *   sku       - dealer SKU, max 100 chars
- *   map_price - positive decimal, must be > price when present
- *   stock_qty - non-negative integer
+ * Optional (all categories):
+ *   sku, map_price, stock_qty, name, brand, mpn, image_url
+ *
+ * Category-specific required fields:
+ *   ammo:      ammo.caliber, ammo.rounds
+ *   firearm:   (no required subfields - empty firearm block valid)
+ *   part:      part.type
+ *   reloading: reloading.type, reloading.rounds, plus type-specific:
+ *                bullet  -> reloading.bullet_caliber
+ *                brass   -> reloading.brass_cartridge
+ *                primer  -> reloading.primer_size
+ *   optic:     optic.type
+ *   knife:     knife.type
+ *   accessory: (none)
+ *   apparel:   (none)
  */
 
 namespace IPS\gddealer\Feed;
@@ -50,8 +59,19 @@ class Validator
 
     public const REQUIRED_FIELDS = [ 'upc', 'category', 'price', 'condition', 'url' ];
 
+    public const VALID_RELOADING_TYPES = [ 'bullet', 'brass', 'primer' ];
+
+    public const VALID_OPTIC_TYPES = [
+        'red_dot', 'holographic', 'lpvo', 'rifle_scope',
+        'pistol_scope', 'magnifier', 'iron_sights', 'prism',
+    ];
+
+    public const VALID_KNIFE_TYPES = [
+        'fixed_blade', 'folding', 'automatic', 'assisted', 'multitool',
+    ];
+
     /**
-     * Validate a list of parsed records (from XmlParser/JsonParser/CsvParser).
+     * Validate a list of parsed records.
      *
      * @param array<int, array<string, mixed>> $records
      * @return array{
@@ -63,17 +83,17 @@ class Validator
      */
     public static function validate( array $records ): array
     {
-        $errors   = [];
-        $warnings = [];
+        $errors      = [];
+        $warnings    = [];
         $errorRows   = [];
         $warningRows = [];
 
         if ( count( $records ) === 0 )
         {
             return [
-                'valid'   => false,
-                'summary' => [ 'total_records' => 0, 'valid_records' => 0, 'error_records' => 0, 'warning_records' => 0 ],
-                'errors'  => [ [ 'row' => 0, 'upc' => '', 'field' => '_root', 'message' => 'Feed contains zero listings.' ] ],
+                'valid'    => false,
+                'summary'  => [ 'total_records' => 0, 'valid_records' => 0, 'error_records' => 0, 'warning_records' => 0 ],
+                'errors'   => [ [ 'row' => 0, 'upc' => '', 'field' => '_root', 'message' => 'Feed contains zero listings.' ] ],
                 'warnings' => [],
             ];
         }
@@ -86,8 +106,9 @@ class Validator
             $upc = isset( $record['upc'] ) ? (string) $record['upc'] : '';
             $rowHadError   = false;
             $rowHadWarning = false;
+            $price = 0.0;
 
-            /* required field presence */
+            /* Required field presence */
             foreach ( self::REQUIRED_FIELDS as $field )
             {
                 if ( !array_key_exists( $field, $record ) || (string) $record[ $field ] === '' )
@@ -97,7 +118,7 @@ class Validator
                 }
             }
 
-            /* upc format: 12 (UPC-A) or 13 (EAN-13) digits, no separators */
+            /* UPC format: 12 (UPC-A) or 13 (EAN-13) digits */
             if ( $upc !== '' )
             {
                 $cleaned = preg_replace( '/[^0-9]/', '', $upc );
@@ -123,7 +144,8 @@ class Validator
                 }
             }
 
-            /* category */
+            /* Category */
+            $cat = '';
             if ( isset( $record['category'] ) && (string) $record['category'] !== '' )
             {
                 $cat = strtolower( trim( (string) $record['category'] ) );
@@ -131,10 +153,11 @@ class Validator
                 {
                     $errors[] = [ 'row' => $row, 'upc' => $upc, 'field' => 'category', 'message' => "Invalid category '{$cat}'. Must be one of: " . implode( ', ', self::VALID_CATEGORIES ) ];
                     $rowHadError = true;
+                    $cat = '';
                 }
             }
 
-            /* price */
+            /* Price */
             if ( isset( $record['price'] ) && (string) $record['price'] !== '' )
             {
                 $rawPrice = (string) $record['price'];
@@ -151,7 +174,7 @@ class Validator
                 }
             }
 
-            /* map_price (optional) */
+            /* MAP price (optional) */
             if ( isset( $record['map_price'] ) && (string) $record['map_price'] !== '' )
             {
                 $rawMap = (string) $record['map_price'];
@@ -161,14 +184,14 @@ class Validator
                     $errors[] = [ 'row' => $row, 'upc' => $upc, 'field' => 'map_price', 'message' => "MAP price must be greater than 0 (got '{$rawMap}')." ];
                     $rowHadError = true;
                 }
-                if ( isset( $price ) && $price > 0 && $map <= $price )
+                if ( $price > 0 && $map <= $price )
                 {
                     $warnings[] = [ 'row' => $row, 'upc' => $upc, 'field' => 'map_price', 'message' => "MAP price ({$map}) is not greater than price ({$price}); MAP will be ignored on import." ];
                     $rowHadWarning = true;
                 }
             }
 
-            /* condition */
+            /* Condition */
             if ( isset( $record['condition'] ) && (string) $record['condition'] !== '' )
             {
                 $cond = strtolower( trim( (string) $record['condition'] ) );
@@ -179,7 +202,7 @@ class Validator
                 }
             }
 
-            /* url - https only, must be absolute */
+            /* URL */
             if ( isset( $record['url'] ) && (string) $record['url'] !== '' )
             {
                 $url = (string) $record['url'];
@@ -192,6 +215,17 @@ class Validator
                 {
                     $errors[] = [ 'row' => $row, 'upc' => $upc, 'field' => 'url', 'message' => "URL is malformed: '{$url}'" ];
                     $rowHadError = true;
+                }
+            }
+
+            /* image_url (optional) */
+            if ( isset( $record['image_url'] ) && (string) $record['image_url'] !== '' )
+            {
+                $imgUrl = (string) $record['image_url'];
+                if ( !preg_match( '#^https://#i', $imgUrl ) )
+                {
+                    $warnings[] = [ 'row' => $row, 'upc' => $upc, 'field' => 'image_url', 'message' => "image_url should start with https:// (got '{$imgUrl}'); browsers may block mixed content." ];
+                    $rowHadWarning = true;
                 }
             }
 
@@ -219,7 +253,6 @@ class Validator
             /* in_stock */
             if ( isset( $record['in_stock'] ) && (string) $record['in_stock'] !== '' )
             {
-                /* truthy() accepts 1/0/true/false/yes/no/in_stock/out_of_stock - if it can't parse, that's a warning */
                 if ( !self::truthyParseable( $record['in_stock'] ) )
                 {
                     $warnings[] = [ 'row' => $row, 'upc' => $upc, 'field' => 'in_stock', 'message' => "Ambiguous in_stock value '" . $record['in_stock'] . "'; will be treated as truthy on import." ];
@@ -227,7 +260,7 @@ class Validator
                 }
             }
 
-            /* stock_qty (optional) */
+            /* stock_qty */
             if ( isset( $record['stock_qty'] ) && (string) $record['stock_qty'] !== '' )
             {
                 $qty = (string) $record['stock_qty'];
@@ -244,6 +277,145 @@ class Validator
                 $errors[] = [ 'row' => $row, 'upc' => $upc, 'field' => 'sku', 'message' => 'sku must be 100 characters or fewer.' ];
                 $rowHadError = true;
             }
+
+            /* name / brand / mpn length sanity */
+            foreach ( [ 'name' => 200, 'brand' => 100, 'mpn' => 100 ] as $f => $maxLen )
+            {
+                if ( isset( $record[ $f ] ) && strlen( (string) $record[ $f ] ) > $maxLen )
+                {
+                    $warnings[] = [ 'row' => $row, 'upc' => $upc, 'field' => $f, 'message' => "{$f} exceeds {$maxLen} characters; will be truncated on import." ];
+                    $rowHadWarning = true;
+                }
+            }
+
+            /* ----- Category-specific validation ----- */
+
+            if ( $cat === 'ammo' )
+            {
+                if ( !isset( $record['ammo.caliber'] ) || (string) $record['ammo.caliber'] === '' )
+                {
+                    $errors[] = [ 'row' => $row, 'upc' => $upc, 'field' => 'ammo.caliber', 'message' => 'ammo.caliber is required when category=ammo.' ];
+                    $rowHadError = true;
+                }
+                if ( !isset( $record['ammo.rounds'] ) || (string) $record['ammo.rounds'] === '' )
+                {
+                    $errors[] = [ 'row' => $row, 'upc' => $upc, 'field' => 'ammo.rounds', 'message' => 'ammo.rounds is required when category=ammo.' ];
+                    $rowHadError = true;
+                }
+                elseif ( !ctype_digit( (string) $record['ammo.rounds'] ) || (int) $record['ammo.rounds'] <= 0 )
+                {
+                    $errors[] = [ 'row' => $row, 'upc' => $upc, 'field' => 'ammo.rounds', 'message' => "ammo.rounds must be a positive integer (got '" . $record['ammo.rounds'] . "')." ];
+                    $rowHadError = true;
+                }
+            }
+
+            if ( $cat === 'firearm' )
+            {
+                /* No required subfields - empty firearm block valid. */
+                if ( ( !isset( $record['firearm.model'] ) || (string) $record['firearm.model'] === '' )
+                  && ( !isset( $record['firearm.type'] ) || (string) $record['firearm.type'] === '' )
+                  && ( !isset( $record['firearm.caliber'] ) || (string) $record['firearm.caliber'] === '' ) )
+                {
+                    $warnings[] = [ 'row' => $row, 'upc' => $upc, 'field' => 'firearm', 'message' => 'No firearm.model / firearm.type / firearm.caliber provided; this listing will not appear in firearm-specific search filters.' ];
+                    $rowHadWarning = true;
+                }
+            }
+
+            if ( $cat === 'part' )
+            {
+                if ( !isset( $record['part.type'] ) || (string) $record['part.type'] === '' )
+                {
+                    $errors[] = [ 'row' => $row, 'upc' => $upc, 'field' => 'part.type', 'message' => 'part.type is required when category=part (e.g., "1911 magazine", "AR-15 lower").' ];
+                    $rowHadError = true;
+                }
+            }
+
+            if ( $cat === 'reloading' )
+            {
+                $rType = isset( $record['reloading.type'] ) ? strtolower( trim( (string) $record['reloading.type'] ) ) : '';
+                if ( $rType === '' )
+                {
+                    $errors[] = [ 'row' => $row, 'upc' => $upc, 'field' => 'reloading.type', 'message' => 'reloading.type is required when category=reloading. Must be one of: ' . implode( ', ', self::VALID_RELOADING_TYPES ) ];
+                    $rowHadError = true;
+                }
+                elseif ( !in_array( $rType, self::VALID_RELOADING_TYPES, true ) )
+                {
+                    $errors[] = [ 'row' => $row, 'upc' => $upc, 'field' => 'reloading.type', 'message' => "Invalid reloading.type '{$rType}'. Must be one of: " . implode( ', ', self::VALID_RELOADING_TYPES ) ];
+                    $rowHadError = true;
+                }
+
+                if ( !isset( $record['reloading.rounds'] ) || (string) $record['reloading.rounds'] === '' )
+                {
+                    $errors[] = [ 'row' => $row, 'upc' => $upc, 'field' => 'reloading.rounds', 'message' => 'reloading.rounds is required when category=reloading.' ];
+                    $rowHadError = true;
+                }
+                elseif ( !ctype_digit( (string) $record['reloading.rounds'] ) || (int) $record['reloading.rounds'] <= 0 )
+                {
+                    $errors[] = [ 'row' => $row, 'upc' => $upc, 'field' => 'reloading.rounds', 'message' => "reloading.rounds must be a positive integer (got '" . $record['reloading.rounds'] . "')." ];
+                    $rowHadError = true;
+                }
+
+                /* Type-specific subfield rules */
+                if ( $rType === 'bullet' && ( !isset( $record['reloading.bullet_caliber'] ) || (string) $record['reloading.bullet_caliber'] === '' ) )
+                {
+                    $errors[] = [ 'row' => $row, 'upc' => $upc, 'field' => 'reloading.bullet_caliber', 'message' => 'reloading.bullet_caliber is required when reloading.type=bullet.' ];
+                    $rowHadError = true;
+                }
+                if ( $rType === 'brass' && ( !isset( $record['reloading.brass_cartridge'] ) || (string) $record['reloading.brass_cartridge'] === '' ) )
+                {
+                    $errors[] = [ 'row' => $row, 'upc' => $upc, 'field' => 'reloading.brass_cartridge', 'message' => 'reloading.brass_cartridge is required when reloading.type=brass.' ];
+                    $rowHadError = true;
+                }
+                if ( $rType === 'primer' && ( !isset( $record['reloading.primer_size'] ) || (string) $record['reloading.primer_size'] === '' ) )
+                {
+                    $errors[] = [ 'row' => $row, 'upc' => $upc, 'field' => 'reloading.primer_size', 'message' => 'reloading.primer_size is required when reloading.type=primer.' ];
+                    $rowHadError = true;
+                }
+            }
+
+            if ( $cat === 'optic' )
+            {
+                $oType = isset( $record['optic.type'] ) ? strtolower( trim( (string) $record['optic.type'] ) ) : '';
+                if ( $oType === '' )
+                {
+                    $errors[] = [ 'row' => $row, 'upc' => $upc, 'field' => 'optic.type', 'message' => 'optic.type is required when category=optic. Must be one of: ' . implode( ', ', self::VALID_OPTIC_TYPES ) ];
+                    $rowHadError = true;
+                }
+                elseif ( !in_array( $oType, self::VALID_OPTIC_TYPES, true ) )
+                {
+                    $errors[] = [ 'row' => $row, 'upc' => $upc, 'field' => 'optic.type', 'message' => "Invalid optic.type '{$oType}'. Must be one of: " . implode( ', ', self::VALID_OPTIC_TYPES ) ];
+                    $rowHadError = true;
+                }
+                if ( isset( $record['optic.objective_mm'] ) && (string) $record['optic.objective_mm'] !== ''
+                  && !ctype_digit( (string) $record['optic.objective_mm'] ) )
+                {
+                    $warnings[] = [ 'row' => $row, 'upc' => $upc, 'field' => 'optic.objective_mm', 'message' => "optic.objective_mm should be a positive integer in mm (got '" . $record['optic.objective_mm'] . "')." ];
+                    $rowHadWarning = true;
+                }
+            }
+
+            if ( $cat === 'knife' )
+            {
+                $kType = isset( $record['knife.type'] ) ? strtolower( trim( (string) $record['knife.type'] ) ) : '';
+                if ( $kType === '' )
+                {
+                    $errors[] = [ 'row' => $row, 'upc' => $upc, 'field' => 'knife.type', 'message' => 'knife.type is required when category=knife. Must be one of: ' . implode( ', ', self::VALID_KNIFE_TYPES ) ];
+                    $rowHadError = true;
+                }
+                elseif ( !in_array( $kType, self::VALID_KNIFE_TYPES, true ) )
+                {
+                    $errors[] = [ 'row' => $row, 'upc' => $upc, 'field' => 'knife.type', 'message' => "Invalid knife.type '{$kType}'. Must be one of: " . implode( ', ', self::VALID_KNIFE_TYPES ) ];
+                    $rowHadError = true;
+                }
+                if ( isset( $record['knife.blade_length_in'] ) && (string) $record['knife.blade_length_in'] !== ''
+                  && !is_numeric( (string) $record['knife.blade_length_in'] ) )
+                {
+                    $warnings[] = [ 'row' => $row, 'upc' => $upc, 'field' => 'knife.blade_length_in', 'message' => "knife.blade_length_in should be a decimal number in inches (got '" . $record['knife.blade_length_in'] . "')." ];
+                    $rowHadWarning = true;
+                }
+            }
+
+            /* accessory and apparel: no category-specific rules */
 
             if ( $rowHadError )   { $errorRows[ $row ]   = true; }
             if ( $rowHadWarning ) { $warningRows[ $row ] = true; }
@@ -266,10 +438,6 @@ class Validator
         ];
     }
 
-    /**
-     * Parse a known truthy/falsy string. Returns true if value indicates
-     * presence/availability/yes/1/in_stock.
-     */
     protected static function truthy( mixed $v ): bool
     {
         if ( is_bool( $v ) ) { return $v; }
@@ -278,10 +446,6 @@ class Validator
         return in_array( $s, [ '1', 'true', 'yes', 'y', 'in_stock', 'instock', 'available', 'on' ], true );
     }
 
-    /**
-     * Returns true if value is one of our recognized truthy/falsy strings.
-     * Used to flag ambiguous values like '3' or 'maybe' as warnings.
-     */
     protected static function truthyParseable( mixed $v ): bool
     {
         if ( is_bool( $v ) || is_int( $v ) ) { return true; }
