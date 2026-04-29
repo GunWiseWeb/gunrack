@@ -9,7 +9,9 @@ class _upgrade
     {
         try
         {
-            require_once \IPS\ROOT_PATH . '/applications/gddealer/setup/templates_10146.php';
+            require_once \IPS\ROOT_PATH . '/applications/gddealer/setup/templates_10146_part1.php';
+            require_once \IPS\ROOT_PATH . '/applications/gddealer/setup/templates_10146_part2.php';
+            require_once \IPS\ROOT_PATH . '/applications/gddealer/setup/templates_10146_part3.php';
         }
         catch ( \Throwable $e )
         {
