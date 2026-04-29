@@ -233,15 +233,16 @@ HTML;
 	{
 		$base = 'app=gddealer&module=dealers&controller=dashboard&do=';
 		return [
-			'overview'     => (string) \IPS\Http\Url::internal( $base . 'overview' ),
-			'feedSettings' => (string) \IPS\Http\Url::internal( $base . 'feedSettings' ),
-			'listings'     => (string) \IPS\Http\Url::internal( $base . 'listings' ),
-			'unmatched'    => (string) \IPS\Http\Url::internal( $base . 'unmatched' ),
-			'analytics'    => (string) \IPS\Http\Url::internal( $base . 'analytics' ),
-			'reviews'      => (string) \IPS\Http\Url::internal( $base . 'reviews' ),
-			'subscription' => (string) \IPS\Http\Url::internal( $base . 'subscription' ),
-			'customize'    => (string) \IPS\Http\Url::internal( $base . 'customize' ),
-			'help'         => (string) \IPS\Http\Url::internal( $base . 'help' ),
+			'overview'      => (string) \IPS\Http\Url::internal( $base . 'overview' ),
+			'feedSettings'  => (string) \IPS\Http\Url::internal( $base . 'feedSettings' ),
+			'feedValidator' => (string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=feedvalidator', 'front', 'dealers_feed_validator' ),
+			'listings'      => (string) \IPS\Http\Url::internal( $base . 'listings' ),
+			'unmatched'     => (string) \IPS\Http\Url::internal( $base . 'unmatched' ),
+			'analytics'     => (string) \IPS\Http\Url::internal( $base . 'analytics' ),
+			'reviews'       => (string) \IPS\Http\Url::internal( $base . 'reviews' ),
+			'subscription'  => (string) \IPS\Http\Url::internal( $base . 'subscription' ),
+			'customize'     => (string) \IPS\Http\Url::internal( $base . 'customize' ),
+			'help'          => (string) \IPS\Http\Url::internal( $base . 'help' ),
 		];
 	}
 
@@ -289,6 +290,8 @@ HTML;
 				'items' => [
 					[ 'key' => 'feedSettings', 'label' => $lang->addToStack('gddealer_front_tab_feed'),
 					  'url' => $urls['feedSettings'], 'icon' => 'feed', 'badge' => null ],
+					[ 'key' => 'feedValidator', 'label' => $lang->addToStack('gddealer_front_tab_validator'),
+					  'url' => $urls['feedValidator'], 'icon' => 'validator', 'badge' => null ],
 					[ 'key' => 'unmatched', 'label' => $lang->addToStack('gddealer_front_tab_unmatched'),
 					  'url' => $urls['unmatched'], 'icon' => 'unmatched',
 					  'badge' => $unmatched > 0 ? [ 'count' => $unmatched, 'variant' => 'urgent' ] : null ],
