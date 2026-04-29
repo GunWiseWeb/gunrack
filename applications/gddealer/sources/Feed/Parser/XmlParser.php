@@ -45,12 +45,44 @@ class XmlParser
 			throw new \RuntimeException( 'XML parse error: ' . ( $err ? $err->message : 'unknown' ) );
 		}
 
-		/* Find the repeating child element — assume first child of root is
-		 * the product element and all siblings are records. */
+		/* Find the repeating child element. The expected layout is:
+		 *   <root> <record/> <record/> </root>     (records direct children)
+		 *
+		 * But many feeds wrap records in a single container element:
+		 *   <root> <listings> <listing/> <listing/> </listings> </root>
+		 *   <root> <products> <product/> <product/> </products> </root>
+		 *
+		 * If the root has exactly one child AND that child has its own
+		 * children, descend one level. This mirrors JsonParser's
+		 * wrapper-object detection so {"listings": [...]} works as well as
+		 * a top-level array. */
 		$children = $sx->children();
 		if ( !count( $children ) )
 		{
 			return [];
+		}
+		if ( count( $children ) === 1 )
+		{
+			$onlyChild = $children[0];
+			/* Only descend if the wrapper's children look like multiple
+			 * records (>= 2 children with the same tag). A single child of
+			 * the root with scalar leaves is a record, not a wrapper. */
+			$grandchildren = $onlyChild->children();
+			if ( count( $grandchildren ) >= 2 )
+			{
+				$firstName = '';
+				$allSame = true;
+				foreach ( $grandchildren as $gc )
+				{
+					$name = $gc->getName();
+					if ( $firstName === '' ) { $firstName = $name; }
+					elseif ( $name !== $firstName ) { $allSame = false; break; }
+				}
+				if ( $allSame )
+				{
+					$children = $grandchildren;
+				}
+			}
 		}
 
 		$records = [];
