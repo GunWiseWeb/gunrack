@@ -1,0 +1,43 @@
+[
+	{
+		"method": "addColumn",
+		"params": [
+			"gd_dealer_feed_config",
+			{
+				"name": "wizard_step",
+				"type": "TINYINT",
+				"length": 3,
+				"unsigned": true,
+				"allow_null": false,
+				"default": 0,
+				"comment": "Current wizard step (0=not started)"
+			}
+		]
+	},
+	{
+		"method": "addColumn",
+		"params": [
+			"gd_dealer_feed_config",
+			{
+				"name": "wizard_completed_at",
+				"type": "DATETIME",
+				"allow_null": true,
+				"default": null,
+				"comment": "Timestamp when wizard was completed"
+			}
+		]
+	},
+	{
+		"method": "addColumn",
+		"params": [
+			"gd_dealer_feed_config",
+			{
+				"name": "wizard_state_json",
+				"type": "MEDIUMTEXT",
+				"allow_null": true,
+				"default": null,
+				"comment": "JSON blob storing in-progress wizard state"
+			}
+		]
+	}
+]
