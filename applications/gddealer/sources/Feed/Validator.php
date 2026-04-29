@@ -70,6 +70,22 @@ class Validator
         'fixed_blade', 'folding', 'automatic', 'assisted', 'multitool',
     ];
 
+    public const VALID_AMMO_FIRE_TYPES = [
+        'centerfire', 'rimfire', 'black_powder', 'shotgun',
+    ];
+
+    public const VALID_AMMO_BULLET_DESIGNS = [
+        'fmj', 'hollow_point', 'soft_point', 'polymer_tip', 'frangible', 'aluminum_tip',
+    ];
+
+    public const VALID_AMMO_TIP_COLORS = [
+        'green', 'red', 'orange', 'black', 'blue', 'silver', 'white',
+    ];
+
+    public const VALID_AMMO_CASE_MATERIALS = [
+        'brass', 'steel', 'aluminum', 'nickel',
+    ];
+
     /**
      * Validate a list of parsed records.
      *
@@ -305,6 +321,54 @@ class Validator
                 elseif ( !ctype_digit( (string) $record['ammo.rounds'] ) || (int) $record['ammo.rounds'] <= 0 )
                 {
                     $errors[] = [ 'row' => $row, 'upc' => $upc, 'field' => 'ammo.rounds', 'message' => "ammo.rounds must be a positive integer (got '" . $record['ammo.rounds'] . "')." ];
+                    $rowHadError = true;
+                }
+
+                /* ammo.fire_type (optional) */
+                $fireType = '';
+                if ( isset( $record['ammo.fire_type'] ) && (string) $record['ammo.fire_type'] !== '' )
+                {
+                    $fireType = strtolower( trim( (string) $record['ammo.fire_type'] ) );
+                    if ( !in_array( $fireType, self::VALID_AMMO_FIRE_TYPES, true ) )
+                    {
+                        $errors[] = [ 'row' => $row, 'upc' => $upc, 'field' => 'ammo.fire_type', 'message' => "Invalid ammo.fire_type '{$fireType}'. Must be one of: " . implode( ', ', self::VALID_AMMO_FIRE_TYPES ) ];
+                        $rowHadError = true;
+                        $fireType = '';
+                    }
+                }
+
+                /* ammo.bullet_design (optional) */
+                if ( isset( $record['ammo.bullet_design'] ) && (string) $record['ammo.bullet_design'] !== '' )
+                {
+                    $bulletDesign = strtolower( trim( (string) $record['ammo.bullet_design'] ) );
+                    if ( !in_array( $bulletDesign, self::VALID_AMMO_BULLET_DESIGNS, true ) )
+                    {
+                        $errors[] = [ 'row' => $row, 'upc' => $upc, 'field' => 'ammo.bullet_design', 'message' => "Invalid ammo.bullet_design '{$bulletDesign}'. Must be one of: " . implode( ', ', self::VALID_AMMO_BULLET_DESIGNS ) ];
+                        $rowHadError = true;
+                    }
+                }
+
+                /* ammo.tip_color (optional) */
+                if ( isset( $record['ammo.tip_color'] ) && (string) $record['ammo.tip_color'] !== '' )
+                {
+                    $tipColor = strtolower( trim( (string) $record['ammo.tip_color'] ) );
+                    if ( !in_array( $tipColor, self::VALID_AMMO_TIP_COLORS, true ) )
+                    {
+                        $errors[] = [ 'row' => $row, 'upc' => $upc, 'field' => 'ammo.tip_color', 'message' => "Invalid ammo.tip_color '{$tipColor}'. Must be one of: " . implode( ', ', self::VALID_AMMO_TIP_COLORS ) ];
+                        $rowHadError = true;
+                    }
+                }
+
+                /* ammo.case_material - required when fire_type=centerfire, otherwise optional */
+                $caseMaterial = isset( $record['ammo.case_material'] ) ? strtolower( trim( (string) $record['ammo.case_material'] ) ) : '';
+                if ( $fireType === 'centerfire' && $caseMaterial === '' )
+                {
+                    $errors[] = [ 'row' => $row, 'upc' => $upc, 'field' => 'ammo.case_material', 'message' => 'ammo.case_material is required when ammo.fire_type=centerfire. Must be one of: ' . implode( ', ', self::VALID_AMMO_CASE_MATERIALS ) ];
+                    $rowHadError = true;
+                }
+                elseif ( $caseMaterial !== '' && !in_array( $caseMaterial, self::VALID_AMMO_CASE_MATERIALS, true ) )
+                {
+                    $errors[] = [ 'row' => $row, 'upc' => $upc, 'field' => 'ammo.case_material', 'message' => "Invalid ammo.case_material '{$caseMaterial}'. Must be one of: " . implode( ', ', self::VALID_AMMO_CASE_MATERIALS ) ];
                     $rowHadError = true;
                 }
             }
