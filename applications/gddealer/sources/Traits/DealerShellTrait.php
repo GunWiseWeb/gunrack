@@ -236,6 +236,7 @@ HTML;
 			'overview'      => (string) \IPS\Http\Url::internal( $base . 'overview' ),
 			'feedSettings'  => (string) \IPS\Http\Url::internal( $base . 'feedSettings' ),
 			'feedValidator' => (string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=feedvalidator', 'front', 'dealers_feed_validator' ),
+			'setupWizard'   => (string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=setupwizard', 'front', 'dealers_setup_wizard' ),
 			'listings'      => (string) \IPS\Http\Url::internal( $base . 'listings' ),
 			'unmatched'     => (string) \IPS\Http\Url::internal( $base . 'unmatched' ),
 			'analytics'     => (string) \IPS\Http\Url::internal( $base . 'analytics' ),
@@ -270,6 +271,18 @@ HTML;
 		}
 		catch ( \Exception ) {}
 
+		/* Setup wizard completion check - powers the warning badge on
+		 * the Setup Wizard nav item until the dealer finishes the wizard. */
+		$wizardComplete = false;
+		try
+		{
+			$completedAt = \IPS\Db::i()->select( 'wizard_completed_at', 'gd_dealer_feed_config',
+				[ 'dealer_id=?', (int) $this->dealer->dealer_id ]
+			)->first();
+			$wizardComplete = !empty( $completedAt );
+		}
+		catch ( \Exception ) {}
+
 		$lang = \IPS\Member::loggedIn()->language();
 
 		return [
@@ -288,6 +301,9 @@ HTML;
 			'catalog' => [
 				'label' => 'Catalog',
 				'items' => [
+					[ 'key' => 'setupWizard', 'label' => $lang->addToStack('gddealer_front_tab_wizard'),
+					  'url' => $urls['setupWizard'], 'icon' => 'wizard',
+					  'badge' => $wizardComplete ? null : [ 'count' => '!', 'variant' => 'warn' ] ],
 					[ 'key' => 'feedSettings', 'label' => $lang->addToStack('gddealer_front_tab_feed'),
 					  'url' => $urls['feedSettings'], 'icon' => 'feed', 'badge' => null ],
 					[ 'key' => 'feedValidator', 'label' => $lang->addToStack('gddealer_front_tab_validator'),
