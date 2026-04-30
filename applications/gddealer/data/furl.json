@@ -45,6 +45,10 @@
             "friendly": "feed-validator/{@do}",
             "real": "app=gddealer&module=dealers&controller=feedvalidator"
         },
+        "dealers_setup_wizard": {
+            "friendly": "setup-wizard",
+            "real": "app=gddealer&module=dealers&controller=setupwizard"
+        },
         "dealers_feed_schema": {
             "friendly": "feed-schema",
             "real": "app=gddealer&module=dealers&controller=feedschema"
