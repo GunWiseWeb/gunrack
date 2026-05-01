@@ -903,13 +903,24 @@ class _setupwizard extends \IPS\Dispatcher\Controller
         $report = isset( $state['step4_report'] ) && is_array( $state['step4_report'] ) ? $state['step4_report'] : null;
         $rows   = isset( $state['step4_rows'] ) && is_array( $state['step4_rows'] ) ? $state['step4_rows'] : [];
 
+        /* Pre-compute the 3 stat-pill class strings. We can't use
+         * {{if expr > 0}} inside an HTML class attribute - the IPS
+         * template parser misreads the > as end-of-tag and produces
+         * EX0. Computing here and passing as plain strings is safe. */
+        $errorRecords   = isset( $report['summary']['error_records'] ) ? (int) $report['summary']['error_records'] : 0;
+        $warningRecords = isset( $report['summary']['warning_records'] ) ? (int) $report['summary']['warning_records'] : 0;
+        $validRecords   = isset( $report['summary']['valid_records'] ) ? (int) $report['summary']['valid_records'] : 0;
+
         $body = (string) \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )->setupWizardStep4(
             $this->wizardData( 4 ),
             [
-                'urls'    => $this->wizardUrls(),
-                'csrfKey' => \IPS\Session::i()->csrfKey,
-                'report'  => $report,
-                'rows'    => $rows,
+                'urls'           => $this->wizardUrls(),
+                'csrfKey'        => \IPS\Session::i()->csrfKey,
+                'report'         => $report,
+                'rows'           => $rows,
+                'error_class'    => $errorRecords > 0 ? 'gdSetupWizard__stat--bad'  : 'gdSetupWizard__stat--neutral',
+                'warn_class'     => $warningRecords > 0 ? 'gdSetupWizard__stat--warn' : 'gdSetupWizard__stat--neutral',
+                'continue_ready' => $validRecords > 0,
             ]
         );
         $this->output( 'setupWizard', $body );
