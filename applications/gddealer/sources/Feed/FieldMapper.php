@@ -93,6 +93,16 @@ class FieldMapper
         $aliases = self::legacyStorageAliases();
         $storageMap = self::canonicalToStorage();
 
+        /* Pull _defaults out of the map before the loop. They're applied
+         * AFTER the dealer-field map below, only to canonicals that
+         * weren't otherwise populated (so a feed value beats a default). */
+        $defaults = [];
+        if ( isset( $fieldMap['_defaults'] ) && is_array( $fieldMap['_defaults'] ) )
+        {
+            $defaults = $fieldMap['_defaults'];
+            unset( $fieldMap['_defaults'] );
+        }
+
         $out = [];
         foreach ( $fieldMap as $dealerField => $canonical )
         {
@@ -115,6 +125,18 @@ class FieldMapper
             /* Translate to storage column name. */
             $storageKey = $storageMap[ $canonical ] ?? $canonical;
             $out[ $storageKey ] = $record[ $dealerField ];
+        }
+
+        /* Apply defaults for canonicals not populated by the feed. */
+        foreach ( $defaults as $canonical => $value )
+        {
+            $canonical = isset( $aliases[ $canonical ] ) ? $aliases[ $canonical ] : $canonical;
+            if ( !in_array( $canonical, $validCanonical, true ) ) { continue; }
+            $storageKey = $storageMap[ $canonical ] ?? $canonical;
+            if ( !array_key_exists( $storageKey, $out ) )
+            {
+                $out[ $storageKey ] = $value;
+            }
         }
 
         return self::normalize( $out );

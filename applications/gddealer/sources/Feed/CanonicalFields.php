@@ -95,11 +95,11 @@ class CanonicalFields
             'upc'           => [ 'slug' => 'upc',           'label' => 'UPC',                'group' => self::GROUP_CORE_REQUIRED, 'req' => self::REQ_REQUIRED ],
             'category'      => [ 'slug' => 'category',      'label' => 'Category',           'group' => self::GROUP_CORE_REQUIRED, 'req' => self::REQ_REQUIRED ],
             'price'         => [ 'slug' => 'price',         'label' => 'Price',              'group' => self::GROUP_CORE_REQUIRED, 'req' => self::REQ_REQUIRED ],
-            'condition'     => [ 'slug' => 'condition',     'label' => 'Condition',          'group' => self::GROUP_CORE_REQUIRED, 'req' => self::REQ_REQUIRED ],
+            'condition'     => [ 'slug' => 'condition',     'label' => 'Condition',          'group' => self::GROUP_CORE_REQUIRED, 'req' => self::REQ_REQUIRED, 'default' => 'new' ],
             'url'           => [ 'slug' => 'url',           'label' => 'Listing URL',        'group' => self::GROUP_CORE_REQUIRED, 'req' => self::REQ_REQUIRED ],
-            'free_shipping' => [ 'slug' => 'free_shipping', 'label' => 'Free Shipping Flag', 'group' => self::GROUP_CORE_REQUIRED, 'req' => self::REQ_REQUIRED ],
+            'free_shipping' => [ 'slug' => 'free_shipping', 'label' => 'Free Shipping Flag', 'group' => self::GROUP_CORE_REQUIRED, 'req' => self::REQ_REQUIRED, 'default' => 'false' ],
             'shipping_cost' => [ 'slug' => 'shipping_cost', 'label' => 'Shipping Cost',      'group' => self::GROUP_CORE_REQUIRED, 'req' => self::REQ_CONDITIONAL ],
-            'in_stock'      => [ 'slug' => 'in_stock',      'label' => 'In Stock Flag',      'group' => self::GROUP_CORE_REQUIRED, 'req' => self::REQ_REQUIRED ],
+            'in_stock'      => [ 'slug' => 'in_stock',      'label' => 'In Stock Flag',      'group' => self::GROUP_CORE_REQUIRED, 'req' => self::REQ_REQUIRED, 'default' => 'true' ],
 
             /* ========== Core Optional (every listing) ========== */
             'sku'           => [ 'slug' => 'sku',           'label' => 'Dealer SKU',         'group' => self::GROUP_CORE_OPTIONAL, 'req' => self::REQ_OPTIONAL ],

@@ -445,14 +445,17 @@ class _setupwizard extends \IPS\Dispatcher\Controller
     }
 
     /* ============================================================
-     * Step 3 - Field Mapping with Auto-Suggest
+     * Step 3 - Field Mapping with Auto-Suggest (v154 with defaults)
      * ============================================================ */
 
     /**
      * Render step 3. Reads cached discovered fields from
      * wizard_state_json and existing field_mapping from
      * gd_dealer_feed_config. Inverse-view mapping UI: one row per
-     * canonical field, dropdown of all dealer fields per row.
+     * canonical field, dropdown of all dealer fields per row,
+     * plus an optional "use default" toggle for canonical fields
+     * that publish a default value (condition, free_shipping,
+     * in_stock as of v154).
      *
      * Gating: requires wizard_step >= 2.
      *
@@ -504,8 +507,25 @@ class _setupwizard extends \IPS\Dispatcher\Controller
             return;
         }
 
-        $submitted = \IPS\Request::i()->mapping ?? [];
-        if ( !is_array( $submitted ) ) { $submitted = []; }
+        /* Form submits 3 inputs per canonical field:
+         *   source[CANONICAL_SLUG]   - 'feed' | 'default' | 'none'
+         *   mapping[CANONICAL_SLUG]  - dealer field name (when source=feed)
+         *   default[CANONICAL_SLUG]  - override default value (when source=default)
+         *
+         * Stored shape (compatible with FieldMapper::apply):
+         *   {
+         *     "_defaults": { canonical: value, ... },
+         *     dealerField: canonicalSlug,
+         *     ...
+         *   }
+         */
+        $sources    = \IPS\Request::i()->source ?? [];
+        $mappingPos = \IPS\Request::i()->mapping ?? [];
+        $defaultsIn = \IPS\Request::i()->{'default'} ?? [];
+
+        if ( !is_array( $sources ) )    { $sources    = []; }
+        if ( !is_array( $mappingPos ) ) { $mappingPos = []; }
+        if ( !is_array( $defaultsIn ) ) { $defaultsIn = []; }
 
         $state = $this->loadWizardState();
         $discoveredFieldNames = [];
@@ -520,37 +540,75 @@ class _setupwizard extends \IPS\Dispatcher\Controller
 
         $allCanonical = CanonicalFields::all();
 
-        $validated = [];
-        $errors = [];
+        $fieldMap = [];   /* dealerField => canonicalSlug */
+        $defaults = [];   /* canonicalSlug => value */
+        $errors   = [];
 
-        foreach ( $submitted as $canonicalSlug => $dealerField )
+        foreach ( $allCanonical as $canonicalSlug => $fieldDef )
         {
-            $canonicalSlug = (string) $canonicalSlug;
-            $dealerField   = trim( (string) $dealerField );
+            $source = isset( $sources[ $canonicalSlug ] ) ? (string) $sources[ $canonicalSlug ] : 'none';
 
-            if ( !isset( $allCanonical[ $canonicalSlug ] ) ) { continue; }
-            if ( $dealerField === '' )                       { continue; }
-            if ( !isset( $discoveredSet[ $dealerField ] ) )
+            if ( $source === 'feed' )
             {
-                $errors[] = "Invalid dealer field '{$dealerField}' for {$canonicalSlug}.";
-                continue;
+                $dealerField = trim( (string) ( $mappingPos[ $canonicalSlug ] ?? '' ) );
+                if ( $dealerField === '' )
+                {
+                    /* Source said feed but no field picked - silently treat as unmapped. */
+                    continue;
+                }
+                if ( !isset( $discoveredSet[ $dealerField ] ) )
+                {
+                    $errors[] = "Invalid dealer field '{$dealerField}' for {$canonicalSlug}.";
+                    continue;
+                }
+                /* Storage shape is {dealerField: canonical} - if multiple
+                 * canonicals point to the same dealer field, last write wins.
+                 * That's a UX concern at form time, not here. */
+                $fieldMap[ $dealerField ] = $canonicalSlug;
             }
-
-            $validated[ $canonicalSlug ] = $dealerField;
+            elseif ( $source === 'default' )
+            {
+                /* The dealer accepted the default, optionally with an override value. */
+                if ( !isset( $fieldDef['default'] ) )
+                {
+                    /* Field doesn't publish a default - silently skip. */
+                    continue;
+                }
+                $publishedDefault = (string) $fieldDef['default'];
+                $userOverride     = isset( $defaultsIn[ $canonicalSlug ] ) ? trim( (string) $defaultsIn[ $canonicalSlug ] ) : '';
+                $defaults[ $canonicalSlug ] = $userOverride !== '' ? $userOverride : $publishedDefault;
+            }
+            /* source === 'none' means dealer is leaving the field unmapped - do nothing. */
         }
 
         if ( !empty( $errors ) )
         {
             $body = (string) \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )->setupWizardStep3(
                 $this->wizardData( 3 ),
-                $this->buildStep3Values( $cfg, $state, false, $submitted, $errors )
+                $this->buildStep3Values( $cfg, $state, false, [
+                    'sources'  => $sources,
+                    'mapping'  => $mappingPos,
+                    'defaults' => $defaultsIn,
+                ], $errors )
             );
             $this->output( 'setupWizard', $body );
             return;
         }
 
+        /* Final stored shape. _defaults goes first only for human readability
+         * in the admin TextArea; JSON ordering is irrelevant to readers. */
+        $stored = [];
+        if ( !empty( $defaults ) )
+        {
+            $stored['_defaults'] = $defaults;
+        }
+        foreach ( $fieldMap as $dealerField => $canonical )
+        {
+            $stored[ $dealerField ] = $canonical;
+        }
+
         $update = [
-            'field_mapping' => json_encode( $validated, JSON_UNESCAPED_SLASHES ),
+            'field_mapping' => json_encode( $stored, JSON_UNESCAPED_SLASHES ),
             'wizard_step'   => max( 3, (int) ( $cfg['wizard_step'] ?? 0 ) ),
         ];
 
@@ -565,7 +623,11 @@ class _setupwizard extends \IPS\Dispatcher\Controller
             try { \IPS\Log::log( 'wizard saveStep3 update failed: ' . $e->getMessage(), 'gddealer_setupwizard' ); } catch ( \Throwable ) {}
             $body = (string) \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )->setupWizardStep3(
                 $this->wizardData( 3 ),
-                $this->buildStep3Values( $cfg, $state, false, $submitted, [ 'Could not save your mapping. Please try again.' ] )
+                $this->buildStep3Values( $cfg, $state, false, [
+                    'sources'  => $sources,
+                    'mapping'  => $mappingPos,
+                    'defaults' => $defaultsIn,
+                ], [ 'Could not save your mapping. Please try again.' ] )
             );
             $this->output( 'setupWizard', $body );
             return;
@@ -578,17 +640,31 @@ class _setupwizard extends \IPS\Dispatcher\Controller
     }
 
     /**
-     * Build the $values array for the step 3 template.
+     * Build $values array for the step 3 template.
+     *
+     * Saved field_mapping shape (read at load):
+     *   {
+     *     "_defaults": { canonicalSlug: value },
+     *     dealerField: canonicalSlug,
+     *     ...
+     *   }
+     *
+     * For each canonical field we compute:
+     *   - source: 'feed' | 'default' | 'none'
+     *   - selected_dealer_field: which dealer field is mapped (when source=feed)
+     *   - default_value: published default (if any)
+     *   - default_override: user's override for the default (when source=default)
      *
      * @param array<string, mixed> $cfg
      * @param array<string, mixed> $state
      * @param bool $reset
-     * @param array<string, string>|null $overrideMapping
+     * @param array<string, array<string,string>>|null $override Form POST that failed validation.
+     *        Shape: ['sources' => [], 'mapping' => [], 'defaults' => []]
      * @param array<int, string> $errors
      *
      * @return array<string, mixed>
      */
-    protected function buildStep3Values( array $cfg, array $state, bool $reset, ?array $overrideMapping = null, array $errors = [] ): array
+    protected function buildStep3Values( array $cfg, array $state, bool $reset, ?array $override = null, array $errors = [] ): array
     {
         $discovered = [];
         $sampleFor  = [];
@@ -603,15 +679,35 @@ class _setupwizard extends \IPS\Dispatcher\Controller
             }
         }
 
-        $savedMapping = [];
+        /* Saved field_mapping (when revisiting). Inverted into
+         * {canonical: dealerField} for easier per-row lookup, plus a
+         * separate $savedDefaults map for canonicals served by defaults. */
+        $savedFieldMap = [];   /* canonical => dealerField */
+        $savedDefaults = [];   /* canonical => value */
         if ( !$reset && !empty( $cfg['field_mapping'] ) )
         {
             $decoded = json_decode( (string) $cfg['field_mapping'], true );
-            if ( is_array( $decoded ) ) { $savedMapping = $decoded; }
+            if ( is_array( $decoded ) )
+            {
+                if ( isset( $decoded['_defaults'] ) && is_array( $decoded['_defaults'] ) )
+                {
+                    foreach ( $decoded['_defaults'] as $canonical => $value )
+                    {
+                        $savedDefaults[ (string) $canonical ] = (string) $value;
+                    }
+                }
+                foreach ( $decoded as $key => $value )
+                {
+                    if ( $key === '_defaults' ) { continue; }
+                    /* Saved shape is {dealerField: canonical}. */
+                    $savedFieldMap[ (string) $value ] = (string) $key;
+                }
+            }
         }
 
+        /* Auto-suggest for any canonical not already mapped. */
         $suggestions = CanonicalFields::buildSuggestionMap( $discovered );
-        $autoMapping = [];
+        $autoMapping = [];   /* canonical => dealerField */
         foreach ( $suggestions as $dealerField => $canonicalSlug )
         {
             if ( !isset( $autoMapping[ $canonicalSlug ] ) )
@@ -620,68 +716,119 @@ class _setupwizard extends \IPS\Dispatcher\Controller
             }
         }
 
-        $currentMapping = [];
+        /* Decide source + values for each canonical field.
+         * Priority: form override > saved > auto > default-if-published > none. */
+        $rows = [];
         foreach ( CanonicalFields::all() as $slug => $field )
         {
-            if ( isset( $overrideMapping[ $slug ] ) )
+            $hasDefault       = isset( $field['default'] );
+            $publishedDefault = $hasDefault ? (string) $field['default'] : '';
+
+            $source                = 'none';
+            $selectedDealerField   = '';
+            $defaultOverride       = '';
+            $isAutoSuggested       = false;
+
+            if ( $override !== null )
             {
-                $currentMapping[ $slug ] = (string) $overrideMapping[ $slug ];
+                /* The form was just submitted with errors. Restore exactly
+                 * what the user entered, even if invalid. */
+                $source              = isset( $override['sources'][ $slug ] ) ? (string) $override['sources'][ $slug ] : 'none';
+                $selectedDealerField = isset( $override['mapping'][ $slug ] ) ? (string) $override['mapping'][ $slug ] : '';
+                $defaultOverride     = isset( $override['defaults'][ $slug ] ) ? (string) $override['defaults'][ $slug ] : '';
             }
-            elseif ( isset( $savedMapping[ $slug ] ) )
+            elseif ( isset( $savedFieldMap[ $slug ] ) )
             {
-                $currentMapping[ $slug ] = (string) $savedMapping[ $slug ];
+                $source              = 'feed';
+                $selectedDealerField = $savedFieldMap[ $slug ];
+            }
+            elseif ( isset( $savedDefaults[ $slug ] ) )
+            {
+                $source          = 'default';
+                $defaultOverride = $savedDefaults[ $slug ] === $publishedDefault ? '' : $savedDefaults[ $slug ];
             }
             elseif ( isset( $autoMapping[ $slug ] ) )
             {
-                $currentMapping[ $slug ] = (string) $autoMapping[ $slug ];
+                $source              = 'feed';
+                $selectedDealerField = $autoMapping[ $slug ];
+                $isAutoSuggested     = true;
             }
-            else
+            elseif ( $hasDefault && ( $field['req'] ?? '' ) === CanonicalFields::REQ_REQUIRED )
             {
-                $currentMapping[ $slug ] = '';
+                /* Required field with no feed match - pre-select the default
+                 * so the dealer doesn't have to do anything. */
+                $source = 'default';
             }
+
+            $rows[ $slug ] = [
+                'slug'                => $slug,
+                'label'               => $field['label'] ?? $slug,
+                'group'               => $field['group'] ?? '',
+                'req'                 => $field['req'] ?? '',
+                'has_default'         => $hasDefault,
+                'published_default'   => $publishedDefault,
+                'source'              => $source,
+                'selected_dealer_field' => $selectedDealerField,
+                'default_override'    => $defaultOverride,
+                'is_auto_suggested'   => $isAutoSuggested,
+            ];
         }
 
-        $autoSuggested = [];
-        foreach ( $autoMapping as $slug => $dealerField )
-        {
-            $isSaved   = !$reset && isset( $savedMapping[ $slug ] );
-            $isPosted  = isset( $overrideMapping[ $slug ] );
-            if ( !$isSaved && !$isPosted )
-            {
-                $autoSuggested[ $slug ] = $dealerField;
-            }
-        }
-
+        /* Build grouped structure with rows nested by group. */
         $grouped = [];
         foreach ( CanonicalFields::grouped() as $groupKey => $group )
         {
             if ( empty( $group['fields'] ) ) { continue; }
+            $groupRows = [];
+            foreach ( $group['fields'] as $field )
+            {
+                $slug = $field['slug'];
+                if ( isset( $rows[ $slug ] ) ) { $groupRows[] = $rows[ $slug ]; }
+            }
             $grouped[] = [
                 'key'    => $groupKey,
                 'label'  => $group['label'],
-                'fields' => $group['fields'],
+                'rows'   => $groupRows,
             ];
         }
 
-        $requiredTotal  = 0;
-        $requiredMapped = 0;
+        /* Required-field summary. A required field counts as "satisfied"
+         * if source=feed (with valid dealer field) OR source=default. */
+        $requiredTotal    = 0;
+        $requiredMapped   = 0;
         $requiredUnmapped = [];
-        foreach ( CanonicalFields::all() as $slug => $field )
+        foreach ( $rows as $slug => $row )
         {
-            if ( ( $field['req'] ?? '' ) !== CanonicalFields::REQ_REQUIRED ) { continue; }
+            if ( $row['req'] !== CanonicalFields::REQ_REQUIRED ) { continue; }
             $requiredTotal++;
-            if ( !empty( $currentMapping[ $slug ] ) )
+            $satisfied = ( $row['source'] === 'feed' && $row['selected_dealer_field'] !== '' )
+                      || ( $row['source'] === 'default' );
+            if ( $satisfied )
             {
                 $requiredMapped++;
             }
             else
             {
-                $requiredUnmapped[] = $field;
+                $requiredUnmapped[] = [ 'slug' => $slug, 'label' => $row['label'] ];
             }
         }
 
-        $usedDealerFields = array_filter( array_values( $currentMapping ), fn( $v ) => $v !== '' );
-        $usedDealerFields = array_unique( $usedDealerFields );
+        /* Used dealer fields count (for the "X of Y of your fields used" stat). */
+        $usedDealerFields = [];
+        foreach ( $rows as $row )
+        {
+            if ( $row['source'] === 'feed' && $row['selected_dealer_field'] !== '' )
+            {
+                $usedDealerFields[ $row['selected_dealer_field'] ] = true;
+            }
+        }
+
+        /* Auto-suggested count. */
+        $autoCount = 0;
+        foreach ( $rows as $row )
+        {
+            if ( $row['is_auto_suggested'] ) { $autoCount++; }
+        }
 
         return [
             'urls'              => $this->wizardUrls(),
@@ -691,9 +838,7 @@ class _setupwizard extends \IPS\Dispatcher\Controller
             'sample_for'        => $sampleFor,
             'sample_for_json'   => json_encode( $sampleFor, JSON_UNESCAPED_SLASHES | JSON_HEX_TAG | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_HEX_APOS ),
             'grouped'           => $grouped,
-            'current_mapping'   => $currentMapping,
-            'auto_suggested'    => $autoSuggested,
-            'auto_count'        => count( $autoSuggested ),
+            'auto_count'        => $autoCount,
             'required_total'    => $requiredTotal,
             'required_mapped'   => $requiredMapped,
             'required_unmapped' => $requiredUnmapped,
