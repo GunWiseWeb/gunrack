@@ -4,24 +4,22 @@
  * @package     IPS Community Suite
  * @subpackage  GD Dealer Manager
  * @since       v1.0.149
- * @updated     v1.0.150 - Added step 2 (test fetch + parse + field
- *              discovery). Auto-fetch on first arrival; manual
- *              "Re-fetch" button on subsequent visits.
+ * @updated     v1.0.152 - Build URLs in PHP and pass them as strings to
+ *              templates instead of using IPS {url=...} template
+ *              directives. The {url=...} directive's inner quoting was
+ *              breaking HTML attribute parsing, causing form targets and
+ *              link hrefs to render as literal text.
  *
  * Multi-step wizard that walks dealers through configuring their feed.
- * Replaces the raw JSON textarea on the legacy Feed Settings tab.
  *
  * Steps:
  *   1. Feed Input        - URL or paste, format, auth (v149)
- *   2. Test Fetch + Parse - HTTP fetch, format detection, field discovery (THIS SHIP)
- *   3. Field Mapping      - auto-suggest + manual override per field (v151)
- *   4. Validate Sample    - run validator on parsed records (v152)
- *   5. Preview + Save     - show 5-row preview, persist field map (v153)
+ *   2. Test Fetch + Parse - HTTP fetch, format detection, field discovery (v150)
+ *   3. Field Mapping      - auto-suggest + manual override per field (v153)
+ *   4. Validate Sample    - run validator on parsed records (v154)
+ *   5. Preview + Save     - show 5-row preview, persist field map (v155)
  *
- * State is persisted in gd_dealer_feed_config.wizard_state_json. The
- * wizard_step column tracks the highest step completed; this is used
- * both to render the progress indicator and to gate the user from
- * jumping ahead to steps that depend on prior data.
+ * State is persisted in gd_dealer_feed_config.wizard_state_json.
  */
 
 namespace IPS\gddealer\modules\front\dealers;
@@ -48,9 +46,6 @@ class _setupwizard extends \IPS\Dispatcher\Controller
     /** Current dealer loaded from the logged-in member */
     protected ?Dealer $dealer = null;
 
-    /**
-     * Total number of wizard steps. Currently steps 1-2 have UIs.
-     */
     public const TOTAL_STEPS = 5;
 
     public function execute(): void
@@ -98,22 +93,34 @@ class _setupwizard extends \IPS\Dispatcher\Controller
     }
 
     /**
-     * Default route. Routes the dealer to the highest unfinished step.
+     * Build the full set of wizard URLs as strings, using the IPS URL
+     * builder. Templates receive these as plain string values, avoiding
+     * any need for {url=...} directives in the template body.
+     *
+     * @return array<string, string>
      */
+    protected function wizardUrls(): array
+    {
+        $base = 'app=gddealer&module=dealers&controller=setupwizard';
+        $seo  = 'dealers_setup_wizard';
+
+        return [
+            'step1'         => (string) \IPS\Http\Url::internal( $base . '&do=step1', 'front', $seo ),
+            'step2'         => (string) \IPS\Http\Url::internal( $base . '&do=step2', 'front', $seo ),
+            'step2_refetch' => (string) \IPS\Http\Url::internal( $base . '&do=step2&refetch=1', 'front', $seo ),
+            'save_step1'    => (string) \IPS\Http\Url::internal( $base . '&do=saveStep1', 'front', $seo ),
+            'save_step2'    => (string) \IPS\Http\Url::internal( $base . '&do=saveStep2', 'front', $seo ),
+            'dashboard'     => (string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dashboard&do=overview', 'front', 'dealer_dashboard' ),
+            'feed_schema'   => (string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=feedschema', 'front', 'dealers_feed_schema' ),
+        ];
+    }
+
     protected function manage(): void
     {
         $cfg = $this->loadFeedConfig();
         $highest = isset( $cfg['wizard_step'] ) ? (int) $cfg['wizard_step'] : 0;
-
-        /* Land on step 2 if step 1 is done; otherwise step 1. */
-        if ( $highest >= 1 )
-        {
-            $this->step2();
-        }
-        else
-        {
-            $this->step1();
-        }
+        if ( $highest >= 1 ) { $this->step2(); }
+        else                 { $this->step1(); }
     }
 
     /* ============================================================
@@ -131,17 +138,13 @@ class _setupwizard extends \IPS\Dispatcher\Controller
             'auth_type'        => isset( $cfg['auth_type'] ) && (string) $cfg['auth_type'] !== '' ? (string) $cfg['auth_type'] : 'none',
             'auth_credentials' => isset( $cfg['auth_credentials'] ) ? (string) $cfg['auth_credentials'] : '',
             'paste_body'       => '',
+            'urls'             => $this->wizardUrls(),
+            'csrfKey'          => \IPS\Session::i()->csrfKey,
         ];
 
         $state = $this->loadWizardState();
-        if ( !empty( $state['mode'] ) )
-        {
-            $values['mode'] = (string) $state['mode'];
-        }
-        if ( !empty( $state['paste_body'] ) )
-        {
-            $values['paste_body'] = (string) $state['paste_body'];
-        }
+        if ( !empty( $state['mode'] ) )       { $values['mode']       = (string) $state['mode']; }
+        if ( !empty( $state['paste_body'] ) ) { $values['paste_body'] = (string) $state['paste_body']; }
 
         $body = (string) \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )->setupWizardStep1(
             $this->wizardData( 1 ),
@@ -214,6 +217,8 @@ class _setupwizard extends \IPS\Dispatcher\Controller
                 'mode' => $mode, 'feed_url' => $feedUrl, 'feed_format' => $feedFormat,
                 'auth_type' => $authType, 'auth_credentials' => $authCredentials,
                 'paste_body' => $pasteBody,
+                'urls' => $this->wizardUrls(),
+                'csrfKey' => \IPS\Session::i()->csrfKey,
             ];
             $body = (string) \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )->setupWizardStep1(
                 $this->wizardData( 1 ),
@@ -242,28 +247,30 @@ class _setupwizard extends \IPS\Dispatcher\Controller
         catch ( \Throwable $e )
         {
             try { \IPS\Log::log( 'wizard saveStep1 update failed: ' . $e->getMessage(), 'gddealer_setupwizard' ); } catch ( \Throwable ) {}
+            $values = [
+                'mode' => $mode, 'feed_url' => $feedUrl, 'feed_format' => $feedFormat,
+                'auth_type' => $authType, 'auth_credentials' => $authCredentials,
+                'paste_body' => $pasteBody,
+                'urls' => $this->wizardUrls(),
+                'csrfKey' => \IPS\Session::i()->csrfKey,
+            ];
             $body = (string) \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )->setupWizardStep1(
                 $this->wizardData( 1 ),
-                [ 'mode' => $mode, 'feed_url' => $feedUrl, 'feed_format' => $feedFormat,
-                  'auth_type' => $authType, 'auth_credentials' => $authCredentials, 'paste_body' => $pasteBody ],
+                $values,
                 [ 'Could not save your input. Please try again or contact support.' ]
             );
             $this->output( 'setupWizard', $body );
             return;
         }
 
-        /* Cache mode + paste body in wizard_state_json. Step 2 reads this
-         * to know whether to fetch from URL or use the cached paste body. */
         $state = $this->loadWizardState();
         $state['mode']       = $mode;
         $state['paste_body'] = $mode === 'paste' ? $pasteBody : '';
-        /* Clear any prior step 2 results - the input changed. */
         unset( $state['step2_fetch'], $state['step2_records'], $state['step2_fields'] );
         $this->saveWizardState( $state );
 
         \IPS\Output::i()->redirect(
-            \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=setupwizard', 'front', 'dealers_setup_wizard' )
-                ->setQueryString( 'do', 'step2' )
+            \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=setupwizard&do=step2', 'front', 'dealers_setup_wizard' )
         );
     }
 
@@ -271,13 +278,6 @@ class _setupwizard extends \IPS\Dispatcher\Controller
      * Step 2 - Test Fetch + Parse + Field Discovery
      * ============================================================ */
 
-    /**
-     * Render step 2. On first arrival (no cached fetch results), runs
-     * the fetch+parse automatically. On subsequent visits, shows cached
-     * results with a "Re-fetch" button to refresh.
-     *
-     * Gating: requires wizard_step >= 1. Otherwise redirect to step 1.
-     */
     protected function step2(): void
     {
         $cfg = $this->loadFeedConfig();
@@ -285,21 +285,20 @@ class _setupwizard extends \IPS\Dispatcher\Controller
         if ( $highest < 1 )
         {
             \IPS\Output::i()->redirect(
-                \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=setupwizard', 'front', 'dealers_setup_wizard' )
+                \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=setupwizard&do=step1', 'front', 'dealers_setup_wizard' )
             );
             return;
         }
 
         $state = $this->loadWizardState();
 
-        /* Auto-fetch on first arrival, or when explicitly requested. */
         $forceRefetch = (int) ( \IPS\Request::i()->refetch ?? 0 ) === 1;
         $hasCached = !empty( $state['step2_fetch'] );
 
         if ( !$hasCached || $forceRefetch )
         {
             $this->performStep2Fetch();
-            $state = $this->loadWizardState();  /* reload after fetch */
+            $state = $this->loadWizardState();
         }
 
         $body = (string) \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )->setupWizardStep2(
@@ -318,28 +317,23 @@ class _setupwizard extends \IPS\Dispatcher\Controller
                 'field_count'       => isset( $state['step2_fields'] ) && is_array( $state['step2_fields'] ) ? count( $state['step2_fields'] ) : 0,
                 'sample_count'      => isset( $state['step2_fields'][0]['count'] ) ? (int) $state['step2_fields'][0]['count'] : 0,
                 'body_bytes_fmt'    => isset( $state['step2_fetch']['body_bytes'] ) ? number_format( (int) $state['step2_fetch']['body_bytes'] ) : '0',
+                'urls'              => $this->wizardUrls(),
+                'csrfKey'           => \IPS\Session::i()->csrfKey,
             ]
         );
         $this->output( 'setupWizard', $body );
     }
 
-    /**
-     * Save step 2 (advance wizard_step to 2). The actual fetch is done
-     * inside step2() / performStep2Fetch(); this is just the "continue"
-     * button handler that gates progression to step 3.
-     */
     protected function saveStep2(): void
     {
         \IPS\Session::i()->csrfCheck();
 
         $state = $this->loadWizardState();
 
-        /* Don't allow progressing if the fetch+parse never succeeded. */
         if ( empty( $state['step2_fetch'] ) || empty( $state['step2_fetch']['ok'] ) || !empty( $state['step2_parse_error'] ) )
         {
             \IPS\Output::i()->redirect(
-                \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=setupwizard', 'front', 'dealers_setup_wizard' )
-                    ->setQueryString( 'do', 'step2' )
+                \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=setupwizard&do=step2', 'front', 'dealers_setup_wizard' )
             );
             return;
         }
@@ -358,19 +352,11 @@ class _setupwizard extends \IPS\Dispatcher\Controller
             try { \IPS\Log::log( 'wizard saveStep2 update failed: ' . $e->getMessage(), 'gddealer_setupwizard' ); } catch ( \Throwable ) {}
         }
 
-        /* v150 ships step 2 only - step 3 doesn't exist yet. Land back
-         * on step 2 with a success flash so the dealer sees progress. */
         \IPS\Output::i()->redirect(
-            \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=setupwizard', 'front', 'dealers_setup_wizard' )
-                ->setQueryString( [ 'do' => 'step2', 'saved' => 1 ] )
+            \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=setupwizard&do=step2', 'front', 'dealers_setup_wizard' )->setQueryString( 'saved', 1 )
         );
     }
 
-    /**
-     * Run the actual fetch + parse + field discovery and cache results
-     * to wizard_state_json. Called by step2() on auto-fetch or
-     * explicit ?refetch=1.
-     */
     protected function performStep2Fetch(): void
     {
         $cfg = $this->loadFeedConfig();
@@ -390,23 +376,19 @@ class _setupwizard extends \IPS\Dispatcher\Controller
             $fetch = FeedFetcher::fetch( $url, $authType, $authCreds );
             $body  = (string) $fetch['body'];
 
-            /* Don't cache the full body in state - just metadata + a
-             * preview snippet. The body itself goes into step2_records
-             * after parsing. */
             $fetchMeta = [
-                'ok'             => $fetch['ok'],
-                'http_status'    => $fetch['http_status'],
-                'content_type'   => $fetch['content_type'],
-                'body_bytes'     => $fetch['body_bytes'],
-                'truncated'      => $fetch['truncated'],
-                'duration_ms'    => $fetch['duration_ms'],
-                'error'          => $fetch['error'],
-                'preview'        => substr( $body, 0, 800 ),
+                'ok'           => $fetch['ok'],
+                'http_status'  => $fetch['http_status'],
+                'content_type' => $fetch['content_type'],
+                'body_bytes'   => $fetch['body_bytes'],
+                'truncated'    => $fetch['truncated'],
+                'duration_ms'  => $fetch['duration_ms'],
+                'error'        => $fetch['error'],
+                'preview'      => substr( $body, 0, 800 ),
             ];
         }
         else
         {
-            /* Paste mode - fake a fetch result from the cached body. */
             $body = isset( $state['paste_body'] ) ? (string) $state['paste_body'] : '';
             $fetchMeta = [
                 'ok'           => $body !== '',
@@ -420,7 +402,6 @@ class _setupwizard extends \IPS\Dispatcher\Controller
             ];
         }
 
-        /* If fetch failed, save the metadata and bail before parsing. */
         if ( !$fetchMeta['ok'] || $body === '' )
         {
             $state['step2_fetch']       = $fetchMeta;
@@ -431,7 +412,6 @@ class _setupwizard extends \IPS\Dispatcher\Controller
             return;
         }
 
-        /* Parse the body. */
         $records = [];
         $parseError = '';
         try
@@ -448,7 +428,6 @@ class _setupwizard extends \IPS\Dispatcher\Controller
             $parseError = $e->getMessage();
         }
 
-        /* Cap records cached in state to first 10 for step 3 sample. */
         $sample = array_slice( $records, 0, 10 );
         $fields = FeedFetcher::discoverFields( $sample );
 
@@ -512,8 +491,6 @@ class _setupwizard extends \IPS\Dispatcher\Controller
     }
 
     /**
-     * Build the wizard meta data passed to every step template.
-     *
      * @return array<string, mixed>
      */
     protected function wizardData( int $currentStep ): array
