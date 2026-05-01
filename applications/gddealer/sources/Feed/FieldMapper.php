@@ -65,6 +65,32 @@ class FieldMapper
      * used by gd_dealer_listings. Returns the input unchanged when no
      * translation is needed.
      */
+    /**
+     * Like apply(), but outputs records keyed by CANONICAL field names
+     * (price, url, sku) instead of STORAGE column names (dealer_price,
+     * listing_url, dealer_sku). Suitable for passing to Validator,
+     * which was written against the v1.1 canonical spec.
+     *
+     * @param array<string, mixed> $record
+     * @param array<string, mixed> $fieldMap
+     * @return array<string, mixed>
+     */
+    public static function applyCanonical( array $record, array $fieldMap ): array
+    {
+        $storage = self::apply( $record, $fieldMap );
+
+        /* Reverse the storage mapping. {dealer_price=>price, ...} */
+        $storageToCanonical = array_flip( self::canonicalToStorage() );
+
+        $out = [];
+        foreach ( $storage as $key => $value )
+        {
+            $canonicalKey = $storageToCanonical[ $key ] ?? $key;
+            $out[ $canonicalKey ] = $value;
+        }
+        return $out;
+    }
+
     public static function canonicalToStorageColumn( string $canonical ): string
     {
         $map = self::canonicalToStorage();

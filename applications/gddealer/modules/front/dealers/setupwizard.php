@@ -27,6 +27,7 @@ namespace IPS\gddealer\modules\front\dealers;
 use IPS\gddealer\Dealer\Dealer;
 use IPS\gddealer\Feed\FeedFetcher;
 use IPS\gddealer\Feed\CanonicalFields;
+use IPS\gddealer\Feed\Validator;
 use IPS\gddealer\Feed\Parser\XmlParser;
 use IPS\gddealer\Feed\Parser\JsonParser;
 use IPS\gddealer\Feed\Parser\CsvParser;
@@ -114,6 +115,9 @@ class _setupwizard extends \IPS\Dispatcher\Controller
             'save_step2'    => (string) \IPS\Http\Url::internal( $base . '&do=saveStep2', 'front', $seo ),
             'save_step3'    => (string) \IPS\Http\Url::internal( $base . '&do=saveStep3', 'front', $seo ),
             'reset_step3'   => (string) \IPS\Http\Url::internal( $base . '&do=step3&reset=1', 'front', $seo ),
+            'step4'         => (string) \IPS\Http\Url::internal( $base . '&do=step4', 'front', $seo ),
+            'step4_revalidate' => (string) \IPS\Http\Url::internal( $base . '&do=step4&revalidate=1', 'front', $seo ),
+            'save_step4'    => (string) \IPS\Http\Url::internal( $base . '&do=saveStep4', 'front', $seo ),
             'dashboard'     => (string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=dashboard&do=overview', 'front', 'dealer_dashboard' ),
             'feed_schema'   => (string) \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=feedschema', 'front', 'dealers_feed_schema' ),
         ];
@@ -123,7 +127,8 @@ class _setupwizard extends \IPS\Dispatcher\Controller
     {
         $cfg = $this->loadFeedConfig();
         $highest = isset( $cfg['wizard_step'] ) ? (int) $cfg['wizard_step'] : 0;
-        if ( $highest >= 2 )      { $this->step3(); }
+        if ( $highest >= 3 )      { $this->step4(); }
+        elseif ( $highest >= 2 )  { $this->step3(); }
         elseif ( $highest >= 1 )  { $this->step2(); }
         else                      { $this->step1(); }
     }
@@ -634,8 +639,7 @@ class _setupwizard extends \IPS\Dispatcher\Controller
         }
 
         \IPS\Output::i()->redirect(
-            \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=setupwizard&do=step3', 'front', 'dealers_setup_wizard' )
-                ->setQueryString( 'saved', 1 )
+            \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=setupwizard&do=step4', 'front', 'dealers_setup_wizard' )
         );
     }
 
@@ -760,6 +764,8 @@ class _setupwizard extends \IPS\Dispatcher\Controller
                 $source = 'default';
             }
 
+            $isBooleanDefault = $hasDefault && in_array( $publishedDefault, [ 'true', 'false' ], true );
+
             $rows[ $slug ] = [
                 'slug'                => $slug,
                 'label'               => $field['label'] ?? $slug,
@@ -767,6 +773,7 @@ class _setupwizard extends \IPS\Dispatcher\Controller
                 'req'                 => $field['req'] ?? '',
                 'has_default'         => $hasDefault,
                 'published_default'   => $publishedDefault,
+                'is_boolean_default'  => $isBooleanDefault,
                 'source'              => $source,
                 'selected_dealer_field' => $selectedDealerField,
                 'default_override'    => $defaultOverride,
@@ -845,6 +852,166 @@ class _setupwizard extends \IPS\Dispatcher\Controller
             'used_dealer_count' => count( $usedDealerFields ),
             'errors'            => $errors,
         ];
+    }
+
+    /* ============================================================
+     * Step 4 - Validate Sample (v155)
+     * ============================================================ */
+
+    /**
+     * Render step 4. Reads cached step 2 records and saved field_mapping
+     * from gd_dealer_feed_config. Applies the field map (with _defaults)
+     * to each record producing canonical-shape records, then runs them
+     * through Validator::validate() and renders the report.
+     *
+     * Validation results are cached in wizard_state_json so revisiting
+     * the page doesn't re-run validation. Pass ?revalidate=1 to refresh.
+     *
+     * Gating: requires wizard_step >= 3.
+     */
+    protected function step4(): void
+    {
+        $cfg = $this->loadFeedConfig();
+        $highest = isset( $cfg['wizard_step'] ) ? (int) $cfg['wizard_step'] : 0;
+        if ( $highest < 3 )
+        {
+            \IPS\Output::i()->redirect(
+                \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=setupwizard&do=step3', 'front', 'dealers_setup_wizard' )
+            );
+            return;
+        }
+
+        $state = $this->loadWizardState();
+
+        if ( empty( $state['step2_records'] ) )
+        {
+            \IPS\Output::i()->redirect(
+                \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=setupwizard&do=step2&refetch=1', 'front', 'dealers_setup_wizard' )
+            );
+            return;
+        }
+
+        $forceRevalidate = (int) ( \IPS\Request::i()->revalidate ?? 0 ) === 1;
+        $hasCached = !empty( $state['step4_report'] );
+
+        if ( !$hasCached || $forceRevalidate )
+        {
+            $this->runStep4Validation();
+            $state = $this->loadWizardState();
+        }
+
+        $report = isset( $state['step4_report'] ) && is_array( $state['step4_report'] ) ? $state['step4_report'] : null;
+        $rows   = isset( $state['step4_rows'] ) && is_array( $state['step4_rows'] ) ? $state['step4_rows'] : [];
+
+        $body = (string) \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )->setupWizardStep4(
+            $this->wizardData( 4 ),
+            [
+                'urls'    => $this->wizardUrls(),
+                'csrfKey' => \IPS\Session::i()->csrfKey,
+                'report'  => $report,
+                'rows'    => $rows,
+            ]
+        );
+        $this->output( 'setupWizard', $body );
+    }
+
+    protected function saveStep4(): void
+    {
+        \IPS\Session::i()->csrfCheck();
+
+        $cfg = $this->loadFeedConfig();
+        $highest = isset( $cfg['wizard_step'] ) ? (int) $cfg['wizard_step'] : 0;
+        if ( $highest < 3 )
+        {
+            \IPS\Output::i()->redirect(
+                \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=setupwizard&do=step3', 'front', 'dealers_setup_wizard' )
+            );
+            return;
+        }
+
+        $update = [ 'wizard_step' => max( 4, (int) ( $cfg['wizard_step'] ?? 0 ) ) ];
+        try
+        {
+            \IPS\Db::i()->update( 'gd_dealer_feed_config', $update,
+                [ 'dealer_id=?', (int) $this->dealer->dealer_id ]
+            );
+        }
+        catch ( \Throwable $e )
+        {
+            try { \IPS\Log::log( 'wizard saveStep4 update failed: ' . $e->getMessage(), 'gddealer_setupwizard' ); } catch ( \Throwable ) {}
+        }
+
+        /* v155 ships step 4 only - step 5 doesn't exist yet. Land back
+         * on step 4 with a success flash. */
+        \IPS\Output::i()->redirect(
+            \IPS\Http\Url::internal( 'app=gddealer&module=dealers&controller=setupwizard&do=step4', 'front', 'dealers_setup_wizard' )
+                ->setQueryString( 'saved', 1 )
+        );
+    }
+
+    /**
+     * Apply the field map to cached step 2 records (producing canonical
+     * shape), pass through Validator, cache report + per-row data in
+     * wizard_state_json.
+     */
+    protected function runStep4Validation(): void
+    {
+        $cfg = $this->loadFeedConfig();
+        $state = $this->loadWizardState();
+
+        $rawRecords = isset( $state['step2_records'] ) && is_array( $state['step2_records'] ) ? $state['step2_records'] : [];
+
+        $fieldMap = [];
+        if ( !empty( $cfg['field_mapping'] ) )
+        {
+            $decoded = json_decode( (string) $cfg['field_mapping'], true );
+            if ( is_array( $decoded ) ) { $fieldMap = $decoded; }
+        }
+
+        /* Apply field map (canonical shape, suitable for Validator). */
+        $canonical = [];
+        foreach ( $rawRecords as $raw )
+        {
+            $canonical[] = FieldMapper::applyCanonical( $raw, $fieldMap );
+        }
+
+        /* Run validation. */
+        $report = Validator::validate( $canonical );
+
+        /* Build per-row data for the template. Each row gets its raw
+         * record (for "your data" display), canonical record (for
+         * "what we'd import"), and any errors/warnings tied to it. */
+        $errorsByRow   = [];
+        $warningsByRow = [];
+        foreach ( $report['errors'] as $err )
+        {
+            $r = (int) ( $err['row'] ?? 0 );
+            if ( $r > 0 ) { $errorsByRow[ $r ][] = $err; }
+        }
+        foreach ( $report['warnings'] as $warn )
+        {
+            $r = (int) ( $warn['row'] ?? 0 );
+            if ( $r > 0 ) { $warningsByRow[ $r ][] = $warn; }
+        }
+
+        $rows = [];
+        foreach ( $rawRecords as $i => $raw )
+        {
+            $rowNum = $i + 1;
+            $rows[] = [
+                'row'         => $rowNum,
+                'raw'         => $raw,
+                'canonical'   => $canonical[ $i ] ?? [],
+                'errors'      => $errorsByRow[ $rowNum ] ?? [],
+                'warnings'    => $warningsByRow[ $rowNum ] ?? [],
+                'has_errors'  => !empty( $errorsByRow[ $rowNum ] ),
+                'has_warnings' => !empty( $warningsByRow[ $rowNum ] ),
+            ];
+        }
+
+        $state['step4_report'] = $report;
+        $state['step4_rows']   = $rows;
+        $this->saveWizardState( $state );
     }
 
     /* ============================================================
