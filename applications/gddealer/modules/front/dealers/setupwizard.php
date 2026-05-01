@@ -305,13 +305,19 @@ class _setupwizard extends \IPS\Dispatcher\Controller
         $body = (string) \IPS\Theme::i()->getTemplate( 'dealers', 'gddealer', 'front' )->setupWizardStep2(
             $this->wizardData( 2 ),
             [
-                'mode'         => isset( $state['mode'] ) ? (string) $state['mode'] : 'url',
-                'feed_url'     => isset( $cfg['feed_url'] ) ? (string) $cfg['feed_url'] : '',
-                'feed_format'  => isset( $cfg['feed_format'] ) ? (string) $cfg['feed_format'] : '',
-                'fetch'        => isset( $state['step2_fetch'] ) && is_array( $state['step2_fetch'] ) ? $state['step2_fetch'] : null,
-                'records'      => isset( $state['step2_records'] ) && is_array( $state['step2_records'] ) ? $state['step2_records'] : [],
-                'fields'       => isset( $state['step2_fields'] ) && is_array( $state['step2_fields'] ) ? $state['step2_fields'] : [],
-                'parse_error'  => isset( $state['step2_parse_error'] ) ? (string) $state['step2_parse_error'] : '',
+                'mode'              => isset( $state['mode'] ) ? (string) $state['mode'] : 'url',
+                'feed_url'          => isset( $cfg['feed_url'] ) ? (string) $cfg['feed_url'] : '',
+                'feed_format'       => isset( $cfg['feed_format'] ) ? (string) $cfg['feed_format'] : '',
+                'feed_format_label' => isset( $cfg['feed_format'] ) && (string) $cfg['feed_format'] !== ''
+                    ? strtoupper( (string) $cfg['feed_format'] )
+                    : '(none)',
+                'fetch'             => isset( $state['step2_fetch'] ) && is_array( $state['step2_fetch'] ) ? $state['step2_fetch'] : null,
+                'records'           => isset( $state['step2_records'] ) && is_array( $state['step2_records'] ) ? $state['step2_records'] : [],
+                'fields'            => isset( $state['step2_fields'] ) && is_array( $state['step2_fields'] ) ? $state['step2_fields'] : [],
+                'parse_error'       => isset( $state['step2_parse_error'] ) ? (string) $state['step2_parse_error'] : '',
+                'field_count'       => isset( $state['step2_fields'] ) && is_array( $state['step2_fields'] ) ? count( $state['step2_fields'] ) : 0,
+                'sample_count'      => isset( $state['step2_fields'][0]['count'] ) ? (int) $state['step2_fields'][0]['count'] : 0,
+                'body_bytes_fmt'    => isset( $state['step2_fetch']['body_bytes'] ) ? number_format( (int) $state['step2_fetch']['body_bytes'] ) : '0',
             ]
         );
         $this->output( 'setupWizard', $body );
